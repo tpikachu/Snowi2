@@ -806,6 +806,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
           onMouseLeave={sidebarCollapsed ? hideSidebarPeek : undefined}
         >
           <ControlPanelSidebar
+            onToggleCollapse={toggleSidebar}
             activeView={activeView}
             onViewChange={setActiveView}
             onOpenSearch={() => setShowSearch(true)}
@@ -851,20 +852,22 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
               </div>
             ) : (
               <>
-                <div
-                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                  onMouseEnter={sidebarCollapsed ? showSidebarPeek : undefined}
-                  onMouseLeave={sidebarCollapsed ? leaveSidebarToggle : undefined}
-                >
-                  <button
-                    onClick={toggleSidebar}
-                    aria-label={sidebarCollapsed ? t("sidebar.expand") : t("sidebar.collapse")}
-                    aria-expanded={!sidebarCollapsed}
-                    className={headerButtonClass}
+                {sidebarCollapsed && !sidebarPeek && (
+                  <div
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                    onMouseEnter={showSidebarPeek}
+                    onMouseLeave={leaveSidebarToggle}
                   >
-                    {sidebarCollapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
-                  </button>
-                </div>
+                    <button
+                      onClick={toggleSidebar}
+                      aria-label={t("sidebar.expand")}
+                      aria-expanded={false}
+                      className={headerButtonClass}
+                    >
+                      <PanelLeftOpen size={15} />
+                    </button>
+                  </div>
+                )}
                 <h1 className="truncate text-[13px] font-medium leading-none tracking-tight text-foreground">
                   {viewTitles[activeView]}
                 </h1>

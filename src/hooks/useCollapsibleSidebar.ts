@@ -26,14 +26,20 @@ export function useCollapsibleSidebar() {
   }, []);
 
   const hidePeek = useCallback(() => {
+    // The pointer has left the panel itself, so a later hover over the trigger
+    // should peek again.
+    suppressPeek.current = false;
     clearTimeout(peekTimer.current);
     peekTimer.current = setTimeout(() => setPeek(false), PEEK_CLOSE_DELAY_MS);
   }, []);
 
+  // Only clears the post-collapse suppression. It must NOT schedule a close:
+  // the peeked panel is painted over the trigger, so the trigger sees a
+  // mouseleave the moment the panel opens. Closing there would uncover the
+  // trigger, re-fire mouseenter, and oscillate.
   const leaveToggle = useCallback(() => {
     suppressPeek.current = false;
-    hidePeek();
-  }, [hidePeek]);
+  }, []);
 
   useEffect(() => () => clearTimeout(peekTimer.current), []);
 

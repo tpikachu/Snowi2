@@ -1,5 +1,14 @@
 import React from "react";
-import { Home, MessageSquare, NotebookPen, BookOpen, Upload, Settings, Search } from "lucide-react";
+import {
+  Home,
+  MessageSquare,
+  NotebookPen,
+  BookOpen,
+  Upload,
+  Settings,
+  Search,
+  PanelLeftClose,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "./lib/utils";
 import { getCachedPlatform } from "../utils/platform";
@@ -55,6 +64,8 @@ function BrandMark() {
 }
 
 interface ControlPanelSidebarProps {
+  /** Collapses the rail. Lives here so the peeked panel never hides its own control. */
+  onToggleCollapse?: () => void;
   activeView: ControlPanelView;
   onViewChange: (view: ControlPanelView) => void;
   onOpenSettings: () => void;
@@ -63,6 +74,7 @@ interface ControlPanelSidebarProps {
 }
 
 export default function ControlPanelSidebar({
+  onToggleCollapse,
   activeView,
   onViewChange,
   onOpenSettings,
@@ -94,6 +106,22 @@ export default function ControlPanelSidebar({
         <span className="truncate text-[13px] font-semibold tracking-tight text-foreground">
           Snowi
         </span>
+        {onToggleCollapse && (
+          <button
+            onClick={onToggleCollapse}
+            aria-label={t("sidebar.collapse")}
+            aria-expanded
+            className={[
+              "ml-auto flex size-6 shrink-0 items-center justify-center rounded-md",
+              "text-muted-foreground outline-none transition-colors duration-150 ease-snap",
+              "hover:bg-surface-3 hover:text-foreground",
+              "focus-visible:ring-2 focus-visible:ring-ring",
+            ].join(" ")}
+            style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+          >
+            <PanelLeftClose size={14} />
+          </button>
+        )}
       </div>
 
       {onOpenSearch && (
