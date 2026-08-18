@@ -181,7 +181,7 @@ function AddContactButton({
             "inline-flex items-center mb-0.5 px-1.5 py-0.5 rounded-md text-[11px] outline-none cursor-pointer",
             "border border-dashed border-border/60 dark:border-white/15",
             "text-foreground/50 hover:text-foreground hover:border-border/90 dark:hover:border-white/30",
-            "transition-colors duration-150 focus-visible:ring-1 focus-visible:ring-ring"
+            "transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring"
           )}
         >
           {t("notes.speaker.addContact")}
@@ -421,7 +421,7 @@ function SpeakerLabel({
           onClick={() =>
             onConfirm?.(speakerId, segment.suggestedName!, segment.suggestedProfileId!)
           }
-          className="opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity cursor-pointer text-muted-foreground hover:text-emerald-500"
+          className="opacity-0 group-hover:opacity-100 p-0.5 rounded transition-opacity cursor-pointer text-muted-foreground hover:text-success"
         >
           <Check size={12} />
         </button>
@@ -451,7 +451,7 @@ function SpeakerLabel({
             "inline-flex items-center text-[11px] font-medium mb-0.5 px-1.5 py-0.5 rounded-md outline-none cursor-pointer",
             "border border-border/60 dark:border-white/20",
             "hover:bg-foreground/5 hover:border-border/90 dark:hover:border-white/30",
-            "transition-colors duration-150 focus-visible:ring-1 focus-visible:ring-ring",
+            "transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring",
             SPEAKER_COLORS[colorIdx],
             isUnmapped && "border-dashed",
             speakerState === "provisional" && "italic"
@@ -712,7 +712,7 @@ export function MeetingTranscriptChat({
                 <button
                   onClick={() => onSetSessionExpectedCount?.(sessionExpectedCount - 1)}
                   disabled={others <= 0}
-                  className="px-1.5 py-0.5 rounded-l-md hover:bg-accent focus-visible:bg-accent focus-visible:outline-none disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  className="px-1.5 py-0.5 rounded-l-md hover:bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-30 disabled:pointer-events-none transition-colors"
                   aria-label={t("notes.speaker.pill.decAria")}
                 >
                   −
@@ -723,7 +723,7 @@ export function MeetingTranscriptChat({
                 <button
                   onClick={() => onSetSessionExpectedCount?.(sessionExpectedCount + 1)}
                   disabled={others >= MAX_SPEAKER_COUNT - 1}
-                  className="px-1.5 py-0.5 rounded-r-md hover:bg-accent focus-visible:bg-accent focus-visible:outline-none disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  className="px-1.5 py-0.5 rounded-r-md hover:bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-30 disabled:pointer-events-none transition-colors"
                   aria-label={t("notes.speaker.pill.incAria")}
                 >
                   +

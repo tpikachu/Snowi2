@@ -37,7 +37,7 @@ export function AgentTitleBar({ onNewChat, onClose }: AgentTitleBarProps) {
             "p-1 rounded-sm",
             "text-muted-foreground hover:text-foreground hover:bg-foreground/10",
             "transition-colors duration-150",
-            "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           )}
           aria-label={t("agentMode.titleBar.newChat")}
         >
@@ -49,7 +49,7 @@ export function AgentTitleBar({ onNewChat, onClose }: AgentTitleBarProps) {
             "p-1 rounded-sm",
             "text-muted-foreground hover:text-foreground hover:bg-foreground/10",
             "transition-colors duration-150",
-            "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           )}
           aria-label={t("agentMode.titleBar.close")}
         >

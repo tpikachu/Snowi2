@@ -11,7 +11,7 @@ const rowIconClass =
 const rowLabelClass =
   "text-xs text-foreground/80 group-hover:text-foreground dark:text-foreground/70 dark:group-hover:text-foreground/85 transition-colors duration-150";
 const rowButtonClass =
-  "group flex items-center gap-2.5 w-full h-8 px-2.5 rounded-md text-left outline-none hover:bg-foreground/4 dark:hover:bg-white/4 focus-visible:ring-1 focus-visible:ring-primary/30 transition-colors duration-150";
+  "group flex items-center gap-2.5 w-full h-8 px-2.5 rounded-md text-left outline-none hover:bg-foreground/4 dark:hover:bg-white/4 focus-visible:ring-2 focus-visible:ring-ring transition-colors duration-150";
 
 export type ControlPanelView = "home" | "chat" | "personal-notes" | "dictionary" | "upload";
 
@@ -55,7 +55,7 @@ export default function ControlPanelSidebar({
         <div className="px-2 pt-2 pb-1">
           <button
             onClick={onOpenSearch}
-            className="group flex items-center w-full h-7 px-2.5 rounded-md border border-border/70 dark:border-white/25 bg-transparent hover:bg-foreground/5 dark:hover:bg-white/5 transition-colors gap-2 outline-none focus-visible:ring-1 focus-visible:ring-primary/30"
+            className="group flex items-center w-full h-7 px-2.5 rounded-md border border-border/70 dark:border-white/25 bg-transparent hover:bg-foreground/5 dark:hover:bg-white/5 transition-colors gap-2 outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Search size={11} className="text-muted-foreground/50 shrink-0" />
             <span className="flex-1 text-[11px] text-left text-muted-foreground/50">
@@ -84,7 +84,7 @@ export default function ControlPanelSidebar({
               onClick={() => onViewChange(item.id)}
               className={cn(
                 "group relative flex items-center gap-2.5 w-full h-8 px-2.5 rounded-md outline-none transition-colors duration-150 text-left",
-                "focus-visible:ring-1 focus-visible:ring-primary/30",
+                "focus-visible:ring-2 focus-visible:ring-ring",
                 isActive
                   ? "bg-primary/8 dark:bg-primary/10"
                   : "hover:bg-foreground/4 dark:hover:bg-white/4 active:bg-foreground/6"

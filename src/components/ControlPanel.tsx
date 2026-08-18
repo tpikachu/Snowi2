@@ -957,7 +957,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
             <button
               onClick={toggleSidebar}
               aria-label={sidebarCollapsed ? t("sidebar.expand") : t("sidebar.collapse")}
-              className="group flex items-center justify-center h-7 w-7 rounded-md outline-none hover:bg-foreground/5 dark:hover:bg-white/5 focus-visible:ring-1 focus-visible:ring-primary/30 transition-colors duration-150"
+              className="group flex items-center justify-center h-7 w-7 rounded-md outline-none hover:bg-foreground/5 dark:hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring transition-colors duration-150"
             >
               {sidebarCollapsed ? (
                 <PanelLeftOpen size={15} className={toggleIconClass} />

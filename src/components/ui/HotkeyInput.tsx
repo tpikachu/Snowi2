@@ -490,7 +490,7 @@ export function HotkeyInput({
           e.stopPropagation();
           onClear();
         }}
-        className="rounded opacity-0 group-hover:opacity-100 focus-visible:opacity-100 outline-none focus-visible:ring-2 focus-visible:ring-ring/30 transition-opacity duration-150 text-muted-foreground/50 hover:text-destructive cursor-pointer"
+        className="rounded opacity-0 group-hover:opacity-100 focus-visible:opacity-100 outline-none focus-visible:ring-2 focus-visible:ring-ring transition-opacity duration-150 text-muted-foreground/50 hover:text-destructive cursor-pointer"
       >
         <Trash2 className="w-3.5 h-3.5" />
       </button>
@@ -518,7 +518,7 @@ export function HotkeyInput({
             disabled
               ? "bg-muted/30 border-border cursor-not-allowed opacity-50"
               : isCapturing
-                ? "bg-primary/5 border-primary/30 shadow-[0_0_0_2px_rgba(37,99,212,0.1)]"
+                ? "bg-primary/5 border-primary/30 shadow-[0_0_0_2px_color-mix(in_oklab,var(--color-primary)_18%,transparent)]"
                 : "bg-surface-1 border-border hover:border-border-hover hover:bg-surface-2"
           }
         `}
@@ -557,7 +557,7 @@ export function HotkeyInput({
             {validationWarning && (
               <div className="flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-md bg-warning/8 border border-warning/20 dark:bg-warning/12 dark:border-warning/25">
                 <AlertTriangle className="w-3 h-3 text-warning shrink-0" />
-                <span className="text-xs text-warning dark:text-amber-400">
+                <span className="text-xs text-warning dark:text-warning">
                   {validationWarning}
                 </span>
               </div>
@@ -623,7 +623,7 @@ export function HotkeyInput({
           disabled
             ? "bg-muted/30 border-border cursor-not-allowed opacity-50"
             : isCapturing
-              ? "bg-primary/5 border-primary/30 shadow-[0_0_0_2px_rgba(37,99,212,0.1)]"
+              ? "bg-primary/5 border-primary/30 shadow-[0_0_0_2px_color-mix(in_oklab,var(--color-primary)_18%,transparent)]"
               : "bg-surface-1 border-border hover:border-border-hover hover:bg-surface-2"
         }
       `}
@@ -665,7 +665,7 @@ export function HotkeyInput({
             {validationWarning && (
               <div className="flex items-center gap-1.5 mt-1.5 px-3 py-1.5 rounded-md bg-warning/8 border border-warning/20 dark:bg-warning/12 dark:border-warning/25">
                 <AlertTriangle className="w-3 h-3 text-warning shrink-0" />
-                <span className="text-xs text-warning dark:text-amber-400">
+                <span className="text-xs text-warning dark:text-warning">
                   {validationWarning}
                 </span>
               </div>

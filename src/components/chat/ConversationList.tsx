@@ -194,7 +194,7 @@ export default function ConversationList({
             "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs",
             "text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5",
             "transition-colors duration-150",
-            "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           )}
         >
           <SquarePen size={14} className="shrink-0" />
@@ -206,7 +206,7 @@ export default function ConversationList({
             "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs",
             "text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5",
             "transition-colors duration-150",
-            "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
+            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           )}
         >
           <Search size={14} className="shrink-0" />
@@ -217,7 +217,7 @@ export default function ConversationList({
             onClick={() => setShowArchived((v) => !v)}
             className={cn(
               "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs transition-colors duration-150",
-              "focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/30",
+              "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               showArchived
                 ? "bg-primary/8 text-primary"
                 : "text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5"

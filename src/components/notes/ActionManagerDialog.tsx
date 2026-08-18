@@ -148,7 +148,7 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
                   </p>
                   <button
                     onClick={handleNewAction}
-                    className="text-xs text-accent/60 hover:text-accent/80 mt-2 transition-colors duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30 rounded"
+                    className="text-xs text-accent/60 hover:text-accent/80 mt-2 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
                   >
                     {t("notes.actions.addAction")}
                   </button>
@@ -295,7 +295,7 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
                         "flex-1 min-h-50 w-full rounded border border-border/70 bg-input px-3.5 py-3 text-sm text-foreground leading-relaxed transition-colors duration-200 outline-none resize-none",
                         "placeholder:text-muted-foreground/40",
                         "hover:border-border-hover",
-                        "focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/10",
+                        "focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring",
                         "dark:bg-surface-1 dark:border-border-subtle/50",
                         "dark:focus-visible:border-border-active dark:focus-visible:ring-ring/10",
                         "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted",

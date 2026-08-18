@@ -48,7 +48,7 @@ import NoteParticipants from "./NoteParticipants";
 import type { CalendarAttendee } from "../../types/calendar";
 
 const CHIP_BUTTON_CLASS =
-  "inline-flex items-center gap-1.5 text-[11px] px-1.5 py-0.5 rounded-md border border-border/70 dark:border-white/25 text-foreground/50 dark:text-foreground/35 hover:text-foreground/60 hover:border-border/60 hover:bg-foreground/3 dark:hover:text-foreground/40 dark:hover:border-white/10 dark:hover:bg-white/3 transition-all duration-150 cursor-pointer outline-none focus-visible:ring-1 focus-visible:ring-ring/30";
+  "inline-flex items-center gap-1.5 text-[11px] px-1.5 py-0.5 rounded-md border border-border/70 dark:border-white/25 text-foreground/50 dark:text-foreground/35 hover:text-foreground/60 hover:border-border/60 hover:bg-foreground/3 dark:hover:text-foreground/40 dark:hover:border-white/10 dark:hover:bg-white/3 transition-all duration-150 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 function formatNoteDate(dateStr: string): string {
   const date = normalizeDbDate(dateStr);
@@ -815,7 +815,7 @@ export default function NoteEditor({
                       {t("notes.editor.enhanced")}
                       {enhancement.isStale && (
                         <span
-                          className="w-1 h-1 rounded-full bg-amber-400/60"
+                          className="w-1 h-1 rounded-full bg-warning/60"
                           title={t("notes.editor.staleIndicator")}
                         />
                       )}

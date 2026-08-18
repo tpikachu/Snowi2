@@ -71,7 +71,7 @@ export default function HistoryView({
   const discardedToggle = (
     <button
       onClick={onToggleDiscarded}
-      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-muted-foreground/60 hover:!text-foreground hover:!bg-black/5 dark:hover:!bg-white/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/30 transition-all duration-200"
+      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-muted-foreground/60 hover:!text-foreground hover:!bg-black/5 dark:hover:!bg-white/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-200"
     >
       <Archive size={11} />
       <span>
@@ -133,9 +133,9 @@ export default function HistoryView({
               </div>
             )}
             {!dataRetentionEnabled && (
-              <div className="mb-3 rounded-lg border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 px-3.5 py-2.5 flex items-center gap-2.5">
-                <span className="text-amber-600 dark:text-amber-400 shrink-0 text-sm">⊘</span>
-                <p className="text-xs text-amber-700 dark:text-amber-300/90 leading-relaxed">
+              <div className="mb-3 rounded-lg border border-warning/30 bg-warning-subtle px-3.5 py-2.5 flex items-center gap-2.5">
+                <span className="text-warning shrink-0 text-sm">⊘</span>
+                <p className="text-xs text-foreground leading-relaxed">
                   {t("controlPanel.history.dataRetentionDisabled")}
                 </p>
               </div>
@@ -264,7 +264,7 @@ export default function HistoryView({
                           {discardedToggle}
                           <button
                             onClick={clearAllTranscriptions}
-                            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-muted-foreground/60 hover:!text-destructive hover:!bg-destructive/8 dark:hover:!bg-destructive/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring/30 transition-all duration-200"
+                            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-muted-foreground/60 hover:!text-destructive hover:!bg-destructive/8 dark:hover:!bg-destructive/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-200"
                           >
                             <Trash2 size={11} />
                             <span>{t("controlPanel.history.clearAll")}</span>

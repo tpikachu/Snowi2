@@ -103,8 +103,8 @@ export function EmojiPickerInput({
                 inputRef.current?.focus();
               }}
               className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-md text-base outline-none transition-colors hover:bg-accent focus-visible:bg-accent",
-                choice === value && "bg-accent"
+                "flex h-7 w-7 items-center justify-center rounded-md text-base outline-none transition-colors duration-150 ease-snap hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                choice === value && "bg-primary/15 ring-1 ring-primary/35"
               )}
             >
               {choice}

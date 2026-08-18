@@ -4,8 +4,26 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="./assets/icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./assets/fonts/inter.css">
     <link rel="stylesheet" href="./assets/fonts/noto-sans.css">
     <title>Snowi</title>
+    <script>
+      // Dark-first: stamp the theme class before first paint so the app never
+      // flashes light on launch. useTheme.ts owns it from the first render on.
+      (function () {
+        try {
+          var t = localStorage.getItem("theme") || "dark";
+          if (
+            t === "dark" ||
+            (t === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+          ) {
+            document.documentElement.classList.add("dark");
+          }
+        } catch (e) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

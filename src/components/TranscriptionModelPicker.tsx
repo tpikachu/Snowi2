@@ -99,12 +99,12 @@ function LocalModelCard({
             <div
               className={`w-1.5 h-1.5 rounded-full ${
                 isSelected
-                  ? "bg-primary shadow-[0_0_6px_oklch(0.62_0.22_260/0.6)] animate-[pulse-glow_2s_ease-in-out_infinite]"
-                  : "bg-success shadow-[0_0_4px_rgba(34,197,94,0.5)]"
+                  ? "bg-primary shadow-[0_0_5px_color-mix(in_oklab,var(--color-primary)_55%,transparent)] animate-[pulse-glow_2s_ease-in-out_infinite]"
+                  : "bg-success shadow-[0_0_5px_color-mix(in_oklab,var(--color-success)_50%,transparent)]"
               }`}
             />
           ) : isDownloading ? (
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_4px_rgba(245,158,11,0.5)] animate-[spinner-rotate_1s_linear_infinite]" />
+            <div className="w-1.5 h-1.5 rounded-full bg-warning animate-[spinner-rotate_1s_linear_infinite]" />
           ) : (
             <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/20" />
           )}
@@ -297,9 +297,9 @@ interface ModeToggleProps {
 function ModeToggle({ useLocalWhisper, onModeChange }: ModeToggleProps) {
   const { t } = useTranslation();
   return (
-    <div className="relative flex p-0.5 rounded-lg bg-surface-1/80 backdrop-blur-xl dark:bg-surface-1 border border-border/60 dark:border-white/8 shadow-(--shadow-metallic-light) dark:shadow-(--shadow-metallic-dark)">
+    <div className="relative flex p-0.5 rounded-lg bg-surface-1 border border-border-subtle shadow-(--shadow-raised)">
       <div
-        className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-md bg-card border border-border/60 dark:border-border-subtle shadow-(--shadow-metallic-light) dark:shadow-(--shadow-metallic-dark) transition-transform duration-200 ease-out ${
+        className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-md bg-surface-raised border border-border shadow-(--shadow-raised) transition-transform duration-150 ease-snap ${
           useLocalWhisper ? "translate-x-[calc(100%)]" : "translate-x-0"
         }`}
       />

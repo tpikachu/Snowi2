@@ -1252,10 +1252,12 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   selectedMicDeviceLabel: readString("selectedMicDeviceLabel", ""),
   micWarmHoldSeconds: snapMicWarmHold(readNumber("micWarmHoldSeconds", 0)),
 
+  // Snowi is dark-first: a new user lands in dark mode. "light" and "auto"
+  // remain fully supported user choices.
   theme: (() => {
-    const v = readString("theme", "auto");
+    const v = readString("theme", "dark");
     if (v === "light" || v === "dark" || v === "auto") return v;
-    return "auto" as const;
+    return "dark" as const;
   })(),
   audioRetentionDays: readNumber("audioRetentionDays", 30),
   transcriptRetentionDays: readNumber("transcriptRetentionDays", 0),

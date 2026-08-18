@@ -69,10 +69,10 @@ export function DownloadProgressBar({
         style={{ height: 4 }}
       >
         {indeterminate ? (
-          <div className="h-full w-1/3 rounded-full bg-primary shadow-[0_0_8px_oklch(0.62_0.22_260/0.4)] animate-[indeterminate_1.5s_ease-in-out_infinite]" />
+          <div className="h-full w-1/3 rounded-full bg-primary shadow-[0_0_8px_color-mix(in_oklab,var(--color-primary)_40%,transparent)] animate-[indeterminate_1.5s_ease-in-out_infinite]" />
         ) : (
           <div
-            className={`${isInstalling ? "animate-pulse" : ""} bg-primary shadow-[0_0_8px_oklch(0.62_0.22_260/0.4)]`}
+            className={`${isInstalling ? "animate-pulse" : ""} bg-primary shadow-[0_0_8px_color-mix(in_oklab,var(--color-primary)_40%,transparent)]`}
             style={{
               height: "100%",
               width: `${isInstalling ? 100 : Math.min(percentage, 100)}%`,

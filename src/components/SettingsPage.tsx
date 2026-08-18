@@ -1740,7 +1740,6 @@ export default function SettingsPage({
                   <SettingsPanelRow>
                     <Alert
                       variant="warning"
-                      className="dark:bg-amber-950/50 dark:border-amber-800 dark:text-amber-200 dark:[&>svg]:text-amber-400"
                     >
                       <AlertTriangle className="h-4 w-4" />
                       <AlertTitle>
@@ -2149,7 +2148,7 @@ EOF`,
                           <SettingsPanelRow>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <CircleCheck className="h-4 w-4 text-emerald-500" />
+                                <CircleCheck className="h-4 w-4 text-success" />
                                 <span className="text-sm">
                                   {t("settingsPage.general.waylandPaste.allGoodDesc", {
                                     defaultValue: "Auto-paste is ready to go.",
@@ -2173,9 +2172,9 @@ EOF`,
                                 <div key={item.key} className="px-4 py-3">
                                   <div className="flex items-center gap-2.5">
                                     {item.ok ? (
-                                      <CircleCheck className="h-4 w-4 shrink-0 text-emerald-500" />
+                                      <CircleCheck className="h-4 w-4 shrink-0 text-success" />
                                     ) : (
-                                      <CircleX className="h-4 w-4 shrink-0 text-red-500" />
+                                      <CircleX className="h-4 w-4 shrink-0 text-destructive" />
                                     )}
                                     <div className="flex-1 min-w-0">
                                       <span className="text-sm font-medium">{item.label}</span>
@@ -2183,7 +2182,7 @@ EOF`,
                                         {item.desc}
                                       </span>
                                       {item.note && (
-                                        <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-0.5">
+                                        <p className="text-[11px] text-warning dark:text-warning mt-0.5">
                                           {item.note}
                                         </p>
                                       )}

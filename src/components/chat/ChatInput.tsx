@@ -135,7 +135,7 @@ export function ChatInput({
                 className={cn(
                   "p-1 rounded-sm shrink-0",
                   "text-muted-foreground/60 hover:text-foreground hover:bg-foreground/8",
-                  "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   "transition-colors duration-100"
                 )}
               >
@@ -147,7 +147,7 @@ export function ChatInput({
                 disabled={!inputText.trim()}
                 className={cn(
                   "p-1 rounded-sm shrink-0",
-                  "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   "transition-colors duration-100",
                   inputText.trim()
                     ? "text-primary hover:text-primary/80"

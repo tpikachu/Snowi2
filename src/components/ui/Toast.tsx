@@ -142,12 +142,12 @@ const variantConfig = {
     progressClass: "bg-white/15",
   },
   destructive: {
-    accentClass: "bg-red-400",
-    progressClass: "bg-red-400/30",
+    accentClass: "bg-hud-danger",
+    progressClass: "bg-hud-danger/30",
   },
   success: {
-    accentClass: "bg-emerald-400",
-    progressClass: "bg-emerald-400/30",
+    accentClass: "bg-hud-success",
+    progressClass: "bg-hud-success/30",
   },
 };
 
@@ -226,7 +226,7 @@ const Toast: React.FC<
                 className={cn(
                   "text-xs leading-snug mt-1 px-1.5 py-1 rounded-[3px] font-mono",
                   "bg-white/4 border border-white/6",
-                  "text-red-300/80"
+                  "text-hud-danger/90"
                 )}
               >
                 <div className="flex items-start justify-between gap-1.5">

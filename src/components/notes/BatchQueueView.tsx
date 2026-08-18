@@ -110,7 +110,7 @@ export default function BatchQueueView({
 
             {item.status === "done" && item.warning && (
               <span className="flex shrink-0" title={t("notes.upload.partialWarning")}>
-                <AlertTriangle size={11} className="text-amber-500/60" />
+                <AlertTriangle size={11} className="text-warning/60" />
               </span>
             )}
 

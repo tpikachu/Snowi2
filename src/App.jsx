@@ -157,9 +157,9 @@ export default function App() {
                 }
               }}
               className="text-[10px] font-medium px-2.5 py-1 rounded-sm whitespace-nowrap
-                text-emerald-100/90 hover:text-white
-                bg-emerald-500/15 hover:bg-emerald-500/25
-                border border-emerald-400/20 hover:border-emerald-400/35
+                text-white/90 hover:text-white
+                bg-hud-success/15 hover:bg-hud-success/25
+                border border-hud-success/25 hover:border-hud-success/40
                 transition-all duration-150"
             >
               {t("app.toasts.undo")}
@@ -325,7 +325,7 @@ export default function App() {
         };
       case "unavailable":
         return {
-          className: `${baseClasses} bg-amber-500 cursor-pointer`,
+          className: `${baseClasses} bg-warning cursor-pointer`,
           tooltip: t("app.mic.waitingForMicrophone"),
         };
       case "processing":
@@ -478,7 +478,7 @@ export default function App() {
                 <div className="absolute inset-0 rounded-full border-2 border-primary/50 animate-pulse"></div>
               )}
               {micState === "unavailable" && (
-                <div className="absolute inset-0 rounded-full border-2 border-amber-200/70 animate-pulse"></div>
+                <div className="absolute inset-0 rounded-full border-2 border-warning/60 animate-pulse"></div>
               )}
 
               {/* State indicator ring for processing */}

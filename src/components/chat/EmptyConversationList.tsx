@@ -18,7 +18,7 @@ export default function EmptyConversationList({ onNewChat }: EmptyConversationLi
           "flex items-center gap-1.5 h-7 px-2.5 rounded-md",
           "text-xs text-primary hover:bg-primary/8",
           "transition-colors duration-150",
-          "focus:outline-none focus-visible:ring-1 focus-visible:ring-primary/30"
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         )}
       >
         <Plus size={12} />

@@ -919,7 +919,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
           )}
 
           {batchUrlNotice && (
-            <p className="text-[10px] text-amber-500/60 mt-2 text-center">{batchUrlNotice}</p>
+            <p className="text-[10px] text-warning/60 mt-2 text-center">{batchUrlNotice}</p>
           )}
 
           {batch.hasQueue && (
@@ -1135,7 +1135,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
               !useLocalWhisper &&
               !isSelfHosted &&
               cloudTranscriptionProvider === "groq" && (
-                <p className="text-[10px] text-amber-500/60 mt-1.5">
+                <p className="text-[10px] text-warning/60 mt-1.5">
                   {t("notes.upload.groqDiarizeNote")}
                 </p>
               )}
@@ -1338,7 +1338,7 @@ function IdleView({
           "bg-surface-1/40 dark:bg-white/[0.03] backdrop-blur-sm",
           "border border-foreground/6 dark:border-white/6",
           "hover:bg-surface-1/60 dark:hover:bg-white/[0.05] hover:border-foreground/12 dark:hover:border-white/10",
-          "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/30",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           isDragOver && "border-primary/30 bg-primary/[0.04] dark:bg-primary/[0.06] scale-[1.01]"
         )}
         style={isDragOver ? { animation: "drag-pulse 1.5s ease-in-out infinite" } : undefined}

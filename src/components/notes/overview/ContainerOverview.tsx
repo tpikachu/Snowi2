@@ -101,7 +101,7 @@ export function ContainerOverview({
             {notes.length > 0 && (
               <button
                 onClick={onNewNote}
-                className="inline-flex items-center gap-1.5 px-3 h-7 rounded-md border border-border/40 dark:border-white/10 text-xs font-medium text-foreground/60 hover:text-foreground/85 hover:border-border/70 hover:bg-foreground/3 dark:hover:bg-white/3 transition-colors duration-150 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
+                className="inline-flex items-center gap-1.5 px-3 h-7 rounded-md border border-border/40 dark:border-white/10 text-xs font-medium text-foreground/60 hover:text-foreground/85 hover:border-border/70 hover:bg-foreground/3 dark:hover:bg-white/3 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Plus size={12} />
                 {t("notes.list.newNote")}

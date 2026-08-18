@@ -237,7 +237,7 @@ export default function TranscriptionPreviewOverlay() {
           "shadow-[0_8px_24px_rgba(0,0,0,0.14)]",
           "dark:bg-surface-2/92",
           phase === "final"
-            ? "border-emerald-500/18 dark:border-emerald-500/20"
+            ? "border-success/18 dark:border-success/20"
             : phase === "cleanup"
               ? "border-accent/22 dark:border-accent/25"
               : "border-border/40 dark:border-border-subtle/45",
@@ -250,7 +250,7 @@ export default function TranscriptionPreviewOverlay() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 min-w-0">
             {phase === "final" ? (
-              <Check className="h-3.5 w-3.5 shrink-0 text-emerald-500/70" />
+              <Check className="h-3.5 w-3.5 shrink-0 text-success/70" />
             ) : phase === "cleanup" ? (
               <div className="flex items-end gap-[2px] shrink-0 h-3.5">
                 {[5, 9, 7].map((h, i) => (
@@ -285,7 +285,7 @@ export default function TranscriptionPreviewOverlay() {
                 className={[
                   "inline-flex h-6 items-center gap-1 rounded-md border px-1.5 text-[11px] font-medium transition-colors",
                   copied
-                    ? "border-emerald-500/15 text-emerald-500/70"
+                    ? "border-success/15 text-success/70"
                     : "border-border/30 text-muted-foreground/60 hover:border-border/50 hover:bg-background/40 hover:text-foreground/80",
                 ].join(" ")}
               >
@@ -316,7 +316,7 @@ export default function TranscriptionPreviewOverlay() {
               className={[
                 "preview-text-scroll rounded-lg border px-2.5 py-2 max-h-[220px] overflow-y-auto",
                 phase === "final"
-                  ? "border-emerald-500/10 bg-emerald-500/[0.03]"
+                  ? "border-success/10 bg-success/[0.03]"
                   : phase === "cleanup"
                     ? "border-accent/12 bg-accent/[0.03]"
                     : "border-border/25 bg-background/30",
@@ -354,7 +354,7 @@ export default function TranscriptionPreviewOverlay() {
           <div className="absolute bottom-0 inset-x-0 h-[2px] overflow-hidden rounded-b-xl">
             <div
               key={countdownKey}
-              className="h-full rounded-b-xl bg-emerald-500/25"
+              className="h-full rounded-b-xl bg-success/25"
               style={{ animation: `preview-countdown ${FINAL_HIDE_DURATION_MS}ms linear forwards` }}
             />
           </div>

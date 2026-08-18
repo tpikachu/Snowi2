@@ -321,8 +321,7 @@ export default function CommandSearch({
         <DialogPrimitive.Content
           className={cn(
             "fixed left-[50%] top-[18%] z-50 w-full max-w-xl translate-x-[-50%]",
-            "rounded-xl border border-border/60 bg-card shadow-2xl overflow-hidden",
-            "dark:bg-surface-2 dark:border-border dark:shadow-modal",
+            "rounded-2xl border border-border bg-popover shadow-(--shadow-modal) overflow-hidden",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",

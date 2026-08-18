@@ -73,7 +73,7 @@ const FOLDER_INPUT_CLASS =
 
 const ROW_BASE_CLASS =
   "group relative flex items-center gap-1.5 rounded-md cursor-pointer select-none " +
-  "transition-colors duration-150 outline-none focus-visible:ring-1 focus-visible:ring-ring/30";
+  "transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 const KEBAB_BUTTON_CLASS =
   "h-5 w-5 rounded-sm opacity-0 group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100 " +
@@ -92,7 +92,7 @@ const MENU_ITEM_CLASS = "text-xs gap-2 rounded-md px-2 py-1";
 const SUB_CONTENT_CLASS = "min-w-36 rounded-xl border border-border p-1";
 
 const DROP_TARGET_CLASS = "bg-primary/12 dark:bg-primary/15 ring-1 ring-primary/25";
-const DROP_SUCCESS_CLASS = "bg-emerald-500/10 dark:bg-emerald-400/10 ring-1 ring-emerald-500/20";
+const DROP_SUCCESS_CLASS = "bg-success/10 dark:bg-success/10 ring-1 ring-success/20";
 const SUB_TRIGGER_CLASS = cn(
   MENU_ITEM_CLASS,
   "cursor-pointer focus:bg-foreground/5 data-[state=open]:bg-foreground/5"
@@ -188,7 +188,7 @@ function SectionHeader({
           type="button"
           aria-expanded={expanded}
           onClick={onToggle}
-          className="flex h-full min-w-0 items-center gap-1 rounded-sm outline-none hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring/30"
+          className="flex h-full min-w-0 items-center gap-1 rounded-sm outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
         >
           <ChevronRight
             size={11}
@@ -268,7 +268,7 @@ function ContainerRowTrailing({
   return isDropSuccess ? (
     <Check
       size={10}
-      className="text-emerald-500 dark:text-emerald-400 shrink-0 animate-[scale-in_200ms_ease-out]"
+      className="text-success dark:text-success shrink-0 animate-[scale-in_200ms_ease-out]"
     />
   ) : (
     <span

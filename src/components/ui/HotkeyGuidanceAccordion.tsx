@@ -75,11 +75,11 @@ export function HotkeyGuidanceAccordion({
 
     return (
       <div className="space-y-2">
-        <p className="text-xs text-gray-500">{t("hotkeyGuidance.blockedDescription")}</p>
+        <p className="text-xs text-muted-foreground">{t("hotkeyGuidance.blockedDescription")}</p>
         <ul className="flex flex-wrap gap-2">
           {visible.map((shortcut) => (
             <li key={`${platformKey}-${shortcut}`}>
-              <kbd className="px-2 py-1 text-xs font-mono bg-gray-100 border border-gray-200 rounded">
+              <kbd className="px-2 py-1 text-xs font-mono bg-surface-raised border border-border rounded-sm text-foreground">
                 {shortcut}
               </kbd>
             </li>
@@ -94,7 +94,7 @@ export function HotkeyGuidanceAccordion({
                 [platformKey]: !prev[platformKey],
               }))
             }
-            className="text-xs text-indigo-600 hover:text-indigo-700"
+            className="text-xs text-primary hover:text-primary-hover cursor-pointer"
           >
             {showAll[platformKey] ? t("hotkeyGuidance.showFewer") : t("hotkeyGuidance.showAll")}
           </button>
@@ -117,10 +117,10 @@ export function HotkeyGuidanceAccordion({
         <AccordionContent>
           <div className="space-y-4">
             <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-2">
+              <h4 className="text-sm font-semibold text-foreground mb-2">
                 {t("hotkeyGuidance.recommendedTitle")}
               </h4>
-              <ul className="space-y-1 text-sm text-gray-700">
+              <ul className="space-y-1 text-sm text-muted-foreground">
                 {recommended.map((pattern) => (
                   <li key={`${platformKey}-${pattern}`}>{pattern}</li>
                 ))}
@@ -128,10 +128,10 @@ export function HotkeyGuidanceAccordion({
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-2">
+              <h4 className="text-sm font-semibold text-foreground mb-2">
                 {t("hotkeyGuidance.rulesTitle")}
               </h4>
-              <ul className="space-y-1 text-sm text-gray-700">
+              <ul className="space-y-1 text-sm text-muted-foreground">
                 {validationRules.map((rule) => (
                   <li key={`${platformKey}-${rule}`}>{rule}</li>
                 ))}
@@ -139,20 +139,20 @@ export function HotkeyGuidanceAccordion({
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-2">
+              <h4 className="text-sm font-semibold text-foreground mb-2">
                 {t("hotkeyGuidance.blockedTitle")}
               </h4>
               {renderReserved(platformKey)}
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-gray-800 mb-2">
+              <h4 className="text-sm font-semibold text-foreground mb-2">
                 {t("hotkeyGuidance.examplesTitle")}
               </h4>
               <ul className="flex flex-wrap gap-2">
                 {formattedExamples.map((example) => (
                   <li key={`${platformKey}-${example}`}>
-                    <kbd className="px-2 py-1 text-xs font-mono bg-gray-100 border border-gray-200 rounded">
+                    <kbd className="px-2 py-1 text-xs font-mono bg-surface-raised border border-border rounded-sm text-foreground">
                       {example}
                     </kbd>
                   </li>
@@ -166,10 +166,10 @@ export function HotkeyGuidanceAccordion({
   };
 
   return (
-    <div className={`border border-gray-200 rounded-xl bg-gray-50 p-4 ${className}`}>
+    <div className={`border border-border-subtle rounded-xl bg-surface-1 p-4 ${className}`}>
       <div className="mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">{t("hotkeyGuidance.title")}</h3>
-        <p className="text-xs text-gray-600">{t("hotkeyGuidance.description")}</p>
+        <h3 className="text-sm font-semibold text-foreground">{t("hotkeyGuidance.title")}</h3>
+        <p className="text-xs text-muted-foreground">{t("hotkeyGuidance.description")}</p>
       </div>
       <Accordion type="single" collapsible defaultValue={defaultValue}>
         {renderSection("macos")}

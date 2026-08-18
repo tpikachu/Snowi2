@@ -172,7 +172,7 @@ export default function LanguageSelector({
           rounded text-xs font-medium
           border shadow-sm backdrop-blur-sm
           transition-[background-color,border-color,transform] duration-200 ease-out
-          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-offset-1
+          focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1
           ${
             isOpen
               ? "border-border-active bg-surface-2/90 shadow ring-1 ring-primary/20"
