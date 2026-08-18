@@ -1,0 +1,475 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import AudioManager from "../helpers/audioManager";
+import logger from "../utils/logger";
+import { playStartCue, playStopCue } from "../utils/dictationCues";
+import { getSettings } from "../stores/settingsStore";
+import { expandSnippets } from "../utils/snippets";
+import { getRecordingErrorTitle, getRecordingErrorDescription } from "../utils/recordingErrors";
+import { isAccessibilitySkipped } from "../utils/permissions";
+
+// Maps a failed selection-replacement code to its `selectionEditing.*` toast
+// detail key; unlisted codes fall back to the generic "unavailable" message.
+const SELECTION_EDIT_DETAIL_KEY_BY_CODE = {
+  target_changed: "changed",
+  selection_changed: "changed",
+  session_expired: "expired",
+  paste_failed: "pasteFailed",
+};
+
+export const useAudioRecording = (toast, options = {}) => {
+  const { t } = useTranslation();
+  const [isRecording, setIsRecording] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [micCaptureStatus, setMicCaptureStatus] = useState("inactive");
+  const [transcript, setTranscript] = useState("");
+  const [partialTranscript, setPartialTranscript] = useState("");
+  const audioManagerRef = useRef(null);
+  const startLockRef = useRef(false);
+  const stopRequestedDuringStartRef = useRef(false);
+  const stopLockRef = useRef(false);
+  const wasRecordingRef = useRef(false);
+  const wasMicUnavailableRef = useRef(false);
+  const { onToggle } = options;
+
+  const performStartRecording = useCallback(
+    async ({ voiceAgentRequested = false, translationRequested = false } = {}) => {
+      if (startLockRef.current) return false;
+      startLockRef.current = true;
+      stopRequestedDuringStartRef.current = false;
+      try {
+        if (!audioManagerRef.current) return false;
+
+        const currentState = audioManagerRef.current.getState();
+        if (currentState.isRecording || currentState.isProcessing) return false;
+
+        // The floating dictation panel is non-focusable, so the foreground app is
+        // still the user's actual editing target here. Refresh it for recordings
+        // started from the panel itself as well as from global hotkeys; otherwise
+        // paste can reactivate a stale target from the preceding dictation.
+        try {
+          await window.electronAPI.captureDictationTarget?.();
+        } catch (error) {
+          logger.warn("Failed to refresh dictation target", { error: error?.message });
+        }
+
+        audioManagerRef.current.setVoiceAgentRequested(voiceAgentRequested);
+        audioManagerRef.current.setTranslationRequested(translationRequested);
+        if (voiceAgentRequested) {
+          logger.info(
+            "Voice agent recording start",
+            { screenContextEnabled: !!getSettings().voiceAgentScreenContext },
+            "reasoning"
+          );
+        }
+        if (voiceAgentRequested && getSettings().voiceAgentScreenContext) {
+          audioManagerRef.current.beginScreenContextCapture();
+        }
+
+        // The selection to edit is whatever was highlighted at press time, so
+        // read it now: it resolves while the user speaks instead of adding a
+        // round trip after transcription.
+        if (voiceAgentRequested) {
+          audioManagerRef.current.beginSelectionCapture();
+        }
+
+        const didStart = audioManagerRef.current.shouldUseStreaming()
+          ? await audioManagerRef.current.startStreamingRecording()
+          : await audioManagerRef.current.startRecording();
+
+        // A stop that landed while the start was still awaiting the mic open was
+        // dropped (isRecording was still false), leaving a runaway recording
+        // until the next hotkey press. Honor it now that we started.
+        if (didStart && stopRequestedDuringStartRef.current) {
+          window.electronAPI?.unregisterCancelHotkey?.();
+          // Cue semantics mirror performStopRecording: unconditional for
+          // streaming, gated on the stop landing for batch.
+          if (audioManagerRef.current.getState().isStreaming) {
+            void playStopCue();
+            await audioManagerRef.current.stopStreamingRecording();
+          } else if (audioManagerRef.current.stopRecording()) {
+            void playStopCue();
+          }
+          return didStart;
+        }
+
+        // A quick tap can end the recording inside the start call itself (deferred
+        // streaming stop) — don't pause media for a recording that already ended. See #1060.
+        if (didStart && audioManagerRef.current.getState().isRecording) {
+          if (getSettings().pauseMediaOnDictation) {
+            window.electronAPI?.pauseMediaPlayback?.();
+          }
+          window.electronAPI?.registerCancelHotkey?.("Escape");
+          void playStartCue();
+        }
+
+        return didStart;
+      } finally {
+        startLockRef.current = false;
+        stopRequestedDuringStartRef.current = false;
+      }
+    },
+    []
+  );
+
+  const performStopRecording = useCallback(async () => {
+    if (startLockRef.current) {
+      stopRequestedDuringStartRef.current = true;
+      return true;
+    }
+    if (stopLockRef.current) return false;
+    stopLockRef.current = true;
+    try {
+      if (!audioManagerRef.current) return false;
+
+      const currentState = audioManagerRef.current.getState();
+      if (!currentState.isRecording && !currentState.isStreamingStartInProgress) return false;
+
+      window.electronAPI?.unregisterCancelHotkey?.();
+
+      if (currentState.isStreaming || currentState.isStreamingStartInProgress) {
+        void playStopCue();
+        return await audioManagerRef.current.stopStreamingRecording();
+      }
+
+      const didStop = audioManagerRef.current.stopRecording();
+
+      if (didStop) {
+        void playStopCue();
+      }
+
+      return didStop;
+    } finally {
+      stopLockRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    audioManagerRef.current = new AudioManager();
+
+    audioManagerRef.current.setCallbacks({
+      onStateChange: ({ isRecording, isProcessing, isStreaming, micCaptureStatus }) => {
+        if (!isRecording) {
+          window.electronAPI?.unregisterCancelHotkey?.();
+          // Resume media the instant recording ends, not after transcription.
+          if (wasRecordingRef.current && getSettings().pauseMediaOnDictation) {
+            window.electronAPI?.resumeMediaPlayback?.();
+          }
+        }
+        wasRecordingRef.current = isRecording;
+        setIsRecording(isRecording);
+        setIsProcessing(isProcessing);
+        setIsStreaming(isStreaming ?? false);
+        if (micCaptureStatus) {
+          setMicCaptureStatus(micCaptureStatus);
+          const unavailable = micCaptureStatus === "unavailable";
+          if (unavailable && !wasMicUnavailableRef.current) {
+            wasMicUnavailableRef.current = true;
+            toast({
+              title: t("hooks.audioRecording.micDisconnected.title"),
+              description: t("hooks.audioRecording.micDisconnected.description"),
+              variant: "default",
+            });
+          } else if (micCaptureStatus === "active" && wasMicUnavailableRef.current) {
+            wasMicUnavailableRef.current = false;
+            toast({
+              title: t("hooks.audioRecording.micRestored.title"),
+              description: t("hooks.audioRecording.micRestored.description"),
+              variant: "default",
+            });
+          } else if (micCaptureStatus === "inactive") {
+            wasMicUnavailableRef.current = false;
+          }
+        }
+        if (!isStreaming) {
+          setPartialTranscript("");
+        }
+      },
+      onError: (error) => {
+        if (error?.title !== "Paste Error") {
+          window.electronAPI?.hideDictationPreview?.();
+        }
+        const title = getRecordingErrorTitle(error, t);
+        const description = getRecordingErrorDescription(error, t);
+        toast({
+          title,
+          description,
+          variant: error.variant || "destructive",
+          duration: error.code === "AUTH_EXPIRED" ? 8000 : undefined,
+        });
+        if (getSettings().pauseMediaOnDictation) {
+          window.electronAPI?.resumeMediaPlayback?.();
+        }
+      },
+      onNoAudio: () => {
+        window.electronAPI?.hideDictationPreview?.();
+        if (getSettings().pauseMediaOnDictation) {
+          window.electronAPI?.resumeMediaPlayback?.();
+        }
+        toast({
+          title: t("hooks.audioRecording.noAudio.title"),
+          description: t("hooks.audioRecording.noAudio.description"),
+          variant: "default",
+        });
+      },
+      onPartialTranscript: (text) => {
+        setPartialTranscript(text);
+      },
+      onTranscriptionComplete: async (result) => {
+        if (result.success) {
+          const transcribedText = result.text?.trim();
+
+          if (!transcribedText) {
+            window.electronAPI?.hideDictationPreview?.();
+            toast({
+              title: t("hooks.audioRecording.noAudio.title"),
+              description: t("hooks.audioRecording.noAudio.description"),
+              variant: "default",
+            });
+            return;
+          }
+
+          // A selection edit must replace the model's exact result. Snippet
+          // expansion is a dictation convenience and can otherwise mutate a
+          // legitimate replacement that happens to contain a snippet trigger.
+          if (!result.selectionEdit?.sessionId) {
+            result.text = expandSnippets(result.text, getSettings().snippets);
+          }
+
+          setTranscript(result.text);
+          window.electronAPI?.completeDictationPreview?.({ text: result.text });
+
+          if (result.warning) {
+            toast({
+              title: t("hooks.audioRecording.partialTranscription.title"),
+              description: t("hooks.audioRecording.partialTranscription.description"),
+              variant: "default",
+            });
+          }
+
+          const isStreaming = result.source?.includes("streaming");
+          const { autoPasteEnabled, keepTranscriptionInClipboard } = getSettings();
+
+          if (autoPasteEnabled) {
+            const pasteStart = performance.now();
+            let pasteSucceeded = true;
+            if (result.selectionEdit?.sessionId) {
+              const replacement = await window.electronAPI?.replaceSelectedText?.(
+                result.selectionEdit.sessionId,
+                result.text,
+                {
+                  restoreClipboard: !keepTranscriptionInClipboard,
+                  allowClipboardFallback: isAccessibilitySkipped(),
+                }
+              );
+              pasteSucceeded = replacement?.success === true;
+              if (!pasteSucceeded) {
+                if (keepTranscriptionInClipboard) {
+                  await navigator.clipboard.writeText(result.text);
+                }
+                const detailKey =
+                  SELECTION_EDIT_DETAIL_KEY_BY_CODE[replacement?.code] || "unavailable";
+                toast({
+                  title: t("hooks.audioRecording.selectionEditing.notAppliedTitle"),
+                  description: t(`hooks.audioRecording.selectionEditing.${detailKey}`),
+                  variant: "destructive",
+                });
+              }
+            } else {
+              pasteSucceeded = await audioManagerRef.current.safePaste(result.text, {
+                ...(isStreaming ? { fromStreaming: true } : {}),
+                restoreClipboard: !keepTranscriptionInClipboard,
+                allowClipboardFallback: isAccessibilitySkipped(),
+              });
+            }
+            logger.info(
+              "Paste timing",
+              {
+                pasteMs: Math.round(performance.now() - pasteStart),
+                source: result.source,
+                textLength: result.text.length,
+                selectionEdit: !!result.selectionEdit,
+                success: pasteSucceeded,
+              },
+              "streaming"
+            );
+          } else if (keepTranscriptionInClipboard) {
+            await navigator.clipboard.writeText(result.text);
+          }
+
+          audioManagerRef.current.saveTranscription(result.text, result.rawText ?? result.text, {
+            clientTranscriptionId: result.clientTranscriptionId,
+          });
+
+          if (result.source === "openai" && getSettings().useLocalWhisper) {
+            toast({
+              title: t("hooks.audioRecording.fallback.title"),
+              description: t("hooks.audioRecording.fallback.description"),
+              variant: "default",
+            });
+          }
+
+          if (audioManagerRef.current.shouldUseStreaming()) {
+            audioManagerRef.current.warmupStreamingConnection();
+          }
+        }
+      },
+      onTranslationFallback: ({ reason }) => {
+        // Fail-open: the raw text was still pasted; the toast removes the silence.
+        toast({
+          title:
+            reason === "unreachable"
+              ? t("hooks.audioRecording.translationFallback.unreachableTitle")
+              : t("hooks.audioRecording.translationFallback.failedTitle"),
+          description:
+            reason === "unreachable"
+              ? t("hooks.audioRecording.translationFallback.unreachableDescription")
+              : t("hooks.audioRecording.translationFallback.failedDescription"),
+          variant: "default",
+        });
+      },
+    });
+
+    audioManagerRef.current.setContext("dictation");
+    // Keep overlay content protection in sync with the screen-context setting
+    // so the dictation pill stays out of captures (survives window recreation).
+    window.electronAPI.setScreenContextEnabled?.(getSettings().voiceAgentScreenContext);
+    if (audioManagerRef.current.shouldUseStreaming()) {
+      audioManagerRef.current.warmupStreamingConnection();
+    }
+
+    const handleToggle = async ({
+      voiceAgentRequested = false,
+      translationRequested = false,
+    } = {}) => {
+      if (!audioManagerRef.current) return;
+      const currentState = audioManagerRef.current.getState();
+
+      // A start still awaiting the mic open leaves isRecording false, so without
+      // the lock check this toggle-off would take the start branch and be lost.
+      if (startLockRef.current || currentState.isRecording) {
+        await performStopRecording();
+      } else if (!currentState.isProcessing) {
+        // Fire-and-forget: startRecording's take() joins this same acquisition,
+        // so the device is opened exactly once. See #845.
+        audioManagerRef.current.prepareMicCapture?.();
+        await performStartRecording({ voiceAgentRequested, translationRequested });
+      }
+    };
+
+    const handleStart = async () => {
+      audioManagerRef.current?.prepareMicCapture?.();
+      await performStartRecording();
+    };
+
+    const handleStop = async () => {
+      await performStopRecording();
+    };
+
+    const disposeToggle = window.electronAPI.onToggleDictation(() => {
+      handleToggle();
+      onToggle?.();
+    });
+
+    const disposeVoiceAgentToggle = window.electronAPI.onToggleVoiceAgent?.(() => {
+      handleToggle({ voiceAgentRequested: true });
+      onToggle?.();
+    });
+
+    const disposeTranslationToggle = window.electronAPI.onToggleTranslation?.(() => {
+      handleToggle({ translationRequested: true });
+      onToggle?.();
+    });
+
+    const disposeStart = window.electronAPI.onStartDictation?.(() => {
+      handleStart();
+      onToggle?.();
+    });
+
+    const disposePrepare = window.electronAPI.onPrepareDictation?.(() => {
+      audioManagerRef.current?.prepareMicCapture?.();
+    });
+
+    const disposeCancelPreparation = window.electronAPI.onCancelDictationPreparation?.(() => {
+      audioManagerRef.current?.cancelPreparedMicCapture?.();
+    });
+
+    const disposeStop = window.electronAPI.onStopDictation?.(() => {
+      handleStop();
+      onToggle?.();
+    });
+
+    const handleNoAudioDetected = () => {
+      if (getSettings().pauseMediaOnDictation) {
+        window.electronAPI?.resumeMediaPlayback?.();
+      }
+      toast({
+        title: t("hooks.audioRecording.noAudio.title"),
+        description: t("hooks.audioRecording.noAudio.description"),
+        variant: "default",
+      });
+    };
+
+    const disposeNoAudio = window.electronAPI.onNoAudioDetected?.(handleNoAudioDetected);
+
+    // Cleanup
+    return () => {
+      disposeToggle?.();
+      disposeVoiceAgentToggle?.();
+      disposeTranslationToggle?.();
+      disposeStart?.();
+      disposePrepare?.();
+      disposeCancelPreparation?.();
+      disposeStop?.();
+      disposeNoAudio?.();
+      if (audioManagerRef.current) {
+        audioManagerRef.current.cleanup();
+      }
+    };
+  }, [toast, onToggle, performStartRecording, performStopRecording, t]);
+
+  const cancelRecording = useCallback(async () => {
+    if (audioManagerRef.current) {
+      window.electronAPI?.unregisterCancelHotkey?.();
+      const state = audioManagerRef.current.getState();
+      if (getSettings().pauseMediaOnDictation) {
+        window.electronAPI?.resumeMediaPlayback?.();
+      }
+      if (state.isStreaming) {
+        return await audioManagerRef.current.stopStreamingRecording();
+      }
+      return audioManagerRef.current.cancelRecording();
+    }
+    return false;
+  }, []);
+
+  const cancelProcessing = () => {
+    if (audioManagerRef.current) {
+      return audioManagerRef.current.cancelProcessing();
+    }
+    return false;
+  };
+
+  const toggleListening = async () => {
+    if (!isRecording && !isProcessing) {
+      await performStartRecording();
+    } else if (isRecording) {
+      await performStopRecording();
+    }
+  };
+
+  return {
+    isRecording,
+    isProcessing,
+    isStreaming,
+    micCaptureStatus,
+    transcript,
+    partialTranscript,
+    startRecording: performStartRecording,
+    stopRecording: performStopRecording,
+    cancelRecording,
+    cancelProcessing,
+    toggleListening,
+  };
+};
