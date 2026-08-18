@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
-import { Textarea } from "./ui/textarea";
 import {
   ChevronRight,
   ChevronLeft,
@@ -14,10 +12,8 @@ import {
   Users,
 } from "lucide-react";
 import TitleBar from "./TitleBar";
-import PermissionsSection from "./ui/PermissionsSection";
 import StepProgress from "./ui/StepProgress";
 import { AlertDialog, ConfirmDialog } from "./ui/dialog";
-import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { useDialogs } from "../hooks/useDialogs";
 import { usePermissions } from "../hooks/usePermissions";
@@ -25,7 +21,6 @@ import { useClipboard } from "../hooks/useClipboard";
 import { useSystemAudioPermission } from "../hooks/useSystemAudioPermission";
 import { useSettings } from "../hooks/useSettings";
 import { useSettingsStore } from "../stores/settingsStore";
-import LanguageSelector from "./ui/LanguageSelector";
 import { setAgentName as saveAgentName } from "../utils/agentName";
 import {
   formatHotkeyLabel,
@@ -35,17 +30,19 @@ import {
   parseHotkeyList,
   serializeHotkeyList,
 } from "../utils/hotkeys";
-import { HotkeyInput } from "./ui/HotkeyInput";
 import { useHotkeyRegistration } from "../hooks/useHotkeyRegistration";
 import { useHotkeyModeInfo } from "../hooks/useHotkeyModeInfo";
 import { getValidationMessage } from "../utils/hotkeyValidator";
 import { validateHotkeyForSlot } from "../utils/hotkeyValidation";
-import { getCachedPlatform, getPlatform } from "../utils/platform";
+import { getPlatform } from "../utils/platform";
 import logger from "../utils/logger";
-import { ActivationModeSelector } from "./ui/ActivationModeSelector";
-import TranscriptionModelPicker from "./TranscriptionModelPicker";
 import { ACCESSIBILITY_SKIPPED_KEY, areRequiredPermissionsMet } from "../utils/permissions";
+import OnboardingRail from "./onboarding/OnboardingRail";
 import UseCaseStep from "./onboarding/UseCaseStep";
+import TranscriptionStep from "./onboarding/TranscriptionStep";
+import PermissionsStep from "./onboarding/PermissionsStep";
+import ActivationStep from "./onboarding/ActivationStep";
+import VoiceAgentStep from "./onboarding/VoiceAgentStep";
 import MeetingSetupStep from "./onboarding/MeetingSetupStep";
 import FinishStep from "./onboarding/FinishStep";
 import { USE_CASE_IDS } from "./onboarding/useCases";
@@ -424,11 +421,14 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     [saveSettings, removeCurrentStep, onComplete]
   );
 
+  const stepTitle = steps[currentStep]?.title;
+
   const renderStep = () => {
     switch (currentStepId) {
       case "usecase":
         return (
           <UseCaseStep
+            eyebrow={stepTitle}
             useCases={onboardingUseCases}
             onUseCasesChange={setOnboardingUseCases}
             note={onboardingUseCaseNote}
@@ -438,108 +438,105 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
       case "setup": // Choose Mode & Configure
         return (
-          <div className="space-y-3">
-            <div className="text-center space-y-0.5">
-              <h2 className="text-lg font-semibold text-foreground tracking-tight">
-                {t("onboarding.transcription.title")}
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                {t("onboarding.transcription.description")}
-              </p>
-            </div>
-
-            {/* Unified configuration with integrated mode toggle */}
-            <TranscriptionModelPicker
-              selectedCloudProvider={cloudTranscriptionProvider}
-              onCloudProviderSelect={(provider) =>
-                updateTranscriptionSettings({ cloudTranscriptionProvider: provider })
+          <TranscriptionStep
+            eyebrow={stepTitle}
+            cloudTranscriptionProvider={cloudTranscriptionProvider}
+            onCloudProviderSelect={(provider) =>
+              updateTranscriptionSettings({ cloudTranscriptionProvider: provider })
+            }
+            cloudTranscriptionModel={cloudTranscriptionModel}
+            onCloudModelSelect={(model) =>
+              updateTranscriptionSettings({ cloudTranscriptionModel: model })
+            }
+            selectedLocalModel={
+              localTranscriptionProvider === "nvidia" ? parakeetModel : whisperModel
+            }
+            onLocalModelSelect={(modelId) => {
+              if (localTranscriptionProvider === "nvidia") {
+                updateTranscriptionSettings({ parakeetModel: modelId });
+              } else {
+                updateTranscriptionSettings({ whisperModel: modelId });
               }
-              selectedCloudModel={cloudTranscriptionModel}
-              onCloudModelSelect={(model) =>
-                updateTranscriptionSettings({ cloudTranscriptionModel: model })
-              }
-              selectedLocalModel={
-                localTranscriptionProvider === "nvidia" ? parakeetModel : whisperModel
-              }
-              onLocalModelSelect={(modelId) => {
-                if (localTranscriptionProvider === "nvidia") {
-                  updateTranscriptionSettings({ parakeetModel: modelId });
-                } else {
-                  updateTranscriptionSettings({ whisperModel: modelId });
-                }
-              }}
-              selectedLocalProvider={localTranscriptionProvider}
-              onLocalProviderSelect={(provider) =>
-                updateTranscriptionSettings({
-                  localTranscriptionProvider: provider as "whisper" | "nvidia",
-                })
-              }
-              useLocalWhisper={useLocalWhisper}
-              onModeChange={(isLocal) => {
-                updateTranscriptionSettings({
-                  useLocalWhisper: isLocal,
-                  ...(!isLocal ? { cloudTranscriptionMode: "byok" } : {}),
-                });
-              }}
-              cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
-              setCloudTranscriptionBaseUrl={(url) =>
-                updateTranscriptionSettings({ cloudTranscriptionBaseUrl: url })
-              }
-              variant="onboarding"
-            />
-
-            {/* Language Selection - shown for both modes */}
-            <div className="space-y-2 p-3 bg-muted/50 border border-border/60 rounded">
-              <label className="block text-xs font-medium text-muted-foreground">
-                {t("onboarding.transcription.preferredLanguage")}
-              </label>
-              <LanguageSelector
-                value={preferredLanguage}
-                onChange={(value) => {
-                  updateTranscriptionSettings({ preferredLanguage: value });
-                }}
-                className="w-full"
-              />
-            </div>
-          </div>
+            }}
+            localTranscriptionProvider={localTranscriptionProvider}
+            onLocalProviderSelect={(provider) =>
+              updateTranscriptionSettings({
+                localTranscriptionProvider: provider as "whisper" | "nvidia",
+              })
+            }
+            useLocalWhisper={useLocalWhisper}
+            onModeChange={(isLocal) => {
+              updateTranscriptionSettings({
+                useLocalWhisper: isLocal,
+                ...(!isLocal ? { cloudTranscriptionMode: "byok" } : {}),
+              });
+            }}
+            cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
+            setCloudTranscriptionBaseUrl={(url) =>
+              updateTranscriptionSettings({ cloudTranscriptionBaseUrl: url })
+            }
+            preferredLanguage={preferredLanguage}
+            onPreferredLanguageChange={(value) =>
+              updateTranscriptionSettings({ preferredLanguage: value })
+            }
+          />
         );
 
-      case "permissions": {
-        const platform = permissionsHook.pasteToolsInfo?.platform;
-        const isMacOS = platform === "darwin";
-
+      case "permissions":
         return (
-          <div className="space-y-4">
-            {/* Header - compact */}
-            <div className="text-center">
-              <h2 className="text-lg font-semibold text-foreground tracking-tight">
-                {t("onboarding.permissions.title")}
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {isMacOS
-                  ? t("onboarding.permissions.requiredForApp")
-                  : t("onboarding.permissions.microphoneRequired")}
-              </p>
-            </div>
-
-            <PermissionsSection
-              permissions={permissionsHook}
-              systemAudio={systemAudio}
-              systemAudioRecommended={onboardingUseCases.includes(USE_CASE_IDS.meetings)}
-            />
-          </div>
+          <PermissionsStep
+            eyebrow={stepTitle}
+            permissions={permissionsHook}
+            systemAudio={systemAudio}
+            systemAudioRecommended={onboardingUseCases.includes(USE_CASE_IDS.meetings)}
+          />
         );
-      }
 
       case "activation":
-        return renderActivationStep();
+        return (
+          <ActivationStep
+            eyebrow={stepTitle}
+            hotkey={hotkey}
+            readableHotkey={readableHotkey}
+            onHotkeyChange={async (newHotkey) => {
+              const success = await registerHotkey(withExtraDictationHotkeys(newHotkey));
+              if (success) {
+                setHotkey(newHotkey);
+              }
+            }}
+            isRegistering={isHotkeyRegistering}
+            validateHotkey={validateHotkeyForInput}
+            activationMode={activationMode}
+            onActivationModeChange={setActivationMode}
+            isUsingNativeShortcut={isUsingNativeShortcut}
+            isUsingHyprland={isUsingHyprland}
+            hyprlandConfigStatus={hyprlandConfigStatus}
+          />
+        );
 
       case "voiceAgent":
-        return renderVoiceAgentStep();
+        return (
+          <VoiceAgentStep
+            eyebrow={stepTitle}
+            agentName={agentName}
+            hotkey={parseHotkeyList(voiceAgentKey)[0] ?? ""}
+            readableHotkey={readableVoiceAgentKey}
+            onHotkeyChange={(newHotkey) =>
+              setVoiceAgentKey(
+                serializeHotkeyList([newHotkey, ...parseHotkeyList(voiceAgentKey).slice(1)])
+              )
+            }
+            onHotkeyClear={() =>
+              setVoiceAgentKey(serializeHotkeyList(parseHotkeyList(voiceAgentKey).slice(1)))
+            }
+            validateHotkey={validateVoiceAgentHotkey}
+          />
+        );
 
       case "meeting":
         return (
           <MeetingSetupStep
+            eyebrow={stepTitle}
             meetingKey={meetingKey}
             setMeetingKey={setMeetingKey}
             dictationKey={hotkey}
@@ -549,7 +546,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       case "finish":
         return (
           <FinishStep
+            eyebrow={stepTitle}
             useCases={onboardingUseCases}
+            hotkey={readableHotkey}
             onFinish={(openSettings) => void finishOnboarding(openSettings)}
             isFinishing={isFinishing}
           />
@@ -559,173 +558,6 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         return null;
     }
   };
-
-  const renderActivationStep = () => (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="text-center space-y-0.5">
-        <h2 className="text-lg font-semibold text-foreground tracking-tight">
-          {t("onboarding.activation.title")}
-        </h2>
-        <p className="text-xs text-muted-foreground">{t("onboarding.activation.description")}</p>
-      </div>
-
-      {isUsingHyprland && hyprlandConfigStatus && !hyprlandConfigStatus.canWrite && (
-        <Alert>
-          <AlertTitle>
-            {t("settingsPage.general.hotkey.hyprlandConfigWriteWarningTitle")}
-          </AlertTitle>
-          <AlertDescription>
-            {t("settingsPage.general.hotkey.hyprlandConfigWriteWarningDescription", {
-              path: hyprlandConfigStatus.path,
-            })}
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Unified control surface */}
-      <div className="rounded-lg border border-border-subtle bg-surface-1 overflow-hidden">
-        {/* Hotkey section */}
-        <div className="p-4 border-b border-border-subtle">
-          <div className="mb-3">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {t("onboarding.activation.hotkey")}
-            </span>
-            {isUsingHyprland && (
-              <p className="text-xs text-muted-foreground/80 mt-0.5 leading-relaxed">
-                {t("settingsPage.general.hotkey.hyprlandUnbindDescription")}
-              </p>
-            )}
-          </div>
-          <HotkeyInput
-            value={hotkey}
-            onChange={async (newHotkey) => {
-              const success = await registerHotkey(withExtraDictationHotkeys(newHotkey));
-              if (success) {
-                setHotkey(newHotkey);
-              }
-            }}
-            disabled={isHotkeyRegistering}
-            variant="hero"
-            validate={validateHotkeyForInput}
-          />
-        </div>
-
-        {/* Mode section - inline with hotkey */}
-        {(!isUsingNativeShortcut || getCachedPlatform() === "linux") && (
-          <div className="p-4 flex items-center justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                {t("onboarding.activation.mode")}
-              </span>
-              <p className="text-xs text-muted-foreground/70 mt-0.5">
-                {activationMode === "tap"
-                  ? t("onboarding.activation.tapDescription")
-                  : t("onboarding.activation.holdDescription")}
-              </p>
-            </div>
-            <ActivationModeSelector value={activationMode} onChange={setActivationMode} />
-          </div>
-        )}
-      </div>
-
-      {/* Test area - minimal chrome */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            {t("onboarding.activation.test")}
-          </span>
-          <span className="text-xs text-muted-foreground/60">
-            {activationMode === "tap" || (isUsingNativeShortcut && getCachedPlatform() !== "linux")
-              ? t("onboarding.activation.hotkeyToStartStop", { hotkey: readableHotkey })
-              : t("onboarding.activation.holdHotkey", { hotkey: readableHotkey })}
-          </span>
-        </div>
-        <Textarea
-          rows={2}
-          placeholder={t("onboarding.activation.textareaPlaceholder")}
-          className="text-sm resize-none"
-        />
-      </div>
-    </div>
-  );
-
-  const renderVoiceAgentStep = () => (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="text-center space-y-0.5">
-        <h2 className="text-lg font-semibold text-foreground tracking-tight">
-          {t("onboarding.voiceAgent.title")}
-        </h2>
-        <p className="text-xs text-muted-foreground">{t("onboarding.voiceAgent.description")}</p>
-      </div>
-
-      {/* Hotkey section */}
-      <div className="rounded-lg border border-border-subtle bg-surface-1 overflow-hidden">
-        <div className="p-4 border-b border-border-subtle">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {t("onboarding.voiceAgent.hotkey")}
-            </span>
-          </div>
-          <HotkeyInput
-            value={parseHotkeyList(voiceAgentKey)[0] ?? ""}
-            onChange={(newHotkey) =>
-              setVoiceAgentKey(
-                serializeHotkeyList([newHotkey, ...parseHotkeyList(voiceAgentKey).slice(1)])
-              )
-            }
-            onClear={() =>
-              setVoiceAgentKey(serializeHotkeyList(parseHotkeyList(voiceAgentKey).slice(1)))
-            }
-            variant="hero"
-            validate={validateVoiceAgentHotkey}
-          />
-        </div>
-
-        <div className="p-4">
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            {t("onboarding.voiceAgent.howItWorks", { agentName })}
-          </p>
-        </div>
-      </div>
-
-      {/* Test area - minimal chrome */}
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            {t("onboarding.voiceAgent.test")}
-          </span>
-          <span className="text-xs text-muted-foreground/60">
-            {voiceAgentKey
-              ? t("onboarding.voiceAgent.testInstruction", { hotkey: readableVoiceAgentKey })
-              : t("onboarding.voiceAgent.testSetHotkey")}
-          </span>
-        </div>
-        <div className="flex flex-wrap gap-1.5">
-          {(t("onboarding.voiceAgent.examples", { returnObjects: true }) as string[]).map(
-            (example) => (
-              <span
-                key={example}
-                className="rounded-full border border-border-subtle bg-muted px-2.5 py-1 text-xs text-muted-foreground"
-              >
-                {example}
-              </span>
-            )
-          )}
-        </div>
-        <Textarea
-          rows={2}
-          placeholder={t("onboarding.voiceAgent.testPlaceholder")}
-          className="text-sm resize-none"
-        />
-      </div>
-
-      <p className="text-xs text-muted-foreground/60 text-center">
-        {t("onboarding.voiceAgent.optionalNote")}
-      </p>
-    </div>
-  );
 
   const canProceed = () => {
     switch (currentStepId) {
@@ -772,14 +604,20 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     }
   };
 
-  const onboardingPlatform =
-    typeof window !== "undefined" && window.electronAPI?.getPlatform
-      ? window.electronAPI.getPlatform()
-      : "darwin";
+  const goToStep = useCallback(
+    (index: number) => {
+      // Only ever backwards — identical to pressing Back repeatedly, so no
+      // step's gating can be jumped over.
+      if (index >= 0 && index < currentStep) {
+        setCurrentStep(index);
+      }
+    },
+    [currentStep, setCurrentStep]
+  );
 
   return (
     <div
-      className="h-screen flex flex-col bg-background"
+      className="h-screen flex flex-col bg-background text-foreground overflow-hidden"
       style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
     >
       <ConfirmDialog
@@ -800,72 +638,67 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         onOk={() => {}}
       />
 
-      {/* Title Bar / drag region */}
-      <div className="shrink-0 z-10">
-        <TitleBar
-          showTitle={true}
-          className="bg-background backdrop-blur-xl border-b border-border shadow-sm"
-          center={
-            onboardingPlatform === "darwin" ? (
-              <StepProgress steps={steps} currentStep={currentStep} />
-            ) : undefined
-          }
-        ></TitleBar>
-      </div>
+      <div className="flex min-h-0 flex-1">
+        {/* Progress rail — the flow's spine on anything but a very narrow window */}
+        <OnboardingRail
+          steps={steps}
+          currentStep={currentStep}
+          onStepSelect={goToStep}
+          className="hidden md:flex"
+        />
 
-      {/* Progress bar — on macOS it lives centered in the title bar instead */}
-      {onboardingPlatform !== "darwin" && (
-        <div className="shrink-0 bg-background/80 backdrop-blur-2xl border-b border-white/5 px-6 md:px-12 py-3 z-10">
-          <div className="max-w-3xl mx-auto">
+        <div className="flex min-w-0 flex-1 flex-col">
+          {/* Drag strip + window controls (Windows/Linux) */}
+          <TitleBar className="shrink-0 z-10" />
+
+          {/* Narrow windows lose the rail, so the steps ride along the top */}
+          <div className="shrink-0 border-b border-border-subtle px-4 py-2 md:hidden">
             <StepProgress steps={steps} currentStep={currentStep} />
           </div>
-        </div>
-      )}
 
-      {/* Content - This will grow to fill available space */}
-      <div className="flex-1 px-6 md:px-12 overflow-y-auto py-6">
-        <div className="w-full max-w-3xl mx-auto">
-          <Card className="bg-card/90 backdrop-blur-2xl border border-border/50 dark:border-white/5 shadow-lg rounded-xl overflow-hidden">
-            <CardContent className="p-6 md:p-8">{renderStep()}</CardContent>
-          </Card>
-        </div>
-      </div>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <div
+              key={currentStepId}
+              className="mx-auto w-full max-w-2xl px-6 py-10 sm:px-10 onboarding-step-enter"
+            >
+              {renderStep()}
+            </div>
+          </div>
 
-      {/* Footer Navigation */}
-      <div className="shrink-0 bg-background/80 backdrop-blur-2xl border-t border-white/5 px-6 md:px-12 py-3 z-10">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Button
-            onClick={prevStep}
-            variant="outline"
-            disabled={currentStep === 0}
-            className="h-8 px-5 rounded-full text-xs"
-          >
-            <ChevronLeft className="w-3.5 h-3.5" />
-            {t("common.back")}
-          </Button>
+          <div className="shrink-0 border-t border-border-subtle bg-surface-1/60">
+            <div className="mx-auto flex h-16 w-full max-w-2xl items-center justify-between px-6 sm:px-10">
+              <Button
+                onClick={prevStep}
+                variant="outline-flat"
+                size="sm"
+                disabled={currentStep === 0}
+                className="px-3"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                {t("common.back")}
+              </Button>
 
-          <div className="flex items-center gap-2">
-            {currentStepId !== "finish" && (
-              <>
-                {SKIPPABLE_STEPS.has(currentStepId ?? "") && (
-                  <Button
-                    onClick={nextStep}
-                    variant="ghost"
-                    className="h-8 px-4 rounded-full text-xs text-muted-foreground"
-                  >
-                    {t("common.skip")}
-                  </Button>
+              <div className="flex items-center gap-2">
+                {currentStepId !== "finish" && (
+                  <>
+                    {SKIPPABLE_STEPS.has(currentStepId ?? "") && (
+                      <Button
+                        onClick={nextStep}
+                        variant="ghost"
+                        size="sm"
+                        className="px-3 text-muted-foreground"
+                      >
+                        {t("common.skip")}
+                      </Button>
+                    )}
+                    <Button onClick={nextStep} disabled={!canProceed()} size="sm" className="px-4">
+                      {t("common.next")}
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </Button>
+                  </>
                 )}
-                <Button
-                  onClick={nextStep}
-                  disabled={!canProceed()}
-                  className="h-8 px-6 rounded-full text-xs"
-                >
-                  {t("common.next")}
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Button>
-              </>
-            )}
+              </div>
+            </div>
           </div>
         </div>
       </div>

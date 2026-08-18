@@ -7,15 +7,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { getTranscriptionProviders, modelRegistry } from "../../models/ModelRegistry";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { buildCortiOnboardingPayloads } from "../../helpers/reasoningRouting";
+import StepShell, { StepSection } from "./StepShell";
+import { SnowiMark } from "./SnowiMark";
 import { USE_CASE_IDS } from "./useCases";
 
 interface FinishStepProps {
+  eyebrow?: string;
   useCases: string[];
+  /** Readable dictation hotkey, echoed back as the one thing to remember. */
+  hotkey?: string;
   onFinish: (openSettings: boolean) => void;
   isFinishing: boolean;
 }
 
-export default function FinishStep({ useCases, onFinish, isFinishing }: FinishStepProps) {
+export default function FinishStep({
+  eyebrow,
+  useCases,
+  hotkey,
+  onFinish,
+  isFinishing,
+}: FinishStepProps) {
   const { t } = useTranslation();
   const setCloudTranscriptionForAllScopes = useSettingsStore(
     (s) => s.setCloudTranscriptionForAllScopes
@@ -61,26 +72,23 @@ export default function FinishStep({ useCases, onFinish, isFinishing }: FinishSt
 
   if (showCorti) {
     return (
-      <div className="space-y-4">
-        <div className="text-center space-y-0.5">
-          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
-            <Stethoscope className="w-6 h-6 text-primary" />
-          </div>
-          <h2 className="text-lg font-semibold text-foreground tracking-tight">
-            {t("onboarding.finish.corti.title")}
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            {t("onboarding.finish.corti.description")}
-          </p>
-        </div>
-
-        <ol className="list-decimal list-inside space-y-0.5 px-1 text-xs text-muted-foreground">
+      <StepShell
+        eyebrow={eyebrow}
+        media={
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-border-subtle bg-primary/10 dark:bg-primary/15">
+            <Stethoscope className="h-5 w-5 text-primary" />
+          </span>
+        }
+        title={t("onboarding.finish.corti.title")}
+        description={t("onboarding.finish.corti.description")}
+      >
+        <ol className="list-inside list-decimal space-y-1 text-xs text-muted-foreground">
           <li>{t("onboarding.finish.corti.step1")}</li>
           <li>{t("onboarding.finish.corti.step2")}</li>
           <li>{t("onboarding.finish.corti.step3")}</li>
         </ol>
 
-        <div className="space-y-2">
+        <StepSection bodyClassName="p-4 space-y-3">
           <div className="space-y-1.5">
             <label className="text-xs font-medium text-foreground">
               {t("transcription.corti.clientId")}
@@ -130,66 +138,70 @@ export default function FinishStep({ useCases, onFinish, isFinishing }: FinishSt
               )}
             </div>
           )}
-        </div>
+        </StepSection>
 
-        <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowCorti(false)}
-            disabled={isFinishing}
-            className="h-8 px-5 rounded-full text-xs"
-          >
-            {t("onboarding.finish.corti.skip")}
-          </Button>
+        <div className="flex items-center gap-2 pt-1">
           <Button
             onClick={startWithCorti}
             disabled={isFinishing || !hasCortiCredentials}
-            className="h-8 px-6 rounded-full text-xs"
+            className="px-4"
           >
-            <Check className="w-3.5 h-3.5" />
+            <Check className="h-3.5 w-3.5" />
             {t("onboarding.finish.corti.useCorti")}
           </Button>
+          <Button variant="ghost" onClick={() => setShowCorti(false)} disabled={isFinishing}>
+            {t("onboarding.finish.corti.skip")}
+          </Button>
         </div>
-      </div>
+      </StepShell>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="text-center space-y-0.5">
-        <div className="w-12 h-12 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-3">
-          <Check className="w-6 h-6 text-success" />
+    <StepShell
+      eyebrow={eyebrow}
+      media={
+        <span className="relative flex h-12 w-12 items-center justify-center">
+          <span
+            aria-hidden="true"
+            className="absolute inset-0 rounded-2xl bg-primary/15 blur-md dark:bg-primary/20"
+          />
+          <SnowiMark className="relative h-11 w-11 rounded-[10px] shadow-(--shadow-elevated)" />
+        </span>
+      }
+      title={t("onboarding.finish.title")}
+      description={t("onboarding.finish.localDescription")}
+    >
+      {hotkey && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-border-subtle bg-surface-1 px-4 py-3">
+          <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            {t("onboarding.activation.hotkey")}
+          </span>
+          <kbd className="rounded-sm border border-border bg-surface-raised px-2 py-1 text-xs font-semibold text-foreground">
+            {hotkey}
+          </kbd>
         </div>
-        <h2 className="text-lg font-semibold text-foreground tracking-tight">
-          {t("onboarding.finish.title")}
-        </h2>
-        <p className="text-xs text-muted-foreground">{t("onboarding.finish.localDescription")}</p>
-      </div>
+      )}
 
-      <p className="text-xs text-muted-foreground text-center">
+      <p className="text-xs leading-relaxed text-muted-foreground">
         {t("onboarding.finish.cleanupNote")}
       </p>
 
-      <div className="flex items-center justify-center gap-2">
-        <Button
-          variant="outline"
-          onClick={() => onFinish(true)}
-          disabled={isFinishing}
-          className="h-8 px-5 rounded-full text-xs"
-        >
-          <Settings className="w-3.5 h-3.5" />
-          {t("onboarding.finish.openSettings")}
-        </Button>
+      <div className="flex items-center gap-2 pt-1">
         <Button
           variant="success"
           onClick={() => onFinish(false)}
           disabled={isFinishing}
-          className="h-8 px-6 rounded-full text-xs"
+          className="px-4"
         >
-          <Check className="w-3.5 h-3.5" />
+          <Check className="h-3.5 w-3.5" />
           {t("onboarding.finish.skipForNow")}
         </Button>
+        <Button variant="outline" onClick={() => onFinish(true)} disabled={isFinishing}>
+          <Settings className="h-3.5 w-3.5" />
+          {t("onboarding.finish.openSettings")}
+        </Button>
       </div>
-    </div>
+    </StepShell>
   );
 }

@@ -47,8 +47,14 @@ import {
 import NoteParticipants from "./NoteParticipants";
 import type { CalendarAttendee } from "../../types/calendar";
 
+// Metadata chips read as quiet, factual labels: one hairline, one muted type
+// colour, and a surface step only on hover. Same geometry in both themes.
 const CHIP_BUTTON_CLASS =
-  "inline-flex items-center gap-1.5 text-[11px] px-1.5 py-0.5 rounded-md border border-border/70 dark:border-white/25 text-foreground/50 dark:text-foreground/35 hover:text-foreground/60 hover:border-border/60 hover:bg-foreground/3 dark:hover:text-foreground/40 dark:hover:border-white/10 dark:hover:bg-white/3 transition-all duration-150 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "inline-flex items-center gap-1.5 text-[11px] h-5 px-1.5 rounded-md border border-border-subtle bg-transparent text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-colors duration-150 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background";
+
+// Inactive/active states for one segment of the view-mode switcher.
+const SEGMENT_BUTTON_CLASS =
+  "relative z-1 flex h-6 items-center gap-1.5 rounded-md px-2 text-[11px] font-medium transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 function formatNoteDate(dateStr: string): string {
   const date = normalizeDbDate(dateStr);
@@ -609,23 +615,26 @@ export default function NoteEditor({
             onKeyDown={handleTitleKeyDown}
             onPaste={handleTitlePaste}
             data-placeholder={t("notes.editor.untitled")}
-            className="text-base font-semibold text-foreground bg-transparent outline-none tracking-[-0.01em] empty:before:content-[attr(data-placeholder)] empty:before:text-foreground/15 empty:before:pointer-events-none"
+            className="text-[17px] font-semibold text-foreground bg-transparent outline-none tracking-[-0.018em] rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground/50 empty:before:pointer-events-none"
             role="textbox"
             aria-label={t("notes.editor.noteTitle")}
           />
-          <div className="flex items-center gap-2 mt-1.5">
+          <div className="flex items-center gap-1.5 mt-2">
             {shortDate && (
               <span
-                className="inline-flex items-center gap-1.5 text-[11px] text-foreground/50 dark:text-foreground/35"
+                className="inline-flex h-5 items-center gap-1.5 text-[11px] text-muted-foreground"
                 title={noteDate}
               >
-                <Calendar size={11} className="shrink-0" />
-                {shortDate}
+                <Calendar size={11} className="shrink-0 opacity-70" />
+                <span data-numeric>{shortDate}</span>
               </span>
             )}
             {calendarEventName && (
-              <span className="inline-flex items-center gap-1.5 text-[11px] text-foreground/50 dark:text-foreground/35">
-                <LinkIcon size={11} className="shrink-0" />
+              <span
+                className="inline-flex h-5 items-center gap-1.5 text-[11px] text-muted-foreground"
+                title={calendarEventName}
+              >
+                <LinkIcon size={11} className="shrink-0 opacity-70" />
                 <span className="truncate max-w-40">{calendarEventName}</span>
               </span>
             )}
@@ -753,84 +762,98 @@ export default function NoteEditor({
               </DropdownMenu>
             )}
             {isSaving && (
-              <span className="inline-flex items-center gap-1 text-[11px] text-foreground/30 dark:text-foreground/15 tabular-nums">
-                <Loader2 size={8} className="animate-spin" />
+              <span className="inline-flex h-5 items-center gap-1.5 text-[11px] text-muted-foreground">
+                <Loader2 size={9} className="animate-spin" />
                 {t("notes.editor.saving")}
               </span>
             )}
             <div className="flex-1" />
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5">
               {(enhancement || hasMeetingTranscript || hasChatSegments || isRecording) && (
                 <div
-                  ref={segmentContainerRef}
-                  className="relative flex items-center shrink-0 rounded-md bg-foreground/3 dark:bg-white/3 p-0.5"
+                  role="group"
+                  aria-label={t("notes.editor.viewMode")}
+                  className="shrink-0 rounded-lg border border-border-subtle bg-input p-0.5"
                 >
-                  <div
-                    className="absolute top-0.5 left-0 rounded bg-background dark:bg-surface-2 shadow-sm transition-[width,height,transform,opacity] duration-200 ease-out pointer-events-none"
-                    style={indicatorStyle}
-                  />
-                  {(hasMeetingTranscript || hasChatSegments || isRecording) && (
-                    <button
-                      data-segment-button
-                      data-segment-value="transcript"
-                      onClick={() => setViewMode("transcript")}
-                      className={cn(
-                        "relative z-1 px-1.5 h-5 rounded text-xs font-medium transition-colors duration-150 flex items-center gap-1",
-                        viewMode === "transcript"
-                          ? "text-foreground/60"
-                          : "text-foreground/25 hover:text-foreground/40"
-                      )}
-                    >
-                      <MessageSquareText size={10} />
-                      {t("notes.editor.transcript")}
-                    </button>
-                  )}
-                  <button
-                    data-segment-button
-                    data-segment-value="raw"
-                    onClick={() => setViewMode("raw")}
-                    className={cn(
-                      "relative z-1 px-1.5 h-5 rounded text-xs font-medium transition-colors duration-150 flex items-center gap-1",
-                      viewMode === "raw"
-                        ? "text-foreground/60"
-                        : "text-foreground/25 hover:text-foreground/40"
+                  {/* The measured track carries no border or padding of its own:
+                      the sliding thumb is positioned from this box's origin. */}
+                  <div ref={segmentContainerRef} className="relative flex items-center">
+                    <div
+                      className="absolute top-0 left-0 rounded-md bg-surface-raised shadow-raised transition-[width,height,transform,opacity] duration-200 ease-out pointer-events-none"
+                      style={indicatorStyle}
+                    />
+                    {(hasMeetingTranscript || hasChatSegments || isRecording) && (
+                      <button
+                        data-segment-button
+                        data-segment-value="transcript"
+                        aria-pressed={viewMode === "transcript"}
+                        onClick={() => setViewMode("transcript")}
+                        className={cn(
+                          SEGMENT_BUTTON_CLASS,
+                          viewMode === "transcript"
+                            ? "text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <MessageSquareText size={11} />
+                        {t("notes.editor.transcript")}
+                        {isRecording && (
+                          <span
+                            className="h-1.5 w-1.5 rounded-full bg-primary motion-safe:animate-pulse"
+                            title={t("notes.editor.live")}
+                          />
+                        )}
+                      </button>
                     )}
-                  >
-                    <AlignLeft size={10} />
-                    {t("notes.editor.notes")}
-                  </button>
-                  {enhancement && (
                     <button
                       data-segment-button
-                      data-segment-value="enhanced"
-                      onClick={() => setViewMode("enhanced")}
+                      data-segment-value="raw"
+                      aria-pressed={viewMode === "raw"}
+                      onClick={() => setViewMode("raw")}
                       className={cn(
-                        "relative z-1 px-1.5 h-5 rounded text-xs font-medium transition-colors duration-150 flex items-center gap-1",
-                        viewMode === "enhanced"
-                          ? "text-foreground/60"
-                          : "text-foreground/25 hover:text-foreground/40"
+                        SEGMENT_BUTTON_CLASS,
+                        viewMode === "raw"
+                          ? "text-foreground"
+                          : "text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      <Sparkles size={9} />
-                      {t("notes.editor.enhanced")}
-                      {enhancement.isStale && (
-                        <span
-                          className="w-1 h-1 rounded-full bg-warning/60"
-                          title={t("notes.editor.staleIndicator")}
-                        />
-                      )}
+                      <AlignLeft size={11} />
+                      {t("notes.editor.notes")}
                     </button>
-                  )}
+                    {enhancement && (
+                      <button
+                        data-segment-button
+                        data-segment-value="enhanced"
+                        aria-pressed={viewMode === "enhanced"}
+                        onClick={() => setViewMode("enhanced")}
+                        className={cn(
+                          SEGMENT_BUTTON_CLASS,
+                          viewMode === "enhanced"
+                            ? "text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Sparkles size={11} />
+                        {t("notes.editor.enhanced")}
+                        {enhancement.isStale && (
+                          <span
+                            className="h-1.5 w-1.5 rounded-full bg-warning"
+                            title={t("notes.editor.staleIndicator")}
+                          />
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
               {(onExportNote || onExportTranscript) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
-                      className="shrink-0 h-6 w-6 flex items-center justify-center rounded-md bg-foreground/4 dark:bg-white/5 text-foreground/50 dark:text-foreground/40 hover:text-foreground/70 hover:bg-foreground/8 dark:hover:text-foreground/60 dark:hover:bg-white/8 transition-colors duration-150"
+                      className="shrink-0 h-7 w-7 flex items-center justify-center rounded-lg border border-border-subtle bg-input text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={t("notes.editor.export")}
                     >
-                      <Download size={11} />
+                      <Download size={12} />
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" sideOffset={4}>

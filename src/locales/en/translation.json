@@ -135,6 +135,7 @@
     "pttUnavailable": "Push-to-Talk native listener not available"
   },
   "common": {
+    "duration": "Duration",
     "add": "Add",
     "retry": "Retry",
     "back": "Back",
@@ -187,6 +188,10 @@
       "meeting": "Meetings",
       "finish": "Finish",
       "voiceAgent": "Voice Agent"
+    },
+    "rail": {
+      "ariaLabel": "Setup steps",
+      "progress": "Step {{current}} of {{total}}"
     },
     "hotkey": {
       "couldNotRegisterTitle": "Couldn't register that hotkey",
@@ -2356,6 +2361,7 @@
     }
   },
   "sidebar": {
+    "navigationLabel": "Main navigation",
     "home": "Home",
     "notes": "Notes",
     "upload": "Upload",
@@ -2731,7 +2737,8 @@
       "conversationWillAppear": "Conversation will appear here...",
       "linkedEvent": "Linked event",
       "noFolder": "No folder",
-      "participants": "Participants"
+      "participants": "Participants",
+      "viewMode": "View mode"
     },
     "participants": {
       "attendee": "attendee",
@@ -2945,7 +2952,8 @@
         "provisional": "Provisional",
         "confirmed": "Confirmed",
         "suggested": "Suggested",
-        "locked": "Locked"
+        "locked": "Locked",
+        "interim": "Interim"
       },
       "pill": {
         "identifying": "Identifying speakers",
@@ -2957,7 +2965,8 @@
         "incAria": "Increase expected speaker count",
         "decAria": "Decrease expected speaker count",
         "othersInCall_one": "{{count}} other in call",
-        "othersInCall_other": "{{count}} others in call"
+        "othersInCall_other": "{{count}} others in call",
+        "dismissAria": "Dismiss speaker hint"
       }
     },
     "overview": {
@@ -3425,6 +3434,7 @@
     }
   },
   "commandSearch": {
+    "clearQuery": "Clear search",
     "allSpaces": "All spaces",
     "title": "Search",
     "description": "Search across notes and transcripts",

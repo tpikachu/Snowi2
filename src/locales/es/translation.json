@@ -135,6 +135,7 @@
     "pttUnavailable": "El módulo nativo de Push-to-Talk no está disponible"
   },
   "common": {
+    "duration": "Duración",
     "add": "Añadir",
     "retry": "Reintentar",
     "back": "Atrás",
@@ -187,6 +188,10 @@
       "meeting": "Reuniones",
       "finish": "Listo",
       "voiceAgent": "Agente de voz"
+    },
+    "rail": {
+      "ariaLabel": "Pasos de configuración",
+      "progress": "Paso {{current}} de {{total}}"
     },
     "hotkey": {
       "couldNotRegisterTitle": "No se pudo registrar ese atajo",
@@ -2571,7 +2576,8 @@
       "conversationWillAppear": "La conversación aparecerá aquí...",
       "linkedEvent": "Evento vinculado",
       "noFolder": "Sin carpeta",
-      "participants": "Participantes"
+      "participants": "Participantes",
+      "viewMode": "Modo de vista"
     },
     "participants": {
       "attendee": "asistente",
@@ -2779,7 +2785,8 @@
         "provisional": "Provisional",
         "confirmed": "Confirmado",
         "suggested": "Sugerido",
-        "locked": "Bloqueado"
+        "locked": "Bloqueado",
+        "interim": "Provisional"
       },
       "createNewPrefix": "Crear",
       "emailPlaceholder": "nombre@ejemplo.com",
@@ -2797,7 +2804,8 @@
         "incAria": "Aumentar número de participantes esperados",
         "decAria": "Disminuir número de participantes esperados",
         "othersInCall_one": "{{count}} otra persona en la llamada",
-        "othersInCall_other": "{{count}} otras personas en la llamada"
+        "othersInCall_other": "{{count}} otras personas en la llamada",
+        "dismissAria": "Ocultar el aviso de hablantes"
       }
     },
     "overview": {
@@ -2895,6 +2903,7 @@
     "agentDefault": "Añadido por defecto"
   },
   "sidebar": {
+    "navigationLabel": "Navegación principal",
     "home": "Inicio",
     "notes": "Notas",
     "upload": "Subir",
@@ -3348,6 +3357,7 @@
     }
   },
   "commandSearch": {
+    "clearQuery": "Borrar búsqueda",
     "allSpaces": "Todos los espacios",
     "title": "Buscar",
     "description": "Buscar en notas y transcripciones",

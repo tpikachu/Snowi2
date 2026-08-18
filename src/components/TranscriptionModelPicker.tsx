@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Download, Trash2, Cloud, Lock, X, Zap, Check } from "lucide-react";
+import { Download, Trash2, Cloud, Lock, X, Zap, Check, Loader2 } from "lucide-react";
 import { ProviderIcon } from "./ui/ProviderIcon";
 import { ProviderTabs } from "./ui/ProviderTabs";
 import ModelCardList from "./ui/ModelCardList";
@@ -11,7 +11,7 @@ import { DownloadProgressBar } from "./ui/DownloadProgressBar";
 import ApiKeyInput from "./ui/ApiKeyInput";
 import { ConfirmDialog } from "./ui/dialog";
 import { useDialogs } from "../hooks/useDialogs";
-import { useModelDownload, type DownloadProgress } from "../hooks/useModelDownload";
+import { useModelDownload, formatETA, type DownloadProgress } from "../hooks/useModelDownload";
 import {
   getTranscriptionProviders,
   getStreamingTranscriptionProviders,
@@ -31,6 +31,7 @@ import { normalizeBaseUrl } from "../config/constants";
 import { GetApiKeyLink } from "./ui/GetApiKeyLink";
 import { getCachedPlatform } from "../utils/platform";
 import logger from "../utils/logger";
+import { cn } from "./lib/utils";
 
 interface LocalModel {
   model: string;
@@ -178,6 +179,185 @@ function LocalModelCard({
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+interface OnboardingModelCardProps extends Omit<LocalModelCardProps, "styles"> {
+  /** Live progress for this row while it is the model being downloaded. */
+  progress?: DownloadProgress;
+}
+
+/**
+ * Onboarding presentation of a local model: name, size in tabular figures,
+ * a one-line description and the download state inline in the row. The whole
+ * left region is a real button so the list is keyboard operable.
+ */
+function OnboardingModelCard({
+  name,
+  description,
+  size,
+  actualSizeMb,
+  isSelected,
+  isDownloaded,
+  isDownloading,
+  isCancelling,
+  isInstalling,
+  recommended,
+  provider,
+  languageLabel,
+  progress,
+  onSelect,
+  onDelete,
+  onDownload,
+  onCancel,
+}: OnboardingModelCardProps) {
+  const { t } = useTranslation();
+  const sizeLabel = actualSizeMb ? `${actualSizeMb} MB` : size;
+  const percentage = progress?.percentage ?? 0;
+  const indeterminate =
+    !isInstalling && (progress?.totalBytes ?? 0) === 0 && (progress?.downloadedBytes ?? 0) > 0;
+  const speedText = progress?.speed ? `${progress.speed.toFixed(1)} MB/s` : "";
+  const etaText = progress?.eta ? formatETA(progress.eta) : "";
+
+  return (
+    <div
+      className={cn(
+        "group relative overflow-hidden rounded-lg border",
+        "transition-[background-color,border-color,box-shadow] duration-150 ease-snap",
+        isSelected
+          ? "border-primary/45 bg-primary/8 dark:bg-primary/10 shadow-(--shadow-selected)"
+          : "border-border-subtle bg-surface-1 hover:border-border-hover hover:bg-surface-2"
+      )}
+    >
+      <div className="flex items-start">
+        <button
+          type="button"
+          onClick={() => {
+            if (!isSelected) onSelect();
+          }}
+          disabled={!isDownloaded}
+          aria-pressed={isSelected}
+          className={cn(
+            "flex min-w-0 flex-1 items-start gap-3 rounded-lg px-3.5 py-3 text-left outline-none",
+            "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+            isDownloaded && !isSelected
+              ? "cursor-pointer"
+              : "cursor-default hover:cursor-default disabled:cursor-default"
+          )}
+        >
+          <span
+            className={cn(
+              "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
+              "transition-colors duration-150 ease-snap",
+              isSelected
+                ? "border-primary bg-primary text-primary-foreground"
+                : isDownloaded
+                  ? "border-border-hover bg-transparent"
+                  : "border-border bg-transparent"
+            )}
+          >
+            {isSelected && <Check className="h-2.5 w-2.5" strokeWidth={3.5} />}
+          </span>
+
+          <span className="min-w-0 flex-1">
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <ProviderIcon provider={provider} className="h-3.5 w-3.5 shrink-0" />
+              <span className="text-sm font-medium tracking-tight text-foreground">{name}</span>
+              <span className="text-xs text-muted-foreground tabular-figures" data-numeric>
+                {sizeLabel}
+              </span>
+              {recommended && (
+                <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary dark:bg-primary/15">
+                  {t("common.recommended")}
+                </span>
+              )}
+              {languageLabel && (
+                <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/60">
+                  {languageLabel}
+                </span>
+              )}
+            </span>
+            <span className="mt-1 block text-xs leading-snug text-muted-foreground">
+              {description}
+            </span>
+          </span>
+        </button>
+
+        <div className="flex shrink-0 items-center gap-1.5 py-3 pr-3">
+          {isDownloaded ? (
+            <>
+              {isSelected && (
+                <span className="rounded-sm bg-primary/12 px-2 py-0.5 text-[10px] font-medium text-primary dark:bg-primary/18">
+                  {t("common.active")}
+                </span>
+              )}
+              <Button
+                onClick={onDelete}
+                size="sm"
+                variant="ghost"
+                aria-label={t("common.delete")}
+                className="h-7 w-7 p-0 text-muted-foreground/50 opacity-0 transition-opacity hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100"
+              >
+                <Trash2 size={13} />
+              </Button>
+            </>
+          ) : isDownloading ? (
+            <Button
+              onClick={onCancel}
+              disabled={isCancelling || isInstalling}
+              size="sm"
+              variant="outline"
+              className="h-7 px-2.5 text-xs text-destructive border-destructive/25 hover:bg-destructive/8"
+            >
+              <X size={12} />
+              {isCancelling ? "..." : t("common.cancel")}
+            </Button>
+          ) : (
+            <Button onClick={onDownload} size="sm" className="h-7 px-2.5 text-xs">
+              <Download size={12} />
+              {t("common.download")}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {isDownloading && (
+        <div className="px-3.5 pb-3">
+          <div
+            className="mb-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground tabular-figures"
+            data-numeric
+          >
+            {isInstalling ? (
+              <Loader2 className="h-3 w-3 animate-spin text-primary" />
+            ) : (
+              <span className="font-semibold text-primary">
+                {indeterminate ? "···" : `${Math.round(percentage)}%`}
+              </span>
+            )}
+            {!isInstalling && speedText && <span>{speedText}</span>}
+            {!isInstalling && etaText && (
+              <>
+                <span className="text-muted-foreground/30">·</span>
+                <span>{etaText}</span>
+              </>
+            )}
+          </div>
+          <div className="h-1 w-full overflow-hidden rounded-full bg-surface-raised">
+            {indeterminate ? (
+              <div className="h-full w-1/3 rounded-full bg-primary animate-[indeterminate_1.5s_ease-in-out_infinite]" />
+            ) : (
+              <div
+                className={cn("h-full rounded-full bg-primary", isInstalling && "animate-pulse")}
+                style={{
+                  width: `${isInstalling ? 100 : Math.min(percentage, 100)}%`,
+                  transition: "width 300ms ease-out",
+                }}
+              />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -404,6 +584,7 @@ export default function TranscriptionModelPicker({
   const onLocalModelSelectRef = useRef(onLocalModelSelect);
 
   const { confirmDialog, showConfirmDialog, hideConfirmDialog } = useDialogs();
+  const isOnboarding = variant === "onboarding";
   const colorScheme: ColorScheme = variant === "settings" ? "purple" : "blue";
   const styles = useMemo(() => MODEL_PICKER_COLORS[colorScheme], [colorScheme]);
   const availableCloudProviders = useMemo(
@@ -848,7 +1029,8 @@ export default function TranscriptionModelPicker({
   }, [currentCloudProvider, displayedCloudProvider, t]);
 
   const progressDisplay = useMemo(() => {
-    if (!effectiveLocal) return null;
+    // Onboarding shows progress inline in the model row it belongs to.
+    if (!effectiveLocal || isOnboarding) return null;
 
     if (downloadingModel && internalLocalProvider === "whisper") {
       const modelInfo = WHISPER_MODEL_INFO[downloadingModel];
@@ -882,6 +1064,7 @@ export default function TranscriptionModelPicker({
     isInstallingParakeet,
     effectiveLocal,
     internalLocalProvider,
+    isOnboarding,
   ]);
 
   const renderLocalModels = () => {
@@ -895,7 +1078,7 @@ export default function TranscriptionModelPicker({
         : localModels;
 
     return (
-      <div className="space-y-0.5">
+      <div className={isOnboarding ? "space-y-2" : "space-y-0.5"}>
         {modelsToRender.map((model) => {
           const modelId = model.model;
           const info = WHISPER_MODEL_INFO[modelId] ?? {
@@ -905,34 +1088,45 @@ export default function TranscriptionModelPicker({
             recommended: false,
           };
 
-          return (
-            <LocalModelCard
+          // The registry ships an English fallback next to a translation key.
+          const description =
+            "descriptionKey" in info && info.descriptionKey
+              ? t(info.descriptionKey, { defaultValue: info.description })
+              : info.description;
+
+          const cardProps = {
+            modelId,
+            name: info.name,
+            description,
+            size: info.size,
+            actualSizeMb: model.size_mb,
+            isSelected: modelId === selectedLocalModel,
+            isDownloaded: model.downloaded ?? false,
+            isDownloading: isDownloadingModel(modelId),
+            isCancelling,
+            isInstalling,
+            recommended: info.recommended,
+            provider: "whisper",
+            onSelect: () => handleWhisperModelSelect(modelId),
+            onDelete: () => handleDelete(modelId),
+            onDownload: () =>
+              downloadModel(modelId, (downloadedId) => {
+                setLocalModels((prev) =>
+                  prev.map((m) => (m.model === downloadedId ? { ...m, downloaded: true } : m))
+                );
+                handleWhisperModelSelect(downloadedId);
+              }),
+            onCancel: cancelDownload,
+          };
+
+          return isOnboarding ? (
+            <OnboardingModelCard
               key={modelId}
-              modelId={modelId}
-              name={info.name}
-              description={info.description}
-              size={info.size}
-              actualSizeMb={model.size_mb}
-              isSelected={modelId === selectedLocalModel}
-              isDownloaded={model.downloaded ?? false}
-              isDownloading={isDownloadingModel(modelId)}
-              isCancelling={isCancelling}
-              isInstalling={isInstalling}
-              recommended={info.recommended}
-              provider="whisper"
-              onSelect={() => handleWhisperModelSelect(modelId)}
-              onDelete={() => handleDelete(modelId)}
-              onDownload={() =>
-                downloadModel(modelId, (downloadedId) => {
-                  setLocalModels((prev) =>
-                    prev.map((m) => (m.model === downloadedId ? { ...m, downloaded: true } : m))
-                  );
-                  handleWhisperModelSelect(downloadedId);
-                })
-              }
-              onCancel={cancelDownload}
-              styles={styles}
+              {...cardProps}
+              progress={isDownloadingModel(modelId) ? downloadProgress : undefined}
             />
+          ) : (
+            <LocalModelCard key={modelId} {...cardProps} styles={styles} />
           );
         })}
       </div>
@@ -969,7 +1163,7 @@ export default function TranscriptionModelPicker({
         : parakeetModels;
 
     return (
-      <div className="space-y-0.5">
+      <div className={isOnboarding ? "space-y-2" : "space-y-0.5"}>
         {modelsToRender.map((model) => {
           const modelId = model.model;
           const info = PARAKEET_MODEL_INFO[modelId] ?? {
@@ -980,34 +1174,45 @@ export default function TranscriptionModelPicker({
             recommended: false,
           };
 
-          return (
-            <LocalModelCard
+          // The registry ships an English fallback next to a translation key.
+          const description =
+            "descriptionKey" in info && info.descriptionKey
+              ? t(info.descriptionKey, { defaultValue: info.description })
+              : info.description;
+
+          const cardProps = {
+            modelId,
+            name: info.name,
+            description,
+            size: info.size,
+            actualSizeMb: model.size_mb,
+            isSelected: modelId === selectedLocalModel,
+            isDownloaded: model.downloaded ?? false,
+            isDownloading: isDownloadingParakeetModel(modelId),
+            isCancelling: isCancellingParakeet,
+            isInstalling: isInstallingParakeet,
+            recommended: info.recommended,
+            provider: "nvidia",
+            onSelect: () => handleParakeetModelSelect(modelId),
+            onDelete: () => handleParakeetDelete(modelId),
+            onDownload: () =>
+              downloadParakeetModel(modelId, (downloadedId) => {
+                setParakeetModels((prev) =>
+                  prev.map((m) => (m.model === downloadedId ? { ...m, downloaded: true } : m))
+                );
+                handleParakeetModelSelect(downloadedId);
+              }),
+            onCancel: cancelParakeetDownload,
+          };
+
+          return isOnboarding ? (
+            <OnboardingModelCard
               key={modelId}
-              modelId={modelId}
-              name={info.name}
-              description={info.description}
-              size={info.size}
-              actualSizeMb={model.size_mb}
-              isSelected={modelId === selectedLocalModel}
-              isDownloaded={model.downloaded ?? false}
-              isDownloading={isDownloadingParakeetModel(modelId)}
-              isCancelling={isCancellingParakeet}
-              isInstalling={isInstallingParakeet}
-              recommended={info.recommended}
-              provider="nvidia"
-              onSelect={() => handleParakeetModelSelect(modelId)}
-              onDelete={() => handleParakeetDelete(modelId)}
-              onDownload={() =>
-                downloadParakeetModel(modelId, (downloadedId) => {
-                  setParakeetModels((prev) =>
-                    prev.map((m) => (m.model === downloadedId ? { ...m, downloaded: true } : m))
-                  );
-                  handleParakeetModelSelect(downloadedId);
-                })
-              }
-              onCancel={cancelParakeetDownload}
-              styles={styles}
+              {...cardProps}
+              progress={isDownloadingParakeetModel(modelId) ? parakeetDownloadProgress : undefined}
             />
+          ) : (
+            <LocalModelCard key={modelId} {...cardProps} styles={styles} />
           );
         })}
       </div>
@@ -1031,119 +1236,117 @@ export default function TranscriptionModelPicker({
           )}
 
           <div>
-              {displayedCloudProvider === "custom" ? (
-                <div className="space-y-2">
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-medium text-foreground">
-                      {t("transcription.endpointUrl")}
-                    </label>
-                    <Input
-                      value={cloudTranscriptionBaseUrl}
-                      onChange={(e) => setCloudTranscriptionBaseUrl?.(e.target.value)}
-                      onBlur={handleBaseUrlBlur}
-                      placeholder="https://your-api.example.com/v1"
-                      className="h-8 text-sm"
-                    />
-                  </div>
-
-                  <ApiKeyInput
-                    apiKey={customTranscriptionApiKey}
-                    setApiKey={setCustomTranscriptionApiKey}
-                    label={t("transcription.apiKeyOptional")}
-                    helpText=""
+            {displayedCloudProvider === "custom" ? (
+              <div className="space-y-2">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-foreground">
+                    {t("transcription.endpointUrl")}
+                  </label>
+                  <Input
+                    value={cloudTranscriptionBaseUrl}
+                    onChange={(e) => setCloudTranscriptionBaseUrl?.(e.target.value)}
+                    onBlur={handleBaseUrlBlur}
+                    placeholder="https://your-api.example.com/v1"
+                    className="h-8 text-sm"
                   />
-
-                  <div className="space-y-1.5">
-                    <label className="block text-xs font-medium text-foreground">
-                      {t("common.model")}
-                    </label>
-                    <Input
-                      value={displayedCloudModel}
-                      onChange={(e) => onCloudModelSelect(e.target.value)}
-                      placeholder="whisper-1"
-                      className="h-8 text-sm"
-                    />
-                  </div>
-
-                  {/azure\.com/i.test(cloudTranscriptionBaseUrl || "") && (
-                    <p className="text-xs text-muted-foreground">{t("transcription.azureHint")}</p>
-                  )}
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  {providerCredentials.fields.map((field, index) => (
-                    <div key={field.key} className="space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-medium text-foreground">
-                          {field.labelKey ? t(field.labelKey) : t("common.apiKey")}
-                        </label>
-                        {index === 0 && (
-                          <GetApiKeyLink
-                            url={providerCredentials.consoleUrl}
-                            labelKey="transcription.getKey"
-                            className="text-xs text-primary/70 hover:text-primary transition-colors cursor-pointer"
-                          />
-                        )}
-                      </div>
-                      {field.input === "secret" ? (
-                        <ApiKeyInput
-                          apiKey={credentialValues[field.key]}
-                          setApiKey={credentialSetters[field.key]}
-                          label=""
-                          helpText=""
-                        />
-                      ) : field.input === "select" ? (
-                        <Select
-                          value={credentialValues[field.key]}
-                          onValueChange={credentialSetters[field.key]}
-                        >
-                          <SelectTrigger className="h-8 text-sm">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {field.options?.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          value={credentialValues[field.key]}
-                          onChange={(e) => credentialSetters[field.key](e.target.value)}
-                          placeholder={field.placeholder}
-                          className="h-8 text-sm"
+
+                <ApiKeyInput
+                  apiKey={customTranscriptionApiKey}
+                  setApiKey={setCustomTranscriptionApiKey}
+                  label={t("transcription.apiKeyOptional")}
+                  helpText=""
+                />
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-medium text-foreground">
+                    {t("common.model")}
+                  </label>
+                  <Input
+                    value={displayedCloudModel}
+                    onChange={(e) => onCloudModelSelect(e.target.value)}
+                    placeholder="whisper-1"
+                    className="h-8 text-sm"
+                  />
+                </div>
+
+                {/azure\.com/i.test(cloudTranscriptionBaseUrl || "") && (
+                  <p className="text-xs text-muted-foreground">{t("transcription.azureHint")}</p>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {providerCredentials.fields.map((field, index) => (
+                  <div key={field.key} className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-foreground">
+                        {field.labelKey ? t(field.labelKey) : t("common.apiKey")}
+                      </label>
+                      {index === 0 && (
+                        <GetApiKeyLink
+                          url={providerCredentials.consoleUrl}
+                          labelKey="transcription.getKey"
+                          className="text-xs text-primary/70 hover:text-primary transition-colors cursor-pointer"
                         />
                       )}
                     </div>
-                  ))}
-
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-medium text-foreground">
-                      {t("common.model")}
-                    </label>
-                    <ModelCardList
-                      models={cloudModelOptions}
-                      selectedModel={displayedCloudModel}
-                      onModelSelect={onCloudModelSelect}
-                      colorScheme="purple"
-                    />
-                    {displayedCloudProvider === "tinfoil" && (
-                      <p className="text-xs text-muted-foreground/70">
-                        {t("transcription.tinfoil.transportNote")}{" "}
-                        <a
-                          href={TINFOIL_AUDIO_DOCS_URL}
-                          onClick={createExternalLinkHandler(TINFOIL_AUDIO_DOCS_URL)}
-                          className="text-primary/70 hover:text-primary transition-colors"
-                        >
-                          {t("transcription.tinfoil.docsLink")}
-                        </a>
-                      </p>
+                    {field.input === "secret" ? (
+                      <ApiKeyInput
+                        apiKey={credentialValues[field.key]}
+                        setApiKey={credentialSetters[field.key]}
+                        label=""
+                        helpText=""
+                      />
+                    ) : field.input === "select" ? (
+                      <Select
+                        value={credentialValues[field.key]}
+                        onValueChange={credentialSetters[field.key]}
+                      >
+                        <SelectTrigger className="h-8 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {field.options?.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        value={credentialValues[field.key]}
+                        onChange={(e) => credentialSetters[field.key](e.target.value)}
+                        placeholder={field.placeholder}
+                        className="h-8 text-sm"
+                      />
                     )}
                   </div>
+                ))}
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-foreground">{t("common.model")}</label>
+                  <ModelCardList
+                    models={cloudModelOptions}
+                    selectedModel={displayedCloudModel}
+                    onModelSelect={onCloudModelSelect}
+                    colorScheme="purple"
+                  />
+                  {displayedCloudProvider === "tinfoil" && (
+                    <p className="text-xs text-muted-foreground/70">
+                      {t("transcription.tinfoil.transportNote")}{" "}
+                      <a
+                        href={TINFOIL_AUDIO_DOCS_URL}
+                        onClick={createExternalLinkHandler(TINFOIL_AUDIO_DOCS_URL)}
+                        className="text-primary/70 hover:text-primary transition-colors"
+                      >
+                        {t("transcription.tinfoil.docsLink")}
+                      </a>
+                    </p>
+                  )}
                 </div>
-              )}
+              </div>
+            )}
           </div>
         </>
       ) : (

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, Loader2, Sparkles, Users, X } from "lucide-react";
+import { Check, Loader2, Lock, MessageSquareText, Sparkles, Users, X } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
 import { Toggle } from "../ui/toggle";
 import { cn } from "../lib/utils";
@@ -12,41 +12,63 @@ import {
   type TranscriptSpeakerStatus,
 } from "../../utils/transcriptSpeakerState";
 
+/* Two tracks, told apart three ways at once so none of them has to shout:
+ * alignment (you left / room right), a rail on each track's outer edge, and a
+ * tint (accent for you, neutral surface for the room). Interim text keeps the
+ * same geometry but drops the fill for a dashed outline and muted type, so a
+ * provisional line can never be mistaken for a committed one. */
 const BUBBLE_STYLES = {
   mic: {
     align: "justify-start",
     radius: "rounded-bl-sm",
-    bg: "bg-primary/60 text-primary-foreground/80",
-    cursor: "bg-primary-foreground/60",
+    bg: "border border-dashed border-primary/40 text-muted-foreground",
+    cursor: "bg-primary/70",
   },
   system: {
     align: "justify-end",
     radius: "rounded-br-sm",
-    bg: "bg-surface-2/70 border border-border/20 text-foreground/80",
-    cursor: "bg-foreground/40",
+    bg: "border border-dashed border-border-hover/70 text-muted-foreground",
+    cursor: "bg-muted-foreground/70",
   },
 } as const;
 
+/* Diarization is categorical data, so this ramp stays multi-hue — it is the one
+ * place the single-accent rule is suspended. The tokens hold constant lightness
+ * and chroma per theme and step evenly across the 300 degrees left once a 60
+ * degree exclusion zone around the brand teal is removed, so no speaker reads
+ * as the accent and no speaker reads as another. See --color-speaker-* in
+ * index.css. */
 const SPEAKER_COLORS = [
-  "text-blue-400",
-  "text-green-400",
-  "text-purple-400",
-  "text-orange-400",
-  "text-pink-400",
-  "text-cyan-400",
-  "text-yellow-400",
-  "text-red-400",
+  "text-speaker-1",
+  "text-speaker-2",
+  "text-speaker-3",
+  "text-speaker-4",
+  "text-speaker-5",
+  "text-speaker-6",
+  "text-speaker-7",
+  "text-speaker-8",
+];
+
+const SPEAKER_CHIP_COLORS = [
+  "border-speaker-1/40 bg-speaker-1/10",
+  "border-speaker-2/40 bg-speaker-2/10",
+  "border-speaker-3/40 bg-speaker-3/10",
+  "border-speaker-4/40 bg-speaker-4/10",
+  "border-speaker-5/40 bg-speaker-5/10",
+  "border-speaker-6/40 bg-speaker-6/10",
+  "border-speaker-7/40 bg-speaker-7/10",
+  "border-speaker-8/40 bg-speaker-8/10",
 ];
 
 const SPEAKER_BORDER_COLORS = [
-  "border-l-blue-400/50",
-  "border-l-green-400/50",
-  "border-l-purple-400/50",
-  "border-l-orange-400/50",
-  "border-l-pink-400/50",
-  "border-l-cyan-400/50",
-  "border-l-yellow-400/50",
-  "border-l-red-400/50",
+  "border-r-speaker-1/70",
+  "border-r-speaker-2/70",
+  "border-r-speaker-3/70",
+  "border-r-speaker-4/70",
+  "border-r-speaker-5/70",
+  "border-r-speaker-6/70",
+  "border-r-speaker-7/70",
+  "border-r-speaker-8/70",
 ];
 
 const STICKY_SCROLL_THRESHOLD_PX = 80;
@@ -99,25 +121,26 @@ function PartialBubble({
       className={cn("flex", s.align)}
       style={{ animation: "agent-message-in 150ms ease-out both" }}
     >
-      <div className="max-w-[80%] flex flex-col">
-        {speakerLabel && (
-          <div className="mb-0.5 flex items-center gap-1 px-1">
+      <div
+        className={cn("max-w-[80%] flex flex-col", source === "mic" ? "items-start" : "items-end")}
+      >
+        <div className="mb-0.5 flex items-center gap-1 px-1">
+          {speakerLabel && (
             <span className="text-[11px] font-medium text-muted-foreground/70">{speakerLabel}</span>
-            {speakerState === "provisional" && (
-              <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-muted-foreground/40">
+          )}
+          <span className="inline-flex items-center gap-0.5 text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground/50">
+            {speakerState === "provisional" ? (
+              <>
                 <Sparkles size={9} />
                 {getSpeakerStateLabel("provisional", t)}
-              </span>
+              </>
+            ) : (
+              t("notes.speaker.state.interim")
             )}
-          </div>
-        )}
+          </span>
+        </div>
         <div
-          className={cn(
-            "px-3 py-1.5 rounded-lg",
-            s.radius,
-            s.bg,
-            "text-[13px] leading-relaxed italic"
-          )}
+          className={cn("px-3 py-1.5 rounded-lg", s.radius, s.bg, "text-[13px] leading-relaxed")}
         >
           {text}
           <span
@@ -448,16 +471,18 @@ function SpeakerLabel({
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "inline-flex items-center text-[11px] font-medium mb-0.5 px-1.5 py-0.5 rounded-md outline-none cursor-pointer",
-            "border border-border/60 dark:border-white/20",
-            "hover:bg-foreground/5 hover:border-border/90 dark:hover:border-white/30",
-            "transition-colors duration-150 focus-visible:ring-2 focus-visible:ring-ring",
+            "inline-flex items-center gap-1 text-[11px] font-medium mb-0.5 px-1.5 py-0.5 rounded-md outline-none cursor-pointer",
+            "border transition-colors duration-150",
+            "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
             SPEAKER_COLORS[colorIdx],
+            SPEAKER_CHIP_COLORS[colorIdx],
+            "hover:brightness-110",
             isUnmapped && "border-dashed",
             speakerState === "provisional" && "italic"
           )}
         >
           {displayLabel}
+          {speakerState === "locked" && <Lock size={8} className="opacity-60" />}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-0">
@@ -522,15 +547,15 @@ export function SelectionBar({
   const [open, setOpen] = useState(false);
   return (
     <div
-      className="flex items-center gap-3 rounded-md border border-border/40 bg-surface-2/95 backdrop-blur px-3 py-1.5 text-xs shadow-lg"
+      className="flex items-center gap-2 rounded-lg border border-border-subtle bg-popover/95 backdrop-blur-xl px-2 py-1.5 text-xs shadow-elevated"
       style={{ animation: "agent-message-in 150ms ease-out both" }}
     >
-      <span className="text-foreground/70 tabular-nums">
+      <span data-numeric className="px-1 text-muted-foreground">
         {t("notes.speaker.selected", { n: count })}
       </span>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <button className="inline-flex items-center gap-1 px-2 py-1 rounded text-foreground hover:bg-foreground/10 transition-colors cursor-pointer">
+          <button className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md font-medium text-foreground bg-surface-3 hover:bg-surface-raised transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Users size={12} />
             {t("notes.speaker.assignTo")}
           </button>
@@ -549,7 +574,7 @@ export function SelectionBar({
       </Popover>
       <button
         onClick={onClear}
-        className="px-2 py-1 rounded text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-colors cursor-pointer"
+        className="px-2 py-1 rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {t("notes.speaker.deselectAll")}
       </button>
@@ -662,8 +687,11 @@ export function MeetingTranscriptChat({
 
   if (!hasContent) {
     return (
-      <div className="h-full flex items-center justify-center px-5">
-        <p className="text-xs text-muted-foreground/40 select-none">
+      <div className="h-full flex flex-col items-center justify-center gap-2 px-5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-border-subtle bg-surface-2 text-muted-foreground/60">
+          <MessageSquareText size={14} />
+        </span>
+        <p className="text-xs text-muted-foreground/70 select-none text-center text-balance">
           {t("notes.editor.conversationWillAppear")}
         </p>
       </div>
@@ -683,7 +711,7 @@ export function MeetingTranscriptChat({
   return (
     <div className="h-full relative">
       {(isRecording || isDiarizing) && !hintDismissed && (
-        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-2.5 py-1 rounded-md border border-border bg-background/95 backdrop-blur shadow-sm text-xs text-foreground">
+        <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-2 py-1 rounded-lg border border-border-subtle bg-popover/95 backdrop-blur-xl shadow-elevated text-[11px] text-foreground">
           {isDiarizing ? (
             <Loader2 size={12} className="animate-spin text-muted-foreground" />
           ) : (
@@ -708,22 +736,26 @@ export function MeetingTranscriptChat({
                   ? t("notes.speaker.pill.justYou")
                   : t("notes.speaker.pill.othersInCall", { count: others })}
               </span>
-              <div className="flex items-center gap-0.5 rounded-md border border-border bg-surface-2/60">
+              <div className="flex items-center overflow-hidden rounded-md border border-border-subtle bg-input">
                 <button
                   onClick={() => onSetSessionExpectedCount?.(sessionExpectedCount - 1)}
                   disabled={others <= 0}
-                  className="px-1.5 py-0.5 rounded-l-md hover:bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  className="px-1.5 py-0.5 leading-none hover:bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:opacity-30 disabled:pointer-events-none transition-colors"
                   aria-label={t("notes.speaker.pill.decAria")}
                 >
                   −
                 </button>
-                <span className="px-1.5 tabular-nums" aria-live="polite">
+                <span
+                  data-numeric
+                  className="px-1.5 font-medium border-x border-border-subtle"
+                  aria-live="polite"
+                >
                   {others}
                 </span>
                 <button
                   onClick={() => onSetSessionExpectedCount?.(sessionExpectedCount + 1)}
                   disabled={others >= MAX_SPEAKER_COUNT - 1}
-                  className="px-1.5 py-0.5 rounded-r-md hover:bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:opacity-30 disabled:pointer-events-none transition-colors"
+                  className="px-1.5 py-0.5 leading-none hover:bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset disabled:opacity-30 disabled:pointer-events-none transition-colors"
                   aria-label={t("notes.speaker.pill.incAria")}
                 >
                   +
@@ -741,9 +773,10 @@ export function MeetingTranscriptChat({
           )}
           <button
             onClick={() => setHintDismissed(true)}
-            className="text-foreground/40 hover:text-foreground/70 transition-colors"
+            aria-label={t("notes.speaker.pill.dismissAria")}
+            className="flex h-4 w-4 items-center justify-center rounded text-muted-foreground/60 hover:bg-muted hover:text-foreground transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <X size={12} />
+            <X size={11} />
           </button>
         </div>
       )}
@@ -814,6 +847,13 @@ export function MeetingTranscriptChat({
               )}
               style={{ animation: "agent-message-in 200ms ease-out both" }}
             >
+              {/* Unlabelled mic runs still get a track caption, so "you" and
+                  "the room" never rely on alignment alone. */}
+              {!labelElement && selfSide && !sameSpeaker && (
+                <span className="mb-0.5 px-1 text-[11px] font-medium text-muted-foreground/60">
+                  {t("notes.speaker.you")}
+                </span>
+              )}
               {labelElement && !sameSpeaker && labelElement}
               {labelElement && sameSpeaker && (
                 <div
@@ -829,16 +869,18 @@ export function MeetingTranscriptChat({
                 <div
                   className={cn(
                     "px-3 py-1.5 cursor-default transition-colors",
-                    "text-[13px] leading-relaxed",
+                    "text-[13px] leading-relaxed text-foreground",
                     selfSide
                       ? cn(
-                          "bg-primary/90 text-primary-foreground",
+                          "bg-primary-subtle/70 border border-primary/25 border-l-2 border-l-primary",
                           sameSpeaker ? "rounded-lg rounded-tl-sm" : "rounded-lg rounded-bl-sm"
                         )
                       : cn(
-                          "bg-surface-2 border border-border/30 text-foreground",
+                          "bg-surface-2 border border-border-subtle",
                           sameSpeaker ? "rounded-lg rounded-tr-sm" : "rounded-lg rounded-br-sm",
-                          isSystemSpeaker && cn("border-l-2", SPEAKER_BORDER_COLORS[colorIdx])
+                          isSystemSpeaker
+                            ? cn("border-r-2", SPEAKER_BORDER_COLORS[colorIdx])
+                            : "border-r-2 border-r-border-hover"
                         ),
                     isSelected && "ring-2 ring-primary/60"
                   )}

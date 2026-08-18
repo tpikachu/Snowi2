@@ -135,6 +135,7 @@
     "pttUnavailable": "Нативный слушатель Push-to-Talk недоступен"
   },
   "common": {
+    "duration": "Длительность",
     "add": "Добавить",
     "retry": "Повторить",
     "back": "Назад",
@@ -187,6 +188,10 @@
       "meeting": "Встречи",
       "finish": "Готово",
       "voiceAgent": "Голосовой агент"
+    },
+    "rail": {
+      "ariaLabel": "Шаги настройки",
+      "progress": "Шаг {{current}} из {{total}}"
     },
     "hotkey": {
       "couldNotRegisterTitle": "Не удалось зарегистрировать горячую клавишу",
@@ -2543,7 +2548,8 @@
       "conversationWillAppear": "Разговор появится здесь...",
       "linkedEvent": "Связанное событие",
       "noFolder": "Без папки",
-      "participants": "Участники"
+      "participants": "Участники",
+      "viewMode": "Режим просмотра"
     },
     "participants": {
       "attendee": "участник",
@@ -2751,7 +2757,8 @@
         "provisional": "Временный",
         "confirmed": "Подтверждено",
         "suggested": "Предложен",
-        "locked": "Закреплён"
+        "locked": "Закреплён",
+        "interim": "Предварительно"
       },
       "createNewPrefix": "Создать",
       "emailPlaceholder": "name@example.com",
@@ -2771,7 +2778,8 @@
         "othersInCall_one": "{{count}} собеседник в разговоре",
         "othersInCall_few": "{{count}} собеседника в разговоре",
         "othersInCall_many": "{{count}} собеседников в разговоре",
-        "othersInCall_other": "{{count}} собеседника в разговоре"
+        "othersInCall_other": "{{count}} собеседника в разговоре",
+        "dismissAria": "Скрыть подсказку о говорящих"
       }
     },
     "overview": {
@@ -2875,6 +2883,7 @@
     "agentDefault": "Добавлено по умолчанию"
   },
   "sidebar": {
+    "navigationLabel": "Основная навигация",
     "home": "Главная",
     "notes": "Заметки",
     "upload": "Загрузить",
@@ -3328,6 +3337,7 @@
     }
   },
   "commandSearch": {
+    "clearQuery": "Очистить поиск",
     "allSpaces": "Все пространства",
     "title": "Поиск",
     "description": "Поиск по заметкам и транскрипциям",

@@ -1,7 +1,8 @@
-import { Fragment, useMemo } from "react";
+import React, { Fragment, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
-import { Loader2, Sparkles, X, Mic, Trash2, Archive } from "lucide-react";
+import { Skeleton } from "./ui/skeleton";
+import { Sparkles, X, Mic, Trash2, Archive, ShieldOff } from "lucide-react";
 import TranscriptionItem from "./ui/TranscriptionItem";
 import type { TranscriptionItem as TranscriptionItemType } from "../types/electron";
 import { formatHotkeyLabel, parseHotkeyList } from "../utils/hotkeys";
@@ -26,6 +27,91 @@ interface HistoryViewProps {
   onRetryTranscription: (id: number, options?: { isRecover?: boolean }) => Promise<void>;
   showDiscarded: boolean;
   onToggleDiscarded: () => void;
+}
+
+const sectionLabelClass =
+  "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground";
+
+function ToolbarButton({
+  icon: Icon,
+  label,
+  onClick,
+  tone = "neutral",
+}: {
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  label: string;
+  onClick: () => void;
+  tone?: "neutral" | "destructive";
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex h-6 items-center gap-1.5 rounded-md px-2 text-[11px] text-muted-foreground",
+        "outline-none transition-colors duration-150 ease-snap",
+        "focus-visible:ring-2 focus-visible:ring-ring",
+        tone === "destructive"
+          ? "hover:bg-destructive-subtle hover:text-destructive"
+          : "hover:bg-surface-3 hover:text-foreground"
+      )}
+    >
+      <Icon size={11} className="shrink-0" />
+      <span>{label}</span>
+    </button>
+  );
+}
+
+/** Placeholder rows that match the real row geometry, so nothing jumps on load. */
+function HistorySkeleton({ label }: { label: string }) {
+  return (
+    <div aria-busy="true" aria-live="polite">
+      <span className="sr-only">{label}</span>
+      <div className="flex items-center gap-3 py-2">
+        <Skeleton className="h-2.5 w-16" />
+        <div className="h-px flex-1 bg-border-subtle" />
+      </div>
+      <div className="space-y-1.5">
+        {[0, 1, 2].map((row) => (
+          <div
+            key={row}
+            className="flex gap-3 rounded-lg border border-border-subtle bg-card px-3 py-2.5"
+          >
+            <Skeleton className="mt-0.5 h-3 w-9 shrink-0" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className={cn("h-3", row === 1 ? "w-2/3" : "w-11/12")} />
+              <Skeleton className="h-2.5 w-24" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EmptyHistory({ hotkey }: { hotkey: string }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border px-6 py-16 text-center">
+      <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-border-subtle bg-surface-2 shadow-(--shadow-card)">
+        <Mic size={20} className="text-primary" strokeWidth={1.8} />
+      </div>
+      <h3 className="text-sm font-medium text-foreground">{t("controlPanel.history.empty")}</h3>
+      <p className="mt-2 flex flex-wrap items-center justify-center gap-1.5 text-xs text-muted-foreground">
+        <span>{t("controlPanel.history.press")}</span>
+        {parseHotkeyList(hotkey).map((hk, index) => (
+          <Fragment key={hk}>
+            {index > 0 && <span className="text-muted-foreground/50">/</span>}
+            <kbd className="inline-flex h-5 items-center rounded-sm border border-border-subtle bg-surface-3 px-1.5 font-mono text-[11px] font-medium text-foreground">
+              {formatHotkeyLabel(hk)}
+            </kbd>
+          </Fragment>
+        ))}
+        <span>{t("controlPanel.history.toStart")}</span>
+      </p>
+    </div>
+  );
 }
 
 export default function HistoryView({
@@ -68,51 +154,36 @@ export default function HistoryView({
     return groups;
   }, [history, t]);
 
-  const discardedToggle = (
-    <button
-      onClick={onToggleDiscarded}
-      className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-muted-foreground/60 hover:!text-foreground hover:!bg-black/5 dark:hover:!bg-white/5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-200"
-    >
-      <Archive size={11} />
-      <span>
-        {showDiscarded
-          ? t("controlPanel.history.discarded.hide")
-          : t("controlPanel.history.discarded.show")}
-      </span>
-    </button>
-  );
-
   return (
-    <div className="px-4 pt-4 pb-6">
+    <div className="px-5 pt-4 pb-8">
       <div className={cn("mx-auto", isConnected ? "max-w-5xl" : "max-w-3xl")}>
-        {history.length === 0 && <div className="mb-2 flex justify-end">{discardedToggle}</div>}
         {!useCleanupModel && !aiCTADismissed && (
-          <div className="mb-3 relative rounded-lg border border-primary/20 bg-primary/5 dark:bg-primary/10 p-3">
+          <div className="relative mb-4 rounded-lg border border-primary/25 bg-primary-subtle/60 p-3">
             <button
               onClick={() => {
                 localStorage.setItem("aiCTADismissed", "true");
                 setAiCTADismissed(true);
               }}
               aria-label={t("common.close")}
-              className="absolute top-2 right-2 p-1 rounded-sm text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              className="absolute right-2 top-2 rounded-sm p-1 text-muted-foreground outline-none transition-colors hover:bg-surface-3 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
             >
               <X size={14} />
             </button>
             <div className="flex items-start gap-3 pr-6">
-              <div className="shrink-0 w-8 h-8 rounded-md bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
-                <Sparkles size={16} className="text-primary" />
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-primary/20 bg-primary/10">
+                <Sparkles size={15} className="text-primary" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-foreground mb-0.5">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-foreground">
                   {t("controlPanel.aiCta.title")}
                 </p>
-                <p className="text-xs text-muted-foreground mb-2">
+                <p className="mt-0.5 text-xs text-muted-foreground">
                   {t("controlPanel.aiCta.description")}
                 </p>
                 <Button
                   variant="default"
                   size="sm"
-                  className="h-7 text-xs"
+                  className="mt-2.5 h-7 text-xs"
                   onClick={() => onOpenSettings("intelligence")}
                 >
                   {t("controlPanel.aiCta.enable")}
@@ -124,155 +195,61 @@ export default function HistoryView({
 
         <div className={cn(isConnected ? "flex gap-6" : "")}>
           <div className={cn("min-w-0", isConnected ? "flex-1" : "w-full")}>
-            {isConnected && (
-              <div className="flex items-center gap-1.5 pb-2.5">
-                <Mic size={12} className="text-muted-foreground" />
-                <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-                  {t("upcoming.transcriptions")}
-                </span>
-              </div>
-            )}
+            {/* View toolbar: section label on the left, list-level actions on the right. */}
+            <div className="flex h-7 items-center gap-2">
+              {isConnected && (
+                <div className="flex items-center gap-1.5">
+                  <Mic size={12} className="text-muted-foreground" />
+                  <span className={sectionLabelClass}>{t("upcoming.transcriptions")}</span>
+                </div>
+              )}
+              <div className="flex-1" />
+              <ToolbarButton
+                icon={Archive}
+                onClick={onToggleDiscarded}
+                label={
+                  showDiscarded
+                    ? t("controlPanel.history.discarded.hide")
+                    : t("controlPanel.history.discarded.show")
+                }
+              />
+              {history.length > 0 && (
+                <ToolbarButton
+                  icon={Trash2}
+                  tone="destructive"
+                  onClick={clearAllTranscriptions}
+                  label={t("controlPanel.history.clearAll")}
+                />
+              )}
+            </div>
+
             {!dataRetentionEnabled && (
-              <div className="mb-3 rounded-lg border border-warning/30 bg-warning-subtle px-3.5 py-2.5 flex items-center gap-2.5">
-                <span className="text-warning shrink-0 text-sm">⊘</span>
-                <p className="text-xs text-foreground leading-relaxed">
+              <div className="mt-2 flex items-start gap-2.5 rounded-lg border border-warning/30 bg-warning-subtle px-3 py-2.5">
+                <ShieldOff size={14} className="mt-px shrink-0 text-warning" />
+                <p className="text-xs leading-relaxed text-foreground">
                   {t("controlPanel.history.dataRetentionDisabled")}
                 </p>
               </div>
             )}
+
             {isLoading && history.length === 0 ? (
-              <div className="rounded-lg border border-border bg-card/50 dark:bg-card/60 backdrop-blur-sm">
-                <div className="flex items-center justify-center gap-2 py-8">
-                  <Loader2 size={14} className="animate-spin text-primary" />
-                  <span className="text-sm text-muted-foreground">{t("controlPanel.loading")}</span>
-                </div>
-              </div>
+              <HistorySkeleton label={t("controlPanel.loading")} />
             ) : history.length === 0 ? (
-              <div className="rounded-lg border border-border bg-card/50 dark:bg-card/60 backdrop-blur-sm">
-                <div className="flex flex-col items-center justify-center py-16 px-4">
-                  <svg
-                    className="text-foreground dark:text-white mb-5"
-                    width="64"
-                    height="64"
-                    viewBox="0 0 64 64"
-                    fill="none"
-                  >
-                    <rect
-                      x="24"
-                      y="6"
-                      width="16"
-                      height="28"
-                      rx="8"
-                      fill="currentColor"
-                      fillOpacity={0.04}
-                      stroke="currentColor"
-                      strokeOpacity={0.1}
-                    />
-                    <rect
-                      x="28"
-                      y="12"
-                      width="8"
-                      height="3"
-                      rx="1.5"
-                      fill="currentColor"
-                      fillOpacity={0.06}
-                    />
-                    <path
-                      d="M18 28c0 7.7 6.3 14 14 14s14-6.3 14-14"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeOpacity={0.07}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <line
-                      x1="32"
-                      y1="42"
-                      x2="32"
-                      y2="50"
-                      stroke="currentColor"
-                      strokeOpacity={0.07}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <line
-                      x1="26"
-                      y1="50"
-                      x2="38"
-                      y2="50"
-                      stroke="currentColor"
-                      strokeOpacity={0.07}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M12 20a2 2 0 0 1 0 8"
-                      stroke="currentColor"
-                      strokeOpacity={0.04}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M8 18a2 2 0 0 1 0 12"
-                      stroke="currentColor"
-                      strokeOpacity={0.03}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M52 20a2 2 0 0 0 0 8"
-                      stroke="currentColor"
-                      strokeOpacity={0.04}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M56 18a2 2 0 0 0 0 12"
-                      stroke="currentColor"
-                      strokeOpacity={0.03}
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <h3 className="text-xs font-semibold text-foreground/70 dark:text-foreground/60 mb-2">
-                    {t("controlPanel.history.empty")}
-                  </h3>
-                  <div className="flex items-center gap-2 text-xs text-foreground/50 dark:text-foreground/25">
-                    <span>{t("controlPanel.history.press")}</span>
-                    {parseHotkeyList(hotkey).map((hk, index) => (
-                      <Fragment key={hk}>
-                        {index > 0 && <span className="text-foreground/30">/</span>}
-                        <kbd className="inline-flex items-center h-5 px-1.5 rounded-sm bg-surface-1 dark:bg-white/6 border border-border/50 text-xs font-mono font-medium text-foreground/60 dark:text-foreground/40">
-                          {formatHotkeyLabel(hk)}
-                        </kbd>
-                      </Fragment>
-                    ))}
-                    <span>{t("controlPanel.history.toStart")}</span>
-                  </div>
-                </div>
+              <div className="mt-2">
+                <EmptyHistory hotkey={hotkey} />
               </div>
             ) : (
-              <div className="group">
+              <div>
                 {groupedHistory.map((group, index) => (
-                  <div key={group.label} className={index > 0 ? "mt-4" : ""}>
-                    <div className="sticky -top-1 z-10 -mx-4 px-5 pt-2 pb-2 bg-background flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-muted-foreground dark:text-muted-foreground uppercase tracking-wide">
-                        {group.label}
+                  <div key={group.label} className={index > 0 ? "mt-5" : ""}>
+                    <div className="sticky top-0 z-10 flex items-center gap-2.5 bg-background py-2">
+                      <span className={sectionLabelClass}>{group.label}</span>
+                      <span className="tabular-figures text-[11px] text-muted-foreground/60">
+                        {group.items.length}
                       </span>
-                      {index === 0 && (
-                        <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity duration-200">
-                          {discardedToggle}
-                          <button
-                            onClick={clearAllTranscriptions}
-                            className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] text-muted-foreground/60 hover:!text-destructive hover:!bg-destructive/8 dark:hover:!bg-destructive/10 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring transition-all duration-200"
-                          >
-                            <Trash2 size={11} />
-                            <span>{t("controlPanel.history.clearAll")}</span>
-                          </button>
-                        </div>
-                      )}
+                      <div className="h-px flex-1 bg-border-subtle" />
                     </div>
-                    <div className="space-y-1.5 relative z-0">
+                    <div className="relative z-0 space-y-1.5">
                       {group.items.map((item) => (
                         <TranscriptionItem
                           key={item.id}
@@ -292,7 +269,7 @@ export default function HistoryView({
           </div>
 
           {isConnected && (
-            <div className="w-64 shrink-0 hidden sm:block">
+            <div className="hidden w-64 shrink-0 sm:block">
               <div className="sticky top-4">
                 <UpcomingMeetings events={events} isLoading={eventsLoading} />
               </div>

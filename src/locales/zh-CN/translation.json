@@ -135,6 +135,7 @@
     "pttUnavailable": "按住说话原生监听器不可用"
   },
   "common": {
+    "duration": "时长",
     "add": "添加",
     "retry": "重试",
     "back": "返回",
@@ -187,6 +188,10 @@
       "meeting": "会议",
       "finish": "完成",
       "voiceAgent": "语音助手"
+    },
+    "rail": {
+      "ariaLabel": "设置步骤",
+      "progress": "第 {{current}} 步，共 {{total}} 步"
     },
     "hotkey": {
       "couldNotRegisterTitle": "无法注册该快捷键",
@@ -2523,7 +2528,8 @@
       "conversationWillAppear": "对话将显示在这里...",
       "linkedEvent": "关联日程",
       "noFolder": "无文件夹",
-      "participants": "参与者"
+      "participants": "参与者",
+      "viewMode": "视图模式"
     },
     "participants": {
       "attendee": "位参会者",
@@ -2731,7 +2737,8 @@
         "provisional": "临时",
         "confirmed": "已确认",
         "suggested": "建议",
-        "locked": "锁定"
+        "locked": "锁定",
+        "interim": "临时"
       },
       "createNewPrefix": "创建",
       "emailPlaceholder": "name@example.com",
@@ -2749,7 +2756,8 @@
         "incAria": "增加预计发言人数",
         "decAria": "减少预计发言人数",
         "othersInCall_one": "通话中还有 {{count}} 人",
-        "othersInCall_other": "通话中还有 {{count}} 人"
+        "othersInCall_other": "通话中还有 {{count}} 人",
+        "dismissAria": "关闭说话人提示"
       }
     },
     "overview": {
@@ -2847,6 +2855,7 @@
     "agentDefault": "默认添加"
   },
   "sidebar": {
+    "navigationLabel": "主导航",
     "home": "首页",
     "notes": "笔记",
     "upload": "上传",
@@ -3300,6 +3309,7 @@
     }
   },
   "commandSearch": {
+    "clearQuery": "清除搜索",
     "allSpaces": "所有空间",
     "title": "搜索",
     "description": "搜索笔记和转录",

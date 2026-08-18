@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Square } from "lucide-react";
 import { stopRecording, useMeetingRecordingStore } from "../../stores/meetingRecordingStore";
 import { cn } from "../lib/utils";
 import { isControlPanelWindow } from "../../utils/windowContext";
+import { formatMmSs } from "../../utils/formatDuration";
 
 interface MeetingRecordingPillProps {
   activeView: string;
@@ -12,19 +13,25 @@ interface MeetingRecordingPillProps {
   onReturnToNote: () => void;
 }
 
-const BAR_COUNT = 4;
-const BAR_FLOOR = 12;
+/* The floating twin of the dictation HUD: same capsule geometry, same
+ * centre-weighted meter, same tabular clock, same always-dark ground. It
+ * follows the toast convention rather than the app theme because it is a
+ * status object floating over the workspace, not part of it. */
+
+const BAR_COUNT = 5;
+// Centre bars lead so the stack reads as a level, not a progress bar.
+const BAR_WEIGHTS = [0.58, 0.84, 1, 0.84, 0.58];
+const BAR_FLOOR = 0.2;
+const METER_HEIGHT_PX = 14;
 
 const truncateTitle = (title: string) =>
-  title.length > 20 ? `${title.slice(0, 19).trimEnd()}…` : title;
+  title.length > 24 ? `${title.slice(0, 23).trimEnd()}…` : title;
 
 const computeBarHeight = (level: number, index: number) => {
-  // Per-bar phase keeps the stack from moving in lockstep at sustained levels.
-  // sqrt curve maps small RMS values (typical speech ~0.05-0.1) into a
-  // visible range — linear scaling kept bars clamped at the floor.
-  const phase = 0.7 + 0.3 * Math.sin(index * 1.7);
-  const scaled = Math.sqrt(level) * 180 * phase;
-  return `${Math.max(BAR_FLOOR, Math.min(100, scaled))}%`;
+  // sqrt curve maps small RMS values (typical speech ~0.05-0.1) into a visible
+  // range — linear scaling kept the bars clamped at the floor.
+  const scaled = Math.sqrt(level) * 2.4 * BAR_WEIGHTS[index];
+  return `${(METER_HEIGHT_PX * Math.max(BAR_FLOOR, Math.min(1, scaled))).toFixed(2)}px`;
 };
 
 export default function MeetingRecordingPill({
@@ -40,6 +47,26 @@ export default function MeetingRecordingPill({
   const micCaptureStatus = useMeetingRecordingStore((s) => s.micCaptureStatus);
   const isWaitingForMic = micCaptureStatus === "reconnecting" || micCaptureStatus === "unavailable";
   const [isStopping, setIsStopping] = useState(false);
+
+  // Anchored on the recording transition, not on mount: this pill only renders
+  // while the user is away from the recording note, so a mount-time start
+  // would restart the clock every time they navigate.
+  const startedAtRef = useRef<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  useEffect(() => {
+    if (!isRecording) {
+      startedAtRef.current = null;
+      setElapsedSeconds(0);
+      return undefined;
+    }
+    if (startedAtRef.current == null) startedAtRef.current = Date.now();
+    const update = () =>
+      setElapsedSeconds(Math.floor((Date.now() - (startedAtRef.current ?? Date.now())) / 1000));
+    update();
+    const intervalId = setInterval(update, 250);
+    return () => clearInterval(intervalId);
+  }, [isRecording]);
 
   const isViewingRecordingNote =
     activeView === "personal-notes" && activeNoteId === recordingNoteId;
@@ -61,6 +88,7 @@ export default function MeetingRecordingPill({
   const title = truncateTitle(recordingNoteTitle ?? "");
   const returnLabel = t("notes.meetingPill.returnToNote");
   const stopLabel = t("notes.editor.stop");
+  const elapsedLabel = formatMmSs(elapsedSeconds);
 
   return createPortal(
     <div
@@ -74,11 +102,8 @@ export default function MeetingRecordingPill({
     >
       <div
         className={cn(
-          "flex items-center gap-2 h-9 px-3 rounded-xl",
-          "bg-card/95 dark:bg-surface-2/95",
-          "backdrop-blur-xl",
-          "border border-primary/25 dark:border-primary/30",
-          "shadow-elevated"
+          "hud-surface flex h-9 items-center gap-2 rounded-[11px] pl-2 pr-1.5",
+          isWaitingForMic ? "hud-surface-warn" : "hud-surface-live"
         )}
       >
         <button
@@ -87,28 +112,43 @@ export default function MeetingRecordingPill({
           aria-label={returnLabel}
           title={returnLabel}
           className={cn(
-            "flex items-center gap-3 px-1 -mx-1 rounded-md",
-            "transition-colors",
-            "hover:bg-primary/8 active:bg-primary/14",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            "-mx-1 flex items-center gap-2 rounded-md px-1 py-1",
+            "transition-colors duration-150",
+            "hover:bg-white/6 active:bg-white/10",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
           )}
         >
-          <div className="flex items-end gap-0.75 h-4">
+          <span
+            className="flex shrink-0 items-end gap-[2px]"
+            style={{ height: METER_HEIGHT_PX }}
+            aria-hidden="true"
+          >
             {Array.from({ length: BAR_COUNT }, (_, i) => (
-              <div
+              <span
                 key={i}
                 className={cn(
-                  "w-0.75 rounded-full origin-bottom",
-                  isWaitingForMic ? "bg-warning" : "bg-primary/60 dark:bg-primary/70"
+                  "w-[2px] rounded-full",
+                  isWaitingForMic ? "bg-hud-warning" : "bg-hud-accent"
                 )}
-                style={{ height: computeBarHeight(micLevel, i) }}
+                style={{ height: computeBarHeight(isWaitingForMic ? 0 : micLevel, i) }}
               />
             ))}
-          </div>
-          <span className="text-xs font-medium text-foreground/80 truncate max-w-[12rem]">
+          </span>
+          <span className="max-w-[14rem] truncate text-xs font-medium text-hud-foreground">
             {isWaitingForMic ? t("notes.meetingPill.waitingForMicrophone") : title}
           </span>
+          <span
+            data-numeric
+            className={cn(
+              "text-[11px] font-semibold leading-none tracking-[0.01em]",
+              isWaitingForMic ? "text-hud-warning" : "text-hud-muted"
+            )}
+          >
+            {elapsedLabel}
+          </span>
         </button>
+
+        <span className="h-4 w-px shrink-0 bg-hud-border" aria-hidden="true" />
 
         <button
           type="button"
@@ -117,15 +157,16 @@ export default function MeetingRecordingPill({
           aria-label={stopLabel}
           title={stopLabel}
           className={cn(
-            "flex items-center justify-center w-7 h-7 rounded-lg",
-            "transition-colors duration-150",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "flex h-7 shrink-0 items-center justify-center gap-1.5 rounded-lg px-2",
+            "text-[11px] font-medium transition-colors duration-150",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
             isStopping
-              ? "bg-primary/6 text-primary/40 cursor-not-allowed"
-              : "bg-primary/10 hover:bg-primary/18 active:bg-primary/25 text-primary"
+              ? "cursor-not-allowed bg-white/4 text-hud-muted/50"
+              : "bg-hud-danger/15 text-hud-danger hover:bg-hud-danger/25"
           )}
         >
-          <Square size={12} fill="currentColor" />
+          <Square size={9} fill="currentColor" />
+          {stopLabel}
         </button>
       </div>
     </div>,

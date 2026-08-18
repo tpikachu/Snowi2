@@ -135,6 +135,7 @@
     "pttUnavailable": "L'écouteur natif Push-to-Talk n'est pas disponible"
   },
   "common": {
+    "duration": "Durée",
     "add": "Ajouter",
     "retry": "Réessayer",
     "back": "Retour",
@@ -187,6 +188,10 @@
       "meeting": "Réunions",
       "finish": "Terminer",
       "voiceAgent": "Agent vocal"
+    },
+    "rail": {
+      "ariaLabel": "Étapes de configuration",
+      "progress": "Étape {{current}} sur {{total}}"
     },
     "hotkey": {
       "couldNotRegisterTitle": "Impossible d'enregistrer ce raccourci",
@@ -2356,6 +2361,7 @@
     }
   },
   "sidebar": {
+    "navigationLabel": "Navigation principale",
     "home": "Accueil",
     "notes": "Notes",
     "upload": "Importer",
@@ -2731,7 +2737,8 @@
       "conversationWillAppear": "La conversation apparaîtra ici...",
       "linkedEvent": "Événement lié",
       "noFolder": "Aucun dossier",
-      "participants": "Participants"
+      "participants": "Participants",
+      "viewMode": "Mode d'affichage"
     },
     "participants": {
       "attendee": "participant",
@@ -2945,7 +2952,8 @@
         "provisional": "Provisoire",
         "confirmed": "Confirmé",
         "suggested": "Suggéré",
-        "locked": "Verrouillé"
+        "locked": "Verrouillé",
+        "interim": "Provisoire"
       },
       "pill": {
         "identifying": "Identification des intervenants",
@@ -2957,7 +2965,8 @@
         "incAria": "Augmenter le nombre d'intervenants attendus",
         "decAria": "Diminuer le nombre d'intervenants attendus",
         "othersInCall_one": "{{count}} autre dans l'appel",
-        "othersInCall_other": "{{count}} autres dans l'appel"
+        "othersInCall_other": "{{count}} autres dans l'appel",
+        "dismissAria": "Masquer l'indication des intervenants"
       }
     },
     "overview": {
@@ -3425,6 +3434,7 @@
     }
   },
   "commandSearch": {
+    "clearQuery": "Effacer la recherche",
     "allSpaces": "Tous les espaces",
     "title": "Rechercher",
     "description": "Rechercher dans les notes et transcriptions",

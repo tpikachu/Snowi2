@@ -3192,6 +3192,16 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     }
   }
 
+  /**
+   * Read-only handle on the speech-gate analyser so the dictation HUD can draw
+   * a real mic-level meter. Never creates anything: the gate owns this node's
+   * lifecycle, and paths that run without one (streaming capture) return null
+   * so callers fall back to a synthetic meter.
+   */
+  getLevelAnalyser() {
+    return this._silenceAnalyser ?? null;
+  }
+
   getState() {
     return {
       isRecording: this.isRecording,

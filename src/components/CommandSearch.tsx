@@ -11,6 +11,8 @@ import {
   Upload,
   MessageSquare,
   ChevronDown,
+  CornerDownLeft,
+  X,
 } from "lucide-react";
 import { cn } from "./lib/utils";
 import {
@@ -54,6 +56,35 @@ type FlatItem =
   | { kind: "note"; note: NoteItem }
   | { kind: "transcript"; transcript: TranscriptionItem }
   | { kind: "conversation"; conversation: ConversationResult };
+
+/** One geometry for every result row, so the palette reads as a single list. */
+function commandRowClass(isSelected: boolean): string {
+  return cn(
+    "group/row relative flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left",
+    "outline-none transition-colors duration-100 ease-snap",
+    isSelected ? "bg-primary/10 dark:bg-primary/15" : "hover:bg-surface-3"
+  );
+}
+
+function rowIconClass(isSelected: boolean): string {
+  return cn("shrink-0 transition-colors", isSelected ? "text-primary" : "text-muted-foreground");
+}
+
+/** Fixed-width tail slot: the Enter hint swaps in without moving the row. */
+function EnterHint({ isSelected }: { isSelected: boolean }) {
+  return (
+    <span className="flex w-3.5 shrink-0 justify-end" aria-hidden="true">
+      {isSelected && <CornerDownLeft size={12} className="text-primary" />}
+    </span>
+  );
+}
+
+const paletteKbdClass = [
+  "inline-flex h-4 min-w-4 items-center justify-center rounded-[3px] px-1",
+  "border border-border-subtle bg-surface-3 font-mono text-[10px] leading-none text-muted-foreground",
+].join(" ");
+
+const metaTimeClass = "shrink-0 tabular-figures text-[10px] text-muted-foreground/70";
 
 function stripMarkdownPreview(text: string): string {
   return text
@@ -321,7 +352,7 @@ export default function CommandSearch({
         <DialogPrimitive.Content
           className={cn(
             "fixed left-[50%] top-[18%] z-50 w-full max-w-xl translate-x-[-50%]",
-            "rounded-2xl border border-border bg-popover shadow-(--shadow-modal) overflow-hidden",
+            "rounded-xl border border-border bg-popover shadow-(--shadow-modal) overflow-hidden",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
             "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -337,23 +368,24 @@ export default function CommandSearch({
           </DialogPrimitive.Description>
 
           {/* Search input */}
-          <div className="flex items-center gap-2.5 px-3.5 py-3 border-b border-border/40">
-            <Search size={14} className="shrink-0 text-muted-foreground/50" />
+          <div className="flex h-12 items-center gap-2.5 border-b border-border-subtle px-3.5">
+            <Search size={15} className="shrink-0 text-muted-foreground" />
             {!isConversationsMode && spaces.length > 1 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
                     className={cn(
-                      "flex items-center gap-1 shrink-0 rounded-md border border-border/50 bg-muted/40",
-                      "px-1.5 py-0.5 text-[11px] transition-colors outline-none",
+                      "flex shrink-0 items-center gap-1 rounded-md border border-border bg-surface-2",
+                      "h-6 px-1.5 text-[11px] outline-none transition-colors duration-150 ease-snap",
+                      "hover:border-border-hover focus-visible:ring-2 focus-visible:ring-ring",
                       scopeSpace ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                     )}
                   >
                     <span className="truncate max-w-32">
                       {scopeSpace ? spaceLabel(scopeSpace) : t("commandSearch.allSpaces")}
                     </span>
-                    <ChevronDown size={11} className="shrink-0 text-muted-foreground/50" />
+                    <ChevronDown size={11} className="shrink-0 text-muted-foreground" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -382,7 +414,7 @@ export default function CommandSearch({
               onKeyDown={handleKeyDown}
               placeholder={isConversationsMode ? t("chat.search") : t("commandSearch.placeholder")}
               autoFocus
-              className="flex-1 text-sm text-foreground placeholder:text-muted-foreground/40"
+              className="flex-1 text-sm text-foreground placeholder:text-muted-foreground/70"
               style={{
                 background: "transparent",
                 border: "none",
@@ -393,19 +425,26 @@ export default function CommandSearch({
             />
             {query && (
               <button
+                type="button"
                 onClick={() => setQuery("")}
-                className="text-[11px] text-muted-foreground/40 hover:text-muted-foreground transition-colors outline-none"
+                aria-label={t("commandSearch.clearQuery")}
+                className={cn(
+                  "flex size-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground",
+                  "outline-none transition-colors duration-150 ease-snap",
+                  "hover:bg-surface-3 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                )}
               >
-                ✕
+                <X size={12} />
               </button>
             )}
           </div>
 
           {/* Results list */}
-          <div ref={listRef} className="overflow-y-auto max-h-[340px] p-1.5">
+          <div ref={listRef} className="max-h-[360px] overflow-y-auto p-1.5">
             {!hasResults ? (
-              <div className="flex items-center justify-center py-10">
-                <p className="text-xs text-muted-foreground/50">
+              <div className="flex flex-col items-center justify-center gap-2 py-12">
+                <Search size={18} className="text-muted-foreground/50" />
+                <p className="text-xs text-muted-foreground">
                   {query.trim()
                     ? t("commandSearch.noResults")
                     : isConversationsMode
@@ -419,33 +458,22 @@ export default function CommandSearch({
                   key={conv.id}
                   type="button"
                   data-idx={idx}
+                  aria-selected={selectedIndex === idx}
                   onClick={() => selectItem({ kind: "conversation", conversation: conv })}
                   onMouseEnter={() => setSelectedIndex(idx)}
-                  className={cn(
-                    "flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left transition-colors duration-100 outline-none",
-                    selectedIndex === idx
-                      ? "bg-primary/8 dark:bg-primary/10"
-                      : "hover:bg-foreground/4 dark:hover:bg-white/4"
-                  )}
+                  className={commandRowClass(selectedIndex === idx)}
                 >
-                  <MessageSquare
-                    size={13}
-                    className={cn(
-                      "shrink-0 mt-px transition-colors",
-                      selectedIndex === idx ? "text-primary" : "text-muted-foreground/40"
-                    )}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-foreground truncate">{conv.title}</p>
+                  <MessageSquare size={13} className={rowIconClass(selectedIndex === idx)} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-medium text-foreground">{conv.title}</p>
                     {conv.last_message && (
-                      <p className="text-[11px] text-muted-foreground/55 truncate mt-px">
+                      <p className="mt-px truncate text-[11px] text-muted-foreground">
                         {conv.last_message.slice(0, 90)}
                       </p>
                     )}
                   </div>
-                  <span className="text-[10px] text-muted-foreground/35 tabular-nums shrink-0">
-                    {formatRelativeTime(conv.updated_at, t)}
-                  </span>
+                  <span className={metaTimeClass}>{formatRelativeTime(conv.updated_at, t)}</span>
+                  <EnterHint isSelected={selectedIndex === idx} />
                 </button>
               ))
             ) : (
@@ -531,7 +559,7 @@ export default function CommandSearch({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center gap-4 px-3.5 py-2 border-t border-border/30 bg-muted/15">
+          <div className="flex items-center gap-4 border-t border-border-subtle bg-surface-1 px-3.5 py-2">
             <FooterHint keys={["↑", "↓"]} label={t("commandSearch.footer.navigate")} />
             <FooterHint keys={["↵"]} label={t("commandSearch.footer.open")} />
             <FooterHint keys={["Esc"]} label={t("commandSearch.footer.dismiss")} />
@@ -544,11 +572,12 @@ export default function CommandSearch({
 
 function SectionHeader({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex items-center gap-1.5 px-2.5 pt-2 pb-1">
-      <span className="text-muted-foreground/45">{icon}</span>
-      <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/50">
+    <div className="flex items-center gap-1.5 px-2.5 pt-2 pb-1.5">
+      <span className="text-muted-foreground">{icon}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
+      <span aria-hidden="true" className="ml-1 h-px flex-1 bg-border-subtle" />
     </div>
   );
 }
@@ -571,40 +600,34 @@ function ContainerRow({
   onHover: () => void;
 }) {
   const { space } = target;
-  const iconClass = cn(
-    "shrink-0 transition-colors",
-    isSelected ? "text-primary" : "text-muted-foreground/40"
-  );
+  const iconClass = rowIconClass(isSelected);
   return (
     <button
       type="button"
       data-idx={idx}
+      aria-selected={isSelected}
       onClick={onSelect}
       onMouseEnter={onHover}
-      className={cn(
-        "group flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left transition-colors duration-100 outline-none",
-        isSelected
-          ? "bg-primary/8 dark:bg-primary/10"
-          : "hover:bg-foreground/4 dark:hover:bg-white/4"
-      )}
+      className={commandRowClass(isSelected)}
     >
       {target.folderId != null ? (
         <Folder size={13} className={iconClass} />
       ) : space?.kind === "private" ? (
         <Lock size={13} className={iconClass} />
       ) : space?.emoji ? (
-        <span className="text-[13px] leading-none shrink-0" aria-hidden="true">
+        <span className="shrink-0 text-[13px] leading-none" aria-hidden="true">
           {space.emoji}
         </span>
       ) : (
         <Users size={13} className={iconClass} />
       )}
-      <p className="flex-1 text-xs font-medium text-foreground truncate min-w-0">{target.label}</p>
+      <p className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">{target.label}</p>
       {showSpaceHint && space && (
-        <span className="text-[10px] text-muted-foreground/45 truncate shrink-0 max-w-32">
+        <span className="max-w-32 shrink-0 truncate text-[10px] text-muted-foreground">
           {spaceLabel(space)}
         </span>
       )}
+      <EnterHint isSelected={isSelected} />
     </button>
   );
 }
@@ -633,42 +656,31 @@ function NoteRow({
     <button
       type="button"
       data-idx={idx}
+      aria-selected={isSelected}
       onClick={onSelect}
       onMouseEnter={onHover}
-      className={cn(
-        "group flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left transition-colors duration-100 outline-none",
-        isSelected
-          ? "bg-primary/8 dark:bg-primary/10"
-          : "hover:bg-foreground/4 dark:hover:bg-white/4"
-      )}
+      className={commandRowClass(isSelected)}
     >
-      <NoteIcon
-        size={13}
-        className={cn(
-          "shrink-0 mt-px transition-colors",
-          isSelected ? "text-primary" : "text-muted-foreground/40"
-        )}
-      />
-      <div className="flex-1 min-w-0">
+      <NoteIcon size={13} className={rowIconClass(isSelected)} />
+      <div className="min-w-0 flex-1">
         <p
           className={cn(
-            "text-xs font-medium truncate",
-            note.title ? "text-foreground" : "italic text-muted-foreground/50"
+            "truncate text-xs font-medium",
+            note.title ? "text-foreground" : "italic text-muted-foreground"
           )}
         >
           {note.title || t("notes.list.untitled")}
         </p>
         {(breadcrumb || preview) && (
-          <p className="text-[10px] truncate mt-px">
-            {breadcrumb && <span className="text-muted-foreground/45">{breadcrumb}</span>}
-            {breadcrumb && preview && <span className="text-muted-foreground/35"> · </span>}
-            {preview && <span className="text-muted-foreground/55">{preview}</span>}
+          <p className="mt-px truncate text-[10px] text-muted-foreground">
+            {breadcrumb && <span>{breadcrumb}</span>}
+            {breadcrumb && preview && <span className="text-muted-foreground/50"> · </span>}
+            {preview && <span className="text-muted-foreground/80">{preview}</span>}
           </p>
         )}
       </div>
-      <span className="text-[10px] text-muted-foreground/35 tabular-nums shrink-0">
-        {formatRelativeTime(note.updated_at, t)}
-      </span>
+      <span className={metaTimeClass}>{formatRelativeTime(note.updated_at, t)}</span>
+      <EnterHint isSelected={isSelected} />
     </button>
   );
 }
@@ -692,26 +704,15 @@ function TranscriptRow({
     <button
       type="button"
       data-idx={idx}
+      aria-selected={isSelected}
       onClick={onSelect}
       onMouseEnter={onHover}
-      className={cn(
-        "group flex items-center gap-2.5 w-full px-2.5 py-2 rounded-lg text-left transition-colors duration-100 outline-none",
-        isSelected
-          ? "bg-primary/8 dark:bg-primary/10"
-          : "hover:bg-foreground/4 dark:hover:bg-white/4"
-      )}
+      className={commandRowClass(isSelected)}
     >
-      <Mic
-        size={13}
-        className={cn(
-          "shrink-0 mt-px transition-colors",
-          isSelected ? "text-primary" : "text-muted-foreground/40"
-        )}
-      />
-      <p className="flex-1 text-xs text-foreground/75 truncate min-w-0">{transcript.text}</p>
-      <span className="text-[10px] text-muted-foreground/35 tabular-nums shrink-0">
-        {formatRelativeTime(transcript.created_at, t)}
-      </span>
+      <Mic size={13} className={rowIconClass(isSelected)} />
+      <p className="min-w-0 flex-1 truncate text-xs text-foreground">{transcript.text}</p>
+      <span className={metaTimeClass}>{formatRelativeTime(transcript.created_at, t)}</span>
+      <EnterHint isSelected={isSelected} />
     </button>
   );
 }
@@ -720,14 +721,11 @@ function FooterHint({ keys, label }: { keys: string[]; label: string }) {
   return (
     <div className="flex items-center gap-1">
       {keys.map((k) => (
-        <kbd
-          key={k}
-          className="text-[10px] px-1 py-px rounded border border-border/40 bg-muted/50 text-muted-foreground/55 font-mono leading-tight"
-        >
+        <kbd key={k} className={paletteKbdClass}>
           {k}
         </kbd>
       ))}
-      <span className="text-[10px] text-muted-foreground/40 ml-0.5">{label}</span>
+      <span className="ml-0.5 text-[10px] text-muted-foreground">{label}</span>
     </div>
   );
 }

@@ -114,6 +114,7 @@
     "pttUnavailable": "O listener nativo de Push-to-Talk não está disponível"
   },
   "common": {
+    "duration": "Duração",
     "add": "Adicionar",
     "retry": "Tentar novamente",
     "back": "Voltar",
@@ -166,6 +167,10 @@
       "meeting": "Reuniões",
       "finish": "Concluir",
       "voiceAgent": "Agente de voz"
+    },
+    "rail": {
+      "ariaLabel": "Etapas de configuração",
+      "progress": "Etapa {{current}} de {{total}}"
     },
     "hotkey": {
       "couldNotRegisterTitle": "Não foi possível registrar esse atalho",
@@ -2523,7 +2528,8 @@
       "conversationWillAppear": "A conversa aparecerá aqui...",
       "linkedEvent": "Evento vinculado",
       "noFolder": "Sem pasta",
-      "participants": "Participantes"
+      "participants": "Participantes",
+      "viewMode": "Modo de exibição"
     },
     "participants": {
       "attendee": "participante",
@@ -2731,7 +2737,8 @@
         "provisional": "Provisório",
         "confirmed": "Confirmado",
         "suggested": "Sugerido",
-        "locked": "Bloqueado"
+        "locked": "Bloqueado",
+        "interim": "Provisório"
       },
       "createNewPrefix": "Criar",
       "emailPlaceholder": "nome@exemplo.com",
@@ -2749,7 +2756,8 @@
         "incAria": "Aumentar número esperado de participantes",
         "decAria": "Diminuir número esperado de participantes",
         "othersInCall_one": "{{count}} outra pessoa na chamada",
-        "othersInCall_other": "{{count}} outras pessoas na chamada"
+        "othersInCall_other": "{{count}} outras pessoas na chamada",
+        "dismissAria": "Dispensar a dica de participantes"
       }
     },
     "overview": {
@@ -2847,6 +2855,7 @@
     "agentDefault": "Adicionado por padrão"
   },
   "sidebar": {
+    "navigationLabel": "Navegação principal",
     "home": "Início",
     "notes": "Notas",
     "upload": "Enviar",
@@ -3300,6 +3309,7 @@
     }
   },
   "commandSearch": {
+    "clearQuery": "Limpar pesquisa",
     "allSpaces": "Todos os espaços",
     "title": "Pesquisar",
     "description": "Pesquisar notas e transcrições",

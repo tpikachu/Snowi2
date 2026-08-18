@@ -135,6 +135,7 @@
     "pttUnavailable": "Il listener nativo Push-to-Talk non è disponibile"
   },
   "common": {
+    "duration": "Durata",
     "add": "Aggiungi",
     "retry": "Riprova",
     "back": "Indietro",
@@ -187,6 +188,10 @@
       "meeting": "Riunioni",
       "finish": "Fine",
       "voiceAgent": "Agente vocale"
+    },
+    "rail": {
+      "ariaLabel": "Passaggi di configurazione",
+      "progress": "Passaggio {{current}} di {{total}}"
     },
     "hotkey": {
       "couldNotRegisterTitle": "Impossibile registrare questa scorciatoia",
@@ -2523,7 +2528,8 @@
       "conversationWillAppear": "La conversazione apparirà qui...",
       "linkedEvent": "Evento collegato",
       "noFolder": "Nessuna cartella",
-      "participants": "Partecipanti"
+      "participants": "Partecipanti",
+      "viewMode": "Modalità di visualizzazione"
     },
     "participants": {
       "attendee": "partecipante",
@@ -2731,7 +2737,8 @@
         "provisional": "Provvisorio",
         "confirmed": "Confermato",
         "suggested": "Suggerito",
-        "locked": "Bloccato"
+        "locked": "Bloccato",
+        "interim": "Provvisorio"
       },
       "createNewPrefix": "Crea",
       "emailPlaceholder": "nome@esempio.com",
@@ -2749,7 +2756,8 @@
         "incAria": "Aumenta il numero di partecipanti previsti",
         "decAria": "Diminuisci il numero di partecipanti previsti",
         "othersInCall_one": "{{count}} altra persona in chiamata",
-        "othersInCall_other": "{{count}} altre persone in chiamata"
+        "othersInCall_other": "{{count}} altre persone in chiamata",
+        "dismissAria": "Nascondi il suggerimento sui relatori"
       }
     },
     "overview": {
@@ -2847,6 +2855,7 @@
     "agentDefault": "Aggiunto di default"
   },
   "sidebar": {
+    "navigationLabel": "Navigazione principale",
     "home": "Home",
     "notes": "Note",
     "upload": "Carica",
@@ -3300,6 +3309,7 @@
     }
   },
   "commandSearch": {
+    "clearQuery": "Cancella ricerca",
     "allSpaces": "Tutti gli spazi",
     "title": "Cerca",
     "description": "Cerca tra note e trascrizioni",

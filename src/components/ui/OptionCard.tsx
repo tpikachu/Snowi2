@@ -25,39 +25,49 @@ export default function OptionCard({
       disabled={disabled}
       aria-pressed={selected}
       className={cn(
-        "group relative w-full rounded-md p-3 text-left transition-colors duration-150",
-        "border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+        "group relative h-full w-full rounded-lg border p-3.5 text-left",
+        "transition-[background-color,border-color,box-shadow] duration-150 ease-snap",
+        "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
         selected
-          ? "bg-primary/5 border-primary/40 dark:bg-primary/10 dark:border-primary/30"
-          : "bg-surface-1 border-border hover:bg-surface-2 hover:border-border-hover",
+          ? "border-primary/45 bg-primary/8 dark:bg-primary/10 shadow-(--shadow-selected)"
+          : "border-border-subtle bg-surface-1 hover:border-border-hover hover:bg-surface-2",
         disabled && "cursor-not-allowed border-border-subtle bg-muted text-muted-foreground"
       )}
     >
-      <div className="flex items-center gap-3">
-        <div
+      <div className="flex items-start gap-3">
+        <span
           className={cn(
-            "w-8 h-8 rounded-md flex items-center justify-center shrink-0 transition-colors duration-150",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
+            "transition-colors duration-150 ease-snap",
             selected
               ? "bg-primary/15 dark:bg-primary/20"
-              : "bg-primary/10 dark:bg-primary/15 group-hover:bg-primary/15"
+              : "bg-surface-3 group-hover:bg-primary/12 dark:bg-surface-3"
           )}
         >
-          <Icon className="w-4 h-4 text-primary" />
-        </div>
+          <Icon
+            className={cn(
+              "h-4 w-4 transition-colors duration-150 ease-snap",
+              selected ? "text-primary" : "text-muted-foreground group-hover:text-primary"
+            )}
+          />
+        </span>
 
-        <div className="flex-1 min-w-0">
-          <h3 className="text-xs font-medium text-foreground">{title}</h3>
-          <p className="text-xs text-muted-foreground leading-snug mt-0.5">{description}</p>
-        </div>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-medium leading-snug text-foreground">{title}</span>
+          <span className="mt-1 block text-xs leading-snug text-muted-foreground">
+            {description}
+          </span>
+        </span>
 
-        <div
+        <span
           className={cn(
-            "w-4 h-4 rounded-sm border flex items-center justify-center shrink-0 transition-colors duration-150",
-            selected ? "bg-primary border-primary" : "border-border-hover bg-transparent"
+            "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border",
+            "transition-colors duration-150 ease-snap",
+            selected ? "border-primary bg-primary" : "border-border bg-transparent"
           )}
         >
-          {selected && <Check className="w-3 h-3 text-primary-foreground" strokeWidth={3} />}
-        </div>
+          {selected && <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />}
+        </span>
       </div>
     </button>
   );

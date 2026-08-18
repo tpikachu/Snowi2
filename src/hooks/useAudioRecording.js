@@ -459,11 +459,19 @@ export const useAudioRecording = (toast, options = {}) => {
     }
   };
 
+  // Read-only: lets the dictation HUD paint a real level meter without
+  // opening a second capture stream. Null whenever no gate analyser exists.
+  const getLevelAnalyser = useCallback(
+    () => audioManagerRef.current?.getLevelAnalyser?.() ?? null,
+    []
+  );
+
   return {
     isRecording,
     isProcessing,
     isStreaming,
     micCaptureStatus,
+    getLevelAnalyser,
     transcript,
     partialTranscript,
     startRecording: performStartRecording,

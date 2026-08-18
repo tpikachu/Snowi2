@@ -55,12 +55,19 @@ const platform = getCachedPlatform();
 
 const SIDEBAR_WIDTH_PX = 192;
 
+// macOS draws its traffic lights over the top-left of the frameless window, so
+// whatever occupies that corner has to start clear of them.
+const MAC_TRAFFIC_LIGHT_INSET_PX = 84;
+
 // Bump to force a one-time full semantic reindex on next launch (see the
 // reindex effect for the per-version history).
 const SEMANTIC_REINDEX_VERSION = 2;
 
-const toggleIconClass =
-  "text-foreground/60 group-hover:text-foreground/75 dark:text-foreground/50 dark:group-hover:text-foreground/65 transition-colors duration-150";
+const headerButtonClass = [
+  "group flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground",
+  "outline-none transition-colors duration-150 ease-snap",
+  "hover:bg-surface-3 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+].join(" ");
 
 const SettingsModal = React.lazy(() => import("./SettingsModal"));
 const PersonalNotesView = React.lazy(() => import("./notes/PersonalNotesView"));
@@ -540,13 +547,11 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
           // Apply AI reasoning if enabled
           if (!handledTranslation && useCleanupModel) {
             try {
-              const [
-                { default: ReasoningService },
-                { getEffectiveCleanupModel, getSettings },
-              ] = await Promise.all([
-                import("../services/ReasoningService"),
-                import("../stores/settingsStore"),
-              ]);
+              const [{ default: ReasoningService }, { getEffectiveCleanupModel, getSettings }] =
+                await Promise.all([
+                  import("../services/ReasoningService"),
+                  import("../stores/settingsStore"),
+                ]);
               const model = getEffectiveCleanupModel();
               if (model) {
                 const agentName = localStorage.getItem("agentName") || null;
@@ -698,6 +703,23 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     return null;
   };
 
+  // The frameless window has no OS title, so the header carries the section
+  // name. Reuses the sidebar's labels so the two never drift apart.
+  const viewTitles: Record<ControlPanelView, string> = {
+    home: t("sidebar.home"),
+    chat: t("sidebar.chat"),
+    "personal-notes": t("sidebar.notes"),
+    upload: t("sidebar.upload"),
+    dictionary: t("sidebar.dictionary"),
+  };
+
+  // Traffic lights sit over the main header whenever the sidebar isn't the
+  // thing occupying the window's left edge.
+  const headerLeftInset =
+    platform === "darwin" && (sidebarCollapsed || isSidePanelLayout)
+      ? MAC_TRAFFIC_LIGHT_INSET_PX
+      : 8;
+
   return (
     <div className="h-screen bg-background flex flex-col">
       <MeetingRecordingMount />
@@ -771,7 +793,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         <div
           className={`absolute inset-y-0 left-0 z-30 transition-transform duration-300 ease-out${
             sidebarCollapsed && sidebarPeek && !isSidePanelLayout
-              ? " shadow-[10px_0_40px_-18px_rgba(0,0,0,0.2)]"
+              ? " shadow-(--shadow-elevated)"
               : ""
           }`}
           style={{
@@ -811,15 +833,12 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
           />
         </div>
         <main className="flex-1 flex flex-col overflow-hidden">
-          <div
-            className="flex items-center justify-between w-full h-10 shrink-0"
-            style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+          <header
+            className="relative z-20 flex h-11 w-full shrink-0 items-center gap-2 border-b border-border-subtle bg-background pr-2"
+            style={{ WebkitAppRegion: "drag", paddingLeft: headerLeftInset } as React.CSSProperties}
           >
-            {isSidePanelLayout && (
-              <div
-                className={platform === "darwin" ? "ml-[84px] mt-[16px]" : "ml-2"}
-                style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-              >
+            {isSidePanelLayout ? (
+              <div style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
                 <Button
                   variant="outline-flat"
                   size="sm"
@@ -830,32 +849,52 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   {t("controlPanel.backToNotes")}
                 </Button>
               </div>
+            ) : (
+              <>
+                <div
+                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                  onMouseEnter={sidebarCollapsed ? showSidebarPeek : undefined}
+                  onMouseLeave={sidebarCollapsed ? leaveSidebarToggle : undefined}
+                >
+                  <button
+                    onClick={toggleSidebar}
+                    aria-label={sidebarCollapsed ? t("sidebar.expand") : t("sidebar.collapse")}
+                    aria-expanded={!sidebarCollapsed}
+                    className={headerButtonClass}
+                  >
+                    {sidebarCollapsed ? <PanelLeftOpen size={15} /> : <PanelLeftClose size={15} />}
+                  </button>
+                </div>
+                <h1 className="truncate text-[13px] font-medium leading-none tracking-tight text-foreground">
+                  {viewTitles[activeView]}
+                </h1>
+              </>
             )}
             <div className="flex-1" />
             {platform !== "darwin" && (
-              <div className="pr-1" style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
+              <div style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
                 <WindowControls />
               </div>
             )}
-          </div>
-          <div className="flex-1 overflow-y-auto pt-1">
+          </header>
+          <div className="flex-1 overflow-y-auto">
             {(gpuAccelAvailable.transcription || gpuAccelAvailable.intelligence) &&
               activeView === "home" &&
               !gpuBannerDismissed && (
-                <div className="max-w-3xl mx-auto w-full mb-3">
-                  <div className="rounded-lg border border-primary/20 dark:border-primary/15 bg-primary/5 p-3">
+                <div className="px-5 pt-4">
+                  <div className="mx-auto w-full max-w-3xl rounded-lg border border-primary/25 bg-primary-subtle/60 p-3">
                     <div className="flex items-start gap-3">
-                      <div className="shrink-0 w-8 h-8 rounded-md bg-primary/10 dark:bg-primary/15 flex items-center justify-center">
-                        <Zap size={16} className="text-primary" />
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-primary/20 bg-primary/10">
+                        <Zap size={15} className="text-primary" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-foreground mb-0.5">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-foreground">
                           {t("controlPanel.gpu.bannerTitle")}
                         </p>
-                        <p className="text-xs text-muted-foreground mb-2">
+                        <p className="mt-0.5 text-xs text-muted-foreground">
                           {t("controlPanel.gpu.bannerDescription")}
                         </p>
-                        <div className="flex items-center gap-3">
+                        <div className="mt-2.5 flex items-center gap-2">
                           <Button
                             variant="default"
                             size="sm"
@@ -869,15 +908,17 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                           >
                             {t("controlPanel.gpu.enableButton")}
                           </Button>
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs text-muted-foreground"
                             onClick={() => {
                               setGpuBannerDismissed(true);
                               localStorage.setItem("gpuBannerDismissedUnified", "true");
                             }}
-                            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                           >
                             {t("controlPanel.gpu.dismissButton")}
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -945,28 +986,6 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
             )}
           </div>
         </main>
-        {!isSidePanelLayout && (
-          <div
-            className={`absolute z-40 flex h-10 items-center ${
-              platform === "darwin" ? "left-21 top-2" : "left-2 top-0"
-            }`}
-            style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-            onMouseEnter={sidebarCollapsed ? showSidebarPeek : undefined}
-            onMouseLeave={sidebarCollapsed ? leaveSidebarToggle : undefined}
-          >
-            <button
-              onClick={toggleSidebar}
-              aria-label={sidebarCollapsed ? t("sidebar.expand") : t("sidebar.collapse")}
-              className="group flex items-center justify-center h-7 w-7 rounded-md outline-none hover:bg-foreground/5 dark:hover:bg-white/5 focus-visible:ring-2 focus-visible:ring-ring transition-colors duration-150"
-            >
-              {sidebarCollapsed ? (
-                <PanelLeftOpen size={15} className={toggleIconClass} />
-              ) : (
-                <PanelLeftClose size={15} className={toggleIconClass} />
-              )}
-            </button>
-          </div>
-        )}
       </div>
       <BackgroundActionToastListener />
     </div>

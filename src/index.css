@@ -116,6 +116,33 @@
      so their accents must not flip. These deliberately have no .dark twin. */
   --color-hud-success: oklch(0.76 0.15 152);
   --color-hud-danger: oklch(0.66 0.19 24);
+  /* The floating dictation HUD floats over other apps, so it can never adopt
+     the app theme: it would vanish over a light document or a dark editor.
+     These are the dark-palette values, pinned, with no .dark twin. */
+  --color-hud-surface: oklch(0.175 0.008 230);
+  --color-hud-surface-2: oklch(0.225 0.009 230);
+  --color-hud-border: oklch(0.32 0.01 230);
+  --color-hud-border-strong: oklch(0.42 0.012 230);
+  --color-hud-foreground: oklch(0.97 0.003 230);
+  --color-hud-muted: oklch(0.72 0.012 230);
+  --color-hud-accent: oklch(0.752 0.127 200.6);
+  --color-hud-warning: oklch(0.82 0.14 82);
+
+  /* ---- Speaker ramp: categorical, not semantic ---------------------------
+     Diarization needs 8 telling-apart hues, so this is the one place the
+     single-accent rule is suspended. Constant L and C per theme, hues spaced
+     evenly across the 300 degrees that remain once a 60 degree exclusion zone
+     around the brand teal (200.6) is removed - so no speaker is ever mistaken
+     for the accent, and no speaker for another. Dark values are entirely
+     inside sRGB and clear 8.6:1 on --color-card. */
+  --color-speaker-1: oklch(0.47 0.1 231);
+  --color-speaker-2: oklch(0.47 0.1 273);
+  --color-speaker-3: oklch(0.47 0.1 316);
+  --color-speaker-4: oklch(0.47 0.1 359);
+  --color-speaker-5: oklch(0.47 0.1 42);
+  --color-speaker-6: oklch(0.47 0.1 85);
+  --color-speaker-7: oklch(0.47 0.1 128);
+  --color-speaker-8: oklch(0.47 0.1 171);
 
   /* ---- Elevation (light) ------------------------------------------------- */
   --shadow-card: 0 1px 2px oklch(0 0 0 / 0.05);
@@ -190,6 +217,16 @@
   --color-info: oklch(0.752 0.127 200.6);
   --color-info-foreground: oklch(0.17 0.02 200.6);
   --color-info-subtle: oklch(0.295 0.045 200.6);
+
+  /* ---- Speaker ramp (dark) ----------------------------------------------- */
+  --color-speaker-1: oklch(0.79 0.105 231);
+  --color-speaker-2: oklch(0.79 0.105 273);
+  --color-speaker-3: oklch(0.79 0.105 316);
+  --color-speaker-4: oklch(0.79 0.105 359);
+  --color-speaker-5: oklch(0.79 0.105 42);
+  --color-speaker-6: oklch(0.79 0.105 85);
+  --color-speaker-7: oklch(0.79 0.105 128);
+  --color-speaker-8: oklch(0.79 0.105 171);
 
   /* ---- Elevation (dark): depth from shadow plus a 1px top hairline ------- */
   --shadow-card: 0 1px 2px oklch(0 0 0 / 0.5);
@@ -292,44 +329,50 @@ samp,
     "lnum" 1;
 }
 
-/* ---- Headings -------------------------------------------------------------
-   Inter wants progressively tighter tracking as it scales up. */
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: var(--font-sans);
-  font-weight: 600;
-  line-height: 1.18;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
-}
+/* Heading defaults live in @layer base so Tailwind size/weight
+   utilities on a heading win. Unlayered rules outrank layered
+   utilities regardless of specificity, so an unlayered h1 font-size
+   would silently override text-[13px] and friends. */
+@layer base {
+  /* ---- Headings -------------------------------------------------------------
+     Inter wants progressively tighter tracking as it scales up. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
 
-h1 {
-  font-size: 2.5rem;
-  font-weight: 700;
-  line-height: 1.08;
-  letter-spacing: -0.034em;
-}
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.034em;
+  }
 
-h2 {
-  letter-spacing: -0.028em;
-  line-height: 1.12;
-}
+  h2 {
+    letter-spacing: -0.028em;
+    line-height: 1.12;
+  }
 
-h3 {
-  letter-spacing: -0.022em;
-}
+  h3 {
+    letter-spacing: -0.022em;
+  }
 
-h4,
-h5 {
-  letter-spacing: -0.016em;
-}
+  h4,
+  h5 {
+    letter-spacing: -0.016em;
+  }
 
-h6 {
-  letter-spacing: -0.008em;
+  h6 {
+    letter-spacing: -0.008em;
+  }
 }
 
 .brand-heading {
@@ -488,6 +531,51 @@ a:focus-visible {
   }
   to {
     width: 0%;
+  }
+}
+
+/* ---- Floating HUD ---------------------------------------------------------
+   The dictation panel is an always-on-top window over arbitrary desktops, so
+   it carries its own opaque dark ground in BOTH themes. The outer hairline is
+   light and the shadow is deep, so the object survives a white document and a
+   black editor alike. */
+.hud-surface {
+  background: var(--color-hud-surface);
+  border: 1px solid var(--color-hud-border);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.06),
+    0 0 0 0.5px oklch(0 0 0 / 0.55),
+    0 6px 18px -6px oklch(0 0 0 / 0.65),
+    0 2px 6px -2px oklch(0 0 0 / 0.5);
+}
+
+/* Live/recording variant: the accent hairline is the recording tell. */
+.hud-surface-live {
+  border-color: oklch(from var(--color-hud-accent) l c h / 0.5);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.06),
+    0 0 0 0.5px oklch(0 0 0 / 0.55),
+    0 0 0 3px oklch(from var(--color-hud-accent) l c h / 0.1),
+    0 6px 18px -6px oklch(0 0 0 / 0.65);
+}
+
+.hud-surface-warn {
+  border-color: oklch(from var(--color-hud-warning) l c h / 0.55);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.06),
+    0 0 0 0.5px oklch(0 0 0 / 0.55),
+    0 0 0 3px oklch(from var(--color-hud-warning) l c h / 0.1),
+    0 6px 18px -6px oklch(0 0 0 / 0.65);
+}
+
+@keyframes hud-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -1160,4 +1248,24 @@ body:has(.agent-overlay-window) #root {
   pointer-events: none;
   float: left;
   height: 0;
+}
+
+/* ---- Onboarding ------------------------------------------------------------
+   Each step fades and lifts into place when it mounts. The keyed wrapper in
+   OnboardingFlow remounts on every step change, so the animation replays in
+   both directions. The global prefers-reduced-motion rule above collapses the
+   duration, which leaves the end state painted immediately. */
+@keyframes onboarding-step-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.onboarding-step-enter {
+  animation: onboarding-step-enter 180ms var(--ease-snap) both;
 }

@@ -1,76 +1,178 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import "./index.css";
-import { X } from "lucide-react";
+import { MicOff, X } from "lucide-react";
 import { useToast } from "./components/ui/useToast";
-import { LoadingDots } from "./components/ui/LoadingDots";
 import { useHotkey } from "./hooks/useHotkey";
 import { formatHotkeyListLabel } from "./utils/hotkeys";
+import { formatMmSs } from "./utils/formatDuration";
 import { useWindowDrag } from "./hooks/useWindowDrag";
 import { useAudioRecording } from "./hooks/useAudioRecording";
 import { useSettingsStore } from "./stores/settingsStore";
 
-// Sound Wave Icon Component (for idle/hover states)
-const SoundWaveIcon = ({ size = 16 }) => {
-  return (
-    <div className="flex items-center justify-center gap-1">
-      <div
-        className={`bg-white rounded-full`}
-        style={{ width: size * 0.25, height: size * 0.6 }}
-      ></div>
-      <div className={`bg-white rounded-full`} style={{ width: size * 0.25, height: size }}></div>
-      <div
-        className={`bg-white rounded-full`}
-        style={{ width: size * 0.25, height: size * 0.6 }}
-      ></div>
-    </div>
-  );
-};
+/* ---------------------------------------------------------------------------
+ * The dictation HUD.
+ *
+ * This window is 96x96, frameless, transparent and always on top, so every
+ * pixel here floats over whatever the user is actually working in. Two
+ * consequences drive the whole design:
+ *
+ *   1. It is ALWAYS dark. It cannot follow the app theme, because the theme
+ *      says nothing about the desktop underneath it. Everything uses the
+ *      pinned `hud-*` tokens plus a light outer hairline and a deep shadow, so
+ *      the object reads as an object over a white document and a black editor
+ *      alike.
+ *   2. It has ~92px of usable width. States are told apart by shape and one
+ *      accent, not by copy: a square tile when idle or thinking, a capsule
+ *      with a live meter and a tabular clock while capturing.
+ * ------------------------------------------------------------------------- */
 
-// Voice Wave Animation Component (for processing state)
-const VoiceWaveIndicator = ({ isListening }) => {
+const METER_BARS = 5;
+// Centre bars lead, outer bars trail — a flat meter reads as a progress bar.
+const BAR_WEIGHTS = [0.58, 0.84, 1, 0.84, 0.58];
+const METER_HEIGHT_PX = 14;
+const BAR_FLOOR = 0.2;
+
+// Snowi's mark: the ring plus three strokes. Inherits currentColor so a single
+// class recolours it across every HUD state.
+const SnowiMark = ({ size = 17, className = "" }) => (
+  <svg viewBox="0 0 1024 1024" width={size} height={size} className={className} aria-hidden="true">
+    <circle
+      cx="512"
+      cy="512"
+      r="300"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="76"
+      opacity="0.55"
+    />
+    <path d="M512 379V645" stroke="currentColor" strokeWidth="86" strokeLinecap="round" />
+    <path d="M632 452V572" stroke="currentColor" strokeWidth="86" strokeLinecap="round" />
+    <path d="M392 452V572" stroke="currentColor" strokeWidth="86" strokeLinecap="round" />
+  </svg>
+);
+
+/**
+ * Live mic-level meter.
+ *
+ * Reads the recorder's existing speech-gate analyser — no second capture
+ * stream — and writes bar heights straight to the DOM inside one rAF loop, so
+ * a 60fps meter never re-renders React. Capture paths that expose no analyser
+ * (cloud streaming) fall back to a synthesised breath so the HUD still reads
+ * as live rather than freezing at the floor.
+ */
+const LevelMeter = ({ active, getAnalyser }) => {
+  const barsRef = useRef([]);
+
+  useEffect(() => {
+    const bars = barsRef.current;
+    if (!active) {
+      bars.forEach((bar) => {
+        if (bar) bar.style.height = `${METER_HEIGHT_PX * BAR_FLOOR}px`;
+      });
+      return undefined;
+    }
+
+    let frameId = 0;
+    let smoothed = 0;
+    let buffer = new Float32Array(2048);
+    const startedAt = performance.now();
+
+    const tick = () => {
+      const elapsedSec = (performance.now() - startedAt) / 1000;
+      const analyser = getAnalyser?.();
+      let level;
+
+      if (analyser) {
+        if (buffer.length !== analyser.fftSize) buffer = new Float32Array(analyser.fftSize);
+        analyser.getFloatTimeDomainData(buffer);
+        let sumSquares = 0;
+        for (let i = 0; i < buffer.length; i += 1) sumSquares += buffer[i] * buffer[i];
+        const rms = Math.sqrt(sumSquares / buffer.length);
+        // Asymmetric smoothing: jump to peaks, fall back slowly, so consonants
+        // register without the meter flickering between syllables.
+        smoothed = rms > smoothed ? rms * 0.6 + smoothed * 0.4 : smoothed * 0.86 + rms * 0.14;
+        // Speech RMS sits around 0.05-0.15; sqrt lifts it into a visible range.
+        level = Math.min(1, Math.sqrt(smoothed) * 2.4);
+      } else {
+        level = 0.42 + 0.3 * Math.abs(Math.sin(elapsedSec * 2.1));
+      }
+
+      for (let i = 0; i < bars.length; i += 1) {
+        const bar = bars[i];
+        if (!bar) continue;
+        // A small per-bar phase keeps the stack from moving in lockstep.
+        const jitter = 0.88 + 0.12 * Math.sin(elapsedSec * 7 + i * 1.9);
+        const scale = Math.max(BAR_FLOOR, Math.min(1, level * BAR_WEIGHTS[i] * jitter));
+        bar.style.height = `${(METER_HEIGHT_PX * scale).toFixed(2)}px`;
+      }
+
+      frameId = requestAnimationFrame(tick);
+    };
+
+    frameId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frameId);
+  }, [active, getAnalyser]);
+
   return (
-    <div className="flex items-center justify-center gap-0.5">
-      {[...Array(4)].map((_, i) => (
-        <div
+    <div
+      className="flex shrink-0 items-end gap-[2px]"
+      style={{ height: METER_HEIGHT_PX }}
+      aria-hidden="true"
+    >
+      {Array.from({ length: METER_BARS }, (_, i) => (
+        <span
           key={i}
-          className={`w-0.5 bg-white rounded-full transition-[height] duration-150 ${
-            isListening ? "animate-pulse h-4" : "h-2"
-          }`}
-          style={{
-            animationDelay: isListening ? `${i * 0.1}s` : "0s",
-            animationDuration: isListening ? `${0.6 + i * 0.1}s` : "0s",
+          ref={(node) => {
+            barsRef.current[i] = node;
           }}
+          className="w-[2px] rounded-full bg-hud-accent"
+          style={{ height: METER_HEIGHT_PX * BAR_FLOOR }}
         />
       ))}
     </div>
   );
 };
 
-// Tooltip Component
-const Tooltip = ({ children, content, emoji, align = "center" }) => {
+// A ring that fills and empties as it turns: "working", with no copy to fit.
+const ProcessingRing = () => (
+  <svg
+    viewBox="0 0 36 36"
+    className="absolute inset-0 h-full w-full motion-reduce:animate-none"
+    style={{ animation: "spinner-rotate 1.15s linear infinite" }}
+    aria-hidden="true"
+  >
+    <circle
+      cx="18"
+      cy="18"
+      r="15"
+      fill="none"
+      stroke="var(--color-hud-accent)"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeDasharray="26 68"
+      opacity="0.9"
+    />
+  </svg>
+);
+
+// HUD tooltip. Same always-dark ground as the pill it labels.
+const Tooltip = ({ children, content, align = "center" }) => {
   const [isVisible, setIsVisible] = useState(false);
 
   const alignClass =
     align === "right" ? "right-0" : align === "left" ? "left-0" : "left-1/2 -translate-x-1/2";
-
-  const arrowClass =
-    align === "right" ? "right-3" : align === "left" ? "left-3" : "left-1/2 -translate-x-1/2";
 
   return (
     <div className="relative inline-block">
       <div onMouseEnter={() => setIsVisible(true)} onMouseLeave={() => setIsVisible(false)}>
         {children}
       </div>
-      {isVisible && (
+      {isVisible && content && (
         <div
-          className={`absolute bottom-full ${alignClass} mb-2 px-1.5 py-1 text-[10px] text-popover-foreground bg-popover border border-border rounded-md z-10 shadow-lg transition-opacity duration-150 whitespace-nowrap`}
+          className={`hud-surface absolute bottom-full ${alignClass} mb-2 max-w-[92px] truncate rounded-md px-1.5 py-[3px] text-[10px] font-medium leading-none text-hud-muted z-10`}
         >
-          {emoji && <span className="mr-1">{emoji}</span>}
           {content}
-          <div
-            className={`absolute top-full ${arrowClass} w-0 h-0 border-l-2 border-r-2 border-t-2 border-transparent border-t-popover`}
-          ></div>
         </div>
       )}
     </div>
@@ -138,7 +240,7 @@ export default function App() {
 
     const unsubscribeCorrections = window.electronAPI?.onCorrectionsLearned?.((words) => {
       if (words && words.length > 0) {
-        const wordList = words.map((w) => `\u201c${w}\u201d`).join(", ");
+        const wordList = words.map((w) => `“${w}”`).join(", ");
         let toastId;
         toastId = toast({
           title: t("app.toasts.addedToDict", { words: wordList }),
@@ -210,6 +312,7 @@ export default function App() {
     isRecording,
     isProcessing,
     micCaptureStatus,
+    getLevelAnalyser,
     toggleListening,
     cancelRecording,
     cancelProcessing,
@@ -238,6 +341,23 @@ export default function App() {
     });
     return () => unsubscribe?.();
   }, [cancelRecording]);
+
+  // Elapsed capture time. Derived from a wall-clock anchor rather than an
+  // incrementing counter so a throttled interval can't drift.
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  useEffect(() => {
+    if (!isRecording) {
+      setElapsedSeconds(0);
+      return undefined;
+    }
+    const startedAt = Date.now();
+    setElapsedSeconds(0);
+    const intervalId = setInterval(
+      () => setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000)),
+      250
+    );
+    return () => clearInterval(intervalId);
+  }, [isRecording]);
 
   // Auto-hide the floating icon when idle (setting enabled or dictation cycle completed)
   useEffect(() => {
@@ -306,47 +426,42 @@ export default function App() {
   };
 
   const micState = getMicState();
+  const isCapturing = micState === "recording" || micState === "unavailable";
+  const showCancel = (isRecording || isProcessing) && isHovered;
+  const elapsedLabel = formatMmSs(elapsedSeconds);
 
-  const getMicButtonProps = () => {
-    const baseClasses =
-      "rounded-full w-10 h-10 flex items-center justify-center relative overflow-hidden border-2 border-white/70 cursor-pointer";
+  const hotkeyLabel = formatHotkeyListLabel(hotkey);
+  const stateLabel =
+    micState === "recording"
+      ? t("app.mic.recording")
+      : micState === "unavailable"
+        ? t("app.mic.waitingForMicrophone")
+        : micState === "processing"
+          ? t("app.mic.processing")
+          : hotkeyLabel
+            ? t("app.mic.hotkeyToSpeak", { hotkey: hotkeyLabel })
+            : t("app.mic.clickToSpeak");
+  // The window is only 96px wide, so the tooltip shows the hotkey alone; the
+  // full sentence stays on the button's accessible name.
+  const tooltipContent = micState === "idle" || micState === "hover" ? hotkeyLabel : stateLabel;
 
-    switch (micState) {
-      case "idle":
-      case "hover":
-        return {
-          className: `${baseClasses} bg-black/50 cursor-pointer`,
-          tooltip: formatHotkeyListLabel(hotkey),
-        };
-      case "recording":
-        return {
-          className: `${baseClasses} bg-primary cursor-pointer`,
-          tooltip: t("app.mic.recording"),
-        };
-      case "unavailable":
-        return {
-          className: `${baseClasses} bg-warning cursor-pointer`,
-          tooltip: t("app.mic.waitingForMicrophone"),
-        };
-      case "processing":
-        return {
-          className: `${baseClasses} bg-accent cursor-not-allowed`,
-          tooltip: t("app.mic.processing"),
-        };
-      default:
-        return {
-          className: `${baseClasses} bg-black/50 cursor-pointer`,
-          style: { transform: "scale(0.8)" },
-          tooltip: t("app.mic.clickToSpeak"),
-        };
-    }
-  };
-
-  const micProps = getMicButtonProps();
+  // Capturing turns the tile into a capsule. Budget: the cancel affordance
+  // (18px + gap) plus this capsule has to stay inside the window's ~92px of
+  // usable width, so the padding is deliberately mean.
+  const shellClass = [
+    "relative flex h-9 items-center rounded-[11px] overflow-hidden",
+    "text-hud-foreground select-none",
+    isCapturing ? "gap-1 pl-1.5 pr-2" : "w-9 justify-center",
+    micState === "unavailable" ? "hud-surface hud-surface-warn" : "hud-surface",
+    micState === "recording" ? "hud-surface-live" : "",
+    micState === "processing" ? "cursor-not-allowed" : "cursor-pointer",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className="dictation-window">
-      {/* Voice button - position determined by panelStartPosition setting */}
+      {/* HUD — position determined by panelStartPosition setting */}
       <div
         className={`fixed bottom-1 z-50 ${
           panelStartPosition === "bottom-left"
@@ -357,7 +472,7 @@ export default function App() {
         }`}
       >
         <div
-          className="relative flex items-center gap-2"
+          className="relative flex items-center gap-1.5"
           onMouseEnter={() => {
             setIsHovered(true);
             setWindowInteractivity(true);
@@ -369,26 +484,34 @@ export default function App() {
             }
           }}
         >
-          {(isRecording || isProcessing) && isHovered && (
+          {/* Sits beside the capsule rather than inside it: a nested button is
+              invalid, and the tile states are too small to give up width. Its
+              fill uses explicit utilities rather than .hud-surface, which is
+              unlayered and would outrank the hover colour. */}
+          {showCancel && (
             <button
               aria-label={
                 isRecording ? t("app.buttons.cancelRecording") : t("app.buttons.cancelProcessing")
               }
+              title={
+                isRecording ? t("app.buttons.cancelRecording") : t("app.buttons.cancelProcessing")
+              }
               onClick={(e) => {
                 e.stopPropagation();
-                isRecording ? cancelRecording() : cancelProcessing();
+                if (isRecording) {
+                  cancelRecording();
+                } else {
+                  cancelProcessing();
+                }
               }}
-              className="group/cancel w-5 h-5 rounded-full bg-surface-2/90 hover:bg-destructive border border-border hover:border-destructive/70 flex items-center justify-center transition-colors duration-150 shadow-sm backdrop-blur-sm"
+              className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-md border border-hud-border bg-hud-surface-2 text-hud-muted transition-colors duration-150 hover:border-hud-danger hover:bg-hud-danger hover:text-white"
+              style={{ animation: "hud-pop-in 120ms var(--ease-snap) both" }}
             >
-              <X
-                size={10}
-                strokeWidth={2.5}
-                className="text-foreground group-hover/cancel:text-destructive-foreground transition-colors duration-150"
-              />
+              <X size={10} strokeWidth={2.75} />
             </button>
           )}
           <Tooltip
-            content={micProps.tooltip}
+            content={tooltipContent}
             align={
               panelStartPosition === "bottom-left"
                 ? "left"
@@ -399,6 +522,7 @@ export default function App() {
           >
             <button
               ref={buttonRef}
+              aria-label={stateLabel}
               onMouseDown={(e) => {
                 setIsCommandMenuOpen(false);
                 setDragStartPos({ x: e.clientX, y: e.clientY });
@@ -437,60 +561,57 @@ export default function App() {
               }}
               onFocus={() => setIsHovered(true)}
               onBlur={() => setIsHovered(false)}
-              className={micProps.className}
+              className={shellClass}
               style={{
-                ...micProps.style,
                 cursor:
                   micState === "processing"
                     ? "not-allowed !important"
                     : isDragging
                       ? "grabbing !important"
                       : "pointer !important",
-                transition:
-                  "transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease-out",
+                transition: "width 0.2s var(--ease-snap), padding 0.2s var(--ease-snap)",
               }}
             >
-              {/* Background effects */}
-              <div
-                className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent transition-opacity duration-150"
-                style={{ opacity: micState === "hover" ? 0.8 : 0 }}
-              ></div>
-              <div
-                className="absolute inset-0 transition-colors duration-150"
-                style={{
-                  backgroundColor: micState === "hover" ? "rgba(0,0,0,0.1)" : "transparent",
-                }}
-              ></div>
-
-              {/* Dynamic content based on state */}
-              {micState === "idle" || micState === "hover" ? (
-                <SoundWaveIcon size={micState === "idle" ? 12 : 14} />
-              ) : micState === "recording" ? (
-                <LoadingDots />
+              {isCapturing ? (
+                <>
+                  {micState === "unavailable" ? (
+                    <MicOff size={13} className="shrink-0 text-hud-warning" strokeWidth={2.2} />
+                  ) : (
+                    <LevelMeter active getAnalyser={getLevelAnalyser} />
+                  )}
+                  <span
+                    data-numeric
+                    className={`text-[10px] font-semibold leading-none tracking-[0.01em] ${
+                      micState === "unavailable" ? "text-hud-warning" : "text-hud-foreground"
+                    }`}
+                  >
+                    {elapsedLabel}
+                  </span>
+                </>
               ) : micState === "processing" ? (
-                <VoiceWaveIndicator isListening={true} />
-              ) : micState === "unavailable" ? (
-                <span className="text-white text-base font-bold">!</span>
-              ) : null}
-
-              {/* State indicator ring for recording */}
-              {micState === "recording" && (
-                <div className="absolute inset-0 rounded-full border-2 border-primary/50 animate-pulse"></div>
-              )}
-              {micState === "unavailable" && (
-                <div className="absolute inset-0 rounded-full border-2 border-warning/60 animate-pulse"></div>
-              )}
-
-              {/* State indicator ring for processing */}
-              {micState === "processing" && (
-                <div className="absolute inset-0 rounded-full border-2 border-primary/30 opacity-50"></div>
+                <>
+                  <ProcessingRing />
+                  <SnowiMark size={15} className="text-hud-accent/80" />
+                </>
+              ) : (
+                <SnowiMark
+                  size={17}
+                  className={
+                    micState === "hover"
+                      ? "text-hud-accent transition-colors duration-150"
+                      : "text-hud-muted transition-colors duration-150"
+                  }
+                />
               )}
             </button>
           </Tooltip>
+
           {isCommandMenuOpen && (
             <div
               ref={commandMenuRef}
-              className="absolute bottom-full right-0 mb-3 w-48 rounded-lg border border-border bg-popover text-popover-foreground shadow-lg backdrop-blur-sm"
+              className={`hud-surface absolute bottom-full ${
+                panelStartPosition === "bottom-left" ? "left-0" : "right-0"
+              } mb-2 w-44 overflow-hidden rounded-lg p-1 text-hud-foreground`}
               onMouseEnter={() => {
                 setWindowInteractivity(true);
               }}
@@ -501,7 +622,7 @@ export default function App() {
               }}
             >
               <button
-                className="w-full px-3 py-2 text-left text-sm font-medium hover:bg-muted focus:bg-muted focus:outline-none"
+                className="w-full rounded-md px-2 py-1.5 text-left text-[12px] font-medium text-hud-foreground transition-colors duration-150 hover:bg-white/8 focus:bg-white/8 focus:outline-none"
                 onClick={() => {
                   toggleListening();
                 }}
@@ -510,9 +631,9 @@ export default function App() {
                   ? t("app.commandMenu.stopListening")
                   : t("app.commandMenu.startListening")}
               </button>
-              <div className="h-px bg-border" />
+              <div className="my-1 h-px bg-hud-border" />
               <button
-                className="w-full px-3 py-2 text-left text-sm hover:bg-muted focus:bg-muted focus:outline-none"
+                className="w-full rounded-md px-2 py-1.5 text-left text-[12px] text-hud-muted transition-colors duration-150 hover:bg-white/8 hover:text-hud-foreground focus:bg-white/8 focus:outline-none"
                 onClick={() => {
                   setIsCommandMenuOpen(false);
                   setWindowInteractivity(false);

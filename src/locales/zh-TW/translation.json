@@ -135,6 +135,7 @@
     "pttUnavailable": "按住說話原生監聽程式無法使用"
   },
   "common": {
+    "duration": "時長",
     "add": "新增",
     "retry": "重試",
     "back": "返回",
@@ -187,6 +188,10 @@
       "meeting": "會議",
       "finish": "完成",
       "voiceAgent": "語音助手"
+    },
+    "rail": {
+      "ariaLabel": "設定步驟",
+      "progress": "第 {{current}} 步，共 {{total}} 步"
     },
     "hotkey": {
       "couldNotRegisterTitle": "無法註冊該快捷鍵",
@@ -2523,7 +2528,8 @@
       "conversationWillAppear": "對話將顯示在這裡...",
       "linkedEvent": "關聯行程",
       "noFolder": "無資料夾",
-      "participants": "參與者"
+      "participants": "參與者",
+      "viewMode": "檢視模式"
     },
     "participants": {
       "attendee": "位與會者",
@@ -2731,7 +2737,8 @@
         "provisional": "暫定",
         "confirmed": "已確認",
         "suggested": "建議",
-        "locked": "鎖定"
+        "locked": "鎖定",
+        "interim": "暫定"
       },
       "createNewPrefix": "建立",
       "emailPlaceholder": "name@example.com",
@@ -2749,7 +2756,8 @@
         "incAria": "增加預期發言人數",
         "decAria": "減少預期發言人數",
         "othersInCall_one": "通話中還有 {{count}} 人",
-        "othersInCall_other": "通話中還有 {{count}} 人"
+        "othersInCall_other": "通話中還有 {{count}} 人",
+        "dismissAria": "關閉說話者提示"
       }
     },
     "overview": {
@@ -2847,6 +2855,7 @@
     "agentDefault": "預設加入"
   },
   "sidebar": {
+    "navigationLabel": "主導覽",
     "home": "首頁",
     "notes": "筆記",
     "upload": "上傳",
@@ -3300,6 +3309,7 @@
     }
   },
   "commandSearch": {
+    "clearQuery": "清除搜尋",
     "allSpaces": "所有空間",
     "title": "搜尋",
     "description": "搜尋筆記與轉錄",

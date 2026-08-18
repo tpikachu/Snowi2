@@ -2,17 +2,20 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { MeetingNotificationCard } from "../MeetingNotificationCard";
 import { HotkeyInput } from "../ui/HotkeyInput";
+import StepShell, { StepSection } from "./StepShell";
 import { useHotkeyRegistration } from "../../hooks/useHotkeyRegistration";
 import { validateHotkeyForSlot } from "../../utils/hotkeyValidation";
 import { parseHotkeyList, serializeHotkeyList } from "../../utils/hotkeys";
 
 interface MeetingSetupStepProps {
+  eyebrow?: string;
   meetingKey: string;
   setMeetingKey: (key: string) => void;
   dictationKey: string;
 }
 
 export default function MeetingSetupStep({
+  eyebrow,
   meetingKey,
   setMeetingKey,
   dictationKey,
@@ -40,17 +43,14 @@ export default function MeetingSetupStep({
   );
 
   return (
-    <div className="space-y-4">
-      <div className="text-center space-y-0.5">
-        <h2 className="text-lg font-semibold text-foreground tracking-tight">
-          {t("onboarding.meeting.title")}
-        </h2>
-        <p className="text-xs text-muted-foreground">{t("onboarding.meeting.description")}</p>
-      </div>
-
+    <StepShell
+      eyebrow={eyebrow}
+      title={t("onboarding.meeting.title")}
+      description={t("onboarding.meeting.description")}
+    >
       <div className="space-y-2">
         {/* A faithful preview of the real notification, framed like a desktop corner */}
-        <div className="relative overflow-hidden rounded-lg border border-border-subtle bg-gradient-to-br from-surface-2/50 via-surface-1 to-primary/5 px-4 pt-4 pb-9">
+        <div className="relative overflow-hidden rounded-xl border border-border-subtle bg-gradient-to-br from-surface-2 via-surface-1 to-primary/8 px-4 pt-4 pb-9">
           <div className="pointer-events-none select-none">
             <MeetingNotificationCard
               title={t("meetingNotification.title")}
@@ -60,20 +60,15 @@ export default function MeetingSetupStep({
             />
           </div>
         </div>
-        <p className="px-2 text-center text-xs text-muted-foreground/80 leading-snug">
+        <p className="text-xs leading-snug text-muted-foreground/80">
           {t("onboarding.meeting.autoDetect")}
         </p>
       </div>
 
-      <div className="rounded-lg border border-border-subtle bg-surface-1 p-4">
-        <div className="mb-3">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            {t("onboarding.meeting.hotkeyLabel")}
-          </span>
-          <p className="text-xs text-muted-foreground/70 mt-0.5">
-            {t("onboarding.meeting.hotkeyHint")}
-          </p>
-        </div>
+      <StepSection
+        label={t("onboarding.meeting.hotkeyLabel")}
+        hint={t("onboarding.meeting.hotkeyHint")}
+      >
         <HotkeyInput
           value={parseHotkeyList(meetingKey)[0] ?? ""}
           onChange={async (newHotkey) => {
@@ -92,12 +87,12 @@ export default function MeetingSetupStep({
               setMeetingKey("");
             }}
             disabled={isRegistering}
-            className="mt-2 text-xs text-muted-foreground/70 hover:text-foreground transition-colors disabled:opacity-50"
+            className="mt-2 rounded-sm text-xs text-muted-foreground/70 outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
           >
             {t("hotkeyInput.remove")}
           </button>
         )}
-      </div>
-    </div>
+      </StepSection>
+    </StepShell>
   );
 }

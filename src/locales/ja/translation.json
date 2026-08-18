@@ -135,6 +135,7 @@
     "pttUnavailable": "プッシュトゥトークのネイティブリスナーが利用できません"
   },
   "common": {
+    "duration": "長さ",
     "add": "追加",
     "retry": "再試行",
     "back": "戻る",
@@ -187,6 +188,10 @@
       "meeting": "会議",
       "finish": "完了",
       "voiceAgent": "ボイスエージェント"
+    },
+    "rail": {
+      "ariaLabel": "セットアップの手順",
+      "progress": "ステップ {{current}}/{{total}}"
     },
     "hotkey": {
       "couldNotRegisterTitle": "ホットキーを登録できませんでした",
@@ -2428,7 +2433,8 @@
       "raw": "元のテキスト",
       "enhanced": "強化済み",
       "saving": "保存中",
-      "startWriting": "書き始める..."
+      "startWriting": "書き始める...",
+      "viewMode": "表示モード"
     },
     "participants": {
       "attendee": "名の参加者",
@@ -2659,7 +2665,8 @@
         "provisional": "仮",
         "confirmed": "確認済み",
         "suggested": "候補",
-        "locked": "固定"
+        "locked": "固定",
+        "interim": "暫定"
       },
       "pill": {
         "identifying": "話者を識別中",
@@ -2671,7 +2678,8 @@
         "incAria": "想定する話者数を増やす",
         "decAria": "想定する話者数を減らす",
         "othersInCall_one": "他{{count}}人が通話中",
-        "othersInCall_other": "他{{count}}人が通話中"
+        "othersInCall_other": "他{{count}}人が通話中",
+        "dismissAria": "話者ヒントを閉じる"
       },
       "createNewPrefix": "作成",
       "emailPlaceholder": "name@example.com",
@@ -2847,6 +2855,7 @@
     }
   },
   "sidebar": {
+    "navigationLabel": "メインナビゲーション",
     "home": "ホーム",
     "notes": "ノート",
     "upload": "アップロード",
@@ -3300,6 +3309,7 @@
     }
   },
   "commandSearch": {
+    "clearQuery": "検索をクリア",
     "allSpaces": "すべてのスペース",
     "title": "検索",
     "description": "ノートと文字起こしを検索",
