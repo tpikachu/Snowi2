@@ -1795,6 +1795,9 @@ declare global {
       onMeetingPanelState?: (callback: (snapshot: MeetingPanelSnapshot) => void) => () => void;
       onMeetingPanelLevel?: (callback: (level: number) => void) => () => void;
       onMeetingPanelCommand?: (callback: (command: MeetingPanelCommand) => void) => () => void;
+
+      /** Meeting pre-roll: buffer while a detection prompt is up, or drop it. */
+      onMeetingPreRoll?: (callback: (action: "start" | "discard") => void) => () => void;
       onMeetingTranscriptionSegment?: (
         callback: (data: {
           text: string;

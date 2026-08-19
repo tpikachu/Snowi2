@@ -1651,7 +1651,9 @@
         "calendarReminders": "Promemoria calendario",
         "calendarRemindersDescription": "Avvisa quando una riunione programmata sta per iniziare",
         "updates": "Aggiornamenti app",
-        "updatesDescription": "Avvisa quando è disponibile una nuova versione"
+        "updatesDescription": "Avvisa quando è disponibile una nuova versione",
+        "meetingPreRoll": "Cattura l'inizio delle riunioni rilevate",
+        "meetingPreRollDescription": "Mentre un avviso di riunione è sullo schermo, gli ultimi 45 secondi di audio del microfono restano in memoria così accettare non inizia a metà frase. L'audio non viene mai scritto su disco e viene distrutto appena chiudi l'avviso o lo lasci scadere."
       },
       "clipboard": {
         "title": "Appunti",

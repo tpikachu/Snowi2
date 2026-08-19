@@ -1699,7 +1699,9 @@
         "calendarReminders": "Recordatorios del calendario",
         "calendarRemindersDescription": "Notificar cuando una reunión programada está a punto de comenzar",
         "updates": "Actualizaciones",
-        "updatesDescription": "Notificar cuando hay una nueva versión disponible"
+        "updatesDescription": "Notificar cuando hay una nueva versión disponible",
+        "meetingPreRoll": "Capturar el inicio de las reuniones detectadas",
+        "meetingPreRollDescription": "Mientras haya un aviso de reunión en pantalla, se mantienen en memoria los últimos 45 segundos de audio del micrófono para que aceptarlo no empiece a mitad de una frase. El audio nunca se guarda en disco y se destruye en cuanto descartas el aviso o dejas que caduque."
       },
       "clipboard": {
         "title": "Portapapeles",

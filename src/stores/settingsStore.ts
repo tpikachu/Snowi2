@@ -209,6 +209,7 @@ const BOOLEAN_SETTINGS = new Set([
   "floatingIconAutoHide",
   "startMinimized",
   "meetingProcessDetection",
+  "meetingPreRollEnabled",
   "speakerDiarizationEnabled",
   "dictationSileroEnabled",
   "noteRecordingSileroEnabled",
@@ -637,6 +638,12 @@ export interface SettingsState
   mcalPrimaryOnly: boolean;
   appleCalendarConnected: boolean;
   meetingProcessDetection: boolean;
+  /**
+   * Buffer a short window of microphone audio while a meeting-detection
+   * prompt is on screen, so accepting it does not begin mid-sentence.
+   * This is capture before consent, bounded to the life of the prompt.
+   */
+  meetingPreRollEnabled: boolean;
   speakerDiarizationEnabled: boolean;
   dictationSileroEnabled: boolean;
   noteRecordingSileroEnabled: boolean;
@@ -933,6 +940,7 @@ export interface SettingsState
   setMcalPrimaryOnly: (value: boolean) => void;
   setAppleCalendarConnected: (value: boolean) => void;
   setMeetingProcessDetection: (value: boolean) => void;
+  setMeetingPreRollEnabled: (value: boolean) => void;
   setSpeakerDiarizationEnabled: (value: boolean) => void;
   setDictationSileroEnabled: (value: boolean) => void;
   setNoteRecordingSileroEnabled: (value: boolean) => void;
@@ -1348,6 +1356,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   mcalPrimaryOnly: readBoolean("mcalPrimaryOnly", true),
   appleCalendarConnected: readBoolean("appleCalendarConnected", false),
   meetingProcessDetection: readBoolean("meetingProcessDetection", true),
+  meetingPreRollEnabled: readBoolean("meetingPreRollEnabled", true),
   speakerDiarizationEnabled: readBoolean("speakerDiarizationEnabled", true),
   // Off by default: VAD on pause-heavy dictations can strip the speech and make
   // Whisper hallucinate the dictionary prompt as the transcript (#1454).
@@ -2068,6 +2077,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   },
   setAppleCalendarConnected: createBooleanSetter("appleCalendarConnected"),
   setMeetingProcessDetection: createBooleanSetter("meetingProcessDetection"),
+  setMeetingPreRollEnabled: createBooleanSetter("meetingPreRollEnabled"),
   setSpeakerDiarizationEnabled: (value: boolean) => {
     if (isBrowser) localStorage.setItem("speakerDiarizationEnabled", String(value));
     useSettingsStore.setState({ speakerDiarizationEnabled: value });

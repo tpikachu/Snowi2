@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { closeGap, openGap, type MeetingGap } from "../utils/meetingGaps";
+import { PcmRingBuffer } from "../utils/pcmRingBuffer";
 import { getSettings, selectResolvedMeetingTranscription } from "./settingsStore";
 import { getStreamingTranscriptionProviders } from "../models/ModelRegistry";
 import { resolveMeetingTranscriptionOptions } from "../helpers/meetingTranscriptionRouting";
@@ -304,6 +305,137 @@ registerProcessor("meeting-pcm-processor", MeetingPCMProcessor);
 export const primeMeetingWorklet = () => {
   getMeetingWorkletBlobUrl();
 };
+
+// ---------------------------------------------------------------- pre-roll
+//
+// A meeting detected for you starts without you: by the time the prompt is
+// noticed and accepted, the agenda has usually already been said. This keeps a
+// short rolling window of microphone audio *while that prompt is on screen*,
+// so accepting does not begin mid-sentence.
+//
+// The boundaries are deliberate and narrow. Capture starts only when a prompt
+// is actually asking, holds at most PRE_ROLL_WINDOW_MS in memory, never
+// touches disk, and is dropped the moment the prompt is answered with anything
+// other than yes. It is capture before consent, which is why it is bounded on
+// every axis rather than left running whenever a meeting app happens to be up.
+
+const PRE_ROLL_WINDOW_MS = 45_000;
+/**
+ * A backstop, not a policy. Every normal path closes the pre-roll — accepting
+ * takes it, dismissing and timing out discard it — but a prompt whose outcome
+ * never arrives must not leave the microphone open indefinitely.
+ */
+const PRE_ROLL_MAX_LIFETIME_MS = 5 * 60_000;
+
+let preRollRing: PcmRingBuffer | null = null;
+let preRollExpiry: ReturnType<typeof setTimeout> | null = null;
+let preRollStream: MediaStream | null = null;
+let preRollContext: AudioContext | null = null;
+let preRollSource: MediaStreamAudioSourceNode | null = null;
+let preRollProcessor: AudioWorkletNode | null = null;
+let preRollStarting = false;
+
+/** Releases the microphone. The ring is left alone — the caller decides. */
+const stopPreRollCapture = () => {
+  preRollStarting = false;
+  if (preRollExpiry) {
+    clearTimeout(preRollExpiry);
+    preRollExpiry = null;
+  }
+  try {
+    preRollProcessor?.port.postMessage("stop");
+  } catch {
+    // Worklet already gone; the teardown below is what matters.
+  }
+  preRollSource?.disconnect();
+  preRollProcessor?.disconnect();
+  preRollSource = null;
+  preRollProcessor = null;
+  stopMediaStream(preRollStream);
+  preRollStream = null;
+  const context = preRollContext;
+  preRollContext = null;
+  void context?.close().catch(() => {});
+};
+
+/**
+ * Opens the microphone into the rolling window. Never starts while a meeting
+ * is live or starting — that microphone is already accounted for, and a second
+ * claim on it would risk the recording that matters for one that might not
+ * happen.
+ */
+export async function startMeetingPreRoll(): Promise<boolean> {
+  if (isRecordingFlag || isStartingFlag || preRollStream || preRollStarting) return false;
+  if (!(getSettings() as { meetingPreRollEnabled?: boolean }).meetingPreRollEnabled) return false;
+
+  preRollStarting = true;
+  try {
+    const ring = new PcmRingBuffer({ sampleRate: 24000, maxDurationMs: PRE_ROLL_WINDOW_MS });
+    const stream = await navigator.mediaDevices.getUserMedia(await getMeetingMicConstraints());
+
+    // A meeting may have started for real while permission was being resolved.
+    if (isRecordingFlag || isStartingFlag || !preRollStarting) {
+      stopMediaStream(stream);
+      preRollStarting = false;
+      return false;
+    }
+
+    const context = new AudioContext({ sampleRate: 24000 });
+    await detachFromOutputDevice(context);
+    const { source, processor } = await createAudioPipeline({
+      stream,
+      context,
+      onChunk: (chunk) => ring.push(chunk.slice(0)),
+    });
+
+    preRollRing = ring;
+    preRollStream = stream;
+    preRollContext = context;
+    preRollSource = source;
+    preRollProcessor = processor;
+    preRollStarting = false;
+    preRollExpiry = setTimeout(() => {
+      logger.warn("Meeting pre-roll expired without an outcome; discarding", {}, "meeting");
+      discardMeetingPreRoll();
+    }, PRE_ROLL_MAX_LIFETIME_MS);
+
+    logger.info("Meeting pre-roll started", { windowMs: PRE_ROLL_WINDOW_MS }, "meeting");
+    return true;
+  } catch (err) {
+    preRollStarting = false;
+    stopPreRollCapture();
+    preRollRing = null;
+    // Never surfaced to the user: a pre-roll that cannot start costs them the
+    // opening of a meeting they have not yet agreed to record.
+    logger.debug(
+      "Meeting pre-roll could not start",
+      { error: (err as Error).message },
+      "meeting"
+    );
+    return false;
+  }
+}
+
+/** Stops capture and destroys the window. The answer was not yes. */
+export function discardMeetingPreRoll(): void {
+  const had = preRollRing != null && !preRollRing.isEmpty;
+  stopPreRollCapture();
+  preRollRing?.clear();
+  preRollRing = null;
+  if (had) logger.info("Meeting pre-roll discarded", {}, "meeting");
+}
+
+/** Stops capture and hands the buffered audio over, emptying the window. */
+function takeMeetingPreRoll(): ArrayBuffer[] {
+  stopPreRollCapture();
+  const ring = preRollRing;
+  preRollRing = null;
+  if (!ring || ring.isEmpty) return [];
+  const durationMs = Math.round(ring.durationMs);
+  const chunks = ring.take();
+  logger.info("Meeting pre-roll prepended to the recording", { durationMs }, "meeting");
+  return chunks;
+}
 
 const getMeetingMicConstraints = async (): Promise<MediaStreamConstraints> => {
   const { preferBuiltInMic, selectedMicDeviceId, selectedMicDeviceLabel } = getSettings();
@@ -782,6 +914,12 @@ export interface StartRecordingArgs {
 export async function startRecording(args: StartRecordingArgs): Promise<boolean> {
   if (isRecordingFlag || isStartingFlag) return true;
   isStartingFlag = true;
+
+  // Claimed before this start touches the microphone, so the pre-roll's own
+  // capture is released rather than competing with the recording's. Empty
+  // unless a detection prompt was on screen, which is the only thing that
+  // fills it.
+  const preRollChunks = takeMeetingPreRoll();
 
   const initialEnabled =
     args.diarizationEnabled ??
@@ -1303,6 +1441,12 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
     isStartingFlag = false;
     socketReady = true;
 
+    // Pre-roll goes first: it is older than anything the live pipeline has
+    // buffered, and sending it after would put the opening of the meeting
+    // downstream of its own middle.
+    for (const chunk of preRollChunks) {
+      window.electronAPI?.meetingTranscriptionSend?.(chunk, "mic");
+    }
     for (const chunk of pendingMicChunks) {
       window.electronAPI?.meetingTranscriptionSend?.(chunk, "mic");
     }

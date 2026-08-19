@@ -1651,7 +1651,9 @@
         "calendarReminders": "カレンダーリマインダー",
         "calendarRemindersDescription": "予定された会議がまもなく始まるときに通知する",
         "updates": "アプリの更新",
-        "updatesDescription": "新しいバージョンが利用可能になったときに通知する"
+        "updatesDescription": "新しいバージョンが利用可能になったときに通知する",
+        "meetingPreRoll": "検出された会議の冒頭も記録する",
+        "meetingPreRollDescription": "会議の確認が表示されている間、マイク音声の直近 45 秒をメモリに保持し、承認しても文の途中から始まらないようにします。音声がディスクに書き込まれることはなく、確認を閉じるか期限が切れた時点で破棄されます。"
       },
       "clipboard": {
         "title": "クリップボード",

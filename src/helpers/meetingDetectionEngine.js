@@ -240,6 +240,10 @@ class MeetingDetectionEngine {
 
         this.audioActivityDetector.resetPrompt();
       } else if (action === "dismiss") {
+        // The answer was no, so the audio buffered while the prompt was up is
+        // destroyed. Accepting deliberately does not touch it: the recording
+        // about to start is what consumes it.
+        this.windowManager.setMeetingPreRoll?.("discard");
         if (detection) {
           this._dismiss();
         }
@@ -341,6 +345,8 @@ class MeetingDetectionEngine {
     // prompts. Only an explicit dismissal (handleNotificationResponse) cools
     // the mic detector down.
     this.activeDetections.clear();
+    // An unanswered prompt is not consent, so its buffered audio goes too.
+    this.windowManager.setMeetingPreRoll?.("discard");
     debugLogger.info("Notification auto-dismissed, detections cleared", {}, "meeting");
   }
 

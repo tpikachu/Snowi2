@@ -580,6 +580,8 @@ export default function SettingsPage({
     setNotificationsEnabled,
     notifyMeetingDetection,
     setNotifyMeetingDetection,
+    meetingPreRollEnabled,
+    setMeetingPreRollEnabled,
     notifyCalendarReminders,
     setNotifyCalendarReminders,
     notifyUpdates,
@@ -1370,6 +1372,18 @@ export default function SettingsPage({
                       checked={notifyMeetingDetection}
                       onChange={setNotifyMeetingDetection}
                       disabled={!notificationsEnabled}
+                    />
+                  </SettingsRow>
+                </SettingsPanelRow>
+                <SettingsPanelRow>
+                  <SettingsRow
+                    label={t("settingsPage.general.notifications.meetingPreRoll")}
+                    description={t("settingsPage.general.notifications.meetingPreRollDescription")}
+                  >
+                    <Toggle
+                      checked={meetingPreRollEnabled}
+                      onChange={setMeetingPreRollEnabled}
+                      disabled={!notificationsEnabled || !notifyMeetingDetection}
                     />
                   </SettingsRow>
                 </SettingsPanelRow>

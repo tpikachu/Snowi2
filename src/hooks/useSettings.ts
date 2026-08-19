@@ -333,6 +333,8 @@ function useSettingsInternal() {
     setNotificationsEnabled: store.setNotificationsEnabled,
     notifyMeetingDetection: store.notifyMeetingDetection,
     setNotifyMeetingDetection: store.setNotifyMeetingDetection,
+    meetingPreRollEnabled: store.meetingPreRollEnabled,
+    setMeetingPreRollEnabled: store.setMeetingPreRollEnabled,
     notifyCalendarReminders: store.notifyCalendarReminders,
     setNotifyCalendarReminders: store.setNotifyCalendarReminders,
     notifyUpdates: store.notifyUpdates,

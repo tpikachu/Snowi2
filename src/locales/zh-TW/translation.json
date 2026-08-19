@@ -1651,7 +1651,9 @@
         "calendarReminders": "行事曆提醒",
         "calendarRemindersDescription": "預定會議即將開始時通知您",
         "updates": "應用程式更新",
-        "updatesDescription": "有新版本可用時通知您"
+        "updatesDescription": "有新版本可用時通知您",
+        "meetingPreRoll": "捕捉偵測到的會議開頭",
+        "meetingPreRollDescription": "會議提示顯示期間，在記憶體中保留最近 45 秒的麥克風音訊，這樣接受時不會從半句話開始。音訊絕不寫入磁碟，你關閉提示或讓它逾時後會立即銷毀。"
       },
       "clipboard": {
         "title": "剪貼簿",

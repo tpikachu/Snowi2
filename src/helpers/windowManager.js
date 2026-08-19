@@ -1287,6 +1287,10 @@ class WindowManager {
     // Keep the prompt visible to the user but out of screen shares and recordings.
     win.setContentProtection(true);
 
+    // A meeting detected for you has already started. Buffer from the moment
+    // the prompt goes up so accepting it does not begin mid-sentence.
+    this.setMeetingPreRoll("start");
+
     if (process.platform === "darwin") {
       win.setIgnoreMouseEvents(true, { forward: true });
     }
@@ -1331,6 +1335,19 @@ class WindowManager {
       this.notificationWindow = null;
       this._notificationDismissTimer.cancel();
     });
+  }
+
+  /**
+   * Drives the renderer's meeting pre-roll.
+   *
+   * Deliberately not tied to the prompt window's own lifetime: the window is
+   * dismissed on *every* answer, including yes, so closing it must not be what
+   * throws away the audio the user just agreed to keep. Only the outcome
+   * decides — the detection engine says which.
+   */
+  setMeetingPreRoll(action) {
+    if (action !== "start" && action !== "discard") return;
+    this.sendToControlPanel("meeting-preroll", action);
   }
 
   showNotificationWindow() {

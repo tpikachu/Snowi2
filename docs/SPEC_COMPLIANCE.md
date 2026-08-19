@@ -18,6 +18,8 @@ Status: **Done** · **Partial** · **Missing** · **Waived** (recorded owner dec
 | Encryption scope      | Meetings become a new encrypted entity; notes/snippets stay plaintext with FTS5 | 2026-08-19 |
 | First milestone       | M1 security foundation                                                          | 2026-08-19 |
 | Panel screen-share exclusion | Whole panel window protected, not just assistant text — see note below   | 2026-08-19 |
+| Home information architecture | Home is a meeting dashboard (now / next / recent / readiness); Notes stays the single library | 2026-08-19 |
+| Detected-meeting pre-roll | Buffer 45s only while a detection prompt is on screen; not always-on | 2026-08-19 |
 
 ## §2–§9 Fork, scope, onboarding
 
@@ -34,7 +36,8 @@ Status: **Done** · **Partial** · **Missing** · **Waived** (recorded owner dec
 
 | Item                                    | Status  | Notes                                                           |
 | --------------------------------------- | ------- | --------------------------------------------------------------- |
-| §10 preflight panel and Start gating    | Missing | No preflight; no disk-space or key-availability gate            |
+| §10 preflight panel and Start gating    | Partial | Home's readiness panel answers mic/system-audio/model/calendar; no disk-space or key gate, and nothing blocks Start |
+| §10 detected-meeting pre-roll           | Done    | 45s in-memory window while a prompt is up; opt-out in Settings — see decision below |
 | §11 capture state machine               | Partial | Pause/Resume with gap markers; no PAUSING/FINALIZING states yet |
 | §11.1 emergency-stop shortcut           | Missing |                                                                 |
 | §11.1 stop asks keep-or-discard         | Done    | Empty meetings lead with Discard; Enter never destroys          |
@@ -125,6 +128,14 @@ canonical hash, §19 memory objects, §20 action items and revision events.
   have to move into main first (M1.3 before M1.4).
 - **FTS5 over meeting content** violates §21.3 today and is fixed only once
   meetings stop being notes.
+- **The pre-roll captures before consent, by design.** A meeting detected
+  for you has already started, so accepting a prompt otherwise begins
+  mid-sentence. The window is bounded on every axis instead: it opens only
+  while a prompt is actually asking, holds 45s in memory, never touches disk,
+  is destroyed on dismiss or timeout, self-expires after 5 minutes if an
+  outcome never arrives, and can be turned off in Settings. An always-on
+  buffer was considered and rejected — it would light the OS microphone
+  indicator whenever a meeting app was open, with no prompt to explain why.
 - **Panel content protection is coarser than §12.1 allows.** The spec permits
   screen-share exclusion "solely to protect private assistant text". Electron's
   `setContentProtection` is per-window, so the only options are to protect the

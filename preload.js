@@ -667,6 +667,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
     "meeting-panel-command",
     (callback) => (_event, command) => callback(command)
   ),
+
+  // "start" while a detection prompt is on screen, "discard" once it is
+  // answered with anything but yes. Accepting sends nothing: the recording
+  // that follows consumes the buffer.
+  onMeetingPreRoll: registerListener(
+    "meeting-preroll",
+    (callback) => (_event, action) => callback(action)
+  ),
   onMeetingTranscriptionSegment: registerListener(
     "meeting-transcription-segment",
     (callback) => (_event, data) => callback(data)

@@ -1934,7 +1934,9 @@
         "calendarReminders": "Kalendererinnerungen",
         "calendarRemindersDescription": "Benachrichtigen, wenn ein geplantes Meeting bald beginnt",
         "updates": "App-Updates",
-        "updatesDescription": "Benachrichtigen, wenn eine neue Version verfügbar ist"
+        "updatesDescription": "Benachrichtigen, wenn eine neue Version verfügbar ist",
+        "meetingPreRoll": "Beginn erkannter Meetings mitschneiden",
+        "meetingPreRollDescription": "Solange eine Meeting-Abfrage angezeigt wird, werden die letzten 45 Sekunden Mikrofonaudio im Arbeitsspeicher gehalten, damit eine Zusage nicht mitten im Satz beginnt. Das Audio wird nie auf die Festplatte geschrieben und sofort gelöscht, wenn Sie die Abfrage ablehnen oder ablaufen lassen."
       },
       "clipboard": {
         "title": "Zwischenablage",

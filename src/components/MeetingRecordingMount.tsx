@@ -2,9 +2,11 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "./ui/useToast";
 import {
+  discardMeetingPreRoll,
   getMicAnalyser,
   primeMeetingWorklet,
   resolvePendingStop,
+  startMeetingPreRoll,
   useMeetingRecordingStore,
 } from "../stores/meetingRecordingStore";
 import { ConfirmDialog } from "./ui/dialog";
@@ -77,6 +79,19 @@ export default function MeetingRecordingMount() {
 
   useEffect(() => {
     primeMeetingWorklet();
+  }, []);
+
+  useEffect(() => {
+    const unbind = window.electronAPI?.onMeetingPreRoll?.((action) => {
+      if (action === "start") void startMeetingPreRoll();
+      else discardMeetingPreRoll();
+    });
+    return () => {
+      unbind?.();
+      // The renderer going away must release the microphone and destroy the
+      // buffer; nothing else is holding either.
+      discardMeetingPreRoll();
+    };
   }, []);
 
   useEffect(() => {

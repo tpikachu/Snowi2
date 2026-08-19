@@ -1934,7 +1934,9 @@
         "calendarReminders": "Calendar reminders",
         "calendarRemindersDescription": "Notify when a scheduled meeting is about to start",
         "updates": "App updates",
-        "updatesDescription": "Notify when a new version is available"
+        "updatesDescription": "Notify when a new version is available",
+        "meetingPreRoll": "Catch the start of detected meetings",
+        "meetingPreRollDescription": "While a meeting prompt is on screen, keep the last 45 seconds of microphone audio in memory so accepting it does not start mid-sentence. The audio is never written to disk and is destroyed the moment you dismiss the prompt or let it expire."
       },
       "clipboard": {
         "title": "Clipboard",

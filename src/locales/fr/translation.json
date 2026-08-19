@@ -1934,7 +1934,9 @@
         "calendarReminders": "Rappels de calendrier",
         "calendarRemindersDescription": "Prévenir quand une réunion planifiée va commencer",
         "updates": "Mises à jour",
-        "updatesDescription": "Prévenir quand une nouvelle version est disponible"
+        "updatesDescription": "Prévenir quand une nouvelle version est disponible",
+        "meetingPreRoll": "Capter le début des réunions détectées",
+        "meetingPreRollDescription": "Tant qu'une invite de réunion est affichée, les 45 dernières secondes d'audio du micro sont conservées en mémoire pour qu'accepter ne commence pas au milieu d'une phrase. L'audio n'est jamais écrit sur le disque et est détruit dès que vous ignorez l'invite ou la laissez expirer."
       },
       "clipboard": {
         "title": "Presse-papiers",

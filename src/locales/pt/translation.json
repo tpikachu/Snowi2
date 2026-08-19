@@ -1630,7 +1630,9 @@
         "calendarReminders": "Lembretes do calendário",
         "calendarRemindersDescription": "Notificar quando uma reunião agendada está prestes a começar",
         "updates": "Atualizações do app",
-        "updatesDescription": "Notificar quando uma nova versão estiver disponível"
+        "updatesDescription": "Notificar quando uma nova versão estiver disponível",
+        "meetingPreRoll": "Capturar o início das reuniões detectadas",
+        "meetingPreRollDescription": "Enquanto um aviso de reunião estiver na tela, os últimos 45 segundos de áudio do microfone ficam na memória para que aceitar não comece no meio de uma frase. O áudio nunca é gravado em disco e é destruído assim que você dispensa o aviso ou o deixa expirar."
       },
       "clipboard": {
         "title": "Área de transferência",

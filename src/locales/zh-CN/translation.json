@@ -1651,7 +1651,9 @@
         "calendarReminders": "日历提醒",
         "calendarRemindersDescription": "预定会议即将开始时通知您",
         "updates": "应用更新",
-        "updatesDescription": "有新版本可用时通知您"
+        "updatesDescription": "有新版本可用时通知您",
+        "meetingPreRoll": "捕捉检测到的会议开头",
+        "meetingPreRollDescription": "会议提示显示期间，在内存中保留最近 45 秒的麦克风音频，这样接受时不会从半句话开始。音频绝不写入磁盘，你关闭提示或让它超时后会立即销毁。"
       },
       "clipboard": {
         "title": "剪贴板",
