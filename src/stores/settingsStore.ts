@@ -386,7 +386,9 @@ function migrateAgentMode() {
   const cloudAgentMode = localStorage.getItem("cloudAgentMode");
   const agentProvider = localStorage.getItem("agentProvider");
 
-  let agentInferenceMode: InferenceMode = "local";
+  // A former cloud user has no local GGUF, so "local" would leave the agent
+  // dead on arrival. BYOK is the reachable default.
+  let agentInferenceMode: InferenceMode = "providers";
   if (cloudAgentMode === "byok") {
     const localProviders = ["qwen", "llama", "mistral", "openai-oss", "gemma"];
     if (agentProvider === "custom") {
@@ -562,6 +564,50 @@ function migrateRemovedOpenWhisprMode() {
 }
 
 migrateRemovedOpenWhisprMode();
+
+/**
+ * Repairs LLM scopes left unusable by the cloud-removal migration.
+ *
+ * Two failure modes, both of which end in a request that silently produces
+ * nothing (an empty assistant bubble rather than an error):
+ *   1. mode === "local" with no local model chosen. Local inference needs a
+ *      downloaded GGUF; a scope migrated off the removed cloud mode never had
+ *      one. Such a scope is switched to BYOK.
+ *   2. A model/provider persisted as "" — readString only falls back on null,
+ *      so an empty string shadows the store default. The key is removed so the
+ *      default applies again.
+ * A scope that names a real local model is left alone.
+ */
+function repairUnusableLlmScopes() {
+  if (!isBrowser) return;
+  if (localStorage.getItem("_llmScopeRepair") === "1") return;
+
+  const scopes: Array<{ mode: string; provider: string; model: string }> = [
+    { mode: "cleanupMode", provider: "cleanupProvider", model: "cleanupModel" },
+    { mode: "chatAgentMode", provider: "chatAgentProvider", model: "chatAgentModel" },
+    { mode: "noteFormattingMode", provider: "noteFormattingProvider", model: "noteFormattingModel" },
+    {
+      mode: "dictationAgentMode",
+      provider: "dictationAgentProvider",
+      model: "dictationAgentModel",
+    },
+    { mode: "translationMode", provider: "translationProvider", model: "translationModel" },
+  ];
+
+  for (const scope of scopes) {
+    for (const key of [scope.provider, scope.model]) {
+      if (localStorage.getItem(key) === "") localStorage.removeItem(key);
+    }
+    if (localStorage.getItem(scope.mode) === "local" && !localStorage.getItem(scope.model)) {
+      localStorage.setItem(scope.mode, "providers");
+    }
+  }
+
+  localStorage.setItem("_llmScopeRepair", "1");
+}
+
+repairUnusableLlmScopes();
+
 
 export interface SettingsState
   extends

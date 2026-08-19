@@ -106,6 +106,23 @@ export function useChatStreaming({
       const settings = getSettings();
       const chatConfig = selectResolvedLLMConfig(settings, "chatIntelligence");
       const chatAgentMode = chatConfig.mode || "local";
+
+      // An unconfigured scope used to stream zero chunks and leave an empty
+      // assistant bubble with no explanation. Fail loudly instead.
+      if (!chatConfig.model) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: t("agentMode.chat.noModelConfigured"),
+            isStreaming: false,
+          },
+        ]);
+        setAgentState("idle");
+        return;
+      }
+
       setAgentState("thinking");
       const isLanAgent = chatAgentMode === "self-hosted" && !!chatConfig.remoteUrl;
       const isCustomAgent = chatAgentMode === "providers" && chatConfig.provider === "custom";

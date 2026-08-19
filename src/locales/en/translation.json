@@ -3209,7 +3209,8 @@
       "copyToClipboard": "Copy to clipboard",
       "copied": "Copied!",
       "emptyState": "Ask me anything",
-      "errorPrefix": "Error"
+      "errorPrefix": "Error",
+      "noModelConfigured": "No AI model is configured for chat. Open Settings → AI Models to choose a provider and model."
     },
     "titleBar": {
       "label": "Agent",

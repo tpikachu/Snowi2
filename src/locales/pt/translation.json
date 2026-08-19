@@ -3044,7 +3044,8 @@
       "copyToClipboard": "Copiar para área de transferência",
       "copied": "Copiado!",
       "emptyState": "Pergunte-me qualquer coisa",
-      "errorPrefix": "Erro"
+      "errorPrefix": "Erro",
+      "noModelConfigured": "Nenhum modelo de IA configurado para o chat. Abra Configurações → Modelos de IA para escolher um provedor e um modelo."
     },
     "titleBar": {
       "label": "Agente",

@@ -1,5 +1,5 @@
 import React from "react";
-import { Home, MessageSquare, NotebookPen, BookOpen, Upload, Settings, Search } from "lucide-react";
+import { Home, MessageSquare, NotebookPen, BookOpen, Settings, Search } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "../lib/utils";
 import { Tooltip } from "../ui/tooltip";
@@ -118,7 +118,9 @@ export default function IconRail({
     { id: "home", label: t("sidebar.home"), icon: Home },
     { id: "chat", label: t("sidebar.chat"), icon: MessageSquare },
     { id: "personal-notes", label: t("sidebar.notes"), icon: NotebookPen },
-    { id: "upload", label: t("sidebar.upload"), icon: Upload },
+    // Upload is hidden for now (product decision). The view, its route and
+    // UploadAudioView stay wired up so re-enabling is a one-line change.
+    // { id: "upload", label: t("sidebar.upload"), icon: Upload },
     { id: "dictionary", label: t("sidebar.dictionary"), icon: BookOpen },
   ];
 

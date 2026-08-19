@@ -3209,7 +3209,8 @@
       "copyToClipboard": "In Zwischenablage kopieren",
       "copied": "Kopiert!",
       "emptyState": "Frag mich alles",
-      "errorPrefix": "Fehler"
+      "errorPrefix": "Fehler",
+      "noModelConfigured": "Für den Chat ist kein KI-Modell konfiguriert. Öffne Einstellungen → KI-Modelle, um Anbieter und Modell zu wählen."
     },
     "titleBar": {
       "label": "Agent",

@@ -3044,7 +3044,8 @@
       "copyToClipboard": "クリップボードにコピー",
       "copied": "コピーしました！",
       "emptyState": "なんでも聞いてください",
-      "errorPrefix": "エラー"
+      "errorPrefix": "エラー",
+      "noModelConfigured": "チャット用のAIモデルが設定されていません。設定 → AIモデルでプロバイダーとモデルを選択してください。"
     },
     "titleBar": {
       "label": "エージェント",

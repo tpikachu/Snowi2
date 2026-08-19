@@ -3209,7 +3209,8 @@
       "copyToClipboard": "Copier dans le presse-papiers",
       "copied": "Copié !",
       "emptyState": "Demandez-moi n'importe quoi",
-      "errorPrefix": "Erreur"
+      "errorPrefix": "Erreur",
+      "noModelConfigured": "Aucun modèle d'IA n'est configuré pour le chat. Ouvrez Réglages → Modèles d'IA pour choisir un fournisseur et un modèle."
     },
     "titleBar": {
       "label": "Agent",

@@ -3044,7 +3044,8 @@
       "copyToClipboard": "複製到剪貼簿",
       "copied": "已複製！",
       "emptyState": "隨便問我",
-      "errorPrefix": "錯誤"
+      "errorPrefix": "錯誤",
+      "noModelConfigured": "尚未為聊天設定 AI 模型。請開啟設定 → AI 模型，選擇提供者與模型。"
     },
     "titleBar": {
       "label": "助手",
