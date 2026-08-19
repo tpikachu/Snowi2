@@ -83,6 +83,23 @@ export interface TranscriptionItem {
   deleted_at: string | null;
 }
 
+/**
+ * One addressable line of a transcript, projected from `notes.transcript`.
+ * `id` is what a memory object cites and what "jump to evidence" resolves.
+ */
+export interface MeetingSegmentRow {
+  id: string;
+  note_id: number;
+  seq: number;
+  segment_id: string | null;
+  start_ms: number | null;
+  end_ms: number | null;
+  source: "mic" | "system" | null;
+  speaker: string | null;
+  speaker_name: string | null;
+  text: string;
+}
+
 export interface NoteItem {
   id: number;
   title: string;
@@ -834,6 +851,8 @@ declare global {
         spaceId?: number | null
       ) => Promise<NoteItem[]>;
       getSpaceNotes: (spaceId: number, limit?: number) => Promise<NoteItem[]>;
+      getNoteSegments: (noteId: number) => Promise<MeetingSegmentRow[]>;
+      getSegmentsByIds: (ids: string[]) => Promise<MeetingSegmentRow[]>;
       updateNote: (
         id: number,
         updates: {

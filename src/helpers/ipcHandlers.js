@@ -111,6 +111,12 @@ const MEETING_PANEL_COMMANDS = new Set(["pause", "resume", "stop", "open"]);
 const NOTE_CHUNK_BACKFILL_LIMIT = 300;
 const NOTE_CHUNK_BACKFILL_PAUSE_MS = 25;
 
+// Segment projection for meetings recorded before the index existed. Larger
+// batch than the chunk backfill because this is plain SQLite with no embedding
+// in the loop, and the yield is smaller for the same reason.
+const SEGMENT_BACKFILL_LIMIT = 500;
+const SEGMENT_BACKFILL_PAUSE_MS = 5;
+
 const MISTRAL_TRANSCRIPTION_URL = "https://api.mistral.ai/v1/audio/transcriptions";
 
 const XAI_STT_URL = "https://api.x.ai/v1/stt";
@@ -429,6 +435,46 @@ class IPCHandlers {
         }
       })().catch((error) => {
         debugLogger.debug("Note chunk backfill failed", { error: error?.message });
+      });
+    });
+  }
+
+  /**
+   * Projects transcript segments for meetings recorded before the index
+   * existed, so evidence links work on the whole library rather than only on
+   * meetings recorded from here on.
+   *
+   * Unlike the chunk backfill this needs no vector index and no model, so it
+   * runs on every launch regardless of whether Qdrant came up.
+   */
+  backfillMeetingSegments() {
+    setImmediate(() => {
+      void (async () => {
+        const noteIds = this.databaseManager.getNoteIdsMissingSegments(SEGMENT_BACKFILL_LIMIT);
+        if (noteIds.length === 0) return;
+
+        let projected = 0;
+        let segments = 0;
+        for (const noteId of noteIds) {
+          const note = this.databaseManager.getNote(noteId);
+          if (!note?.transcript) continue;
+          const result = this.databaseManager.replaceNoteSegments(noteId, note.transcript);
+          if (result.success) {
+            projected += 1;
+            segments += result.count;
+          }
+          await new Promise((resolve) => setTimeout(resolve, SEGMENT_BACKFILL_PAUSE_MS));
+        }
+
+        if (projected > 0) {
+          debugLogger.info(
+            "Backfilled transcript segments",
+            { notes: projected, segments },
+            "notes"
+          );
+        }
+      })().catch((error) => {
+        debugLogger.debug("Segment backfill failed", { error: error?.message });
       });
     });
   }
@@ -1281,6 +1327,15 @@ class IPCHandlers {
 
     ipcMain.handle("db-get-notes", async (event, noteType, limit, folderId, spaceId) => {
       return this.databaseManager.getNotes(noteType, limit, folderId, spaceId);
+    });
+
+    ipcMain.handle("db-get-note-segments", async (event, noteId) => {
+      return this.databaseManager.getNoteSegments(noteId);
+    });
+
+    // Resolves citation targets to the lines they point at (§19.3, §20).
+    ipcMain.handle("db-get-segments-by-ids", async (event, ids) => {
+      return this.databaseManager.getSegmentsByIds(ids);
     });
 
     ipcMain.handle("db-get-space-notes", async (event, spaceId, limit) => {

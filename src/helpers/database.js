@@ -5,6 +5,7 @@ const { randomUUID } = require("crypto");
 const debugLogger = require("./debugLogger");
 const { buildNoteSearchQuery } = require("./noteSearch");
 const { normalizeStoredSpeakerCount } = require("./speakerCount");
+const { parseTranscriptSegments } = require("./meetingSegments");
 const { app } = require("electron");
 
 // Cap carried over from the removed cloud backend; enforced here so one oversized
@@ -615,6 +616,39 @@ class DatabaseManager {
       } catch (err) {
         if (!err.message.includes("duplicate column")) throw err;
       }
+
+      // Addressable transcript lines, projected from notes.transcript.
+      //
+      // The blob remains the source of truth and every existing reader keeps
+      // working; this exists so something can point *at* a line — memory
+      // objects citing evidence (§19.3), an action item jumping to the moment
+      // it was agreed (§20). `id` is note-scoped because capture numbers
+      // segments per session, so `seg-1` exists in every meeting.
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS meeting_segments (
+          id TEXT PRIMARY KEY,
+          note_id INTEGER NOT NULL,
+          seq INTEGER NOT NULL,
+          segment_id TEXT,
+          start_ms INTEGER,
+          end_ms INTEGER,
+          source TEXT,
+          speaker TEXT,
+          speaker_name TEXT,
+          text TEXT NOT NULL
+        )
+      `);
+      this.db.exec(
+        "CREATE INDEX IF NOT EXISTS idx_meeting_segments_note ON meeting_segments(note_id, seq)"
+      );
+      // A trigger, not ON DELETE CASCADE: notes are deleted from a dozen places
+      // (folder purge, space purge, sync reconciliation) and some of them turn
+      // foreign keys off to rebuild tables. The trigger holds in every path.
+      this.db.exec(`
+        CREATE TRIGGER IF NOT EXISTS meeting_segments_delete AFTER DELETE ON notes BEGIN
+          DELETE FROM meeting_segments WHERE note_id = old.id;
+        END
+      `);
       try {
         this.db.exec("ALTER TABLE notes ADD COLUMN calendar_event_id TEXT");
       } catch (err) {
@@ -2173,12 +2207,112 @@ class DatabaseManager {
       values.push(id);
       const stmt = this.db.prepare(`UPDATE notes SET ${fields.join(", ")} WHERE id = ?`);
       stmt.run(...values);
+      // Re-project whenever the blob is rewritten — which is every append
+      // during capture and every diarization pass. Cheap enough to do inline:
+      // it is a delete plus an insert of a few hundred short rows.
+      if (updates.transcript !== undefined) {
+        this.replaceNoteSegments(id, updates.transcript);
+      }
       const fetchStmt = this.db.prepare("SELECT * FROM notes WHERE id = ?");
       const note = fetchStmt.get(id);
       return { success: true, note };
     } catch (error) {
       debugLogger.error("Error updating note", { error: error.message }, "notes");
       throw error;
+    }
+  }
+
+  /**
+   * Rebuilds one note's segment rows from its transcript blob.
+   *
+   * Wholesale replace rather than a diff: capture rewrites the array on every
+   * append and diarization rewrites it again with speaker labels, so working
+   * out what changed costs more than re-inserting a few hundred short rows.
+   * Both statements run in one transaction — a note must never be left holding
+   * half of its old transcript and half of its new one.
+   */
+  replaceNoteSegments(noteId, rawTranscript) {
+    if (!this.db) return { success: false, count: 0 };
+    try {
+      const rows = parseTranscriptSegments(noteId, rawTranscript);
+      const remove = this.db.prepare("DELETE FROM meeting_segments WHERE note_id = ?");
+      const insert = this.db.prepare(
+        `INSERT INTO meeting_segments
+           (id, note_id, seq, segment_id, start_ms, end_ms, source, speaker, speaker_name, text)
+         VALUES (@id, @note_id, @seq, @segment_id, @start_ms, @end_ms, @source, @speaker, @speaker_name, @text)`
+      );
+      const write = this.db.transaction((segmentRows) => {
+        remove.run(noteId);
+        for (const row of segmentRows) insert.run(row);
+      });
+      write(rows);
+      return { success: true, count: rows.length };
+    } catch (error) {
+      // A note that fails to project keeps its transcript and loses only the
+      // ability to be cited, so this must never take the note write down.
+      debugLogger.error(
+        "Error projecting meeting segments",
+        { noteId, error: error.message },
+        "notes"
+      );
+      return { success: false, count: 0 };
+    }
+  }
+
+  getNoteSegments(noteId, limit = 5000) {
+    if (!this.db) return [];
+    try {
+      return this.db
+        .prepare("SELECT * FROM meeting_segments WHERE note_id = ? ORDER BY seq ASC LIMIT ?")
+        .all(noteId, limit);
+    } catch (error) {
+      debugLogger.error(
+        "Error reading meeting segments",
+        { noteId, error: error.message },
+        "notes"
+      );
+      return [];
+    }
+  }
+
+  /** Resolves citation targets. Missing ids are skipped, not faked. */
+  getSegmentsByIds(ids) {
+    if (!this.db || !Array.isArray(ids) || ids.length === 0) return [];
+    try {
+      const placeholders = ids.map(() => "?").join(",");
+      return this.db
+        .prepare(
+          `SELECT * FROM meeting_segments WHERE id IN (${placeholders}) ORDER BY note_id, seq`
+        )
+        .all(...ids);
+    } catch (error) {
+      debugLogger.error("Error resolving meeting segments", { error: error.message }, "notes");
+      return [];
+    }
+  }
+
+  /**
+   * Notes with a transcript but no segment rows — everything recorded before
+   * this projection existed. Returned newest first so the most likely thing to
+   * be asked about catches up on the first launch rather than the fifth.
+   */
+  getNoteIdsMissingSegments(limit = 200) {
+    if (!this.db) return [];
+    try {
+      return this.db
+        .prepare(
+          `SELECT n.id FROM notes n
+           WHERE n.transcript IS NOT NULL AND n.transcript != ''
+             AND n.deleted_at IS NULL
+             AND NOT EXISTS (SELECT 1 FROM meeting_segments s WHERE s.note_id = n.id)
+           ORDER BY n.updated_at DESC
+           LIMIT ?`
+        )
+        .all(limit)
+        .map((row) => row.id);
+    } catch (error) {
+      debugLogger.error("Error listing notes missing segments", { error: error.message }, "notes");
+      return [];
     }
   }
 

@@ -144,6 +144,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getNotes: (noteType, limit, folderId, spaceId) =>
     ipcRenderer.invoke("db-get-notes", noteType, limit, folderId, spaceId),
   getSpaceNotes: (spaceId, limit) => ipcRenderer.invoke("db-get-space-notes", spaceId, limit),
+  getNoteSegments: (noteId) => ipcRenderer.invoke("db-get-note-segments", noteId),
+  getSegmentsByIds: (ids) => ipcRenderer.invoke("db-get-segments-by-ids", ids),
   updateNote: (id, updates) => ipcRenderer.invoke("db-update-note", id, updates),
   deleteNote: (id) => ipcRenderer.invoke("db-delete-note", id),
   exportNote: (noteId, format) => ipcRenderer.invoke("export-note", noteId, format),

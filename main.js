@@ -947,6 +947,11 @@ async function startApp() {
       });
   }
 
+  // Deliberately outside the Qdrant chain: the segment index is plain SQLite,
+  // and evidence links should not stop working because the vector sidecar
+  // failed to start.
+  ipcHandlers?.backfillMeetingSegments();
+
   const localEmbeddings = require("./src/helpers/localEmbeddings");
   if (!localEmbeddings.isAvailable()) {
     localEmbeddings.downloadModel().catch((err) => {
