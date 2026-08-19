@@ -14,6 +14,8 @@ import { useMeetingPanelBridge } from "../hooks/useMeetingPanelBridge";
 import { autoGenerateMeetingNotes } from "../helpers/meetingNoteGeneration";
 import { generateMeetingMemory } from "../helpers/memoryGeneration";
 import { MEETING_TITLE_PLACEHOLDERS } from "../utils/meetingNoteInput";
+import { configureToastProps } from "./ui/configureToastProps";
+import { transcriptionRemedy } from "../config/settingsRemedies";
 
 const EMA_PREV = 0.5;
 const EMA_NEXT = 0.5;
@@ -119,7 +121,7 @@ function MeetingStopDialog() {
 
 export default function MeetingRecordingMount() {
   const { t } = useTranslation();
-  const { toast } = useToast();
+  const { toast, dismiss } = useToast();
   const isRecording = useMeetingRecordingStore((s) => s.isRecording);
   const error = useMeetingRecordingStore((s) => s.error);
   const errorNonce = useMeetingRecordingStore((s) => s.errorNonce);
@@ -147,13 +149,20 @@ export default function MeetingRecordingMount() {
 
   useEffect(() => {
     if (!error) return;
-    toast({
+    // A meeting that failed because transcription was never set up cannot be
+    // retried into working, so that toast carries the trip to the setting.
+    const remedy = transcriptionRemedy("meeting", { message: error });
+    let toastId = "";
+    toastId = toast({
       title: t("notes.meeting.title"),
       description: MEETING_ERROR_KEYS[error] ? t(MEETING_ERROR_KEYS[error]) : error,
       variant: "destructive",
+      ...configureToastProps(remedy, () => {
+        if (toastId) dismiss(toastId);
+      }),
     });
     // errorNonce re-fires this toast when the same error repeats back-to-back.
-  }, [error, errorNonce, toast, t]);
+  }, [error, errorNonce, toast, dismiss, t]);
 
   useEffect(() => {
     if (micCaptureStatus === "unavailable" && !wasMicUnavailable.current) {

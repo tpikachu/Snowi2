@@ -5,6 +5,7 @@ import { appendDictionarySuffix } from "../config/prompts";
 import { generateNoteTitle } from "../utils/generateTitle";
 import { buildNoteFormattingOverrides } from "../helpers/noteFormattingOverrides";
 import type { ActionItem } from "../types/electron";
+import type { SettingsRemedy } from "../config/settingsRemedies";
 
 export type ActionProcessingStatus = "idle" | "processing" | "success";
 
@@ -17,8 +18,9 @@ export interface NoteActionState {
  * A fix the user can only apply in Settings. Carried on the event rather than
  * baked into the message so the listener can offer the trip there — "configure
  * one in Settings" is not much help to someone who has to go find the page.
+ * The route for each one lives in config/settingsRemedies.ts.
  */
-export type ActionErrorRemedy = "configureNoteFormatting";
+export type ActionErrorRemedy = SettingsRemedy;
 
 export interface ActionErrorEvent {
   noteId: number;

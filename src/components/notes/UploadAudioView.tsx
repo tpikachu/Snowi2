@@ -57,6 +57,9 @@ import { generateNoteTitle } from "../../utils/generateTitle";
 import { getBaseLanguageCode } from "../../utils/languageSupport";
 import { resolveTranscriptionRoute } from "../../helpers/transcriptionRoute";
 import { saveUploadNote, uploadTitleFallback } from "../../services/uploadNotes";
+import { requestSettings } from "../../stores/settingsNavigationStore";
+import type { SettingsRemedy } from "../../config/settingsRemedies";
+import { transcriptionRemedy, remedyTarget } from "../../config/settingsRemedies";
 
 type UploadState = "idle" | "selected" | "downloading" | "transcribing" | "complete" | "error";
 
@@ -133,6 +136,9 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
   const [result, setResult] = useState<string | null>(null);
   const [noteId, setNoteId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Set alongside the message so the error view can offer the fix rather than
+  // only naming it. Null when retrying could actually help.
+  const [errorRemedy, setErrorRemedy] = useState<SettingsRemedy | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [progress, setProgress] = useState(0);
   const progressRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -459,6 +465,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
       setFile({ name, path: fp, size: sizeBytes ? formatFileSize(sizeBytes) : "", sizeBytes });
       setState("selected");
       setError(null);
+      setErrorRemedy(null);
       return;
     }
 
@@ -501,6 +508,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
       });
       setState("selected");
       setError(null);
+      setErrorRemedy(null);
     } else {
       batch.addFiles(validFiles);
     }
@@ -517,6 +525,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
     setResult(null);
     setNoteId(null);
     setError(null);
+    setErrorRemedy(null);
     setProgress(0);
     setUrlInput("");
     setDownloadProgress(null);
@@ -538,6 +547,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
     const runId = ++runIdRef.current;
     setState("transcribing");
     setError(null);
+    setErrorRemedy(null);
     setProgress(0);
 
     progressRef.current = setInterval(() => {
@@ -598,6 +608,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
       } else {
         setProgress(0);
         const errorKey = transcriptionErrorKey(res);
+        setErrorRemedy(transcriptionRemedy("upload", res));
         setError(
           errorKey
             ? t(`notes.upload.${errorKey}`)
@@ -609,6 +620,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
       if (runId !== runIdRef.current) return;
       if (progressRef.current) clearInterval(progressRef.current);
       setProgress(0);
+      setErrorRemedy(transcriptionRemedy("upload", err));
       const errorKey = transcriptionErrorKey(err);
       if (errorKey) {
         setError(t(`notes.upload.${errorKey}`));
@@ -648,6 +660,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
 
     setState("downloading");
     setError(null);
+    setErrorRemedy(null);
     setDownloadProgress({ stage: "resolving", percent: 0 });
 
     const downloadId = crypto.randomUUID();
@@ -1063,7 +1076,13 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
           )}
 
           {state === "error" && error && (
-            <ErrorView t={t} error={error} reset={reset} onRetry={handleRetry} />
+            <ErrorView
+              t={t}
+              error={error}
+              remedy={errorRemedy}
+              reset={reset}
+              onRetry={handleRetry}
+            />
           )}
         </div>
 
@@ -1682,11 +1701,13 @@ function CompleteView({
 interface ErrorViewProps {
   t: (key: string) => string;
   error: string;
+  /** Non-null when the failure was a missing setup rather than a bad run. */
+  remedy: SettingsRemedy | null;
   reset: () => void;
   onRetry: () => void;
 }
 
-function ErrorView({ t, error, reset, onRetry }: ErrorViewProps) {
+function ErrorView({ t, error, remedy, reset, onRetry }: ErrorViewProps) {
   return (
     <div style={{ animation: "float-up 0.3s ease-out" }}>
       <div className="rounded-lg border border-destructive/15 dark:border-destructive/20 bg-destructive/[0.03] dark:bg-destructive/[0.05] backdrop-blur-sm p-4 mb-4">
@@ -1703,14 +1724,27 @@ function ErrorView({ t, error, reset, onRetry }: ErrorViewProps) {
       </div>
 
       <div className="flex items-center gap-2 justify-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onRetry}
-          className="h-7 text-xs text-foreground/40"
-        >
-          {t("notes.upload.retry")}
-        </Button>
+        {remedy ? (
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => requestSettings(remedyTarget(remedy))}
+            className="h-7 text-xs"
+          >
+            {t("notes.actions.errors.configure")}
+          </Button>
+        ) : (
+          // Retry is offered only when it could work. Re-running a transcription
+          // that failed for want of an API key just fails again.
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRetry}
+            className="h-7 text-xs text-foreground/40"
+          >
+            {t("notes.upload.retry")}
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="sm"
