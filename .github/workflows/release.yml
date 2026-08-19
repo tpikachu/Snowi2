@@ -88,8 +88,51 @@ jobs:
           # a skipped DB test here means the rebuild step above is gone: fail instead
           REQUIRE_DB_TESTS: "1"
 
-  build-windows:
+  create-release:
+    # electron-builder creates the release when it cannot find one. Three build
+    # jobs publish at once, all three found none, and all three created their
+    # own — GitHub allows duplicate tag names among drafts, so v0.1.0-rc1 ended
+    # up as two release objects with the assets split between them. Creating it
+    # once, before any build starts, gives all three the same target.
     needs: tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create the release the builds upload into
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "$GITHUB_REF_NAME already exists; the builds will upload into it."
+            exit 0
+          fi
+
+          # Notes come from the CHANGELOG entry for this exact version, so they
+          # cannot drift from the file that was tagged.
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v hdr="## [$VERSION]" '
+            index($0, hdr) == 1 { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "See CHANGELOG.md for this version." > notes.md
+
+          # --prerelease, not --draft: a published release has a unique tag, so a
+          # build that still tries to create its own gets a 422 and falls back to
+          # this one. Two drafts would just race again.
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Snowy $GITHUB_REF_NAME" \
+            --notes-file notes.md \
+            --prerelease
+
+  build-windows:
+    needs: create-release
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -204,7 +247,7 @@ jobs:
           retention-days: 30
 
   build-macos:
-    needs: tests
+    needs: create-release
     runs-on: macos-latest
     strategy:
       fail-fast: false
