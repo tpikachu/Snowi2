@@ -649,6 +649,52 @@ class DatabaseManager {
           DELETE FROM meeting_segments WHERE note_id = old.id;
         END
       `);
+
+      // Memory objects (§19), indexed half only — see memoryStore.js for the
+      // split. Nothing here is meeting substance: `type`, `status` and
+      // `subject` are enums, `subject` is a role rather than a name, and the
+      // hash is one-way. The claim itself, the owner's name and the evidence
+      // ids live sealed under the meeting's data key (§21.1).
+      //
+      // `id` is a UUID, not an autoincrement: two devices must be able to
+      // create memory without colliding, and retrofitting that onto a populated
+      // table once sync exists is far worse than paying for it now.
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS memory_objects (
+          id TEXT PRIMARY KEY,
+          meeting_id TEXT NOT NULL,
+          note_id INTEGER,
+          type TEXT NOT NULL,
+          subject TEXT NOT NULL DEFAULT 'other',
+          status TEXT NOT NULL DEFAULT 'open',
+          due_at TEXT,
+          confidence REAL,
+          content_hash TEXT NOT NULL,
+          supersedes TEXT,
+          superseded_by TEXT,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          last_seen_at TEXT,
+          schema_version TEXT NOT NULL DEFAULT 'snowi.memory.v1',
+          sync_status TEXT NOT NULL DEFAULT 'local_only'
+        )
+      `);
+      this.db.exec("CREATE INDEX IF NOT EXISTS idx_memory_objects_note ON memory_objects(note_id)");
+      // Consolidation looks up by (type, subject) on every extracted object,
+      // so that lookup is the one that must not degrade as the store grows.
+      this.db.exec(
+        "CREATE INDEX IF NOT EXISTS idx_memory_objects_kind ON memory_objects(type, subject, status)"
+      );
+      this.db.exec(
+        "CREATE INDEX IF NOT EXISTS idx_memory_objects_open ON memory_objects(status, due_at)"
+      );
+      // A deleted note takes its memory with it, by the same trigger reasoning
+      // as the segments above. The sealed document is removed with the meeting.
+      this.db.exec(`
+        CREATE TRIGGER IF NOT EXISTS memory_objects_delete AFTER DELETE ON notes BEGIN
+          DELETE FROM memory_objects WHERE note_id = old.id;
+        END
+      `);
       try {
         this.db.exec("ALTER TABLE notes ADD COLUMN calendar_event_id TEXT");
       } catch (err) {
@@ -2312,6 +2358,150 @@ class DatabaseManager {
         .map((row) => row.id);
     } catch (error) {
       debugLogger.error("Error listing notes missing segments", { error: error.message }, "notes");
+      return [];
+    }
+  }
+
+  // ---- Memory objects (§19) ------------------------------------------------
+  // The indexed half. Content lives sealed; see memoryStore.js.
+
+  insertMemoryObject(row) {
+    if (!this.db) return { success: false };
+    try {
+      this.db
+        .prepare(
+          `INSERT INTO memory_objects
+             (id, meeting_id, note_id, type, subject, status, due_at, confidence,
+              content_hash, supersedes, created_at, updated_at, last_seen_at,
+              schema_version, sync_status)
+           VALUES (@id, @meeting_id, @note_id, @type, @subject, @status, @due_at, @confidence,
+                   @content_hash, @supersedes, @created_at, @updated_at, @created_at,
+                   @schema_version, @sync_status)`
+        )
+        .run(row);
+      return { success: true };
+    } catch (error) {
+      debugLogger.error("Error inserting memory object", { error: error.message }, "memory");
+      return { success: false };
+    }
+  }
+
+  /**
+   * Candidates a new object must be reconciled against — the whole library, not
+   * just the current meeting: consolidation exists so a fact restated next
+   * month meets the one recorded last month.
+   */
+  getMemoryObjectsForConsolidation(type, subject, limit = 200) {
+    if (!this.db) return [];
+    try {
+      return this.db
+        .prepare(
+          `SELECT * FROM memory_objects
+           WHERE type = ? AND subject = ?
+           ORDER BY created_at DESC LIMIT ?`
+        )
+        .all(type, subject, limit);
+    } catch (error) {
+      debugLogger.error("Error reading memory candidates", { error: error.message }, "memory");
+      return [];
+    }
+  }
+
+  /** A repeat sighting is evidence the claim still holds, not a new claim. */
+  touchMemoryObject(id, now) {
+    if (!this.db) return { success: false };
+    try {
+      this.db
+        .prepare(
+          "UPDATE memory_objects SET last_seen_at = ?, sync_status = 'local_only' WHERE id = ?"
+        )
+        .run(now, id);
+      return { success: true };
+    } catch (error) {
+      debugLogger.error("Error touching memory object", { error: error.message }, "memory");
+      return { success: false };
+    }
+  }
+
+  /** History is not rewritten: the old claim is marked, never deleted (§19.3). */
+  markMemoryObjectSuperseded(id, replacementId, now) {
+    if (!this.db) return { success: false };
+    try {
+      this.db
+        .prepare(
+          "UPDATE memory_objects SET status = 'superseded', superseded_by = ?, updated_at = ? WHERE id = ?"
+        )
+        .run(replacementId, now, id);
+      return { success: true };
+    } catch (error) {
+      debugLogger.error("Error superseding memory object", { error: error.message }, "memory");
+      return { success: false };
+    }
+  }
+
+  deleteMemoryObject(id) {
+    if (!this.db) return { success: false };
+    try {
+      this.db.prepare("DELETE FROM memory_objects WHERE id = ?").run(id);
+      return { success: true };
+    } catch (error) {
+      debugLogger.error("Error deleting memory object", { error: error.message }, "memory");
+      return { success: false };
+    }
+  }
+
+  getMemoryObjectsByNote(noteId) {
+    if (!this.db) return [];
+    try {
+      return this.db
+        .prepare("SELECT * FROM memory_objects WHERE note_id = ? ORDER BY created_at ASC")
+        .all(noteId);
+    } catch (error) {
+      debugLogger.error("Error reading note memory", { error: error.message }, "memory");
+      return [];
+    }
+  }
+
+  /**
+   * Open commitments, soonest due first. This is the query that justifies
+   * keeping status and due date outside the sealed document — answering it by
+   * decrypting every meeting the user has ever had would not scale past a year.
+   */
+  getOpenMemoryActions(subject = "user", limit = 50) {
+    if (!this.db) return [];
+    try {
+      return this.db
+        .prepare(
+          `SELECT * FROM memory_objects
+           WHERE status = 'open'
+             AND subject = ?
+             AND type IN ('action_item', 'commitment', 'deadline')
+           ORDER BY due_at IS NULL, due_at ASC, created_at DESC
+           LIMIT ?`
+        )
+        .all(subject, limit);
+    } catch (error) {
+      debugLogger.error("Error reading open actions", { error: error.message }, "memory");
+      return [];
+    }
+  }
+
+  /** The durable facts about the user, for the always-on prompt slice. */
+  getProfileMemoryObjects(limit = 40) {
+    if (!this.db) return [];
+    try {
+      return this.db
+        .prepare(
+          `SELECT * FROM memory_objects
+           WHERE subject = 'user'
+             AND type IN ('person_fact', 'preference')
+             AND status NOT IN ('superseded', 'dismissed')
+           ORDER BY confidence DESC, updated_at DESC
+           LIMIT ?`
+        )
+        .all(limit);
+    } catch (error) {
+      debugLogger.error("Error reading memory profile", { error: error.message }, "memory");
       return [];
     }
   }

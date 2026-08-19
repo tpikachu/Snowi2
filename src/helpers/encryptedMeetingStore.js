@@ -33,6 +33,12 @@ const SINGLETON_OBJECTS = {
   manifest: { file: "manifest.enc", type: "manifest" },
   "running-state": { file: path.join("state", "running-state.enc"), type: "running-state" },
   artifact: { file: path.join("artifact", "snowi-meeting-v1.json.enc"), type: "artifact" },
+  // Every memory object this meeting produced, in one sealed document rather
+  // than a file each (§19, §21.1). A meeting yields tens of objects of a few
+  // hundred bytes; per-object files would multiply the syscalls and the
+  // directory entries for no benefit, and rewriting the document is atomic,
+  // which a batch of individual writes would not be.
+  memory: { file: path.join("memory", "memory-v1.json.enc"), type: "memory" },
 };
 
 /** Append-only sequences: many numbered files under one directory. */
