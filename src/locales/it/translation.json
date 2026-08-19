@@ -2739,9 +2739,10 @@
         }
       },
       "errors": {
-        "noModel": "Nessun modello IA selezionato. Configurane uno nelle Impostazioni.",
+        "noModel": "Nessun modello IA è ancora configurato per la formattazione delle note.",
         "actionFailed": "Azione non riuscita",
-        "noEndpoint": "Nessun URL del server self-hosted impostato. Configurane uno nelle Impostazioni."
+        "noEndpoint": "Nessun URL del server self-hosted impostato per la formattazione delle note.",
+        "configure": "Configura"
       }
     },
     "empty": {

@@ -13,9 +13,17 @@ export interface NoteActionState {
   actionName: string | null;
 }
 
+/**
+ * A fix the user can only apply in Settings. Carried on the event rather than
+ * baked into the message so the listener can offer the trip there — "configure
+ * one in Settings" is not much help to someone who has to go find the page.
+ */
+export type ActionErrorRemedy = "configureNoteFormatting";
+
 export interface ActionErrorEvent {
   noteId: number;
   message: string;
+  remedy?: ActionErrorRemedy;
 }
 
 interface ActionProcessingStoreState {
@@ -44,7 +52,12 @@ function clearNoteState(noteId: number) {
   useActionProcessingStore.setState({ noteStates: next });
 }
 
-function pushErrorEvent(event: ActionErrorEvent) {
+/**
+ * Queues an error for the global toast listener. Exported because note
+ * generation can decide it cannot start before `runBackgroundAction` is ever
+ * reached, and that refusal has to reach the user through the same channel.
+ */
+export function pushErrorEvent(event: ActionErrorEvent) {
   const { errorEvents } = useActionProcessingStore.getState();
   useActionProcessingStore.setState({ errorEvents: [...errorEvents, event] });
 }
@@ -114,7 +127,7 @@ export function runBackgroundAction(
 
   const modelId = options.modelId;
   if (!modelId) {
-    pushErrorEvent({ noteId, message: labels.noModel });
+    pushErrorEvent({ noteId, message: labels.noModel, remedy: "configureNoteFormatting" });
     return;
   }
 
@@ -122,7 +135,7 @@ export function runBackgroundAction(
   const noteFormatting = selectResolvedNoteFormatting(settings);
   // A self-hosted config without a URL would fall through to a cloud provider.
   if (noteFormatting.mode === "self-hosted" && !noteFormatting.remoteUrl) {
-    pushErrorEvent({ noteId, message: labels.noEndpoint });
+    pushErrorEvent({ noteId, message: labels.noEndpoint, remedy: "configureNoteFormatting" });
     return;
   }
 

@@ -1,5 +1,9 @@
 import { getSettings, selectResolvedNoteFormatting } from "../stores/settingsStore";
-import { runBackgroundAction, type RunActionLabels } from "../stores/actionProcessingStore";
+import {
+  pushErrorEvent,
+  runBackgroundAction,
+  type RunActionLabels,
+} from "../stores/actionProcessingStore";
 import { isRegenerableNoteTitle } from "./regenerableNoteTitle";
 import { makeNoteContentHash, noteEnhancementSource } from "../utils/noteContentHash";
 import {
@@ -47,9 +51,16 @@ export async function autoGenerateMeetingNotes(args: AutoGenerateArgs): Promise<
 
   const modelId = selectResolvedNoteFormatting(getSettings()).model;
   if (!modelId) {
-    // Not an error worth interrupting the user for: they stopped a meeting,
-    // and the transcript is saved either way.
+    // Worth telling the user about, because it is the one thing standing
+    // between the meeting they just recorded and the notes they expected — and
+    // silence here reads as "notes are coming" right up until they never do.
+    // The transcript is saved either way, so this asks rather than alarms.
     logger.info("Skipping automatic meeting notes — no note formatting model", {}, "meeting");
+    pushErrorEvent({
+      noteId: args.noteId,
+      message: args.labels.noModel,
+      remedy: "configureNoteFormatting",
+    });
     return false;
   }
 

@@ -2962,9 +2962,10 @@
         }
       },
       "errors": {
-        "noModel": "Kein KI-Modell ausgewählt. Konfigurieren Sie eins in den Einstellungen.",
+        "noModel": "Für die Notizformatierung ist noch kein KI-Modell eingerichtet.",
         "actionFailed": "Aktion fehlgeschlagen",
-        "noEndpoint": "Keine URL für den selbst gehosteten Server festgelegt. Konfigurieren Sie eine in den Einstellungen."
+        "noEndpoint": "Für die Notizformatierung ist keine URL für den selbst gehosteten Server festgelegt.",
+        "configure": "Einrichten"
       }
     },
     "onboarding": {

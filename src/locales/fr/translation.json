@@ -2962,9 +2962,10 @@
         }
       },
       "errors": {
-        "noModel": "Aucun modèle IA sélectionné. Configurez-en un dans les Paramètres.",
+        "noModel": "Aucun modèle IA n'est encore configuré pour la mise en forme des notes.",
         "actionFailed": "L'action a échoué",
-        "noEndpoint": "Aucune URL de serveur auto-hébergé définie. Configurez-en une dans les Paramètres."
+        "noEndpoint": "Aucune URL de serveur auto-hébergé n'est définie pour la mise en forme des notes.",
+        "configure": "Configurer"
       }
     },
     "onboarding": {

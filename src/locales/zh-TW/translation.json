@@ -2739,9 +2739,10 @@
         }
       },
       "errors": {
-        "noModel": "未選擇 AI 模型。請在設定中進行配置。",
+        "noModel": "尚未為筆記整理設定 AI 模型。",
         "actionFailed": "操作失敗",
-        "noEndpoint": "未設定自架伺服器 URL。請在設定中進行配置。"
+        "noEndpoint": "尚未為筆記整理設定自架伺服器 URL。",
+        "configure": "前往設定"
       }
     },
     "empty": {

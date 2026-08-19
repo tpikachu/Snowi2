@@ -20,6 +20,10 @@ import {
 } from "../stores/transcriptionStore";
 import { getSettings, useSettingsStore } from "../stores/settingsStore";
 import {
+  consumeSettingsRequest,
+  useSettingsNavigationStore,
+} from "../stores/settingsNavigationStore";
+import {
   useIsMeetingMode,
   useIsNarrowWindow,
   useMeetingRecordingStore,
@@ -96,6 +100,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   const [settingsSection, setSettingsSection] = useState<string | undefined>(
     initialSettingsSection
   );
+  const [settingsPanel, setSettingsPanel] = useState<string | undefined>(undefined);
   const [aiCTADismissed, setAiCTADismissed] = useState(
     () => localStorage.getItem("aiCTADismissed") === "true"
   );
@@ -331,6 +336,19 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     });
     return () => cleanup?.();
   }, []);
+
+  // Settings lives in this component's state, so anything further away that
+  // needs to send the user there — a background toast, for one — asks through
+  // the navigation store instead of holding a setter it cannot reach.
+  const settingsRequestNonce = useSettingsNavigationStore((s) => s.nonce);
+  useEffect(() => {
+    if (settingsRequestNonce === 0) return;
+    const link = consumeSettingsRequest();
+    if (!link) return;
+    setSettingsSection(link.section);
+    setSettingsPanel(link.panel);
+    setShowSettings(true);
+  }, [settingsRequestNonce]);
 
   // When accessibility is missing on macOS, open the permissions settings page
   useEffect(() => {
@@ -834,9 +852,13 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
             open={showSettings}
             onOpenChange={(open) => {
               setShowSettings(open);
-              if (!open) setSettingsSection(undefined);
+              if (!open) {
+                setSettingsSection(undefined);
+                setSettingsPanel(undefined);
+              }
             }}
             initialSection={settingsSection}
+            initialPanel={settingsPanel}
           />
         </Suspense>
       )}

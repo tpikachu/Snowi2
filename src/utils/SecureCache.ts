@@ -63,6 +63,11 @@ export class SecureCache<T> {
 
   startAutoCleanup(intervalMs: number = 60000): () => void {
     const interval = setInterval(() => this.cleanup(), intervalMs);
+    // Expiring cached secrets is housekeeping — never a reason to keep a
+    // process alive. In Electron the windows hold the app open, so unref costs
+    // nothing there; under Node it lets anything that transitively imports the
+    // reasoning service exit on its own instead of hanging.
+    (interval as unknown as { unref?: () => void }).unref?.();
     return () => clearInterval(interval);
   }
 }

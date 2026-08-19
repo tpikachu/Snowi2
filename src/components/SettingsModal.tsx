@@ -23,6 +23,11 @@ interface SettingsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   initialSection?: string;
+  /**
+   * Sub-panel to land on, for deep links that name one outright. Takes
+   * precedence over the section's legacy sub-tab mapping.
+   */
+  initialPanel?: string;
 }
 
 /**
@@ -35,7 +40,12 @@ interface SettingsModalProps {
  * focus to the gear on the way out, Escape-to-dismiss and `aria-modal` — the
  * Content is simply laid out edge to edge instead of as a floating box.
  */
-export default function SettingsModal({ open, onOpenChange, initialSection }: SettingsModalProps) {
+export default function SettingsModal({
+  open,
+  onOpenChange,
+  initialSection,
+  initialPanel,
+}: SettingsModalProps) {
   const { t } = useTranslation();
   // Settings is dense with Selects. Closing one by clicking away must not also
   // close settings — which, on a full-window surface, reads as being thrown
@@ -65,16 +75,20 @@ export default function SettingsModal({ open, onOpenChange, initialSection }: Se
     [setSpeechTab, setLlmTab]
   );
 
-  // Re-resolve the deep link every time the surface is opened, not just on mount.
-  if (open && !prevOpen) {
+  // Re-resolve the deep link every time the surface is opened, not just on
+  // mount — and again when a new one arrives while it is already open, since a
+  // toast can deep-link from behind the settings surface.
+  const deepLink = `${initialSection ?? ""}|${initialPanel ?? ""}`;
+  const [prevDeepLink, setPrevDeepLink] = useState(deepLink);
+
+  if (open !== prevOpen || deepLink !== prevDeepLink) {
     setPrevOpen(open);
-    if (initialSection) {
+    setPrevDeepLink(deepLink);
+    if (open && initialSection) {
       const resolved = resolveSectionId(initialSection);
       setActiveSection(resolved);
-      applySubTab(resolved, LEGACY_SUB_TAB[initialSection]);
+      applySubTab(resolved, initialPanel ?? LEGACY_SUB_TAB[initialSection]);
     }
-  } else if (open !== prevOpen) {
-    setPrevOpen(open);
   }
 
   // A stored tab from an older build can name a panel that no longer exists.

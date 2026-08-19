@@ -2739,9 +2739,10 @@
         }
       },
       "errors": {
-        "noModel": "Nenhum modelo de IA selecionado. Configure um nas Configurações.",
+        "noModel": "Ainda não há nenhum modelo de IA configurado para a formatação de notas.",
         "actionFailed": "A ação falhou",
-        "noEndpoint": "Nenhum URL de servidor auto-hospedado definido. Configure um nas Configurações."
+        "noEndpoint": "Nenhum URL de servidor auto-hospedado definido para a formatação de notas.",
+        "configure": "Configurar"
       }
     },
     "empty": {

@@ -2962,9 +2962,10 @@
         }
       },
       "errors": {
-        "noModel": "No AI model selected. Configure one in Settings.",
+        "noModel": "No AI model is set up for note formatting yet.",
         "actionFailed": "Action failed",
-        "noEndpoint": "No self-hosted server URL set. Configure one in Settings."
+        "noEndpoint": "No self-hosted server URL is set for note formatting.",
+        "configure": "Configure"
       }
     },
     "onboarding": {
