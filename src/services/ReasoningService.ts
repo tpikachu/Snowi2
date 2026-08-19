@@ -67,6 +67,7 @@ export type AgentStreamChunk =
       callId: string;
       toolName: string;
       displayText: string;
+      failed?: boolean;
       metadata?: ToolMetadata;
     }
   | { type: "done"; finishReason?: string };
@@ -796,14 +797,30 @@ class ReasoningService extends BaseReasoningService {
             ],
           };
         } else if (chunk.type === "tool-result") {
-          const output = chunk.output;
-          const displayText =
-            typeof output === "string" ? output : output?.error ? String(output.error) : "Done";
+          const output = chunk.output as
+            | string
+            | { displayText?: unknown; error?: unknown; success?: unknown }
+            | undefined;
+          // Tools return { success, data, displayText } (see ToolRegistry) and
+          // already phrase their own summary — "Found 3 notes for X". Only a
+          // string output was being read before, so every structured result
+          // collapsed to "Done", including failures.
+          let displayText: string;
+          if (typeof output === "string") {
+            displayText = output;
+          } else if (typeof output?.displayText === "string" && output.displayText) {
+            displayText = output.displayText;
+          } else if (output?.error) {
+            displayText = String(output.error);
+          } else {
+            displayText = chunk.toolName;
+          }
           yield {
             type: "tool_result",
             callId: chunk.toolCallId,
             toolName: chunk.toolName,
             displayText,
+            failed: typeof output === "object" && output?.success === false,
           };
         } else if (chunk.type === "finish") {
           yield { type: "done", finishReason: chunk.finishReason };

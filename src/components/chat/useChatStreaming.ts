@@ -247,7 +247,7 @@ export function useChatStreaming({
                         tc.id === chunk.callId
                           ? {
                               ...tc,
-                              status: "completed" as const,
+                              status: chunk.failed ? ("error" as const) : ("completed" as const),
                               result: chunk.displayText,
                               ...(chunk.metadata ? { metadata: chunk.metadata } : {}),
                             }
