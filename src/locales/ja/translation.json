@@ -2796,6 +2796,16 @@
       "author": {
         "you": "自分"
       }
+    },
+    "meetingPanel": {
+      "openNote": "会議ノートを開く",
+      "sources": {
+        "both": "マイク + システム音声",
+        "micOnly": "マイクのみ",
+        "noMic": "音声ソースなし",
+        "paused": "キャプチャ一時停止中",
+        "systemOnly": "システム音声のみ"
+      }
     }
   },
   "dictionary": {

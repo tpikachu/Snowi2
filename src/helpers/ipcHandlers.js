@@ -100,6 +100,11 @@ const { fetchRealtimeTokenForProvider } = require("./realtimeTokenProviders");
 const MEETING_STREAM_SAMPLE_RATE = 24000;
 const MEETING_RECONNECT_BUFFER_MAX_BYTES = MEETING_STREAM_SAMPLE_RATE * 2 * 30;
 
+// Allow-listed rather than forwarded blind: the panel is a separate renderer,
+// and an unchecked command channel is a way to reach the control panel from
+// anywhere that can talk to this one.
+const MEETING_PANEL_COMMANDS = new Set(["pause", "resume", "stop", "open"]);
+
 const MISTRAL_TRANSCRIPTION_URL = "https://api.mistral.ai/v1/audio/transcriptions";
 
 const XAI_STT_URL = "https://api.x.ai/v1/stt";
@@ -6662,6 +6667,37 @@ class IPCHandlers {
       }
       debugLogger.log(`[Meeting] capture ${next ? "paused" : "resumed"}`);
       return { success: true, paused: next };
+    });
+
+    /*
+     * The floating meeting panel's state bridge.
+     *
+     * The panel runs in its own renderer, so it cannot read the meeting store
+     * directly. The control panel publishes snapshots through here and main
+     * forwards them, which also lets main be the one place that decides whether
+     * the panel window should exist.
+     */
+    ipcMain.on("meeting-panel-publish", (_event, snapshot) => {
+      this.windowManager?.updateMeetingPanel(snapshot);
+    });
+
+    // `send`, not `invoke`: a level that arrives late is worth less than none,
+    // and this fires many times a second.
+    ipcMain.on("meeting-panel-level", (_event, level) => {
+      this.windowManager?.sendMeetingPanelLevel(typeof level === "number" ? level : 0);
+    });
+
+    // The panel's renderer starts after the meeting does, so it asks for the
+    // state it missed rather than waiting for the next change.
+    ipcMain.handle("meeting-panel-get-state", () => {
+      return this.windowManager?.getMeetingPanelState() ?? null;
+    });
+
+    ipcMain.handle("meeting-panel-command", (_event, command) => {
+      if (!MEETING_PANEL_COMMANDS.has(command)) {
+        return { success: false, error: "Unknown meeting panel command" };
+      }
+      return this.windowManager?.handleMeetingPanelCommand(command) ?? { success: false };
     });
 
     ipcMain.handle("meeting-transcription-stop", async () => {

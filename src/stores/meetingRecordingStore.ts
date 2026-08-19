@@ -90,6 +90,14 @@ interface MeetingRecordingState {
   transcript: string;
   /** Pause spans, in order. Kept out of `segments` so a gap can never be mistaken for speech. */
   gaps: MeetingGap[];
+  /**
+   * When capture began. Held in the store rather than derived by whoever is
+   * watching, so the clock reads the same in every surface — including ones
+   * that mount long after the meeting started, like the floating panel.
+   */
+  recordingStartedAt: number | null;
+  /** Whether system audio is being captured alongside the microphone. */
+  systemCaptureActive: boolean;
   /** Set after Stop, while the user decides whether to keep the meeting. */
   pendingStop: PendingStopDecision | null;
   micPartial: string;
@@ -453,6 +461,8 @@ export const useMeetingRecordingStore = create<MeetingRecordingState>()(() => ({
   segments: [],
   transcript: "",
   gaps: [],
+  recordingStartedAt: null,
+  systemCaptureActive: false,
   pendingStop: null,
   micPartial: "",
   systemPartial: "",
@@ -822,6 +832,8 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
     segments: seed,
     transcript: buildTranscriptText(seed),
     gaps: [],
+    recordingStartedAt: Date.now(),
+    systemCaptureActive: false,
     pendingStop: null,
     micPartial: "",
     systemPartial: "",
@@ -951,6 +963,13 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
       isStartingFlag = false;
       return true;
     }
+
+    // Published so surfaces away from the note — the floating panel above all —
+    // can say what the meeting is actually hearing, rather than implying both
+    // sources whenever a meeting is running.
+    useMeetingRecordingStore.setState({
+      systemCaptureActive: systemAudioHandledInMain || Boolean(systemCaptureResult.stream),
+    });
 
     const segmentCleanup = window.electronAPI?.onMeetingTranscriptionSegment?.(
       (data: {
@@ -1533,6 +1552,7 @@ export async function stopRecording(): Promise<StopRecordingResult> {
     isRecording: false,
     isPaused: false,
     isTranscribing: false,
+    systemCaptureActive: false,
   });
 
   await cleanup();

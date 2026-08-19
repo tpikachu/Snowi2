@@ -2868,6 +2868,16 @@
       "author": {
         "you": "你"
       }
+    },
+    "meetingPanel": {
+      "openNote": "開啟會議筆記",
+      "sources": {
+        "both": "麥克風 + 系統音訊",
+        "micOnly": "僅麥克風",
+        "noMic": "沒有音訊來源",
+        "paused": "擷取已暫停",
+        "systemOnly": "僅系統音訊"
+      }
     }
   },
   "dictionary": {

@@ -2868,6 +2868,16 @@
       "author": {
         "you": "Tu"
       }
+    },
+    "meetingPanel": {
+      "openNote": "Apri la nota della riunione",
+      "sources": {
+        "both": "Microfono + audio di sistema",
+        "micOnly": "Solo microfono",
+        "noMic": "Nessuna sorgente audio",
+        "paused": "Acquisizione in pausa",
+        "systemOnly": "Solo audio di sistema"
+      }
     }
   },
   "dictionary": {

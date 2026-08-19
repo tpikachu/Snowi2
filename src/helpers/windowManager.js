@@ -15,6 +15,7 @@ const {
   CONTROL_PANEL_CONFIG,
   AGENT_OVERLAY_CONFIG,
   NOTIFICATION_WINDOW_CONFIG,
+  MEETING_PANEL_CONFIG,
   TRANSCRIPTION_PREVIEW_CONFIG,
   TRANSCRIPTION_PREVIEW_SIZE_LIMITS,
   WINDOW_SIZES,
@@ -34,6 +35,9 @@ class WindowManager {
       this.dismissMeetingNotification();
     });
     this.transcriptionPreviewWindow = null;
+    this.meetingPanelWindow = null;
+    this._meetingPanelState = null;
+    this._meetingPanelOpening = null;
     this.updateNotificationWindow = null;
     this._updateNotificationDismissed = false;
     this.notificationPrefs = {
@@ -738,7 +742,17 @@ class WindowManager {
       clearVisibilityTimer();
       this.controlPanelWindow = null;
       dockManager.setControlPanelVisible(false);
+      // The renderer that owned the capture graph is gone, so the meeting is
+      // over whether or not a final snapshot made it out. Leaving the panel up
+      // would show a recording that no longer exists.
+      this.closeMeetingPanel();
     });
+
+    // The panel yields to the control panel rather than stacking on top of it.
+    // Driven by focus alone, never by show/hide: on macOS those are occlusion
+    // events, so the panel would flicker as other windows passed in front.
+    this.controlPanelWindow.on("focus", () => this._syncMeetingPanelVisibility());
+    this.controlPanelWindow.on("blur", () => this._syncMeetingPanelVisibility());
 
     MenuManager.setupControlPanelMenu(this.controlPanelWindow, () => this.openSettings());
 
@@ -772,6 +786,8 @@ class WindowManager {
           { reason: details.reason, exitCode: details.exitCode },
           "window"
         );
+        // Same reasoning as "closed": the capture graph died with the renderer.
+        this.closeMeetingPanel();
         setTimeout(() => this.loadControlPanel(), 1000);
       }
     });
@@ -1338,6 +1354,153 @@ class WindowManager {
       this.notificationWindow.close();
     }
     this.notificationWindow = null;
+  }
+
+  // ---------------------------------------------------------------- meeting panel
+  //
+  // The capture graph lives in the control panel's renderer, so this window is
+  // a view onto state it does not own: the control panel publishes snapshots,
+  // main forwards them here, and the panel's buttons send commands back the
+  // same way. Main decides only whether the window should exist at all, which
+  // keeps "is there a meeting" answered in one place.
+
+  /**
+   * Applies a published snapshot: opens the panel when a meeting starts, closes
+   * it when one ends, and forwards everything in between.
+   */
+  updateMeetingPanel(snapshot) {
+    if (!snapshot || !snapshot.isRecording) {
+      this.closeMeetingPanel();
+      return;
+    }
+
+    this._meetingPanelState = snapshot;
+
+    if (!this.meetingPanelWindow || this.meetingPanelWindow.isDestroyed()) {
+      // Awaited nowhere: the snapshot is already cached, and the panel asks for
+      // it once its renderer is up, so an in-flight open loses nothing.
+      this.createMeetingPanelWindow().catch((error) => {
+        debugLogger.error("Failed to open the meeting panel", { error: error.message }, "meeting");
+      });
+      return;
+    }
+
+    this.sendToMeetingPanel("meeting-panel-state", snapshot);
+    this._syncMeetingPanelVisibility();
+  }
+
+  sendMeetingPanelLevel(level) {
+    // Dropped rather than queued: a level is only meaningful when it arrives.
+    const win = this.meetingPanelWindow;
+    if (!win || win.isDestroyed() || win.webContents.isLoading()) return;
+    win.webContents.send("meeting-panel-level", level);
+  }
+
+  getMeetingPanelState() {
+    return this._meetingPanelState;
+  }
+
+  sendToMeetingPanel(channel, data) {
+    const win = this.meetingPanelWindow;
+    if (!win || win.isDestroyed()) return;
+    if (win.webContents.isLoading()) {
+      win.webContents.once("did-finish-load", () => {
+        if (!win.isDestroyed()) win.webContents.send(channel, data);
+      });
+    } else {
+      win.webContents.send(channel, data);
+    }
+  }
+
+  /**
+   * Routes a panel button back to the renderer that owns the capture graph.
+   *
+   * Stop surfaces the control panel as well as forwarding: it is followed by
+   * the keep-or-discard prompt, and a question asked behind the meeting window
+   * the user is looking at is a question they never see.
+   */
+  async handleMeetingPanelCommand(command) {
+    if (command === "open" || command === "stop") {
+      await this.createControlPanelWindow();
+    }
+    this.sendToControlPanel("meeting-panel-command", command);
+    return { success: true };
+  }
+
+  async createMeetingPanelWindow() {
+    if (this.meetingPanelWindow && !this.meetingPanelWindow.isDestroyed()) return;
+    // Two snapshots arriving back-to-back must not each open a window.
+    if (this._meetingPanelOpening) return this._meetingPanelOpening;
+
+    this._meetingPanelOpening = (async () => {
+      const cursorPos = screen.getCursorScreenPoint();
+      const display = screen.getDisplayNearestPoint(cursorPos);
+      const position = WindowPositionUtil.getMeetingPanelPosition(display);
+
+      const win = new BrowserWindow({ ...MEETING_PANEL_CONFIG, ...position });
+      this.meetingPanelWindow = win;
+
+      // The point of the panel: it is on screen for the user during a meeting
+      // they are sharing, and absent from the share itself.
+      win.setContentProtection(true);
+      WindowPositionUtil.setupAlwaysOnTop(win);
+
+      win.on("closed", () => {
+        if (this.meetingPanelWindow === win) this.meetingPanelWindow = null;
+      });
+
+      try {
+        if (process.env.NODE_ENV === "development") {
+          await DevServerManager.waitForDevServer();
+          await win.loadURL(`${DevServerManager.DEV_SERVER_URL}?meeting-panel=true`);
+        } else {
+          const fileInfo = DevServerManager.getAppFilePath(false);
+          await win.loadFile(fileInfo.path, {
+            query: { ...fileInfo.query, "meeting-panel": "true" },
+          });
+        }
+      } catch (error) {
+        // A meeting stopped mid-load tears this window down, and the pending
+        // load rejects. That is the intended outcome, not a failure to report.
+        if (win.isDestroyed() || this.meetingPanelWindow !== win) return;
+        throw error;
+      }
+
+      if (this.meetingPanelWindow !== win || win.isDestroyed()) return;
+      this._syncMeetingPanelVisibility();
+    })().finally(() => {
+      this._meetingPanelOpening = null;
+    });
+
+    return this._meetingPanelOpening;
+  }
+
+  /**
+   * The panel is for when Snowi's own window is not what the user is looking
+   * at. Showing it over the control panel would put two copies of the same
+   * controls on screen, so it steps aside whenever the control panel has focus.
+   */
+  _syncMeetingPanelVisibility() {
+    const win = this.meetingPanelWindow;
+    if (!win || win.isDestroyed()) return;
+
+    const controlPanel = this.controlPanelWindow;
+    const controlPanelHasFocus =
+      controlPanel && !controlPanel.isDestroyed() && controlPanel.isFocused();
+
+    if (controlPanelHasFocus) {
+      if (win.isVisible()) win.hide();
+      return;
+    }
+    // showInactive: appearing must never steal focus from the meeting app.
+    if (!win.isVisible()) win.showInactive();
+  }
+
+  closeMeetingPanel() {
+    this._meetingPanelState = null;
+    const win = this.meetingPanelWindow;
+    this.meetingPanelWindow = null;
+    if (win && !win.isDestroyed()) win.close();
   }
 
   async showUpdateNotification(info) {

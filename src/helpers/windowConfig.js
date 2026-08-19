@@ -151,6 +151,50 @@ const TRANSCRIPTION_PREVIEW_CONFIG = {
   type: FLOATING_OVERLAY_TYPE,
 };
 
+// Spec §12.1 requires the meeting panel to be resizable, so these are real
+// bounds rather than a fixed size: wide enough for a title and a clock at the
+// minimum, tall enough at the maximum for the context panel that lands later.
+const MEETING_PANEL_SIZE_LIMITS = {
+  minWidth: 300,
+  defaultWidth: 380,
+  maxWidth: 720,
+  minHeight: 52,
+  defaultHeight: 56,
+  maxHeight: 560,
+};
+
+const MEETING_PANEL_CONFIG = {
+  width: MEETING_PANEL_SIZE_LIMITS.defaultWidth,
+  height: MEETING_PANEL_SIZE_LIMITS.defaultHeight,
+  minWidth: MEETING_PANEL_SIZE_LIMITS.minWidth,
+  minHeight: MEETING_PANEL_SIZE_LIMITS.minHeight,
+  maxWidth: MEETING_PANEL_SIZE_LIMITS.maxWidth,
+  maxHeight: MEETING_PANEL_SIZE_LIMITS.maxHeight,
+  frame: false,
+  transparent: true,
+  alwaysOnTop: true,
+  skipTaskbar: true,
+  resizable: true,
+  // Unlike the other overlays this one takes clicks and, once the context
+  // panel lands, typed questions — so it must be able to hold focus.
+  focusable: true,
+  hasShadow: false,
+  show: false,
+  acceptsFirstMouse: true,
+  fullScreenable: false,
+  webPreferences: {
+    preload: path.join(__dirname, "..", "..", "preload.js"),
+    nodeIntegration: false,
+    contextIsolation: true,
+    sandbox: true,
+    // The panel is hidden while the control panel has focus; without this its
+    // timers would be throttled and the clock would stall behind the meeting.
+    backgroundThrottling: false,
+  },
+  visibleOnAllWorkspaces: process.platform !== "win32",
+  type: FLOATING_OVERLAY_TYPE,
+};
+
 class WindowPositionUtil {
   static getMainWindowPosition(display, customSize = null, position = "bottom-right") {
     const { width, height } = customSize || WINDOW_SIZES.BASE;
@@ -199,6 +243,22 @@ class WindowPositionUtil {
     // not to zero, or a monitor above the primary one puts the prompt nowhere.
     const bounds = {
       x: workArea.x + workArea.width - width - MARGIN,
+      y: workArea.y + MARGIN,
+      width,
+      height,
+    };
+    return { ...WindowPositionUtil.clampToWorkArea(bounds, display), width, height };
+  }
+
+  // Top-centre, clear of the meeting prompt's top-right slot: the two can be on
+  // screen together, and a panel that covers the prompt hides the Join button.
+  static getMeetingPanelPosition(display, size = {}) {
+    const width = size.width || MEETING_PANEL_SIZE_LIMITS.defaultWidth;
+    const height = size.height || MEETING_PANEL_SIZE_LIMITS.defaultHeight;
+    const MARGIN = 12;
+    const workArea = display.workArea || display.bounds;
+    const bounds = {
+      x: Math.round(workArea.x + (workArea.width - width) / 2),
       y: workArea.y + MARGIN,
       width,
       height,
@@ -287,6 +347,8 @@ module.exports = {
   CONTROL_PANEL_CONFIG,
   AGENT_OVERLAY_CONFIG,
   NOTIFICATION_WINDOW_CONFIG,
+  MEETING_PANEL_CONFIG,
+  MEETING_PANEL_SIZE_LIMITS,
   TRANSCRIPTION_PREVIEW_CONFIG,
   TRANSCRIPTION_PREVIEW_SIZE_LIMITS,
   WINDOW_SIZES,

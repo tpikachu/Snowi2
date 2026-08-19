@@ -3075,6 +3075,16 @@
       "author": {
         "you": "Du"
       }
+    },
+    "meetingPanel": {
+      "openNote": "Meeting-Notiz öffnen",
+      "sources": {
+        "both": "Mikrofon + Systemaudio",
+        "micOnly": "Nur Mikrofon",
+        "noMic": "Keine Audioquelle",
+        "paused": "Aufnahme pausiert",
+        "systemOnly": "Nur Systemaudio"
+      }
     }
   },
   "dictionary": {

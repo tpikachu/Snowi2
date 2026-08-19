@@ -648,6 +648,25 @@ contextBridge.exposeInMainWorld("electronAPI", {
   meetingTranscriptionSetPaused: (paused) =>
     ipcRenderer.invoke("meeting-transcription-set-paused", paused),
   meetingTranscriptionCancel: () => ipcRenderer.invoke("meeting-transcription-cancel"),
+
+  // Floating meeting panel bridge. The panel renders in its own window, so
+  // meeting state reaches it as published snapshots rather than a shared store.
+  meetingPanelPublish: (snapshot) => ipcRenderer.send("meeting-panel-publish", snapshot),
+  meetingPanelLevel: (level) => ipcRenderer.send("meeting-panel-level", level),
+  meetingPanelGetState: () => ipcRenderer.invoke("meeting-panel-get-state"),
+  meetingPanelCommand: (command) => ipcRenderer.invoke("meeting-panel-command", command),
+  onMeetingPanelState: registerListener(
+    "meeting-panel-state",
+    (callback) => (_event, snapshot) => callback(snapshot)
+  ),
+  onMeetingPanelLevel: registerListener(
+    "meeting-panel-level",
+    (callback) => (_event, level) => callback(level)
+  ),
+  onMeetingPanelCommand: registerListener(
+    "meeting-panel-command",
+    (callback) => (_event, command) => callback(command)
+  ),
   onMeetingTranscriptionSegment: registerListener(
     "meeting-transcription-segment",
     (callback) => (_event, data) => callback(data)

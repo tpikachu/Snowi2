@@ -2916,6 +2916,16 @@
       "author": {
         "you": "Tú"
       }
+    },
+    "meetingPanel": {
+      "openNote": "Abrir la nota de la reunión",
+      "sources": {
+        "both": "Micrófono + audio del sistema",
+        "micOnly": "Solo micrófono",
+        "noMic": "Sin fuente de audio",
+        "paused": "Captura en pausa",
+        "systemOnly": "Solo audio del sistema"
+      }
     }
   },
   "dictionary": {

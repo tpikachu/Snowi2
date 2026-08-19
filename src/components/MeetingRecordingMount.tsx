@@ -8,9 +8,14 @@ import {
   useMeetingRecordingStore,
 } from "../stores/meetingRecordingStore";
 import { ConfirmDialog } from "./ui/dialog";
+import { useMeetingPanelBridge } from "../hooks/useMeetingPanelBridge";
 
 const EMA_PREV = 0.5;
 const EMA_NEXT = 0.5;
+// The floating panel's meter is fed from the same analyser as the in-app one,
+// but at a rate a process boundary can carry: a level is only worth sending as
+// often as the eye can read it.
+const PANEL_LEVEL_INTERVAL_MS = 80;
 
 // Sentinel errors set by meetingRecordingStore, translated at display time.
 const MEETING_ERROR_KEYS: Record<string, string> = {};
@@ -68,6 +73,8 @@ export default function MeetingRecordingMount() {
   const micCaptureStatus = useMeetingRecordingStore((s) => s.micCaptureStatus);
   const wasMicUnavailable = useRef(false);
 
+  useMeetingPanelBridge();
+
   useEffect(() => {
     primeMeetingWorklet();
   }, []);
@@ -108,6 +115,7 @@ export default function MeetingRecordingMount() {
     let rafId = 0;
     let smoothed = 0;
     let buf = new Float32Array(256);
+    let lastPanelLevelAt = 0;
 
     const tick = () => {
       const analyser = getMicAnalyser();
@@ -125,6 +133,12 @@ export default function MeetingRecordingMount() {
         smoothed = EMA_PREV * smoothed + EMA_NEXT * rms;
         const clamped = smoothed < 0 ? 0 : smoothed > 1 ? 1 : smoothed;
         useMeetingRecordingStore.setState({ currentMicLevel: clamped });
+
+        const now = performance.now();
+        if (now - lastPanelLevelAt >= PANEL_LEVEL_INTERVAL_MS) {
+          lastPanelLevelAt = now;
+          window.electronAPI?.meetingPanelLevel?.(clamped);
+        }
       }
       rafId = requestAnimationFrame(tick);
     };
@@ -134,6 +148,8 @@ export default function MeetingRecordingMount() {
     return () => {
       cancelAnimationFrame(rafId);
       useMeetingRecordingStore.setState({ currentMicLevel: 0 });
+      // Otherwise the panel's meter would hold whatever the last frame showed.
+      window.electronAPI?.meetingPanelLevel?.(0);
     };
   }, [isRecording]);
 

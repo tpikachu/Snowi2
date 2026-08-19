@@ -3075,6 +3075,16 @@
       "author": {
         "you": "Vous"
       }
+    },
+    "meetingPanel": {
+      "openNote": "Ouvrir la note de réunion",
+      "sources": {
+        "both": "Micro + audio du système",
+        "micOnly": "Micro uniquement",
+        "noMic": "Aucune source audio",
+        "paused": "Capture en pause",
+        "systemOnly": "Audio du système uniquement"
+      }
     }
   },
   "dictionary": {

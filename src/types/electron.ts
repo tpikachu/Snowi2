@@ -1,5 +1,9 @@
 import type { ModelDefinition } from "../models/ModelRegistry";
 import type { TinfoilCatalogModel } from "../models/tinfoilModels";
+import type { MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
+
+/** What the floating meeting panel can ask the control panel to do. */
+export type MeetingPanelCommand = "pause" | "resume" | "stop" | "open";
 
 export type LocalTranscriptionProvider = "whisper" | "nvidia";
 
@@ -1778,6 +1782,19 @@ declare global {
       meetingTranscriptionSetPaused?: (
         paused: boolean
       ) => Promise<{ success: boolean; paused: boolean }>;
+
+      /** Publishes meeting state to the floating panel's own renderer. Null closes it. */
+      meetingPanelPublish?: (snapshot: MeetingPanelSnapshot | null) => void;
+      /** Mic level, 0–1, for the panel's meter. */
+      meetingPanelLevel?: (level: number) => void;
+      /** The state the panel missed while its window was loading. */
+      meetingPanelGetState?: () => Promise<MeetingPanelSnapshot | null>;
+      meetingPanelCommand?: (
+        command: MeetingPanelCommand
+      ) => Promise<{ success: boolean; error?: string }>;
+      onMeetingPanelState?: (callback: (snapshot: MeetingPanelSnapshot) => void) => () => void;
+      onMeetingPanelLevel?: (callback: (level: number) => void) => () => void;
+      onMeetingPanelCommand?: (callback: (command: MeetingPanelCommand) => void) => () => void;
       onMeetingTranscriptionSegment?: (
         callback: (data: {
           text: string;

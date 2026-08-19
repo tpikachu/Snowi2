@@ -17,6 +17,7 @@ Status: **Done** · **Partial** · **Missing** · **Waived** (recorded owner dec
 | Updater               | Disabled for now (§22.2 update endpoint optional)                               | 2026-08-17 |
 | Encryption scope      | Meetings become a new encrypted entity; notes/snippets stay plaintext with FTS5 | 2026-08-19 |
 | First milestone       | M1 security foundation                                                          | 2026-08-19 |
+| Panel screen-share exclusion | Whole panel window protected, not just assistant text — see note below   | 2026-08-19 |
 
 ## §2–§9 Fork, scope, onboarding
 
@@ -38,7 +39,13 @@ Status: **Done** · **Partial** · **Missing** · **Waived** (recorded owner dec
 | §11.1 emergency-stop shortcut           | Missing |                                                                 |
 | §11.1 stop asks keep-or-discard         | Done    | Empty meetings lead with Discard; Enter never destroys          |
 | §11.1 quit-while-recording confirmation | Missing |                                                                 |
-| §12.1 compact always-on-top panel       | Partial | `MeetingRecordingPill` shows state; no question box             |
+| §12.1 compact always-on-top panel       | Partial | Floating panel: state, clock, sources, Pause/Stop. No question box |
+| §12.1 movable and resizable             | Done    | Frameless drag region; real min/max bounds                      |
+| §12.1 screen-share exclusion            | Done    | `setContentProtection` on the panel window — see decision below |
+| §12.1 question box + streaming answer   | Missing | Depends on §15/§16; the panel has room reserved for it          |
+| §12.1 expand/collapse transcript        | Missing |                                                                 |
+| §12.1 focus-question shortcut / Escape  | Missing | Lands with the question box                                     |
+| §12.2 full meeting view                 | Missing | Three-area expanded view not started                            |
 | §13.1 separate mic/system tracks        | Done    | CoreAudio tap (macOS), WASAPI process loopback (Windows)        |
 | §13.2 encrypted checkpoints ≤10s        | Missing | Store now exists (§21); nothing writes to it yet                |
 
@@ -118,3 +125,11 @@ canonical hash, §19 memory objects, §20 action items and revision events.
   have to move into main first (M1.3 before M1.4).
 - **FTS5 over meeting content** violates §21.3 today and is fixed only once
   meetings stop being notes.
+- **Panel content protection is coarser than §12.1 allows.** The spec permits
+  screen-share exclusion "solely to protect private assistant text". Electron's
+  `setContentProtection` is per-window, so the only options are to protect the
+  whole panel — status row, clock and controls included — or to protect none of
+  it and keep assistant answers in a separate window. The whole panel is
+  protected today. This does not conceal recording from the local user, which
+  is what §12.1 actually forbids, but it does keep the recording indicator out
+  of a shared screen. Revisit if the assistant text moves to its own surface.

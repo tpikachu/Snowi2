@@ -24,6 +24,9 @@ Snowi is an Electron-based desktop dictation application that uses whisper.cpp f
    - Main Window: Minimal overlay for dictation (draggable, always on top)
    - Control Panel: Full settings interface (normal window)
    - Both use same React codebase with URL-based routing
+   - Overlay windows (meeting panel, meeting notification, transcription preview, update notification) are the same bundle selected by a query flag in `AppRouter.jsx`
+
+   **Meeting panel** (`?meeting-panel=true`, spec §12.1): a floating always-on-top status bar shown while a meeting records, content-protected so it stays out of screen shares. The capture graph lives in the control panel's renderer, so the panel is a *view*: `useMeetingPanelBridge` publishes `MeetingPanelSnapshot`s (`src/utils/meetingPanelSnapshot.ts`, pure + unit-tested) to main, which owns whether the window exists and forwards state; the panel's buttons send allow-listed commands (`pause`/`resume`/`stop`/`open`) back through main to the same store functions the in-app controls call. Mic level rides a separate throttled channel. The panel hides while the control panel has focus, driven by `focus`/`blur` only — never `show`/`hide`, which are occlusion events on macOS.
 
 2. **Process Separation**:
    - Main Process: Electron main, IPC handlers, database operations
