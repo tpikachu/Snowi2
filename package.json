@@ -1,6 +1,6 @@
 {
   "name": "snowi",
-  "version": "0.1.0",
+  "version": "0.1.0-rc1",
   "description": "Snowi — local-first meeting copilot",
   "main": "main.js",
   "private": true,
