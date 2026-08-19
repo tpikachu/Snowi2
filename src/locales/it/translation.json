@@ -633,6 +633,29 @@
         "unavailable": "Snowi non ha potuto leggere in sicurezza il testo selezionato. Controlla i permessi di accessibilità o automazione.",
         "tooLarge": "La selezione è troppo grande. Seleziona al massimo 6.000 caratteri.",
         "reasoningFailed": "L’IA non ha potuto completare la modifica. Il testo originale non è stato cambiato."
+      },
+      "micErrors": {
+        "generic": {
+          "description": "Impossibile accedere al microfono: {{reason}}",
+          "title": "Errore di registrazione"
+        },
+        "inUse": {
+          "description": "Un'altra app sta usando il microfono. Chiudila e riprova.",
+          "title": "Microfono in uso"
+        },
+        "notFound": {
+          "description": "Nessun microfono rilevato. Collegane uno e riprova.",
+          "title": "Nessun microfono trovato"
+        },
+        "permissionDenied": {
+          "description": "Concedi l'autorizzazione al microfono nelle impostazioni di sistema e riprova.",
+          "title": "Accesso al microfono negato"
+        },
+        "unusable": {
+          "description": "Nessun microfono ha fornito una traccia audio funzionante. Se usi un ingresso virtuale o in loopback, verifica che il suo driver sia attivo, poi selezionalo in Impostazioni → Microfono.",
+          "descriptionWithDevice": "«{{device}}» non ha fornito una traccia audio funzionante. Se è un ingresso virtuale o in loopback, verifica che il suo driver sia attivo, poi ricontrollalo in Impostazioni → Microfono.",
+          "title": "Nessun microfono funzionante"
+        }
       }
     },
     "clipboard": {

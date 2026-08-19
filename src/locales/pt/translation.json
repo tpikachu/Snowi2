@@ -612,6 +612,29 @@
         "unavailable": "O Snowi não conseguiu ler o texto selecionado com segurança. Verifique as permissões de acessibilidade ou automação.",
         "tooLarge": "A seleção é muito grande. Selecione no máximo 6.000 caracteres.",
         "reasoningFailed": "A IA não conseguiu concluir a edição. O texto original não foi alterado."
+      },
+      "micErrors": {
+        "generic": {
+          "description": "Não foi possível acessar o microfone: {{reason}}",
+          "title": "Erro de gravação"
+        },
+        "inUse": {
+          "description": "Outro aplicativo está usando o microfone. Feche-o e tente novamente.",
+          "title": "Microfone em uso"
+        },
+        "notFound": {
+          "description": "Nenhum microfone detectado. Conecte um e tente novamente.",
+          "title": "Nenhum microfone encontrado"
+        },
+        "permissionDenied": {
+          "description": "Conceda permissão de microfone nas configurações do sistema e tente novamente.",
+          "title": "Acesso ao microfone negado"
+        },
+        "unusable": {
+          "description": "Nenhum microfone forneceu uma faixa de áudio funcional. Se você usa uma entrada virtual ou de loopback, confirme que o driver dela está em execução e selecione-a em Configurações → Microfone.",
+          "descriptionWithDevice": "“{{device}}” não forneceu uma faixa de áudio funcional. Se for uma entrada virtual ou de loopback, confirme que o driver dela está em execução e verifique-a em Configurações → Microfone.",
+          "title": "Nenhum microfone funcional"
+        }
       }
     },
     "clipboard": {

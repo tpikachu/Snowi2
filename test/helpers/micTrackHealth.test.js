@@ -25,63 +25,76 @@ class FakeTrack extends EventTarget {
   }
 }
 
-test("resolves false immediately for an ended track", async () => {
-  const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
+test("probeTrack reports dead immediately for an ended track", async () => {
+  const { probeTrack, TRACK_DEAD } = await import("../../src/helpers/micTrackHealth.js");
   const track = new FakeTrack({ readyState: "ended" });
-  assert.equal(await waitForTrackReady(track, 600), false);
+  assert.equal(await probeTrack(track, 600), TRACK_DEAD);
   assert.equal(track._listenerCount, 0);
 });
 
-test("resolves false immediately for a null track", async () => {
-  const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
-  assert.equal(await waitForTrackReady(null, 600), false);
+test("probeTrack reports dead immediately for a null track", async () => {
+  const { probeTrack, TRACK_DEAD } = await import("../../src/helpers/micTrackHealth.js");
+  assert.equal(await probeTrack(null, 600), TRACK_DEAD);
 });
 
-test("resolves true immediately for an unmuted live track", async () => {
-  const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
+test("probeTrack reports ready immediately for an unmuted live track", async () => {
+  const { probeTrack, TRACK_READY } = await import("../../src/helpers/micTrackHealth.js");
   const track = new FakeTrack({ muted: false });
-  assert.equal(await waitForTrackReady(track, 600), true);
+  assert.equal(await probeTrack(track, 600), TRACK_READY);
   assert.equal(track._listenerCount, 0);
 });
 
-test("resolves true when a muted track fires unmute, with no listener leak", async () => {
-  const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
+test("probeTrack reports ready when a muted track fires unmute, with no listener leak", async () => {
+  const { probeTrack, TRACK_READY } = await import("../../src/helpers/micTrackHealth.js");
   const track = new FakeTrack({ muted: true });
-  const pending = waitForTrackReady(track, 600);
+  const pending = probeTrack(track, 600);
   track.muted = false;
   track.fire("unmute");
-  assert.equal(await pending, true);
+  assert.equal(await pending, TRACK_READY);
   assert.equal(track._listenerCount, 0);
 });
 
-test("resolves false when a muted track fires ended, with no listener leak", async () => {
-  const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
+test("probeTrack reports dead when a muted track fires ended, with no listener leak", async () => {
+  const { probeTrack, TRACK_DEAD } = await import("../../src/helpers/micTrackHealth.js");
   const track = new FakeTrack({ muted: true });
-  const pending = waitForTrackReady(track, 600);
+  const pending = probeTrack(track, 600);
   track.readyState = "ended";
   track.fire("ended");
-  assert.equal(await pending, false);
+  assert.equal(await pending, TRACK_DEAD);
   assert.equal(track._listenerCount, 0);
 });
 
-test("resolves false after timeout when a muted track never changes", async (t) => {
-  const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
+// The virtual-microphone case: the device opened, it just has no signal yet.
+// It must not be confused with a dead one, which is what makes it a hard error.
+test("probeTrack reports silent, not dead, when a live track stays muted", async (t) => {
+  const { probeTrack, TRACK_SILENT } = await import("../../src/helpers/micTrackHealth.js");
   t.mock.timers.enable({ apis: ["setTimeout"] });
   const track = new FakeTrack({ muted: true });
-  const pending = waitForTrackReady(track, 600);
+  const pending = probeTrack(track, 600);
   t.mock.timers.tick(600);
-  assert.equal(await pending, false);
+  assert.equal(await pending, TRACK_SILENT);
   assert.equal(track._listenerCount, 0);
 });
 
-test("resolves true after timeout if the track quietly unmuted without firing", async (t) => {
-  const { waitForTrackReady } = await import("../../src/helpers/micTrackHealth.js");
+test("probeTrack reports dead when a muted track ended without firing", async (t) => {
+  const { probeTrack, TRACK_DEAD } = await import("../../src/helpers/micTrackHealth.js");
   t.mock.timers.enable({ apis: ["setTimeout"] });
   const track = new FakeTrack({ muted: true });
-  const pending = waitForTrackReady(track, 600);
+  const pending = probeTrack(track, 600);
+  track.readyState = "ended"; // died but no event dispatched
+  t.mock.timers.tick(600);
+  assert.equal(await pending, TRACK_DEAD);
+  assert.equal(track._listenerCount, 0);
+});
+
+test("probeTrack reports ready after timeout if the track quietly unmuted without firing", async (t) => {
+  const { probeTrack, TRACK_READY } = await import("../../src/helpers/micTrackHealth.js");
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const track = new FakeTrack({ muted: true });
+  const pending = probeTrack(track, 600);
   track.muted = false; // unmuted but no event dispatched
   t.mock.timers.tick(600);
-  assert.equal(await pending, true);
+  assert.equal(await pending, TRACK_READY);
   assert.equal(track._listenerCount, 0);
 });
 
@@ -236,7 +249,7 @@ test("reacquireIfDead keeps the re-acquired stream when the retry track woke up"
   }
 });
 
-test("reacquireIfDead falls back to the default mic when the retry track is still dead", async () => {
+test("reacquireIfDead falls back to the default mic when the retry track is dead too", async () => {
   const { reacquireIfDead } = await import("../../src/helpers/micTrackHealth.js");
   const stream = new FakeStream(trackWithStop({ readyState: "ended" }));
   const retry = new FakeStream(trackWithStop({ readyState: "ended" }));
@@ -342,7 +355,7 @@ test("reacquireIfDead reports an unusable mic when the retry and the fallback bo
   }
 });
 
-test("reacquireIfDead falls back when the re-acquired track stays muted", async (t) => {
+test("reacquireIfDead keeps a re-acquired track that is live but still silent", async (t) => {
   const { reacquireIfDead } = await import("../../src/helpers/micTrackHealth.js");
   t.mock.timers.enable({ apis: ["setTimeout"] });
   const stream = new FakeStream(trackWithStop({ readyState: "ended" }));
@@ -359,11 +372,37 @@ test("reacquireIfDead falls back when the re-acquired track stays muted", async 
     // Let the retry's readiness timer register before firing it.
     await new Promise((resolve) => setImmediate(resolve));
     t.mock.timers.tick(600);
-    assert.equal(await pending, fallbackStream);
-    assert.equal(fallback.calls.onDeviceRejected, 1);
+    // A silent-but-live device is the user's virtual mic waiting for its daemon,
+    // so it is kept: no hop to the default, and no session-long blacklisting.
+    assert.equal(await pending, retry);
+    assert.equal(fallback.calls.onDeviceRejected, 0);
+    assert.equal(fallback.calls.getConstraints, 0);
     assert.equal(fallback.calls.onFallbackUnusable, 0);
-    assert.equal(retry.track._stopped, true);
+    assert.equal(retry.track._stopped, undefined);
     assert.equal(retry.track._listenerCount, 0);
+  } finally {
+    restore();
+  }
+});
+
+// A live-but-silent *first* track is never grounds for a hop either: the device
+// opened, so the capture proceeds on it.
+test("reacquireIfDead keeps the original stream when the first track is silent and the retry fails", async (t) => {
+  const { reacquireIfDead } = await import("../../src/helpers/micTrackHealth.js");
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const stream = new FakeStream(trackWithStop({ muted: true }));
+  const fallback = spyFallback();
+  const restore = stubGetUserMedia(async () => {
+    throw new Error("device busy");
+  });
+  try {
+    const pending = reacquireIfDead(stream, () => ({}), noopLogger, fallback.options);
+    await new Promise((resolve) => setImmediate(resolve));
+    t.mock.timers.tick(600);
+    assert.equal(await pending, stream);
+    assert.equal(fallback.calls.onDeviceRejected, 0);
+    assert.equal(fallback.calls.onFallbackUnusable, 0);
+    assert.equal(stream.track._stopCount, 0);
   } finally {
     restore();
   }

@@ -4,7 +4,11 @@ type RecordingError = {
   code?: string;
   title: string;
   description?: string;
+  /** i18n key for the title; wins over `title` when the error carries one. */
+  titleKey?: string;
   messageKey?: string;
+  /** Interpolation values for `titleKey` / `messageKey`. */
+  messageParams?: Record<string, unknown>;
   /** Toast variant; defaults to destructive for genuine failures. */
   variant?: "default" | "destructive";
 };
@@ -28,10 +32,17 @@ export function getRecordingErrorTitle(error: RecordingError, t: TFunction): str
     return t("hooks.audioRecording.errorTitles.dailyLimitReached");
   if (error.code === "PROVIDER_RATE_LIMITED")
     return t("hooks.audioRecording.errorTitles.providerRateLimited");
+  // Errors that name their own key (microphone failures) translate themselves;
+  // `title` stays as the fallback for a key that has gone missing.
+  if (error.titleKey) {
+    return t(error.titleKey, { ...error.messageParams, defaultValue: error.title });
+  }
   return error.title;
 }
 
 export function getRecordingErrorDescription(error: RecordingError, t: TFunction): string {
-  if (error.messageKey) return t(error.messageKey);
+  if (error.messageKey) {
+    return t(error.messageKey, { ...error.messageParams, defaultValue: error.description ?? "" });
+  }
   return error.description ?? "";
 }

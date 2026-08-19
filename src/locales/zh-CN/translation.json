@@ -633,6 +633,29 @@
         "unavailable": "Snowi 无法安全读取选中的文本。请检查辅助功能或输入自动化权限。",
         "tooLarge": "选中的内容过长。请选择不超过 6,000 个字符。",
         "reasoningFailed": "AI 无法完成选中文本编辑。原始文本未被更改。"
+      },
+      "micErrors": {
+        "generic": {
+          "description": "无法访问麦克风：{{reason}}",
+          "title": "录音错误"
+        },
+        "inUse": {
+          "description": "麦克风正被其他应用占用。请关闭后重试。",
+          "title": "麦克风被占用"
+        },
+        "notFound": {
+          "description": "未检测到麦克风。请连接后重试。",
+          "title": "未找到麦克风"
+        },
+        "permissionDenied": {
+          "description": "请在系统设置中授予麦克风权限后重试。",
+          "title": "麦克风访问被拒绝"
+        },
+        "unusable": {
+          "description": "没有麦克风提供可用的音频轨道。如果你使用虚拟或回环输入，请确认其驱动正在运行，然后在“设置 → 麦克风”中选择它。",
+          "descriptionWithDevice": "“{{device}}”未提供可用的音频轨道。如果它是虚拟或回环输入，请确认其驱动正在运行，然后在“设置 → 麦克风”中重新检查。",
+          "title": "没有可用的麦克风"
+        }
       }
     },
     "clipboard": {

@@ -633,6 +633,29 @@
         "unavailable": "Snowi no pudo leer de forma segura el texto seleccionado. Revisa los permisos de accesibilidad o automatización.",
         "tooLarge": "La selección es demasiado grande. Selecciona 6.000 caracteres o menos.",
         "reasoningFailed": "La IA no pudo completar la edición. El texto original no se modificó."
+      },
+      "micErrors": {
+        "generic": {
+          "description": "No se pudo acceder al micrófono: {{reason}}",
+          "title": "Error de grabación"
+        },
+        "inUse": {
+          "description": "Otra aplicación está usando el micrófono. Ciérrala e inténtalo de nuevo.",
+          "title": "Micrófono en uso"
+        },
+        "notFound": {
+          "description": "No se detectó ningún micrófono. Conecta uno e inténtalo de nuevo.",
+          "title": "No se encontró micrófono"
+        },
+        "permissionDenied": {
+          "description": "Concede permiso de micrófono en los ajustes del sistema e inténtalo de nuevo.",
+          "title": "Acceso al micrófono denegado"
+        },
+        "unusable": {
+          "description": "Ningún micrófono entregó una pista de audio funcional. Si usas una entrada virtual o de bucle, comprueba que su controlador esté en marcha y selecciónala en Ajustes → Micrófono.",
+          "descriptionWithDevice": "«{{device}}» no entregó una pista de audio funcional. Si es una entrada virtual o de bucle, comprueba que su controlador esté en marcha y revísala en Ajustes → Micrófono.",
+          "title": "Ningún micrófono funcional"
+        }
       }
     },
     "clipboard": {

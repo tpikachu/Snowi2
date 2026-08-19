@@ -633,6 +633,29 @@
         "unavailable": "Snowi could not safely read the selected text. Check accessibility or input automation permissions and try again.",
         "tooLarge": "The selection is too large to edit safely. Select 6,000 characters or fewer.",
         "reasoningFailed": "The AI could not complete the selection edit. Your original text was not changed."
+      },
+      "micErrors": {
+        "generic": {
+          "description": "Could not access the microphone: {{reason}}",
+          "title": "Recording Error"
+        },
+        "inUse": {
+          "description": "Another app is using the microphone. Close it and try again.",
+          "title": "Microphone In Use"
+        },
+        "notFound": {
+          "description": "No microphone was detected. Connect one and try again.",
+          "title": "No Microphone Found"
+        },
+        "permissionDenied": {
+          "description": "Grant microphone permission in your system settings, then try again.",
+          "title": "Microphone Access Denied"
+        },
+        "unusable": {
+          "description": "No microphone delivered a working audio track. If you use a virtual or loopback input, make sure its driver is running, then pick it under Settings → Microphone.",
+          "descriptionWithDevice": "“{{device}}” did not deliver a working audio track. If it is a virtual or loopback input, make sure its driver is running, then re-check it under Settings → Microphone.",
+          "title": "No Working Microphone"
+        }
       }
     },
     "clipboard": {

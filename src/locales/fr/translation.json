@@ -633,6 +633,29 @@
         "unavailable": "Snowi n’a pas pu lire la sélection en toute sécurité. Vérifiez les autorisations d’accessibilité ou d’automatisation.",
         "tooLarge": "La sélection est trop grande. Sélectionnez au maximum 6 000 caractères.",
         "reasoningFailed": "L’IA n’a pas pu terminer la modification. Le texte d’origine n’a pas été modifié."
+      },
+      "micErrors": {
+        "generic": {
+          "description": "Impossible d'accéder au microphone : {{reason}}",
+          "title": "Erreur d'enregistrement"
+        },
+        "inUse": {
+          "description": "Une autre application utilise le microphone. Fermez-la et réessayez.",
+          "title": "Microphone déjà utilisé"
+        },
+        "notFound": {
+          "description": "Aucun microphone détecté. Branchez-en un et réessayez.",
+          "title": "Aucun microphone trouvé"
+        },
+        "permissionDenied": {
+          "description": "Accordez l'autorisation micro dans les réglages système, puis réessayez.",
+          "title": "Accès au microphone refusé"
+        },
+        "unusable": {
+          "description": "Aucun microphone n'a fourni de piste audio fonctionnelle. Si vous utilisez une entrée virtuelle ou en boucle, vérifiez que son pilote tourne, puis sélectionnez-la dans Réglages → Microphone.",
+          "descriptionWithDevice": "« {{device}} » n'a pas fourni de piste audio fonctionnelle. S'il s'agit d'une entrée virtuelle ou en boucle, vérifiez que son pilote tourne, puis revérifiez-la dans Réglages → Microphone.",
+          "title": "Aucun microphone fonctionnel"
+        }
       }
     },
     "clipboard": {

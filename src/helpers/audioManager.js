@@ -16,6 +16,7 @@ import {
   recordLocalSpeechWindow,
 } from "./localSpeechGate";
 import { reacquireIfDead } from "./micTrackHealth";
+import { MIC_FAILURE_NAMES, describeMicFailure } from "./micFailure";
 import { isMicWarm, WARMUP_ACQUIRE_TIMEOUT_MS } from "./micWarmState";
 import {
   PreparedMicCapture,
@@ -1032,6 +1033,14 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     }
   }
 
+  // The input the user picked, for error copy that can name it. Empty when the
+  // app is auto-picking (built-in preference or system default), where naming a
+  // device the user never chose would only confuse.
+  getSelectedMicLabel() {
+    const { preferBuiltInMic, selectedMicDeviceLabel } = getSettings();
+    return preferBuiltInMic ? "" : (selectedMicDeviceLabel ?? "");
+  }
+
   // Recovers a dead/muted capture: retries the same device, then hops to the OS default,
   // remembering a silent pinned device for the session. Throws MicUnusableError when no
   // input delivers audio. See #1152.
@@ -1231,30 +1240,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
         return this.startRecording(true);
       }
 
-      let errorTitle = "Recording Error";
-      let errorDescription = `Failed to access microphone: ${error.message}`;
-
-      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-        errorTitle = "Microphone Access Denied";
-        errorDescription =
-          "Please grant microphone permission in your system settings and try again.";
-      } else if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
-        errorTitle = "No Microphone Found";
-        errorDescription = "No microphone was detected. Please connect a microphone and try again.";
-      } else if (error.name === "NotReadableError" || error.name === "TrackStartError") {
-        errorTitle = "Microphone In Use";
-        errorDescription =
-          "The microphone is being used by another application. Please close other apps and try again.";
-      } else if (error.name === "MicUnusableError") {
-        errorTitle = "Microphone Muted";
-        errorDescription =
-          "Your microphones stayed muted and produced no audio. Please check your sound input settings and try again.";
-      }
-
-      this.onError?.({
-        title: errorTitle,
-        description: errorDescription,
-      });
+      this.onError?.(describeMicFailure(error, this.getSelectedMicLabel()));
       return false;
     } finally {
       this._startInProgress = false;
@@ -3656,21 +3642,24 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       let errorTitle = "Streaming Error";
       let errorDescription = `Failed to start streaming: ${error.message}`;
 
-      if (error.name === "NotAllowedError" || error.name === "PermissionDeniedError") {
-        errorTitle = "Microphone Access Denied";
-        errorDescription =
-          "Please grant microphone permission in your system settings and try again.";
-      } else if (error.code === "AUTH_EXPIRED" || error.code === "AUTH_REQUIRED") {
+      // Microphone failures read the same whichever capture path hit them, so
+      // they get described once instead of drifting between the two.
+      if (MIC_FAILURE_NAMES.has(error.name)) {
+        this.onError?.(describeMicFailure(error, this.getSelectedMicLabel()));
+        await this.cleanupStreaming();
+        this.isRecording = false;
+        this.recordingStartTime = null;
+        this.onStateChange?.({ isRecording: false, isProcessing: false, isStreaming: false });
+        return false;
+      }
+
+      if (error.code === "AUTH_EXPIRED" || error.code === "AUTH_REQUIRED") {
         errorTitle = "Sign-in Required";
         errorDescription =
           "Your transcription provider session is unavailable. Please check your credentials in Settings.";
       } else if (error.code === "NETWORK_ERROR") {
         errorTitle = "streaming.errors.cloudUnreachable.title";
         errorDescription = error.messageKey || "streaming.errors.cloudUnreachable.generic";
-      } else if (error.name === "MicUnusableError") {
-        errorTitle = "Microphone Muted";
-        errorDescription =
-          "Your microphones stayed muted and produced no audio. Please check your sound input settings and try again.";
       }
 
       this.onError?.({

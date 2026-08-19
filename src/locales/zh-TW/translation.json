@@ -633,6 +633,29 @@
         "unavailable": "Snowi 無法安全讀取選取的文字。請檢查輔助使用或輸入自動化權限。",
         "tooLarge": "選取內容過長。請選取不超過 6,000 個字元。",
         "reasoningFailed": "AI 無法完成選取文字編輯。原始文字未被變更。"
+      },
+      "micErrors": {
+        "generic": {
+          "description": "無法存取麥克風：{{reason}}",
+          "title": "錄音錯誤"
+        },
+        "inUse": {
+          "description": "麥克風正被其他應用程式占用。請關閉後再試一次。",
+          "title": "麥克風使用中"
+        },
+        "notFound": {
+          "description": "未偵測到麥克風。請連接後再試一次。",
+          "title": "找不到麥克風"
+        },
+        "permissionDenied": {
+          "description": "請在系統設定中授予麥克風權限後再試一次。",
+          "title": "麥克風存取遭拒"
+        },
+        "unusable": {
+          "description": "沒有麥克風提供可用的音訊軌道。若你使用虛擬或回送輸入，請確認其驅動程式正在執行，然後在「設定 → 麥克風」中選擇它。",
+          "descriptionWithDevice": "「{{device}}」未提供可用的音訊軌道。若它是虛擬或回送輸入，請確認其驅動程式正在執行，然後在「設定 → 麥克風」中重新檢查。",
+          "title": "沒有可用的麥克風"
+        }
       }
     },
     "clipboard": {
