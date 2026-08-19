@@ -3656,5 +3656,41 @@
       "meetings": "Ainda não há reuniões",
       "notes": "Ainda não há notas"
     }
+  },
+  "home": {
+    "now": {
+      "inProgress": "Acontecendo agora",
+      "openNote": "Abrir nota",
+      "record": "Gravar",
+      "recording": "Gravando",
+      "startsIn": "Começa em {{count}} min"
+    },
+    "recent": {
+      "browseAll": "Ver todas",
+      "emptyAction": "Gravar uma reunião",
+      "emptyDescription": "As reuniões que você gravar aparecem aqui, da mais recente para a mais antiga.",
+      "emptyTitle": "Ainda não há reuniões",
+      "error": "Não foi possível carregar as reuniões recentes.",
+      "title": "Reuniões recentes"
+    },
+    "status": {
+      "calendar": "Calendário",
+      "calendarConnected": "Conectado — as reuniões são anunciadas com antecedência",
+      "calendarDisconnected": "Não conectado — as reuniões ainda gravam, apenas sem aviso",
+      "grant": "Conceder acesso",
+      "microphone": "Microfone",
+      "microphoneBlocked": "Bloqueado — as reuniões gravarão apenas o áudio do sistema",
+      "microphoneReady": "Acesso concedido",
+      "openSettings": "Abrir configurações",
+      "systemAudio": "Áudio do sistema",
+      "systemAudioBlocked": "Não concedido — apenas a sua voz será gravada",
+      "systemAudioReady": "Os outros participantes serão capturados",
+      "systemAudioUnavailable": "Gerenciado pelo sistema neste dispositivo",
+      "title": "Pronto para capturar",
+      "transcription": "Transcrição",
+      "transcriptionCloud": "{{model}} — enviado a um provedor",
+      "transcriptionLocal": "{{model}} — neste dispositivo",
+      "transcriptionUnset": "Não selecionado"
+    }
   }
 }

@@ -3656,5 +3656,41 @@
       "meetings": "No meetings yet",
       "notes": "No notes yet"
     }
+  },
+  "home": {
+    "now": {
+      "inProgress": "Happening now",
+      "openNote": "Open note",
+      "record": "Record",
+      "recording": "Recording",
+      "startsIn": "Starts in {{count}} min"
+    },
+    "recent": {
+      "browseAll": "Browse all",
+      "emptyAction": "Record a meeting",
+      "emptyDescription": "Meetings you record show up here, newest first.",
+      "emptyTitle": "No meetings yet",
+      "error": "Recent meetings could not be loaded.",
+      "title": "Recent meetings"
+    },
+    "status": {
+      "calendar": "Calendar",
+      "calendarConnected": "Connected — meetings are announced ahead of time",
+      "calendarDisconnected": "Not connected — meetings still record, just unannounced",
+      "grant": "Grant access",
+      "microphone": "Microphone",
+      "microphoneBlocked": "Blocked — meetings will record system audio only",
+      "microphoneReady": "Access granted",
+      "openSettings": "Open settings",
+      "systemAudio": "System audio",
+      "systemAudioBlocked": "Not granted — only your own voice will be recorded",
+      "systemAudioReady": "Other participants will be captured",
+      "systemAudioUnavailable": "Handled by the system on this device",
+      "title": "Ready to capture",
+      "transcription": "Transcription",
+      "transcriptionCloud": "{{model}} — sent to a provider",
+      "transcriptionLocal": "{{model}} — on this device",
+      "transcriptionUnset": "Not selected"
+    }
   }
 }

@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  CalendarClock,
   Check,
   ChevronRight,
   ExternalLink,
@@ -857,15 +858,29 @@ function NoteLeaf({
         isDragging && "opacity-40"
       )}
     >
-      <FileText
-        size={13}
-        className={cn(
-          "shrink-0 transition-colors duration-150",
-          isActive
-            ? "text-primary"
-            : "text-foreground/30 dark:text-foreground/20 group-hover:text-foreground/45 dark:group-hover:text-foreground/30"
-        )}
-      />
+      {/* Meetings carry their own glyph. The tree used one icon for every
+          note, so a recorded meeting and a typed note were indistinguishable
+          until you opened them — which is most of why the library and the
+          home screen felt like two views of the same undifferentiated pile. */}
+      {note.note_type === "meeting" ? (
+        <CalendarClock
+          size={13}
+          className={cn(
+            "shrink-0 transition-colors duration-150",
+            isActive ? "text-primary" : "text-primary/50 group-hover:text-primary/70"
+          )}
+        />
+      ) : (
+        <FileText
+          size={13}
+          className={cn(
+            "shrink-0 transition-colors duration-150",
+            isActive
+              ? "text-primary"
+              : "text-foreground/30 dark:text-foreground/20 group-hover:text-foreground/45 dark:group-hover:text-foreground/30"
+          )}
+        />
+      )}
       <span
         className={cn(
           "text-xs truncate flex-1 transition-colors duration-150",

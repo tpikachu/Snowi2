@@ -31,9 +31,7 @@ import {
   useContextPaneCollapse,
   useContextPaneHost,
 } from "./shell/contextPaneSlot";
-import ActivityFeed from "./activity/ActivityFeed";
-import ActivityFilters from "./activity/ActivityFilters";
-import { useActivityFeed } from "./activity/useActivityFeed";
+import HomeView from "./home/HomeView";
 import MeetingRecordingMount from "./MeetingRecordingMount";
 import MeetingRecordingPill from "./notes/MeetingRecordingPill";
 import CaptureControl from "./shell/CaptureControl";
@@ -52,6 +50,7 @@ import { executeTranslationChain, shouldRunTranslateStep } from "../helpers/tran
 import { applyChineseScript, resolveChineseScriptTarget } from "../utils/chineseScript";
 import BackgroundActionToastListener from "./notes/BackgroundActionToastListener";
 import type { NoteItem } from "../types/electron";
+import type { CalendarEvent } from "../types/calendar";
 import logger from "../utils/logger";
 
 const platform = getCachedPlatform();
@@ -110,10 +109,9 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   const activeNoteId = useActiveNoteId();
   const isSidePanelLayout =
     isMeetingMode || (isNarrowWindow && activeView === "personal-notes" && activeNoteId != null);
-  const activity = useActivityFeed(activeView === "home", history);
-  // Upload and Dictionary have nothing to scope by, so they span the window.
-  const hasContextPane =
-    activeView === "home" || activeView === "chat" || activeView === "personal-notes";
+  // Home is a dashboard, not a list — it has nothing to scope by, so it spans
+  // the window like Upload and Dictionary do.
+  const hasContextPane = activeView === "chat" || activeView === "personal-notes";
   const showContextPane = hasContextPane && !contextPaneCollapsed && !isSidePanelLayout;
   // Sections hoist their own list/tree into the pane through this slot; a null
   // node means "hidden", which is why `managed` is pinned true in the shell.
@@ -360,24 +358,42 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   // PersonalNotesView, which runs `handleMeetingRecordingRequest` →
   // `meetingRecordingStore.startRecording`. Nothing about capture is duplicated
   // here — only the note the detector would otherwise have created for us.
-  const handleStartMeetingCapture = useCallback(async () => {
+  const handleStartMeetingCapture = useCallback(
+    async (event?: CalendarEvent | null) => {
     if (isStartingMeetingCapture) return;
     const { isRecording, isTranscribing } = useMeetingRecordingStore.getState();
     if (isRecording || isTranscribing) return;
     setIsStartingMeetingCapture(true);
     try {
+      // Recording a meeting the user picked off the calendar names the note
+      // after it, the same way the detector's own prompt does — a row called
+      // "Meeting" is unfindable a week later.
       const result = await window.electronAPI.saveNote(
-        t("capture.meetingNoteTitle"),
+        event?.summary?.trim() || t("capture.meetingNoteTitle"),
         "",
         "meeting"
       );
       const note = result?.success ? result.note : null;
       if (!note) throw new Error("Meeting note could not be created");
 
+      if (event?.id) {
+        // Best-effort: a failed link costs the calendar association, never the
+        // recording, so it must not throw into the catch below.
+        try {
+          await window.electronAPI.updateNote?.(note.id, { calendar_event_id: event.id });
+        } catch {
+          logger.warn("Could not link the meeting note to its calendar event", {}, "meeting");
+        }
+      }
+
       setActiveFolderId(note.folder_id);
       setActiveNoteId(note.id);
       setActiveView("personal-notes");
-      setMeetingRecordingRequest({ noteId: note.id, folderId: note.folder_id, event: null });
+      setMeetingRecordingRequest({
+        noteId: note.id,
+        folderId: note.folder_id,
+        event: event ?? null,
+      });
       initializeNotes(null, 50, note.folder_id);
     } catch (error) {
       logger.warn(
@@ -393,7 +409,9 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     } finally {
       setIsStartingMeetingCapture(false);
     }
-  }, [isStartingMeetingCapture, t, toast]);
+    },
+    [isStartingMeetingCapture, t, toast]
+  );
 
   const returnToMeetingNote = useCallback(() => {
     setActiveView("personal-notes");
@@ -887,19 +905,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
               title={contextPaneTitles[activeView] ?? viewTitles[activeView]}
               onCollapse={toggleContextPane}
             >
-              {activeView === "home" ? (
-                <ActivityFilters
-                  filter={activity.filter}
-                  onFilterChange={activity.setFilter}
-                  counts={activity.counts}
-                  groups={activity.groups}
-                  showDiscarded={showDiscarded}
-                  onToggleDiscarded={toggleShowDiscarded}
-                  onJumpToGroup={jumpToActivityGroup}
-                />
-              ) : (
-                <div ref={contextPaneMountRef} className="flex min-h-0 flex-1 flex-col" />
-              )}
+              <div ref={contextPaneMountRef} className="flex min-h-0 flex-1 flex-col" />
             </ContextPane>
           )}
 
@@ -1016,25 +1022,12 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   </div>
                 )}
               {activeView === "home" && (
-                <ActivityFeed
-                  feed={activity}
-                  isLoading={isLoading}
-                  hotkey={hotkey}
-                  aiCTADismissed={aiCTADismissed}
-                  setAiCTADismissed={setAiCTADismissed}
-                  useCleanupModel={useCleanupModel}
-                  copyToClipboard={copyToClipboard}
-                  deleteTranscription={deleteTranscription}
-                  clearAllTranscriptions={clearAllTranscriptions}
-                  onShowAudioInFolder={showAudioInFolder}
-                  onRetryTranscription={retryTranscription}
+                <HomeView
                   onOpenNote={openNoteFromFeed}
                   onStartMeeting={handleStartMeetingCapture}
                   isStartingMeeting={isStartingMeetingCapture}
-                  onOpenSettings={(section) => {
-                    setSettingsSection(section);
-                    setShowSettings(true);
-                  }}
+                  onOpenRecordingNote={returnToMeetingNote}
+                  onBrowseAll={() => setActiveView("personal-notes")}
                 />
               )}
               {activeView === "chat" && (

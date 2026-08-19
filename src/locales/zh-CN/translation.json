@@ -3656,5 +3656,41 @@
       "meetings": "还没有会议",
       "notes": "还没有笔记"
     }
+  },
+  "home": {
+    "now": {
+      "inProgress": "正在进行",
+      "openNote": "打开笔记",
+      "record": "录制",
+      "recording": "正在录制",
+      "startsIn": "{{count}} 分钟后开始"
+    },
+    "recent": {
+      "browseAll": "查看全部",
+      "emptyAction": "录制会议",
+      "emptyDescription": "你录制的会议会显示在这里，最新的在前。",
+      "emptyTitle": "还没有会议",
+      "error": "无法加载最近的会议。",
+      "title": "最近的会议"
+    },
+    "status": {
+      "calendar": "日历",
+      "calendarConnected": "已连接 — 会议会提前提醒",
+      "calendarDisconnected": "未连接 — 会议仍可录制，只是不会提前提醒",
+      "grant": "授予访问权限",
+      "microphone": "麦克风",
+      "microphoneBlocked": "已阻止 — 会议将只录制系统音频",
+      "microphoneReady": "已授予访问权限",
+      "openSettings": "打开设置",
+      "systemAudio": "系统音频",
+      "systemAudioBlocked": "未授权 — 只会录制你自己的声音",
+      "systemAudioReady": "将采集其他参会者的声音",
+      "systemAudioUnavailable": "在此设备上由系统处理",
+      "title": "采集就绪状态",
+      "transcription": "转录",
+      "transcriptionCloud": "{{model}} — 发送到服务商",
+      "transcriptionLocal": "{{model}} — 在本机处理",
+      "transcriptionUnset": "未选择"
+    }
   }
 }

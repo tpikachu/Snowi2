@@ -3656,5 +3656,41 @@
       "meetings": "Noch keine Meetings",
       "notes": "Noch keine Notizen"
     }
+  },
+  "home": {
+    "now": {
+      "inProgress": "Läuft gerade",
+      "openNote": "Notiz öffnen",
+      "record": "Aufnehmen",
+      "recording": "Aufnahme läuft",
+      "startsIn": "Beginnt in {{count}} Min."
+    },
+    "recent": {
+      "browseAll": "Alle anzeigen",
+      "emptyAction": "Meeting aufnehmen",
+      "emptyDescription": "Aufgezeichnete Meetings erscheinen hier, das neueste zuerst.",
+      "emptyTitle": "Noch keine Meetings",
+      "error": "Die letzten Meetings konnten nicht geladen werden.",
+      "title": "Letzte Meetings"
+    },
+    "status": {
+      "calendar": "Kalender",
+      "calendarConnected": "Verbunden – Meetings werden vorab angekündigt",
+      "calendarDisconnected": "Nicht verbunden – Meetings werden trotzdem aufgezeichnet, nur ohne Ankündigung",
+      "grant": "Zugriff erteilen",
+      "microphone": "Mikrofon",
+      "microphoneBlocked": "Blockiert – Meetings nehmen nur Systemaudio auf",
+      "microphoneReady": "Zugriff erteilt",
+      "openSettings": "Einstellungen öffnen",
+      "systemAudio": "Systemaudio",
+      "systemAudioBlocked": "Nicht erteilt – nur Ihre eigene Stimme wird aufgezeichnet",
+      "systemAudioReady": "Andere Teilnehmer werden aufgezeichnet",
+      "systemAudioUnavailable": "Wird auf diesem Gerät vom System verwaltet",
+      "title": "Aufnahmebereit",
+      "transcription": "Transkription",
+      "transcriptionCloud": "{{model}} – an einen Anbieter gesendet",
+      "transcriptionLocal": "{{model}} – auf diesem Gerät",
+      "transcriptionUnset": "Nicht ausgewählt"
+    }
   }
 }

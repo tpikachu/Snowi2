@@ -16,21 +16,34 @@ function countWords(note: NoteItem): number {
 interface ActivityNoteRowProps {
   note: NoteItem;
   onOpen: (note: NoteItem) => void;
+  /**
+   * Show when the note was created rather than last edited. Home's meeting
+   * list is ordered by when the meeting happened, and a row stamped with a
+   * later edit would contradict the day it is filed under.
+   */
+  preferCreatedAt?: boolean;
 }
 
 /**
  * A note or meeting in the activity stream. Read-only by design: opening it
  * hands off to the notes section, which owns every note mutation.
  */
-export default function ActivityNoteRow({ note, onOpen }: ActivityNoteRowProps) {
+export default function ActivityNoteRow({
+  note,
+  onOpen,
+  preferCreatedAt = false,
+}: ActivityNoteRowProps) {
   const { t, i18n } = useTranslation();
 
   const time = useMemo(() => {
-    const date = normalizeDbDate(note.updated_at || note.created_at);
+    const raw = preferCreatedAt
+      ? note.created_at || note.updated_at
+      : note.updated_at || note.created_at;
+    const date = normalizeDbDate(raw);
     return Number.isNaN(date.getTime())
       ? ""
       : date.toLocaleTimeString(i18n.language, { hour: "2-digit", minute: "2-digit" });
-  }, [note.updated_at, note.created_at, i18n.language]);
+  }, [note.updated_at, note.created_at, preferCreatedAt, i18n.language]);
 
   const isMeeting = note.note_type === "meeting";
   const duration =

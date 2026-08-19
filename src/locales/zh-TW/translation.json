@@ -3656,5 +3656,41 @@
       "meetings": "尚未有會議",
       "notes": "尚未有筆記"
     }
+  },
+  "home": {
+    "now": {
+      "inProgress": "正在進行",
+      "openNote": "開啟筆記",
+      "record": "錄製",
+      "recording": "錄製中",
+      "startsIn": "{{count}} 分鐘後開始"
+    },
+    "recent": {
+      "browseAll": "瀏覽全部",
+      "emptyAction": "錄製會議",
+      "emptyDescription": "你錄製的會議會顯示在這裡，最新的在前。",
+      "emptyTitle": "還沒有會議",
+      "error": "無法載入最近的會議。",
+      "title": "最近的會議"
+    },
+    "status": {
+      "calendar": "行事曆",
+      "calendarConnected": "已連接 — 會議會提前提醒",
+      "calendarDisconnected": "未連接 — 會議仍可錄製，只是不會提前提醒",
+      "grant": "授予存取權限",
+      "microphone": "麥克風",
+      "microphoneBlocked": "已封鎖 — 會議將只錄製系統音訊",
+      "microphoneReady": "已授予存取權限",
+      "openSettings": "開啟設定",
+      "systemAudio": "系統音訊",
+      "systemAudioBlocked": "未授權 — 只會錄製你自己的聲音",
+      "systemAudioReady": "將擷取其他與會者的聲音",
+      "systemAudioUnavailable": "在此裝置上由系統處理",
+      "title": "擷取就緒狀態",
+      "transcription": "逐字稿",
+      "transcriptionCloud": "{{model}} — 傳送到服務商",
+      "transcriptionLocal": "{{model}} — 在本機處理",
+      "transcriptionUnset": "未選擇"
+    }
   }
 }

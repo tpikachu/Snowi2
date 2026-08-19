@@ -3686,5 +3686,41 @@
       "meetings": "Встреч пока нет",
       "notes": "Заметок пока нет"
     }
+  },
+  "home": {
+    "now": {
+      "inProgress": "Идёт сейчас",
+      "openNote": "Открыть заметку",
+      "record": "Записать",
+      "recording": "Идёт запись",
+      "startsIn": "Начнётся через {{count}} мин"
+    },
+    "recent": {
+      "browseAll": "Показать все",
+      "emptyAction": "Записать встречу",
+      "emptyDescription": "Записанные встречи появятся здесь, начиная с последней.",
+      "emptyTitle": "Встреч пока нет",
+      "error": "Не удалось загрузить недавние встречи.",
+      "title": "Недавние встречи"
+    },
+    "status": {
+      "calendar": "Календарь",
+      "calendarConnected": "Подключён — о встречах предупредим заранее",
+      "calendarDisconnected": "Не подключён — встречи всё равно записываются, просто без предупреждения",
+      "grant": "Разрешить доступ",
+      "microphone": "Микрофон",
+      "microphoneBlocked": "Заблокирован — встречи запишут только звук системы",
+      "microphoneReady": "Доступ разрешён",
+      "openSettings": "Открыть настройки",
+      "systemAudio": "Звук системы",
+      "systemAudioBlocked": "Не разрешён — запишется только ваш голос",
+      "systemAudioReady": "Другие участники будут записаны",
+      "systemAudioUnavailable": "На этом устройстве управляется системой",
+      "title": "Готовность к записи",
+      "transcription": "Расшифровка",
+      "transcriptionCloud": "{{model}} — отправляется провайдеру",
+      "transcriptionLocal": "{{model}} — на этом устройстве",
+      "transcriptionUnset": "Не выбрано"
+    }
   }
 }

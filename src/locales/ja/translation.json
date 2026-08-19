@@ -3656,5 +3656,41 @@
       "meetings": "会議はまだありません",
       "notes": "ノートはまだありません"
     }
+  },
+  "home": {
+    "now": {
+      "inProgress": "進行中",
+      "openNote": "ノートを開く",
+      "record": "録音",
+      "recording": "録音中",
+      "startsIn": "{{count}} 分後に開始"
+    },
+    "recent": {
+      "browseAll": "すべて表示",
+      "emptyAction": "会議を録音",
+      "emptyDescription": "録音した会議が新しい順にここに表示されます。",
+      "emptyTitle": "まだ会議はありません",
+      "error": "最近の会議を読み込めませんでした。",
+      "title": "最近の会議"
+    },
+    "status": {
+      "calendar": "カレンダー",
+      "calendarConnected": "連携済み — 会議は事前に通知されます",
+      "calendarDisconnected": "未連携 — 会議の録音はできますが事前通知はありません",
+      "grant": "アクセスを許可",
+      "microphone": "マイク",
+      "microphoneBlocked": "ブロック中 — 会議はシステム音声のみ録音されます",
+      "microphoneReady": "アクセスを許可済み",
+      "openSettings": "設定を開く",
+      "systemAudio": "システム音声",
+      "systemAudioBlocked": "未許可 — 自分の声のみ録音されます",
+      "systemAudioReady": "他の参加者の音声も録音されます",
+      "systemAudioUnavailable": "この端末ではシステムが処理します",
+      "title": "キャプチャの準備",
+      "transcription": "文字起こし",
+      "transcriptionCloud": "{{model}} — プロバイダーに送信",
+      "transcriptionLocal": "{{model}} — この端末で処理",
+      "transcriptionUnset": "未選択"
+    }
   }
 }

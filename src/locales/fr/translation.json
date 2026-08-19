@@ -3656,5 +3656,41 @@
       "meetings": "Aucune réunion pour le moment",
       "notes": "Aucune note pour le moment"
     }
+  },
+  "home": {
+    "now": {
+      "inProgress": "En cours",
+      "openNote": "Ouvrir la note",
+      "record": "Enregistrer",
+      "recording": "Enregistrement",
+      "startsIn": "Commence dans {{count}} min"
+    },
+    "recent": {
+      "browseAll": "Tout parcourir",
+      "emptyAction": "Enregistrer une réunion",
+      "emptyDescription": "Les réunions que vous enregistrez apparaissent ici, la plus récente en premier.",
+      "emptyTitle": "Aucune réunion pour l'instant",
+      "error": "Impossible de charger les réunions récentes.",
+      "title": "Réunions récentes"
+    },
+    "status": {
+      "calendar": "Agenda",
+      "calendarConnected": "Connecté — les réunions sont annoncées à l'avance",
+      "calendarDisconnected": "Non connecté — les réunions s'enregistrent quand même, sans préavis",
+      "grant": "Autoriser l'accès",
+      "microphone": "Micro",
+      "microphoneBlocked": "Bloqué — les réunions n'enregistreront que l'audio du système",
+      "microphoneReady": "Accès autorisé",
+      "openSettings": "Ouvrir les réglages",
+      "systemAudio": "Audio du système",
+      "systemAudioBlocked": "Non autorisé — seule votre voix sera enregistrée",
+      "systemAudioReady": "Les autres participants seront capturés",
+      "systemAudioUnavailable": "Géré par le système sur cet appareil",
+      "title": "Prêt à capturer",
+      "transcription": "Transcription",
+      "transcriptionCloud": "{{model}} — envoyé à un fournisseur",
+      "transcriptionLocal": "{{model}} — sur cet appareil",
+      "transcriptionUnset": "Non sélectionné"
+    }
   }
 }
