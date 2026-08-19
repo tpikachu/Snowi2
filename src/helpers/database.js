@@ -93,6 +93,47 @@ const CALENDARS_TABLE_BY_PROVIDER = {
   microsoft: "microsoft_calendars",
 };
 
+const GENERATE_NOTES_DESCRIPTION = "Clean up, structure, and enhance your notes";
+
+/**
+ * The built-in "Generate Notes" prompt.
+ *
+ * Aims at the kind of notes a sharp colleague would have taken, not a template
+ * fill-in: headings named after what was actually discussed, specifics kept
+ * verbatim, and nothing invented. The last paragraph is the important one for
+ * meetings — when the user has typed their own rough notes, those become the
+ * outline and the transcript fills them in, rather than the model discarding
+ * the user's structure in favour of its own.
+ */
+const GENERATE_NOTES_PROMPT = [
+  "You are writing the notes a sharp colleague would have taken.",
+  "",
+  "Work only from the content provided. Never add facts, names, numbers, dates or commitments that are not in it. If something was left unresolved, say so rather than inventing a conclusion.",
+  "",
+  "Structure:",
+  "- Open with two or three sentences covering what this was about and where it landed. No heading above them.",
+  '- Then use `## ` headings named after what was actually discussed - "Pricing pushback", "Migration timeline" - never generic labels like "Discussion", "Overview" or "Key points". Order them by what matters, not by when it came up.',
+  "- Under each heading write short bullets, one idea each. Fragments beat full sentences.",
+  "- Finish with `## Decisions` and `## Next steps` only when there are real ones. Give each next step an owner when the content names one, and a date when one was said.",
+  "",
+  "Style:",
+  "- Keep every specific: figures, dates, names, companies, tools, and any number someone committed to. They are the reason the notes exist.",
+  "- Quote verbatim only where the exact wording carries the meaning - an objection, a commitment, a strong opinion - and keep the quote to one line.",
+  "- Cut greetings, scheduling chatter, small talk, false starts, thinking aloud, and anything said twice.",
+  '- Plain past tense. No hedging, no "the team discussed", and never restate a heading in its first bullet.',
+  "- Never pad. A section with one bullet gets one bullet.",
+  "",
+  "If the content already contains the user's own rough notes alongside a transcript, treat those notes as the outline: keep their headings and their wording, and fill each one out from the transcript. Do not reorganise what they wrote.",
+].join("\n");
+
+/**
+ * Every prompt this built-in has shipped with. A row still holding one of these
+ * is untouched by the user and safe to upgrade; anything else is their edit.
+ */
+const LEGACY_GENERATE_NOTES_PROMPTS = [
+  "Transform the provided content into clean, well-structured notes in markdown. Preserve the user's intent and all substantive information. Remove filler, small talk, false starts, and redundant content. For personal notes, improve grammar and structure for readability. For meeting transcripts, extract key discussion points, decisions, action items, and follow-ups.",
+];
+
 class DatabaseManager {
   constructor() {
     this.db = null;
@@ -415,8 +456,8 @@ class DatabaseManager {
           )
           .run(
             "Generate Notes",
-            "Clean up, structure, and enhance your notes",
-            "Transform the provided content into clean, well-structured notes in markdown. Preserve the user's intent and all substantive information. Remove filler, small talk, false starts, and redundant content. For personal notes, improve grammar and structure for readability. For meeting transcripts, extract key discussion points, decisions, action items, and follow-ups.",
+            GENERATE_NOTES_DESCRIPTION,
+            GENERATE_NOTES_PROMPT,
             "sparkles",
             "notes.actions.builtin.generateNotes"
           );
@@ -429,11 +470,22 @@ class DatabaseManager {
         )
         .run(
           "Generate Notes",
-          "Clean up, structure, and enhance your notes",
-          "Transform the provided content into clean, well-structured notes in markdown. Preserve the user's intent and all substantive information. Remove filler, small talk, false starts, and redundant content. For personal notes, improve grammar and structure for readability. For meeting transcripts, extract key discussion points, decisions, action items, and follow-ups.",
+          GENERATE_NOTES_DESCRIPTION,
+          GENERATE_NOTES_PROMPT,
           "notes.actions.builtin.generateNotes",
           "notes.actions.builtin.generateNotes"
         );
+
+      // Upgrade the built-in prompt for installs that already have the row.
+      // Matched against the exact previous defaults, so a prompt the user has
+      // edited is theirs and is left alone.
+      this.db
+        .prepare(
+          `UPDATE actions SET prompt = ?, description = ? WHERE is_builtin = 1 AND prompt IN (${LEGACY_GENERATE_NOTES_PROMPTS.map(
+            () => "?"
+          ).join(", ")})`
+        )
+        .run(GENERATE_NOTES_PROMPT, GENERATE_NOTES_DESCRIPTION, ...LEGACY_GENERATE_NOTES_PROMPTS);
 
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS google_calendar_tokens (

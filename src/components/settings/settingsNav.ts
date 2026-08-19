@@ -17,6 +17,7 @@
  */
 
 import type React from "react";
+import { DICTATION_ENABLED, DICTATION_SETTINGS_IDS } from "../../config/features";
 import {
   BookOpen,
   Brain,
@@ -50,15 +51,23 @@ export type LlmTab =
   | "noteFormatting"
   | "chatIntelligence";
 
-export const SPEECH_TABS: readonly SpeechTab[] = ["dictation", "noteRecording", "upload"] as const;
+const ALL_SPEECH_TABS: readonly SpeechTab[] = ["dictation", "noteRecording", "upload"] as const;
 
-export const LLM_TABS: readonly LlmTab[] = [
+export const SPEECH_TABS: readonly SpeechTab[] = ALL_SPEECH_TABS.filter((tab) =>
+  DICTATION_ENABLED ? true : !DICTATION_SETTINGS_IDS.has(tab)
+);
+
+const ALL_LLM_TABS: readonly LlmTab[] = [
   "dictationCleanup",
   "dictationAgent",
   "dictationTranslation",
   "noteFormatting",
   "chatIntelligence",
 ] as const;
+
+export const LLM_TABS: readonly LlmTab[] = ALL_LLM_TABS.filter((tab) =>
+  DICTATION_ENABLED ? true : !DICTATION_SETTINGS_IDS.has(tab)
+);
 
 export const SPEECH_TAB_STORAGE_KEY = "settings.speechToTextTab";
 export const LLM_TAB_STORAGE_KEY = "settings.llmsTab";
@@ -134,7 +143,7 @@ export interface SettingsSectionDef {
   twoColumn?: boolean;
 }
 
-export const SETTINGS_SECTIONS: SettingsSectionDef[] = [
+const ALL_SETTINGS_SECTIONS: SettingsSectionDef[] = [
   {
     id: "general",
     labelKey: "settingsModal.sections.general.label",
@@ -241,6 +250,21 @@ export const SETTINGS_SECTIONS: SettingsSectionDef[] = [
   },
 ];
 
+/**
+ * Hidden features take their settings with them: a panel for a surface the user
+ * cannot reach is a dead end, and an anchor pointing at an unrendered group
+ * would leave the nav pane with a link to nothing.
+ */
+const isVisibleEntry = (id: string) => DICTATION_ENABLED || !DICTATION_SETTINGS_IDS.has(id);
+
+export const SETTINGS_SECTIONS: SettingsSectionDef[] = ALL_SETTINGS_SECTIONS.map((section) => ({
+  ...section,
+  ...(section.panels ? { panels: section.panels.filter((panel) => isVisibleEntry(panel.id)) } : {}),
+  ...(section.anchors
+    ? { anchors: section.anchors.filter((anchor) => isVisibleEntry(anchor.id)) }
+    : {}),
+}));
+
 export const SECTION_BY_ID: Record<SettingsSectionType, SettingsSectionDef> =
   SETTINGS_SECTIONS.reduce(
     (acc, section) => {
@@ -264,7 +288,7 @@ export interface SettingsSearchEntry {
  * where one exists, the panel or group that actually contains the control —
  * search never promises a destination the UI cannot reach.
  */
-export const SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
+const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
   // ---- General ------------------------------------------------------------
   { section: "general", anchor: "appearance", labelKey: "settingsPage.general.appearance.theme" },
   { section: "general", anchor: "language", labelKey: "settings.language.uiLabel" },
@@ -493,3 +517,11 @@ export const SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
   { section: "system", anchor: "dataManagement", labelKey: "settingsPage.developer.modelCache" },
   { section: "system", anchor: "dataManagement", labelKey: "settingsPage.developer.resetAppData" },
 ];
+
+/**
+ * Search can only offer what the nav can actually reach, so entries whose panel
+ * or anchor belongs to a hidden feature are dropped with it.
+ */
+export const SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = ALL_SETTINGS_SEARCH_INDEX.filter(
+  (entry) => isVisibleEntry(entry.panel ?? "") && isVisibleEntry(entry.anchor ?? "")
+);

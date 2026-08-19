@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { DICTATION_ENABLED } from "../config/features";
 import { Button } from "./ui/button";
 import {
   ChevronRight,
@@ -189,9 +190,16 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       { id: "usecase", title: t("onboarding.steps.useCase"), icon: Sparkles },
       { id: "setup", title: t("onboarding.steps.setup"), icon: Settings },
       { id: "permissions", title: t("onboarding.steps.permissions"), icon: Shield },
-      { id: "activation", title: t("onboarding.steps.activation"), icon: Command },
-      { id: "voiceAgent", title: t("onboarding.steps.voiceAgent"), icon: Sparkles },
     ];
+    // Activation and voice agent both configure dictation hotkeys, which are
+    // not registered while dictation is hidden — asking the user to choose one
+    // would set a shortcut that never fires.
+    if (DICTATION_ENABLED) {
+      list.push(
+        { id: "activation", title: t("onboarding.steps.activation"), icon: Command },
+        { id: "voiceAgent", title: t("onboarding.steps.voiceAgent"), icon: Sparkles }
+      );
+    }
     if (showMeetingStep) {
       list.push({ id: "meeting", title: t("onboarding.steps.meeting"), icon: Users });
     }

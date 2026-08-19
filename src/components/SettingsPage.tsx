@@ -62,6 +62,7 @@ import { validateHotkeyForSlot } from "../utils/hotkeyValidation";
 import { getCachedPlatform } from "../utils/platform";
 import { formatHotkeyLabel, getSuggestedHotkey } from "../utils/hotkeys";
 import HotkeyMap, { type HotkeyMapRow } from "./settings/HotkeyMap";
+import { DICTATION_ENABLED, DICTATION_SETTINGS_IDS } from "../config/features";
 import { ActivationModeSelector } from "./ui/ActivationModeSelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import LinuxPttSetupInfo from "./ui/LinuxPttSetupInfo";
@@ -2354,6 +2355,13 @@ EOF`,
           },
         ];
 
+        // Rows for a hidden feature go with it — their slots are refused by the
+        // hotkey manager, so leaving them on screen would offer a control that
+        // silently does nothing.
+        const visibleHotkeyRows = hotkeyRows.filter(
+          (row) => DICTATION_ENABLED || !DICTATION_SETTINGS_IDS.has(row.id)
+        );
+
         return (
           <SettingsSectionBody section="hotkeys">
             {isUsingHyprland && hyprlandConfigStatus && !hyprlandConfigStatus.canWrite && (
@@ -2384,7 +2392,7 @@ EOF`,
                   </p>
                 )}
               </div>
-              <HotkeyMap rows={hotkeyRows} />
+              <HotkeyMap rows={visibleHotkeyRows} />
             </div>
           </SettingsSectionBody>
         );

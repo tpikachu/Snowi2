@@ -6,6 +6,7 @@ const HyprlandShortcutManager = require("./hyprlandShortcut");
 const KDEShortcutManager = require("./kdeShortcut");
 const { i18nMain } = require("./i18nMain");
 const { parseHotkeyList } = require("./hotkeyList");
+const { DICTATION_ENABLED, DICTATION_HOTKEY_SLOTS } = require("../config/features");
 
 // Delay to ensure localStorage is accessible after window load
 const HOTKEY_REGISTRATION_DELAY_MS = 1000;
@@ -190,7 +191,21 @@ class HotkeyManager extends EventEmitter {
     return suggestions.filter((s) => s !== failedHotkey).slice(0, 3);
   }
 
+  /**
+   * Slots belonging to a hidden feature are refused here rather than at every
+   * call site: settings, startup and IPC all register through this method, and
+   * a live global accelerator that opens something the user cannot see is worse
+   * than no accelerator at all.
+   */
+  isSlotEnabled(slotName) {
+    return DICTATION_ENABLED || !DICTATION_HOTKEY_SLOTS.has(slotName);
+  }
+
   async registerSlot(slotName, hotkeyInput, callback, options) {
+    if (!this.isSlotEnabled(slotName)) {
+      debugLogger.log(`[HotkeyManager] Slot "${slotName}" is disabled by feature flag`);
+      return { success: false, disabled: true, hotkeys: [], failures: [] };
+    }
     const hotkeys = parseHotkeyList(hotkeyInput);
     if (hotkeys.length === 0) {
       return {
@@ -737,6 +752,11 @@ class HotkeyManager extends EventEmitter {
   async initializeHotkey(mainWindow, callback) {
     if (!mainWindow || !callback) {
       throw new Error("mainWindow and callback are required");
+    }
+
+    if (!this.isSlotEnabled("dictation")) {
+      debugLogger.log("[HotkeyManager] Dictation is disabled — no dictation hotkey registered");
+      return;
     }
 
     this.mainWindow = mainWindow;

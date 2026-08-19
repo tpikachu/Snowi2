@@ -7,6 +7,7 @@ const MenuManager = require("./menuManager");
 const DevServerManager = require("./devServerManager");
 const dockManager = require("./dockManager");
 const { i18nMain } = require("./i18nMain");
+const { DICTATION_ENABLED } = require("../config/features");
 const { NotificationDismissTimer, getNotificationTimeoutMs } = require("./notificationTimer");
 const { DEV_SERVER_PORT } = DevServerManager;
 const {
@@ -1145,7 +1146,13 @@ class WindowManager {
     this.mainWindow.setBounds(newPos);
   }
 
+  /**
+   * Surfaces the dictation HUD. A no-op while dictation is hidden: this is the
+   * single choke point every caller goes through (tray, hotkey, deep links,
+   * the capture bridge), so the panel cannot appear from any of them.
+   */
   showDictationPanel(options = {}) {
+    if (!DICTATION_ENABLED) return;
     const { focus = false } = options;
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       // Reading the target's window costs a helper spawn, so show now and move
