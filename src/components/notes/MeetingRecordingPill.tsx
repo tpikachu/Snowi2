@@ -1,8 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { Square } from "lucide-react";
-import { stopRecording, useMeetingRecordingStore } from "../../stores/meetingRecordingStore";
+import { Pause, Play, Square } from "lucide-react";
+import {
+  pauseRecording,
+  requestStopRecording,
+  resumeRecording,
+  useMeetingRecordingStore,
+} from "../../stores/meetingRecordingStore";
 import { cn } from "../lib/utils";
 import { isControlPanelWindow } from "../../utils/windowContext";
 import { formatMmSs } from "../../utils/formatDuration";
@@ -45,8 +50,11 @@ export default function MeetingRecordingPill({
   const recordingNoteTitle = useMeetingRecordingStore((s) => s.recordingNoteTitle);
   const micLevel = useMeetingRecordingStore((s) => s.currentMicLevel);
   const micCaptureStatus = useMeetingRecordingStore((s) => s.micCaptureStatus);
-  const isWaitingForMic = micCaptureStatus === "reconnecting" || micCaptureStatus === "unavailable";
+  const isPaused = useMeetingRecordingStore((s) => s.isPaused);
+  const isWaitingForMic =
+    !isPaused && (micCaptureStatus === "reconnecting" || micCaptureStatus === "unavailable");
   const [isStopping, setIsStopping] = useState(false);
+  const [isTogglingPause, setIsTogglingPause] = useState(false);
 
   // Anchored on the recording transition, not on mount: this pill only renders
   // while the user is away from the recording note, so a mount-time start
@@ -61,12 +69,15 @@ export default function MeetingRecordingPill({
       return undefined;
     }
     if (startedAtRef.current == null) startedAtRef.current = Date.now();
+    // The clock counts captured time, so it holds still across a pause rather
+    // than reporting minutes the meeting did not record.
+    if (isPaused) return undefined;
     const update = () =>
       setElapsedSeconds(Math.floor((Date.now() - (startedAtRef.current ?? Date.now())) / 1000));
     update();
     const intervalId = setInterval(update, 250);
     return () => clearInterval(intervalId);
-  }, [isRecording]);
+  }, [isRecording, isPaused]);
 
   const isViewingRecordingNote =
     activeView === "personal-notes" && activeNoteId === recordingNoteId;
@@ -79,15 +90,27 @@ export default function MeetingRecordingPill({
     if (isStopping) return;
     setIsStopping(true);
     try {
-      await stopRecording();
+      await requestStopRecording();
     } finally {
       setIsStopping(false);
+    }
+  };
+
+  const handleTogglePause = async () => {
+    if (isStopping || isTogglingPause) return;
+    setIsTogglingPause(true);
+    try {
+      if (isPaused) await resumeRecording();
+      else await pauseRecording();
+    } finally {
+      setIsTogglingPause(false);
     }
   };
 
   const title = truncateTitle(recordingNoteTitle ?? "");
   const returnLabel = t("notes.meetingPill.returnToNote");
   const stopLabel = t("notes.editor.stop");
+  const pauseLabel = isPaused ? t("notes.meeting.resume") : t("notes.meeting.pause");
   const elapsedLabel = formatMmSs(elapsedSeconds);
 
   return createPortal(
@@ -103,7 +126,7 @@ export default function MeetingRecordingPill({
       <div
         className={cn(
           "hud-surface flex h-9 items-center gap-2 rounded-[11px] pl-2 pr-1.5",
-          isWaitingForMic ? "hud-surface-warn" : "hud-surface-live"
+          isPaused ? "hud-surface" : isWaitingForMic ? "hud-surface-warn" : "hud-surface-live"
         )}
       >
         <button
@@ -128,14 +151,18 @@ export default function MeetingRecordingPill({
                 key={i}
                 className={cn(
                   "w-[2px] rounded-full",
-                  isWaitingForMic ? "bg-hud-warning" : "bg-hud-accent"
+                  isPaused ? "bg-hud-muted" : isWaitingForMic ? "bg-hud-warning" : "bg-hud-accent"
                 )}
-                style={{ height: computeBarHeight(isWaitingForMic ? 0 : micLevel, i) }}
+                style={{ height: computeBarHeight(isWaitingForMic || isPaused ? 0 : micLevel, i) }}
               />
             ))}
           </span>
           <span className="max-w-[14rem] truncate text-xs font-medium text-hud-foreground">
-            {isWaitingForMic ? t("notes.meetingPill.waitingForMicrophone") : title}
+            {isPaused
+              ? t("notes.meeting.pausedWithTitle", { title })
+              : isWaitingForMic
+                ? t("notes.meetingPill.waitingForMicrophone")
+                : title}
           </span>
           <span
             data-numeric
@@ -149,6 +176,27 @@ export default function MeetingRecordingPill({
         </button>
 
         <span className="h-4 w-px shrink-0 bg-hud-border" aria-hidden="true" />
+
+        <button
+          type="button"
+          onClick={handleTogglePause}
+          disabled={isStopping || isTogglingPause}
+          aria-label={pauseLabel}
+          title={pauseLabel}
+          className={cn(
+            "flex size-6 shrink-0 items-center justify-center rounded-md",
+            "text-hud-muted transition-colors duration-150",
+            "hover:bg-white/10 hover:text-hud-foreground",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+            "disabled:opacity-50"
+          )}
+        >
+          {isPaused ? (
+            <Play size={11} fill="currentColor" />
+          ) : (
+            <Pause size={11} fill="currentColor" />
+          )}
+        </button>
 
         <button
           type="button"

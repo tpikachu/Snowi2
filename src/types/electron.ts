@@ -1774,6 +1774,10 @@ declare global {
         success: boolean;
         reason?: "recording-active";
       }>;
+      /** Pause or resume capture without ending the meeting session (spec §11). */
+      meetingTranscriptionSetPaused?: (
+        paused: boolean
+      ) => Promise<{ success: boolean; paused: boolean }>;
       onMeetingTranscriptionSegment?: (
         callback: (data: {
           text: string;

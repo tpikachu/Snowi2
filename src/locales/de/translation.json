@@ -2890,7 +2890,19 @@
       "title": "Besprechungsnotizen",
       "description": "Transkriptionen und strukturierte Zusammenfassungen",
       "back": "Zurück",
-      "restrictedByOrg": "Die Transkription von Besprechungen ist durch Ihre Organisation eingeschränkt."
+      "restrictedByOrg": "Die Transkription von Besprechungen ist durch Ihre Organisation eingeschränkt.",
+      "pause": "Pausieren",
+      "resume": "Fortsetzen",
+      "pausedWithTitle": "Pausiert · {{title}}",
+      "stopDialog": {
+        "description": "„{{title}}“ bleibt mit Transkript in Ihren Notizen. Verwerfen entfernt es endgültig.",
+        "descriptionEmpty": "Dieses Meeting hat kein Transkript erzeugt. Beim Behalten bleibt eine leere Notiz zurück.",
+        "discard": "Verwerfen",
+        "save": "Speichern",
+        "title": "Dieses Meeting speichern?",
+        "titleEmpty": "Es wurde nichts aufgezeichnet",
+        "untitled": "Dieses Meeting"
+      }
     },
     "meetingPill": {
       "returnToNote": "Zurück zur Aufnahme",

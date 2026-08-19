@@ -5437,6 +5437,10 @@ class IPCHandlers {
     let meetingPendingMicFinals = [];
     let meetingPendingMicFinalTimer = null;
     let meetingAecEnabled = false;
+    // Meeting capture is paused (spec §11). Everything stays wired up — the
+    // websocket, the diarization stream, the native helper — and audio is simply
+    // not accepted, so resuming costs nothing and cannot lose the session.
+    let meetingPaused = false;
     let meetingOneOnOneAttendee = null;
     let meetingOneOnOneProfileBound = false;
     let meetingNoteId = null;
@@ -6345,6 +6349,7 @@ class IPCHandlers {
       }
 
       meetingTranscriptionStartInProgress = true;
+      meetingPaused = false;
       meetingStartedAt = Date.now();
       meetingConnectionOptions = options;
       meetingConnectionWin = BrowserWindow.fromWebContents(event.sender);
@@ -6468,6 +6473,10 @@ class IPCHandlers {
     });
 
     const sendMeetingAudio = (audioBuffer, source) => {
+      // One gate for every source: renderer mic chunks and the native system
+      // audio helpers all arrive here, so a paused meeting cannot leak audio in
+      // through a path someone forgot about.
+      if (meetingPaused) return;
       const outboundBuffer = Buffer.isBuffer(audioBuffer) ? audioBuffer : Buffer.from(audioBuffer);
 
       if (source === "system") {
@@ -6633,7 +6642,30 @@ class IPCHandlers {
       sendMeetingAudio(audioBuffer, source);
     });
 
+    /**
+     * Pause and resume capture without ending the session (spec §11.1).
+     *
+     * The renderer stops the microphone itself — that is what turns the OS
+     * recording indicator off, and a "paused" state that leaves the indicator lit
+     * would read as still listening. This side stops accepting audio, which
+     * covers the system-audio helpers the renderer has no handle on.
+     */
+    ipcMain.handle("meeting-transcription-set-paused", async (_event, paused) => {
+      const next = paused === true;
+      if (meetingPaused === next) return { success: true, paused: next };
+      meetingPaused = next;
+      if (next) {
+        // Anything already buffered belongs to the audio before the pause, so it
+        // is flushed rather than held across the gap where it would land with a
+        // timestamp on the far side.
+        flushPendingMeetingMicChunks(true);
+      }
+      debugLogger.log(`[Meeting] capture ${next ? "paused" : "resumed"}`);
+      return { success: true, paused: next };
+    });
+
     ipcMain.handle("meeting-transcription-stop", async () => {
+      meetingPaused = false;
       this.meetingDetectionEngine?.setUserRecording(false);
       try {
         if (this.audioTapManager) {
@@ -7239,9 +7271,7 @@ class IPCHandlers {
 
         // Parse lines
         const lines = envContent.split("\n");
-        const logLevelIndex = lines.findIndex((line) =>
-          line.trim().startsWith("SNOWI_LOG_LEVEL=")
-        );
+        const logLevelIndex = lines.findIndex((line) => line.trim().startsWith("SNOWI_LOG_LEVEL="));
 
         if (enabled) {
           // Set to debug

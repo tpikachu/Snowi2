@@ -4,8 +4,10 @@ import { useToast } from "./ui/useToast";
 import {
   getMicAnalyser,
   primeMeetingWorklet,
+  resolvePendingStop,
   useMeetingRecordingStore,
 } from "../stores/meetingRecordingStore";
+import { ConfirmDialog } from "./ui/dialog";
 
 const EMA_PREV = 0.5;
 const EMA_NEXT = 0.5;
@@ -13,7 +15,51 @@ const EMA_NEXT = 0.5;
 // Sentinel errors set by meetingRecordingStore, translated at display time.
 const MEETING_ERROR_KEYS: Record<string, string> = {};
 
-export default function MeetingRecordingMount(): null {
+/**
+ * The keep-or-discard prompt shown after Stop.
+ *
+ * Lives here, on the single global mount, rather than beside either Stop
+ * button: the pill and the note's own bottom bar can both end a meeting, and
+ * two dialogs racing to describe the same stop is worse than one.
+ *
+ * Save is the confirm action even when nothing was recorded, so the keyboard
+ * default can never be the destructive one — a stray Enter must not delete a
+ * meeting.
+ */
+function MeetingStopDialog() {
+  const { t } = useTranslation();
+  const pendingStop = useMeetingRecordingStore((s) => s.pendingStop);
+
+  if (!pendingStop) return null;
+
+  const isEmpty = !pendingStop.hasContent;
+
+  return (
+    <ConfirmDialog
+      open
+      onOpenChange={(open) => {
+        // Dismissing without choosing keeps the meeting: the safe answer.
+        if (!open && useMeetingRecordingStore.getState().pendingStop) void resolvePendingStop(true);
+      }}
+      title={
+        isEmpty ? t("notes.meeting.stopDialog.titleEmpty") : t("notes.meeting.stopDialog.title")
+      }
+      description={
+        isEmpty
+          ? t("notes.meeting.stopDialog.descriptionEmpty")
+          : t("notes.meeting.stopDialog.description", {
+              title: pendingStop.noteTitle || t("notes.meeting.stopDialog.untitled"),
+            })
+      }
+      confirmText={t("notes.meeting.stopDialog.save")}
+      cancelText={t("notes.meeting.stopDialog.discard")}
+      onConfirm={() => void resolvePendingStop(true)}
+      onCancel={() => void resolvePendingStop(false)}
+    />
+  );
+}
+
+export default function MeetingRecordingMount() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const isRecording = useMeetingRecordingStore((s) => s.isRecording);
@@ -91,5 +137,5 @@ export default function MeetingRecordingMount(): null {
     };
   }, [isRecording]);
 
-  return null;
+  return <MeetingStopDialog />;
 }

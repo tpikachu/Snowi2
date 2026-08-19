@@ -2731,7 +2731,19 @@
       "title": "Notas de reunión",
       "description": "Transcripciones y resúmenes estructurados",
       "back": "Atrás",
-      "restrictedByOrg": "La transcripción de reuniones está restringida por tu organización."
+      "restrictedByOrg": "La transcripción de reuniones está restringida por tu organización.",
+      "pause": "Pausar",
+      "resume": "Reanudar",
+      "pausedWithTitle": "En pausa · {{title}}",
+      "stopDialog": {
+        "description": "«{{title}}» permanecerá en tus notas con su transcripción. Descartar la elimina de forma permanente.",
+        "descriptionEmpty": "Esta reunión no generó ninguna transcripción. Si la guardas, quedará una nota vacía.",
+        "discard": "Descartar",
+        "save": "Guardar",
+        "title": "¿Guardar esta reunión?",
+        "titleEmpty": "No se grabó nada",
+        "untitled": "Esta reunión"
+      }
     },
     "meetingPill": {
       "returnToNote": "Volver a la grabación",

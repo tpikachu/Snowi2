@@ -2683,7 +2683,19 @@
       "title": "Note delle riunioni",
       "description": "Trascrizioni e riassunti strutturati",
       "back": "Indietro",
-      "restrictedByOrg": "La trascrizione delle riunioni è limitata dalla tua organizzazione."
+      "restrictedByOrg": "La trascrizione delle riunioni è limitata dalla tua organizzazione.",
+      "pause": "Metti in pausa",
+      "resume": "Riprendi",
+      "pausedWithTitle": "In pausa · {{title}}",
+      "stopDialog": {
+        "description": "«{{title}}» resterà nelle tue note con la trascrizione. Scarta la rimuove definitivamente.",
+        "descriptionEmpty": "Questa riunione non ha prodotto alcuna trascrizione. Conservarla lascia una nota vuota.",
+        "discard": "Scarta",
+        "save": "Salva",
+        "title": "Salvare questa riunione?",
+        "titleEmpty": "Non è stato registrato nulla",
+        "untitled": "Questa riunione"
+      }
     },
     "meetingPill": {
       "returnToNote": "Torna alla registrazione",

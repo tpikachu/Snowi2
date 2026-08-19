@@ -38,7 +38,7 @@ import {
 import {
   useMeetingRecordingStore,
   startRecording as storeStartRecording,
-  stopRecording as storeStopRecording,
+  requestStopRecording,
   lockSpeaker,
   setSessionDiarizationEnabled,
   setSessionExpectedCount,
@@ -254,7 +254,9 @@ export default function PersonalNotesView({
   }, [activeNote]);
 
   const stopRecording = useCallback(async () => {
-    await storeStopRecording();
+    // Routed through the request wrapper so the keep-or-discard prompt fires
+    // wherever the meeting was ended from.
+    await requestStopRecording();
   }, []);
 
   useEffect(() => {

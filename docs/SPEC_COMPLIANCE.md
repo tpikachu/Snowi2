@@ -31,15 +31,16 @@ Status: **Done** · **Partial** · **Missing** · **Waived** (recorded owner dec
 
 ## §10–§13 Capture
 
-| Item                                    | Status  | Notes                                                    |
-| --------------------------------------- | ------- | -------------------------------------------------------- |
-| §10 preflight panel and Start gating    | Missing | No preflight; no disk-space or key-availability gate     |
-| §11 capture state machine               | Missing | Start/Stop only — no Pause, Resume or gap markers        |
-| §11.1 emergency-stop shortcut           | Missing |                                                          |
-| §11.1 quit-while-recording confirmation | Missing |                                                          |
-| §12.1 compact always-on-top panel       | Partial | `MeetingRecordingPill` shows state; no question box      |
-| §13.1 separate mic/system tracks        | Done    | CoreAudio tap (macOS), WASAPI process loopback (Windows) |
-| §13.2 encrypted checkpoints ≤10s        | Missing | Store now exists (§21); nothing writes to it yet         |
+| Item                                    | Status  | Notes                                                           |
+| --------------------------------------- | ------- | --------------------------------------------------------------- |
+| §10 preflight panel and Start gating    | Missing | No preflight; no disk-space or key-availability gate            |
+| §11 capture state machine               | Partial | Pause/Resume with gap markers; no PAUSING/FINALIZING states yet |
+| §11.1 emergency-stop shortcut           | Missing |                                                                 |
+| §11.1 stop asks keep-or-discard         | Done    | Empty meetings lead with Discard; Enter never destroys          |
+| §11.1 quit-while-recording confirmation | Missing |                                                                 |
+| §12.1 compact always-on-top panel       | Partial | `MeetingRecordingPill` shows state; no question box             |
+| §13.1 separate mic/system tracks        | Done    | CoreAudio tap (macOS), WASAPI process loopback (Windows)        |
+| §13.2 encrypted checkpoints ≤10s        | Missing | Store now exists (§21); nothing writes to it yet                |
 
 ## §14–§20 Transcription, intelligence, artifact
 

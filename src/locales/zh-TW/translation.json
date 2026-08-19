@@ -2683,7 +2683,19 @@
       "title": "會議筆記",
       "description": "轉錄與結構化摘要",
       "back": "返回",
-      "restrictedByOrg": "會議轉錄已被您的組織限制。"
+      "restrictedByOrg": "會議轉錄已被您的組織限制。",
+      "pause": "暫停",
+      "resume": "繼續",
+      "pausedWithTitle": "已暫停 · {{title}}",
+      "stopDialog": {
+        "description": "「{{title}}」會連同逐字稿保留在筆記中。捨棄將永久刪除。",
+        "descriptionEmpty": "這場會議沒有產生逐字稿。保留會留下一則空筆記。",
+        "discard": "捨棄",
+        "save": "儲存",
+        "title": "要儲存這場會議嗎？",
+        "titleEmpty": "沒有錄到任何內容",
+        "untitled": "這場會議"
+      }
     },
     "meetingPill": {
       "returnToNote": "返回到錄音",

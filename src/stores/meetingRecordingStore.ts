@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { closeGap, openGap, type MeetingGap } from "../utils/meetingGaps";
 import { getSettings, selectResolvedMeetingTranscription } from "./settingsStore";
 import { getStreamingTranscriptionProviders } from "../models/ModelRegistry";
 import { resolveMeetingTranscriptionOptions } from "../helpers/meetingTranscriptionRouting";
@@ -69,14 +70,28 @@ interface RecentSystemSpeaker {
   updatedAt: number;
 }
 
+/** What Stop produced, pending the user's keep-or-discard answer. */
+export interface PendingStopDecision {
+  noteId: number | null;
+  noteTitle: string | null;
+  /** False when nothing was transcribed — the prompt then leads with Discard. */
+  hasContent: boolean;
+}
+
 interface MeetingRecordingState {
   isRecording: boolean;
+  /** Capture is suspended but the session is alive (spec §11). */
+  isPaused: boolean;
   isTranscribing: boolean;
   recordingNoteId: number | null;
   recordingNoteTitle: string | null;
   recordingFolderId: number | null;
   segments: TranscriptSegment[];
   transcript: string;
+  /** Pause spans, in order. Kept out of `segments` so a gap can never be mistaken for speech. */
+  gaps: MeetingGap[];
+  /** Set after Stop, while the user decides whether to keep the meeting. */
+  pendingStop: PendingStopDecision | null;
   micPartial: string;
   systemPartial: string;
   systemPartialSpeakerId: string | null;
@@ -412,6 +427,10 @@ let systemSource: MediaStreamAudioSourceNode | null = null;
 let systemProcessor: AudioWorkletNode | null = null;
 let systemStream: MediaStream | null = null;
 let isRecordingFlag = false;
+// Read by the audio pipelines on every chunk, so it has to be a plain module
+// variable rather than store state: a React subscription would let chunks
+// through for however long the re-render took.
+let isPausedFlag = false;
 let isStartingFlag = false;
 let isPrepared = false;
 let segmentsRefValue: TranscriptSegment[] = [];
@@ -426,12 +445,15 @@ let pushConfigTimeout: ReturnType<typeof setTimeout> | null = null;
 
 export const useMeetingRecordingStore = create<MeetingRecordingState>()(() => ({
   isRecording: false,
+  isPaused: false,
   isTranscribing: false,
   recordingNoteId: null,
   recordingNoteTitle: null,
   recordingFolderId: null,
   segments: [],
   transcript: "",
+  gaps: [],
+  pendingStop: null,
   micPartial: "",
   systemPartial: "",
   systemPartialSpeakerId: null,
@@ -697,6 +719,7 @@ async function cleanup(): Promise<void> {
   isPrepared = false;
   isRecordingFlag = false;
   isStartingFlag = false;
+  isPausedFlag = false;
 }
 
 export async function prepareTranscription(): Promise<void> {
@@ -781,8 +804,11 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
   speakerLocks = locks;
   systemPartialSpeakerIdValue = null;
 
+  isPausedFlag = false;
+
   useMeetingRecordingStore.setState({
     isRecording: true,
+    isPaused: false,
     isTranscribing: true,
     recordingNoteId: args.noteId,
     recordingNoteTitle: args.noteTitle,
@@ -795,6 +821,8 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
     ),
     segments: seed,
     transcript: buildTranscriptText(seed),
+    gaps: [],
+    pendingStop: null,
     micPartial: "",
     systemPartial: "",
     systemPartialSpeakerId: null,
@@ -1133,7 +1161,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
         stream: micResult,
         context: ctx,
         onChunk: (chunk) => {
-          if (!isRecordingFlag) return;
+          if (!isRecordingFlag || isPausedFlag) return;
           if (socketReady) {
             window.electronAPI?.meetingTranscriptionSend?.(chunk, "mic");
             return;
@@ -1218,7 +1246,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
         stream,
         context: ctx,
         onChunk: (chunk) => {
-          if (!isRecordingFlag) return;
+          if (!isRecordingFlag || isPausedFlag) return;
           if (socketReady) {
             window.electronAPI?.meetingTranscriptionSend?.(chunk, "system");
             return;
@@ -1296,6 +1324,199 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
   }
 }
 
+/**
+ * Suspends capture without ending the session (spec §11.1).
+ *
+ * The microphone is genuinely released — tracks stopped, recovery controller
+ * shut down — because that is what turns the operating system's recording
+ * indicator off. A pause that leaves the indicator lit reads as "still
+ * listening", which is precisely the trust failure the visible-state principle
+ * (§5.2) exists to prevent.
+ *
+ * System audio is gated in the main process instead of torn down. The renderer
+ * fallback path holds a display-media stream whose re-acquisition re-opens the
+ * OS picker, and the native helpers would have to be restarted mid-session;
+ * either would make Pause something users learn not to touch. No privacy
+ * indicator is attached to loopback capture, so gating loses nothing.
+ */
+export async function pauseRecording(): Promise<boolean> {
+  if (!isRecordingFlag || isPausedFlag) return false;
+
+  isPausedFlag = true;
+  useMeetingRecordingStore.setState((state) => ({
+    isPaused: true,
+    currentMicLevel: 0,
+    micCaptureStatus: "inactive",
+    gaps: openGap(state.gaps, Date.now()),
+  }));
+
+  // Stopped before the tracks so it cannot read the teardown as a device
+  // failure and start hunting for a replacement microphone.
+  micRecovery?.stop();
+  micRecovery = null;
+
+  micSource?.disconnect();
+  micSource = null;
+  try {
+    micStream?.getTracks().forEach((track) => track.stop());
+  } catch {
+    // Track already ended — the goal (nothing capturing) is met either way.
+  }
+  micStream = null;
+
+  try {
+    await window.electronAPI?.meetingTranscriptionSetPaused?.(true);
+  } catch (err) {
+    logger.warn("Failed to pause meeting capture in main", { error: err }, "meeting");
+  }
+
+  logger.info("Meeting capture paused", {}, "meeting");
+  return true;
+}
+
+/**
+ * Re-acquires the microphone and reconnects it to the pipeline that is still
+ * standing. Reuses the same reconnect shape as mid-meeting device recovery, so
+ * resume goes through a path that is already exercised in production rather
+ * than a second one written for this case.
+ */
+export async function resumeRecording(): Promise<boolean> {
+  if (!isRecordingFlag || !isPausedFlag) return false;
+
+  // The processor is the thing chunks flow into; without it there is nothing to
+  // reconnect to and the meeting has to be stopped rather than resumed.
+  if (micContext && micProcessor) {
+    try {
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(await getMeetingMicConstraints());
+      } catch {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: MEETING_MIC_PRIMARY_AUDIO_CONSTRAINTS,
+        });
+      }
+
+      const source = micContext.createMediaStreamSource(stream);
+      source.connect(micProcessor);
+      if (micAnalyser) source.connect(micAnalyser);
+      micSource = source;
+      micStream = stream;
+
+      micRecovery = new ActiveMicRecoveryController({
+        mediaDevices: navigator.mediaDevices,
+        acquire: async () => {
+          try {
+            return await navigator.mediaDevices.getUserMedia(await getMeetingMicConstraints());
+          } catch {
+            return navigator.mediaDevices.getUserMedia({
+              audio: MEETING_MIC_PRIMARY_AUDIO_CONSTRAINTS,
+            });
+          }
+        },
+        onStatusChange: (status) => {
+          useMeetingRecordingStore.setState({
+            micCaptureStatus: status,
+            ...(status === "active" ? {} : { currentMicLevel: 0 }),
+          });
+        },
+        onRecovered: async (replacement, previous) => {
+          if (!isRecordingFlag || !micContext || !micProcessor) {
+            throw new Error("Meeting recording is no longer active");
+          }
+          const nextSource = micContext.createMediaStreamSource(replacement);
+          nextSource.connect(micProcessor);
+          if (micAnalyser) nextSource.connect(micAnalyser);
+          micSource?.disconnect();
+          previous?.getTracks().forEach((track) => track.stop());
+          micSource = nextSource;
+          micStream = replacement;
+        },
+      });
+      await micRecovery.start(micStream, {
+        followDefault: followsSystemDefaultMic(getSettings()),
+      });
+    } catch (err) {
+      // The meeting stays paused and keeps everything captured so far: a failed
+      // resume must never be the thing that loses the recording.
+      logger.error(
+        "Failed to re-acquire the microphone on resume",
+        { error: (err as Error).message },
+        "meeting"
+      );
+      reportMeetingError("Could not restart the microphone. The meeting is still paused.");
+      return false;
+    }
+  }
+
+  try {
+    await window.electronAPI?.meetingTranscriptionSetPaused?.(false);
+  } catch (err) {
+    logger.warn("Failed to resume meeting capture in main", { error: err }, "meeting");
+  }
+
+  isPausedFlag = false;
+  useMeetingRecordingStore.setState((state) => ({
+    isPaused: false,
+    gaps: closeGap(state.gaps, Date.now()),
+  }));
+
+  logger.info("Meeting capture resumed", {}, "meeting");
+  return true;
+}
+
+/**
+ * Whether the meeting produced anything worth keeping. Drives the save/discard
+ * prompt: a meeting that captured nothing should not leave an empty note behind.
+ */
+export function meetingHasContent(): boolean {
+  const { segments, transcript } = useMeetingRecordingStore.getState();
+  return transcript.trim().length > 0 || segments.some((seg) => seg.text.trim().length > 0);
+}
+
+/**
+ * Stops capture and then asks whether to keep the meeting.
+ *
+ * The question is worth asking every time rather than only for empty meetings:
+ * the note was created up front, at Start, so a meeting abandoned after ten
+ * seconds otherwise leaves a titled, empty note behind that the user has to go
+ * and find. `hasContent` only decides which answer the dialog leads with.
+ */
+export async function requestStopRecording(): Promise<StopRecordingResult> {
+  const { recordingNoteId, recordingNoteTitle } = useMeetingRecordingStore.getState();
+  const hasContent = meetingHasContent();
+
+  const result = await stopRecording();
+
+  useMeetingRecordingStore.setState({
+    pendingStop: { noteId: recordingNoteId, noteTitle: recordingNoteTitle, hasContent },
+  });
+
+  return result;
+}
+
+/**
+ * Applies the user's answer. Discard deletes the note the meeting was writing
+ * into; keeping is simply letting go of the decision, since everything has
+ * already been persisted as it arrived.
+ */
+export async function resolvePendingStop(keep: boolean): Promise<void> {
+  const pending = useMeetingRecordingStore.getState().pendingStop;
+  useMeetingRecordingStore.setState({ pendingStop: null });
+  if (!pending || keep || pending.noteId == null) return;
+
+  try {
+    await window.electronAPI?.deleteNote?.(pending.noteId);
+    logger.info("Discarded meeting note after stop", { noteId: pending.noteId }, "meeting");
+  } catch (err) {
+    logger.error(
+      "Failed to discard the meeting note",
+      { noteId: pending.noteId, error: (err as Error).message },
+      "meeting"
+    );
+    reportMeetingError("Could not discard the meeting. It is still in your notes.");
+  }
+}
+
 export interface StopRecordingResult {
   diarizationSessionId: string | null;
 }
@@ -1307,7 +1528,12 @@ export async function stopRecording(): Promise<StopRecordingResult> {
 
   isRecordingFlag = false;
   isStartingFlag = false;
-  useMeetingRecordingStore.setState({ isRecording: false, isTranscribing: false });
+  isPausedFlag = false;
+  useMeetingRecordingStore.setState({
+    isRecording: false,
+    isPaused: false,
+    isTranscribing: false,
+  });
 
   await cleanup();
 

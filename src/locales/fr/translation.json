@@ -2890,7 +2890,19 @@
       "title": "Notes de réunion",
       "description": "Transcriptions et résumés structurés",
       "back": "Retour",
-      "restrictedByOrg": "La transcription des réunions est restreinte par votre organisation."
+      "restrictedByOrg": "La transcription des réunions est restreinte par votre organisation.",
+      "pause": "Mettre en pause",
+      "resume": "Reprendre",
+      "pausedWithTitle": "En pause · {{title}}",
+      "stopDialog": {
+        "description": "« {{title}} » restera dans vos notes avec sa transcription. Ignorer la supprime définitivement.",
+        "descriptionEmpty": "Cette réunion n'a produit aucune transcription. La conserver laisse une note vide.",
+        "discard": "Ignorer",
+        "save": "Enregistrer",
+        "title": "Enregistrer cette réunion ?",
+        "titleEmpty": "Rien n'a été enregistré",
+        "untitled": "Cette réunion"
+      }
     },
     "meetingPill": {
       "returnToNote": "Revenir à l'enregistrement",

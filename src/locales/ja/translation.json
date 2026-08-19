@@ -2667,7 +2667,19 @@
       "title": "議事録",
       "description": "文字起こしと構造化されたサマリー",
       "back": "戻る",
-      "restrictedByOrg": "会議の文字起こしは組織によって制限されています。"
+      "restrictedByOrg": "会議の文字起こしは組織によって制限されています。",
+      "pause": "一時停止",
+      "resume": "再開",
+      "pausedWithTitle": "一時停止中 · {{title}}",
+      "stopDialog": {
+        "description": "「{{title}}」は文字起こしとともにノートに残ります。破棄すると完全に削除されます。",
+        "descriptionEmpty": "この会議では文字起こしが作成されませんでした。保存すると空のノートが残ります。",
+        "discard": "破棄",
+        "save": "保存",
+        "title": "この会議を保存しますか？",
+        "titleEmpty": "記録された内容はありません",
+        "untitled": "この会議"
+      }
     },
     "meetingPill": {
       "returnToNote": "録音に戻る",

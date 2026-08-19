@@ -645,6 +645,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   meetingTranscriptionSend: (buffer, source) =>
     ipcRenderer.send("meeting-transcription-send", buffer, source),
   meetingTranscriptionStop: () => ipcRenderer.invoke("meeting-transcription-stop"),
+  meetingTranscriptionSetPaused: (paused) =>
+    ipcRenderer.invoke("meeting-transcription-set-paused", paused),
   meetingTranscriptionCancel: () => ipcRenderer.invoke("meeting-transcription-cancel"),
   onMeetingTranscriptionSegment: registerListener(
     "meeting-transcription-segment",
