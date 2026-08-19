@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { closeGap, openGap, type MeetingGap } from "../utils/meetingGaps";
 import { PcmRingBuffer } from "../utils/pcmRingBuffer";
+import { cancelAction } from "./actionProcessingStore";
 import { getSettings, selectResolvedMeetingTranscription } from "./settingsStore";
 import { getStreamingTranscriptionProviders } from "../models/ModelRegistry";
 import { resolveMeetingTranscriptionOptions } from "../helpers/meetingTranscriptionRouting";
@@ -77,6 +78,12 @@ export interface PendingStopDecision {
   noteTitle: string | null;
   /** False when nothing was transcribed — the prompt then leads with Discard. */
   hasContent: boolean;
+  /**
+   * The transcript as it stood at Stop, so note generation can run while the
+   * prompt is open. Captured here rather than read back later because Stop
+   * tears the session down and a discard clears it.
+   */
+  segments: TranscriptSegment[];
 }
 
 interface MeetingRecordingState {
@@ -1645,13 +1652,20 @@ export function meetingHasContent(): boolean {
  * and find. `hasContent` only decides which answer the dialog leads with.
  */
 export async function requestStopRecording(): Promise<StopRecordingResult> {
-  const { recordingNoteId, recordingNoteTitle } = useMeetingRecordingStore.getState();
+  // Read before stopping: the session's own state is what the decision is
+  // about, and stopping is free to clear it.
+  const { recordingNoteId, recordingNoteTitle, segments } = useMeetingRecordingStore.getState();
   const hasContent = meetingHasContent();
 
   const result = await stopRecording();
 
   useMeetingRecordingStore.setState({
-    pendingStop: { noteId: recordingNoteId, noteTitle: recordingNoteTitle, hasContent },
+    pendingStop: {
+      noteId: recordingNoteId,
+      noteTitle: recordingNoteTitle,
+      hasContent,
+      segments,
+    },
   });
 
   return result;
@@ -1666,6 +1680,10 @@ export async function resolvePendingStop(keep: boolean): Promise<void> {
   const pending = useMeetingRecordingStore.getState().pendingStop;
   useMeetingRecordingStore.setState({ pendingStop: null });
   if (!pending || keep || pending.noteId == null) return;
+
+  // Note generation starts while the prompt is open, so a discard has to stop
+  // it — otherwise the result lands on a note that is about to be deleted.
+  cancelAction(pending.noteId);
 
   try {
     await window.electronAPI?.deleteNote?.(pending.noteId);

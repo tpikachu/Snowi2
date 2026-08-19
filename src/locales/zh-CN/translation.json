@@ -2693,6 +2693,7 @@
         "description": "“{{title}}”会连同转录保留在笔记中。丢弃将永久删除。",
         "descriptionEmpty": "这次会议没有产生转录。保留会留下一条空笔记。",
         "discard": "丢弃",
+        "generating": "正在生成笔记。",
         "save": "保存",
         "title": "保存这次会议吗？",
         "titleEmpty": "没有录到任何内容",

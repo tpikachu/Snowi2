@@ -2693,6 +2693,7 @@
         "description": "“{{title}}” permanecerá nas suas notas com a transcrição. Descartar remove-a permanentemente.",
         "descriptionEmpty": "Esta reunião não gerou transcrição. Mantê-la deixa uma nota vazia.",
         "discard": "Descartar",
+        "generating": "As notas estão sendo geradas agora.",
         "save": "Salvar",
         "title": "Salvar esta reunião?",
         "titleEmpty": "Nada foi gravado",

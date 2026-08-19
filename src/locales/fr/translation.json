@@ -2900,6 +2900,7 @@
         "description": "« {{title}} » restera dans vos notes avec sa transcription. Ignorer la supprime définitivement.",
         "descriptionEmpty": "Cette réunion n'a produit aucune transcription. La conserver laisse une note vide.",
         "discard": "Ignorer",
+        "generating": "Les notes sont en cours de génération.",
         "save": "Enregistrer",
         "title": "Enregistrer cette réunion ?",
         "titleEmpty": "Rien n'a été enregistré",

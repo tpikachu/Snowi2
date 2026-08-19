@@ -2693,6 +2693,7 @@
         "description": "«{{title}}» resterà nelle tue note con la trascrizione. Scarta la rimuove definitivamente.",
         "descriptionEmpty": "Questa riunione non ha prodotto alcuna trascrizione. Conservarla lascia una nota vuota.",
         "discard": "Scarta",
+        "generating": "Le note sono in fase di generazione.",
         "save": "Salva",
         "title": "Salvare questa riunione?",
         "titleEmpty": "Non è stato registrato nulla",

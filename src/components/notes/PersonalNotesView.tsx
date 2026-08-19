@@ -58,10 +58,8 @@ import {
   type PendingEnhancedSnapshot,
   type PendingNoteWrite,
 } from "../../lib/noteEditorPendingSave";
-
-function makeContentHash(content: string): string {
-  return String(content.length) + "-" + content.slice(0, 50);
-}
+import { makeNoteContentHash, noteEnhancementSource } from "../../utils/noteContentHash";
+import { MEETING_TITLE_PLACEHOLDERS } from "../../utils/meetingNoteInput";
 
 function draftFromNote(note: NoteItem): NoteEditorDraft {
   return {
@@ -508,7 +506,9 @@ export default function PersonalNotesView({
 
   const isEnhancementStale = useMemo(() => {
     if (!editorEnhancedContent || !activeNote?.enhanced_at_content_hash) return false;
-    const currentHash = makeContentHash(`${editorNote?.content ?? ""}\n${activeNoteRawTranscript}`);
+    const currentHash = makeNoteContentHash(
+      noteEnhancementSource(editorNote?.content ?? "", activeNoteRawTranscript)
+    );
     return currentHash !== activeNote.enhanced_at_content_hash;
   }, [
     activeNote?.enhanced_at_content_hash,
@@ -731,19 +731,20 @@ export default function PersonalNotesView({
                     ]
                       .filter(Boolean)
                       .join("\n\n");
-                    runAction(action, parts, makeContentHash(`${noteContent}\n${rawTranscript}`), {
-                      modelId: effectiveModelId,
-                      isMeetingNote,
-                      allowTitleGeneration: isRegenerableNoteTitle(
-                        editorNote.title,
-                        [
-                          t("notes.list.untitledNote"),
-                          t("notes.list.newNote"),
-                          t("notes.sidebar.newNote"),
-                        ],
-                        calendarEventName
-                      ),
-                    });
+                    runAction(
+                      action,
+                      parts,
+                      makeNoteContentHash(noteEnhancementSource(noteContent, rawTranscript)),
+                      {
+                        modelId: effectiveModelId,
+                        isMeetingNote,
+                        allowTitleGeneration: isRegenerableNoteTitle(
+                          editorNote.title,
+                          MEETING_TITLE_PLACEHOLDERS.map((key) => t(key)),
+                          calendarEventName
+                        ),
+                      }
+                    );
                   }}
                   onManageActions={() => setShowActionManager(true)}
                   disabled={

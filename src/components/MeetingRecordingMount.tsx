@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "./ui/useToast";
 import {
@@ -11,6 +11,8 @@ import {
 } from "../stores/meetingRecordingStore";
 import { ConfirmDialog } from "./ui/dialog";
 import { useMeetingPanelBridge } from "../hooks/useMeetingPanelBridge";
+import { autoGenerateMeetingNotes } from "../helpers/meetingNoteGeneration";
+import { MEETING_TITLE_PLACEHOLDERS } from "../utils/meetingNoteInput";
 
 const EMA_PREV = 0.5;
 const EMA_NEXT = 0.5;
@@ -36,6 +38,38 @@ const MEETING_ERROR_KEYS: Record<string, string> = {};
 function MeetingStopDialog() {
   const { t } = useTranslation();
   const pendingStop = useMeetingRecordingStore((s) => s.pendingStop);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const noteId = pendingStop?.noteId ?? null;
+  const hasContent = pendingStop?.hasContent ?? false;
+
+  useEffect(() => {
+    if (noteId == null || !hasContent) return;
+    // Started while the prompt is up rather than after Save, so the notes are
+    // usually written by the time the user has finished deciding. Discarding
+    // cancels it — see resolvePendingStop.
+    let cancelled = false;
+    void autoGenerateMeetingNotes({
+      noteId,
+      noteTitle: pendingStop?.noteTitle ?? null,
+      segments: pendingStop?.segments ?? [],
+      speakerLabels: { you: t("notes.speaker.you"), them: t("notes.speaker.them") },
+      titlePlaceholders: MEETING_TITLE_PLACEHOLDERS.map((key) => t(key)),
+      labels: {
+        noModel: t("notes.actions.errors.noModel"),
+        noEndpoint: t("notes.actions.errors.noEndpoint"),
+        actionFailed: t("notes.actions.errors.actionFailed"),
+      },
+    }).then((started) => {
+      if (!cancelled) setIsGenerating(started);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // Deliberately keyed on the note alone: this must fire once per stop, not
+    // again every time a translation function identity changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [noteId, hasContent]);
 
   if (!pendingStop) return null;
 
@@ -54,9 +88,14 @@ function MeetingStopDialog() {
       description={
         isEmpty
           ? t("notes.meeting.stopDialog.descriptionEmpty")
-          : t("notes.meeting.stopDialog.description", {
-              title: pendingStop.noteTitle || t("notes.meeting.stopDialog.untitled"),
-            })
+          : [
+              t("notes.meeting.stopDialog.description", {
+                title: pendingStop.noteTitle || t("notes.meeting.stopDialog.untitled"),
+              }),
+              isGenerating ? t("notes.meeting.stopDialog.generating") : "",
+            ]
+              .filter(Boolean)
+              .join(" ")
       }
       confirmText={t("notes.meeting.stopDialog.save")}
       cancelText={t("notes.meeting.stopDialog.discard")}
