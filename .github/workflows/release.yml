@@ -1,21 +1,35 @@
 name: Release
 
+# Push a version tag matching package.json to build the installers and attach
+# them to a GitHub Release:
+#
+#   git tag v0.1.0-rc1 && git push origin v0.1.0-rc1
+#
+# electron-builder creates the release and uploads to it itself (see "publish"
+# in electron-builder.json), so there is no separate collect-and-publish job.
+# Running this from the Actions tab instead builds without publishing and leaves
+# the installers as workflow artifacts.
+#
+# Most of the length below is sidecar binaries — whisper.cpp, llama.cpp,
+# sherpa-onnx, Qdrant, yt-dlp and the native helpers — which differ per platform
+# and have to be fetched before packaging. The release logic itself is two lines.
+
 on:
   push:
     tags:
-      - "v*.*.*" # Triggers on version tags like v1.0.0, v2.1.3, etc.
+      - "v*.*.*"
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Version to release (e.g., 1.0.0)"
-        required: true
-        type: string
 
 permissions:
-  contents: read # Build jobs only read. publish-release raises this for itself.
+  contents: write # electron-builder creates the release and uploads assets
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 env:
-  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
+  # A tag push publishes; a manual run only packages.
+  PUBLISH: ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
 
 jobs:
   tests:
@@ -25,34 +39,33 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-      - name: Validate release inputs
-        env:
-          GOOGLE_CALENDAR_CLIENT_ID: ${{ secrets.GOOGLE_CALENDAR_CLIENT_ID }}
-          MICROSOFT_CALENDAR_CLIENT_ID: ${{ secrets.MICROSOFT_CALENDAR_CLIENT_ID }}
-        run: |
-          set -uo pipefail
 
-          # The only hard gate. Installers built from a mismatched version claim
-          # to be a release they are not, and no later step can correct that.
-          PACKAGE_VERSION=$(node -p "require('./package.json').version")
-          if [ "$RELEASE_TAG" != "v$PACKAGE_VERSION" ]; then
-            echo "::error title=Version mismatch::Release tag $RELEASE_TAG does not match package version v$PACKAGE_VERSION"
+      - name: Check the tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        # Installers built from a mismatched version claim to be a release they
+        # are not, and no later step can correct that.
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          if [ "$GITHUB_REF_NAME" != "v$PKG" ]; then
+            echo "::error title=Version mismatch::Tag $GITHUB_REF_NAME does not match package version v$PKG"
             exit 1
           fi
 
-          # Calendar client ids are per-integration credentials, not build
-          # requirements. Without one, that provider's Connect button reports it
-          # is not configured (microsoftCalendarOAuth.js fails fast rather than
-          # opening a browser on a broken URL) and every other feature is
-          # untouched. A missing id should cost the release one integration, not
-          # the release.
+      - name: Warn about unconfigured calendar providers
+        env:
+          GOOGLE: ${{ secrets.GOOGLE_CALENDAR_CLIENT_ID }}
+          MICROSOFT: ${{ secrets.MICROSOFT_CALENDAR_CLIENT_ID }}
+        # A missing OAuth client id costs the release one integration, not the
+        # release, so this warns rather than fails.
+        run: |
           missing=""
-          [ -n "${GOOGLE_CALENDAR_CLIENT_ID:-}" ] || missing="$missing Google"
-          [ -n "${MICROSOFT_CALENDAR_CLIENT_ID:-}" ] || missing="$missing Microsoft"
+          [ -n "${GOOGLE:-}" ] || missing="$missing Google"
+          [ -n "${MICROSOFT:-}" ] || missing="$missing Microsoft"
           if [ -n "$missing" ]; then
-            echo "::warning title=Calendar integrations disabled::No OAuth client id configured for:$missing. Those providers cannot be connected in these builds."
-            echo "⚠️ Calendar integrations unavailable in this build:$missing — no OAuth client id configured. Apple Calendar (macOS) is unaffected; it uses EventKit, not OAuth." >> "$GITHUB_STEP_SUMMARY"
+            echo "::warning title=Calendar integrations disabled::No OAuth client id for:$missing"
+            echo "⚠️ Cannot connect:$missing — no OAuth client id. Apple Calendar is unaffected (EventKit, not OAuth)." >> "$GITHUB_STEP_SUMMARY"
           fi
+
       - name: Install dependencies
         run: npm ci --ignore-scripts
       - name: Run quality checks
@@ -61,10 +74,12 @@ jobs:
         run: npm run i18n:check
       - name: Audit dependencies
         run: npm audit
+
       - name: Build better-sqlite3 for the runner's node
         # --ignore-scripts skips the native build, so DB-backed tests silently
         # skip unless the binding is rebuilt for the CI Node runtime.
         run: npm rebuild better-sqlite3
+
       - name: Run tests
         run: npm test
         env:
@@ -72,101 +87,6 @@ jobs:
           ELECTRON_OVERRIDE_DIST_PATH: /tmp
           # a skipped DB test here means the rebuild step above is gone: fail instead
           REQUIRE_DB_TESTS: "1"
-
-  build-linux:
-    needs: tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install platform-specific native binaries
-        run: npm install @rollup/rollup-linux-x64-gnu lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu --no-save
-
-      - name: Cache native binaries
-        uses: actions/cache@v4
-        with:
-          path: resources/bin
-          key: linux-x64-bin-${{ hashFiles('scripts/download-*.js') }}
-
-      - name: Download whisper.cpp binaries
-        run: node scripts/download-whisper-cpp.js --current
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Download llama-server binaries
-        run: node scripts/download-llama-server.js --current
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Download sherpa-onnx binaries
-        run: node scripts/download-sherpa-onnx.js --current
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Download yt-dlp binary
-        run: node scripts/download-yt-dlp.js --current
-
-      - name: Download Qdrant binary
-        run: node scripts/download-qdrant.js --current
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Download meeting AEC helper
-        run: node scripts/download-meeting-aec-helper.js --current
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Cache Electron
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/electron
-          key: linux-electron-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: linux-electron-
-
-      - name: Install Linux build and packaging dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y rpm libx11-dev libxtst-dev libatspi2.0-dev libglib2.0-dev libpipewire-0.3-dev pkg-config
-
-      - name: Create runtime env
-        run: |
-          echo "GOOGLE_CALENDAR_CLIENT_ID=${{ secrets.GOOGLE_CALENDAR_CLIENT_ID }}" >> .env
-          echo "GOOGLE_CALENDAR_CLIENT_SECRET=${{ secrets.GOOGLE_CALENDAR_CLIENT_SECRET }}" >> .env
-          echo "MICROSOFT_CALENDAR_CLIENT_ID=${{ secrets.MICROSOFT_CALENDAR_CLIENT_ID }}" >> .env
-
-      - name: Verify PipeWire system audio helper build
-        run: |
-          npm run compile:linux-system-audio
-          # supportsNativeCapture reflects compile-time PipeWire linkage, so this passes on CI runners with no PipeWire daemon (where "ok" is false).
-          resources/bin/linux-system-audio-helper probe | grep '"supportsNativeCapture":true'
-
-      - name: Build Application
-        run: npm run build:linux -- --publish never
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux-release
-          # Not dist/. That directory also holds linux-unpacked/, the fully
-          # expanded ~700 MB app that every one of these four packages already
-          # contains — uploading it ships the same build five times.
-          path: |
-            dist/*.AppImage
-            dist/*.deb
-            dist/*.rpm
-            dist/*.tar.gz
-          retention-days: 30
 
   build-windows:
     needs: tests
@@ -265,20 +185,21 @@ jobs:
           echo "GOOGLE_CALENDAR_CLIENT_SECRET=${{ secrets.GOOGLE_CALENDAR_CLIENT_SECRET }}" >> .env
           echo "MICROSOFT_CALENDAR_CLIENT_ID=${{ secrets.MICROSOFT_CALENDAR_CLIENT_ID }}" >> .env
 
-      - name: Build and Sign Application
-        run: npm run build:win -- --publish never
+      - name: Build and publish
+        run: npm run build:win -- --publish ${{ env.PUBLISH }}
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # electron-builder publishes with this
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
 
-      - name: Upload Artifacts
+      - name: Upload installers (unpublished runs only)
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         uses: actions/upload-artifact@v4
         with:
-          name: windows-release
-          # Excludes win-unpacked/, which the installer and the portable build
-          # both already contain. *.exe does not match *.exe.blockmap.
+          name: windows-installers
+          # Not dist/ — that also holds win-unpacked/, the expanded app both
+          # installers already contain. *.exe does not match *.exe.blockmap.
           path: dist/*.exe
           retention-days: 30
 
@@ -360,7 +281,7 @@ jobs:
           key: macos-${{ matrix.arch }}-electron-${{ hashFiles('**/package-lock.json') }}
           restore-keys: macos-${{ matrix.arch }}-electron-
 
-      - name: Setup macOS Code Signing
+      - name: Setup macOS code signing
         id: signing
         env:
           APPLE_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE_BASE64 }}
@@ -370,10 +291,8 @@ jobs:
           set -uo pipefail
 
           # Signing must never decide whether packaging happens. An absent
-          # certificate is the normal case today; a present-but-broken one
-          # (expired, wrong password, truncated base64) used to kill the job
-          # with "SecKeychainItemImport: Unable to decode the provided data" —
-          # an error that names the decode rather than the cause. Either way an
+          # certificate is the normal case today, and a present-but-broken one
+          # (expired, wrong password, truncated base64) used to kill the job. An
           # unsigned .app is a useful artifact and a red X is not, so every
           # failure here degrades to unsigned and the build continues.
           install_signing_identity() {
@@ -408,7 +327,7 @@ jobs:
             echo "signed=true" >> "$GITHUB_OUTPUT"
           else
             echo "signed=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=Unsigned macOS build::No usable Developer ID certificate, so this build is not code signed. Packaging continued; Gatekeeper will refuse the app on first launch until the user right-clicks → Open."
+            echo "::warning title=Unsigned macOS build::No usable Developer ID certificate. Packaging continued; Gatekeeper will refuse the app until the user right-clicks → Open."
           fi
 
       - name: Create runtime env
@@ -417,11 +336,11 @@ jobs:
           echo "GOOGLE_CALENDAR_CLIENT_SECRET=${{ secrets.GOOGLE_CALENDAR_CLIENT_SECRET }}" >> .env
           echo "MICROSOFT_CALENDAR_CLIENT_ID=${{ secrets.MICROSOFT_CALENDAR_CLIENT_ID }}" >> .env
 
-      - name: Build Application (${{ matrix.arch }})
-        run: npm run build:mac -- --${{ matrix.arch }} --publish never
+      - name: Build and publish (${{ matrix.arch }})
+        run: npm run build:mac -- --${{ matrix.arch }} --publish ${{ env.PUBLISH }}
         env:
           TARGET_ARCH: ${{ matrix.arch }}
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # electron-builder publishes with this
           CSC_IDENTITY_AUTO_DISCOVERY: ${{ steps.signing.outputs.signed == 'true' }}
           CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
@@ -443,128 +362,21 @@ jobs:
             echo "macOS ${{ matrix.arch }}: **unsigned**. Copy the \"Unsigned builds\" section of README.md into the release notes." >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Upload Artifacts
+      - name: Upload installers (unpublished runs only)
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         uses: actions/upload-artifact@v4
         with:
-          name: macos-${{ matrix.arch }}-release
-          # Excludes mac*/Snowi.app, which the .dmg and the .zip both contain.
+          name: macos-${{ matrix.arch }}-installers
+          # Not dist/ — that also holds mac*/Snowi.app, which the dmg and the
+          # zip both already contain.
           path: |
             dist/*.dmg
             dist/*.zip
           retention-days: 30
 
-      - name: Cleanup Certificates
+      - name: Cleanup certificates
         if: always()
         run: |
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
           rm -f $RUNNER_TEMP/build_certificate.p12
           rm -f $RUNNER_TEMP/api_key.p8
-
-  publish-release:
-    # Uploading a workflow artifact is not publishing. Those live on the run
-    # page, expire in 30 days, download as a zip wrapper instead of the
-    # installer, and are invisible to anyone not signed in. This job is what
-    # actually puts installers on the Releases page.
-    needs: [build-linux, build-windows, build-macos]
-    # Not `success()`: one platform failing should not withhold the three that
-    # built. An incomplete set is published as a draft instead — see below.
-    if: ${{ !cancelled() }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # the only job that writes anything back to the repo
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-
-      - name: Collect installers
-        run: |
-          set -euo pipefail
-          mkdir -p release
-
-          # Depth 2 (artifacts/<job>/<file>) is deliberate. electron-builder
-          # writes installers directly into dist/, and everything below that —
-          # win-unpacked/, mac-arm64/Snowi.app, linux-unpacked/ — is build
-          # scaffolding that must never be published. Extension filtering alone
-          # would drag .zip and .exe files out of those trees.
-          while IFS= read -r -d '' file; do
-            name=$(basename "$file")
-            # Two jobs producing the same filename would mean one silently
-            # overwrites the other, publishing one platform's build under a name
-            # users read as another's.
-            if [ -e "release/$name" ]; then
-              echo "::error title=Duplicate asset::$name was produced by more than one build job"
-              exit 1
-            fi
-            cp "$file" "release/$name"
-          done < <(find artifacts -mindepth 2 -maxdepth 2 -type f \
-            \( -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.tar.gz' \
-               -o -name '*.exe' -o -name '*.dmg' -o -name '*.zip' \) -print0)
-
-          if [ -z "$(ls -A release)" ]; then
-            echo "::error title=Nothing to release::No build job produced an installer."
-            exit 1
-          fi
-
-          {
-            echo "### Release assets"
-            echo
-            echo '```'
-            (cd release && du -h -- *)
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Publish release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          INCOMPLETE: ${{ needs.build-linux.result != 'success' || needs.build-windows.result != 'success' || needs.build-macos.result != 'success' }}
-        run: |
-          set -euo pipefail
-
-          # Release notes come from the CHANGELOG entry for this exact version,
-          # so the notes cannot drift from the file in the tag.
-          VERSION="${RELEASE_TAG#v}"
-          awk -v hdr="## [$VERSION]" '
-            index($0, hdr) == 1 { found = 1; next }
-            found && /^## / { exit }
-            found { print }
-          ' CHANGELOG.md > notes-body.md
-
-          {
-            echo "Downloads: **macOS** \`.dmg\` · **Windows** \`Snowi Setup *.exe\` · **Linux** \`.AppImage\`, \`.deb\`, \`.rpm\`"
-            echo
-            if [ -s notes-body.md ]; then
-              cat notes-body.md
-            else
-              echo "See [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/${RELEASE_TAG}/CHANGELOG.md)."
-            fi
-          } > notes.md
-
-          flags=()
-          # Any tag with a suffix (-rc1, -beta.2) is not a final release.
-          case "$RELEASE_TAG" in *-*) flags+=(--prerelease) ;; esac
-
-          if [ "$INCOMPLETE" = "true" ]; then
-            # A public release page missing the Windows installer does not read
-            # as "Windows failed to build", it reads as "Windows unsupported".
-            # Hold it as a draft until someone decides.
-            flags+=(--draft)
-            echo "::warning title=Incomplete release::A platform did not build. Published as a draft so a half-populated release is never public."
-          fi
-
-          # Re-running the workflow must refresh the assets, not fail on a tag
-          # that already has a release.
-          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
-            gh release upload "$RELEASE_TAG" release/* --clobber
-          else
-            gh release create "$RELEASE_TAG" release/* \
-              --target "$GITHUB_SHA" \
-              --title "Snowi $RELEASE_TAG" \
-              --notes-file notes.md \
-              "${flags[@]}"
-          fi
-
-          echo "Release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${RELEASE_TAG}" >> "$GITHUB_STEP_SUMMARY"

@@ -9,6 +9,11 @@
   "directories": {
     "output": "dist"
   },
+  "publish": {
+    "provider": "github",
+    "releaseType": "prerelease",
+    "publishAutoUpdate": false
+  },
   "npmRebuild": true,
   "buildDependenciesFromSource": false,
   "files": [
