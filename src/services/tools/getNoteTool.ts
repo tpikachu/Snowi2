@@ -42,6 +42,7 @@ export const getNoteTool: ToolDefinition = {
           created_at: note.created_at,
           updated_at: note.updated_at,
         },
+        noteRefs: [{ id: note.id, title: note.title }],
         displayText: `Retrieved note: "${note.title}"`,
       };
     } catch (error) {

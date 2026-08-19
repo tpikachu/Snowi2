@@ -13,6 +13,7 @@ import { cn } from "../lib/utils";
 import { MarkdownRenderer } from "../ui/MarkdownRenderer";
 import type { MessageSource, ToolCallInfo } from "./types";
 import { resolveMessageSources } from "./messageSources";
+import { extractNoteCards } from "./noteCards";
 import { renderCitations, renderStreamingCitations } from "../../utils/chatCitations";
 import { toolIcons } from "./toolIcons";
 
@@ -223,7 +224,13 @@ export function ChatMessage({
   const hasToolCalls = toolCalls && toolCalls.length > 0;
   const hasContent = content.length > 0;
 
-  const knownIds = sources?.map((s) => s.noteId) ?? [];
+  const fallbackTitle = t("notes.list.untitledNote");
+  // Notes reach an answer two ways, and a citation must survive either. Only
+  // retrieved notes counted here before, so a note the model found through a
+  // tool — every meeting from list_meetings, every search_notes hit — had its
+  // citation dropped as if it had been hallucinated, and rendered as nothing.
+  const toolNoteIds = extractNoteCards(toolCalls, fallbackTitle).map((card) => card.noteId);
+  const knownIds = [...(sources?.map((s) => s.noteId) ?? []), ...toolNoteIds];
   const { content: renderedContent, citedIds } = isStreaming
     ? renderStreamingCitations(content, knownIds)
     : renderCitations(content, knownIds);
@@ -231,7 +238,7 @@ export function ChatMessage({
     sources,
     toolCalls,
     citedIds,
-    t("notes.list.untitledNote")
+    fallbackTitle
   );
 
   const openNote = (noteId: number) =>

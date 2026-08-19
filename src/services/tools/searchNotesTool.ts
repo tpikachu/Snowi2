@@ -134,6 +134,9 @@ async function executeLocalSearch(
   return {
     success: true,
     data: results,
+    // Lets the model cite what it found here. Citation filtering drops ids it
+    // was never shown, and a search hit is otherwise invisible to it.
+    noteRefs: results.map((note) => ({ id: note.id, title: note.title })),
     displayText: summaryText(results.length, query, space, semantic),
   };
 }

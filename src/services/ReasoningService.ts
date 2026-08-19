@@ -37,8 +37,6 @@ import { clearTinfoilClientCache } from "./ai/tinfoilClient";
 import { resolveChatRoute } from "../helpers/chatRouting";
 import type { InferenceMode } from "../types/electron";
 
-export type ToolMetadata = Record<string, unknown> | Array<Record<string, unknown>>;
-
 const BYOK_STREAM_PROVIDERS = [
   "openai",
   "groq",
@@ -68,7 +66,6 @@ export type AgentStreamChunk =
       toolName: string;
       displayText: string;
       failed?: boolean;
-      metadata?: ToolMetadata;
     }
   | { type: "done"; finishReason?: string };
 

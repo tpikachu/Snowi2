@@ -84,6 +84,7 @@ export const createNoteTool: ToolDefinition = {
       return {
         success: true,
         data: { id: result.note.id, title: result.note.title, folder_id: folderId },
+        noteRefs: [{ id: result.note.id, title: result.note.title }],
         displayText: `Created note: "${title}"${suffix}`,
       };
     } catch (error) {

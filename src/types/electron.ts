@@ -100,6 +100,36 @@ export interface MeetingSegmentRow {
   text: string;
 }
 
+export interface MeetingListOptions {
+  spaceId?: number | null;
+  folderId?: number | null;
+  /** Inclusive YYYY-MM-DD bounds on the recording date. */
+  from?: string | null;
+  to?: string | null;
+  limit?: number;
+  offset?: number;
+}
+
+export interface MeetingListRow {
+  id: number;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  audio_duration_seconds: number | null;
+  participants: string | null;
+  calendar_event_id: string | null;
+  folder_id: number | null;
+  space_id: number | null;
+  has_notes: number;
+  has_transcript: number;
+}
+
+export interface MeetingListResult {
+  /** How many meetings matched, which is never `meetings.length` when capped. */
+  total: number;
+  meetings: MeetingListRow[];
+}
+
 /** Outcome of one extraction batch. */
 export interface MemoryIngestSummary {
   inserted: number;
@@ -884,6 +914,7 @@ declare global {
         spaceId?: number | null
       ) => Promise<NoteItem[]>;
       getSpaceNotes: (spaceId: number, limit?: number) => Promise<NoteItem[]>;
+      listMeetings: (options?: MeetingListOptions) => Promise<MeetingListResult>;
       getNoteSegments: (noteId: number) => Promise<MeetingSegmentRow[]>;
       getSegmentsByIds: (ids: string[]) => Promise<MeetingSegmentRow[]>;
       ingestMemory: (payload: {

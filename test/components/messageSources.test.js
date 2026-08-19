@@ -41,7 +41,7 @@ test("merges tool-touched notes with retrieved ones, retrieved copy winning", as
       name: "search_notes",
       arguments: "{}",
       status: "completed",
-      metadata: [
+      noteRefs: [
         { id: 7, title: "Vendor sync (stale title)" },
         { id: 21, title: "Roadmap" },
       ],

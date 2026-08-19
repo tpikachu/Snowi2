@@ -13,8 +13,10 @@ import {
   filterGrounding,
   formatGroundingContext,
   mergeGrounding,
+  resolveFocusNote,
   type RetrievedNote,
 } from "../../utils/chatRetrieval";
+import { renderCitations } from "../../utils/chatCitations";
 
 // Raised from 5 now that a hit returns the passage that matched rather than
 // the note's opening paragraph — the context is both smaller per note and
@@ -126,6 +128,10 @@ export function useChatStreaming({
   // that retrieves poorly silently drops the notes the answer had been built
   // on, and the assistant reads as having forgotten the last two exchanges.
   const carriedGroundingRef = useRef<RetrievedNote[]>([]);
+  // The note this conversation is currently about, so a follow-up can say
+  // "this meeting" and mean something. Set only when a turn resolves to exactly
+  // one note — see resolveFocusNote.
+  const focusNoteRef = useRef<{ id: number; title: string } | undefined>(undefined);
   const searchScopeRef = useRef(searchScope);
   searchScopeRef.current = searchScope;
   const toolRegistryRef = useRef<{ key: string; registry: ToolRegistry } | null>(null);
@@ -144,6 +150,8 @@ export function useChatStreaming({
     if (firstId !== firstMessageIdRef.current) {
       firstMessageIdRef.current = firstId;
       carriedGroundingRef.current = [];
+      // Same reason: a new conversation is not about the last one's meeting.
+      focusNoteRef.current = undefined;
     }
   }, [messages]);
 
@@ -238,11 +246,12 @@ export function useChatStreaming({
       // Fetched per turn rather than cached: a meeting that just ended can add
       // to it, and it is one indexed read over a capped row set.
       const memoryProfile = await window.electronAPI?.getMemoryProfile?.().catch(() => "");
-      const systemPrompt = getAgentSystemPrompt(
-        registry?.getAll().map((t) => t.name),
-        combinedContext || undefined,
-        memoryProfile || undefined
-      );
+      const systemPrompt = getAgentSystemPrompt({
+        availableTools: registry?.getAll().map((t) => t.name),
+        noteContext: combinedContext || undefined,
+        memoryProfile: memoryProfile || undefined,
+        focusNote: focusNoteRef.current,
+      });
 
       const llmMessages = [
         { role: "system", content: systemPrompt },
@@ -322,6 +331,7 @@ export function useChatStreaming({
               );
             }
           } else if (chunk.type === "tool_result") {
+            const toolNoteRefs = registry?.takeNoteRefs(chunk.callId);
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === assistantId && m.toolCalls
@@ -333,7 +343,10 @@ export function useChatStreaming({
                               ...tc,
                               status: chunk.failed ? ("error" as const) : ("completed" as const),
                               result: chunk.displayText,
-                              ...(chunk.metadata ? { metadata: chunk.metadata } : {}),
+                              // Collected from the registry rather than the
+                              // stream: the tool's return value is what the
+                              // model reads, so the UI's copy travels beside it.
+                              ...(toolNoteRefs ? { noteRefs: toolNoteRefs } : {}),
                             }
                           : tc
                       ),
@@ -352,6 +365,19 @@ export function useChatStreaming({
         );
 
         const finalMsg = messagesRef.current.find((m) => m.id === assistantId);
+
+        // What the answer actually settled on, taken from its citations rather
+        // than from everything retrieval offered — the model listing eight
+        // notes and citing one has told us which one the conversation is about.
+        const titlesById = new Map<number, string>(grounding.map((n) => [n.noteId, n.title]));
+        for (const call of finalMsg?.toolCalls ?? []) {
+          for (const ref of call.noteRefs ?? []) {
+            if (!titlesById.has(ref.id)) titlesById.set(ref.id, ref.title);
+          }
+        }
+        const { citedIds } = renderCitations(fullContent, titlesById.keys());
+        focusNoteRef.current = resolveFocusNote(citedIds, titlesById, focusNoteRef.current);
+
         onStreamComplete?.(assistantId, fullContent, finalMsg?.toolCalls, grounding);
       } catch (error) {
         setMessages((prev) =>

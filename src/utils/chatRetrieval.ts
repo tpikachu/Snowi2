@@ -124,3 +124,36 @@ export function formatGroundingContext(notes: RetrievedNote[]): string {
     )
     .join("\n\n");
 }
+
+/** The note a conversation is currently about. */
+export interface FocusNote {
+  id: number;
+  title: string;
+}
+
+/**
+ * Decides what a bare "this meeting" should refer to after a turn.
+ *
+ * Only an answer that resolved to exactly one note sets the subject. Two cited
+ * notes make "this" genuinely ambiguous, and picking one — the first, the
+ * last, the highest scoring — would answer a different question than the user
+ * asked without ever saying so. Ambiguity clears the focus instead, which
+ * leaves the model to ask.
+ *
+ * Citing nothing keeps the previous subject: a follow-up like "and who owned
+ * it?" is still about the meeting under discussion.
+ */
+export function resolveFocusNote(
+  citedIds: readonly number[],
+  titlesById: ReadonlyMap<number, string>,
+  previous: FocusNote | undefined
+): FocusNote | undefined {
+  const unique = [...new Set(citedIds)];
+  if (unique.length === 0) return previous;
+  if (unique.length > 1) return undefined;
+
+  const id = unique[0];
+  const title = titlesById.get(id);
+  // A cited note we cannot name is one we cannot describe to the model either.
+  return title ? { id, title } : undefined;
+}

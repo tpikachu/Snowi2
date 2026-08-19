@@ -1,5 +1,6 @@
 import { ToolRegistry } from "./ToolRegistry";
 import { createSearchNotesTool } from "./searchNotesTool";
+import { createListMeetingsTool } from "./listMeetingsTool";
 import { getNoteTool } from "./getNoteTool";
 import { createNoteTool } from "./createNoteTool";
 import { updateNoteTool } from "./updateNoteTool";
@@ -21,6 +22,9 @@ export function createToolRegistry(settings: ToolRegistrySettings): ToolRegistry
   const registry = new ToolRegistry();
 
   registry.register(createSearchNotesTool({ fixedScope: settings.searchScope }));
+  // Same fixed scope as search: a container chat that could enumerate meetings
+  // from other spaces would leak exactly what the scope exists to contain.
+  registry.register(createListMeetingsTool({ fixedScope: settings.searchScope }));
   registry.register(getNoteTool);
   registry.register(createNoteTool);
   registry.register(updateNoteTool);

@@ -1,11 +1,18 @@
+import type { ToolNoteRef } from "../../services/tools/ToolRegistry";
+
+export type { ToolNoteRef };
+
 export interface ToolCallInfo {
   id: string;
   name: string;
   arguments: string;
   status: "executing" | "completed" | "error";
   result?: string;
-  // Single object for note tools; search_notes attaches its result array.
-  metadata?: Record<string, unknown> | Array<Record<string, unknown>>;
+  /**
+   * Notes this call surfaced. Persisted with the conversation, so it holds
+   * only ids and titles — never note bodies.
+   */
+  noteRefs?: ToolNoteRef[];
 }
 
 /**

@@ -1426,6 +1426,12 @@ class IPCHandlers {
       return this.databaseManager.getNotesForSpace(spaceId, limit);
     });
 
+    // Backs the agent's list_meetings tool. Structured on purpose: retrieval
+    // returns the nearest K and can never answer "how many".
+    ipcMain.handle("db-list-meetings", async (event, options = {}) => {
+      return this.databaseManager.listMeetings(options ?? {});
+    });
+
     ipcMain.handle("db-update-note", async (event, id, updates) => {
       const result = this.databaseManager.updateNote(id, updates);
       if (result?.success && result?.note) {

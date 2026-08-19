@@ -27,6 +27,8 @@ export function getWordBoost(customDictionary?: string[]): string[] {
 const TOOL_INSTRUCTIONS: Record<string, string> = {
   search_notes:
     "Use search_notes to find information from the user's past meetings, discussions, or personal notes before answering from memory.",
+  list_meetings:
+    "Use list_meetings for any question about which meetings happened or how many — counts, date ranges, or enumerating them. search_notes returns only the closest few matches and can never tell you how many exist, so never count its results. When list_meetings reports a total larger than the number of meetings it listed, state the total and say how many you are showing.",
   get_note:
     "Use get_note to fetch the full content of a specific note by ID. If the current note's ID is provided in the context, use it directly. Otherwise, use search_notes first to find the note ID.",
   create_note:
@@ -43,11 +45,18 @@ const TOOL_INSTRUCTIONS: Record<string, string> = {
     "Use get_calendar_events to check the user's schedule, upcoming meetings, or calendar events.",
 };
 
-export function getAgentSystemPrompt(
-  availableTools?: string[],
-  noteContext?: string,
-  memoryProfile?: string
-): string {
+export interface AgentPromptContext {
+  availableTools?: string[];
+  /** Retrieved notes, already formatted, that may help answer this turn. */
+  noteContext?: string;
+  /** Durable facts about the user, pinned on every message (§19). */
+  memoryProfile?: string;
+  /** The note a bare "this meeting" refers to, when the conversation has one. */
+  focusNote?: { id: number; title: string };
+}
+
+export function getAgentSystemPrompt(context: AgentPromptContext = {}): string {
+  const { availableTools, noteContext, memoryProfile, focusNote } = context;
   let prompt = resolvePrompt("chatAgent", { agentName: null });
 
   // Durable facts about the user, pinned on every message (§19). This is what
@@ -59,6 +68,18 @@ export function getAgentSystemPrompt(
       "\n\nWhat you know about this user, learned from their past meetings. " +
       "Treat it as background, not as something to recite:\n" +
       memoryProfile.trim();
+  }
+
+  // "For this meeting, what was the purpose?" has no referent on its own: the
+  // model is holding several notes and nothing marks one as the subject. This
+  // is set only when the last turn resolved to exactly one note, so it never
+  // asserts a subject the conversation did not actually settle on.
+  if (focusNote) {
+    prompt +=
+      `\n\nThis conversation is currently about the note "${focusNote.title}" ` +
+      `(ID ${focusNote.id}). When the user says "this meeting", "that note", or "it" ` +
+      "without naming one, they mean this one. If their question clearly concerns a " +
+      "different note, follow the question rather than this note.";
   }
 
   if (availableTools && availableTools.length > 0) {

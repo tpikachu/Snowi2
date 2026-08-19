@@ -80,6 +80,7 @@ export const updateNoteTool: ToolDefinition = {
       return {
         success: true,
         data: { id, title: title || note.title },
+        noteRefs: [{ id, title: title || note.title }],
         displayText: `Updated note: "${title || note.title}"${suffix}`,
       };
     } catch (error) {

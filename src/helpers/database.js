@@ -2152,6 +2152,74 @@ class DatabaseManager {
     }
   }
 
+  /**
+   * Meetings in a scope, newest first, alongside the total that matched.
+   *
+   * `total` is deliberately not `meetings.length`. Counting is the one thing
+   * semantic search cannot do — it returns the nearest K, never "all" — so the
+   * agent needs a real count from SQL. Returning only the page would move the
+   * same mistake here: handed 20 of 43 meetings and nothing else, an agent
+   * answers "you had 20 meetings".
+   *
+   * Scope follows getNoteIdsInScope: space narrows to a space, folder to a
+   * folder, both optional. Unlike getNotes, a space without a folder means the
+   * whole space rather than its root — "how many meetings" is never a question
+   * about foldering.
+   */
+  listMeetings({
+    spaceId = null,
+    folderId = null,
+    from = null,
+    to = null,
+    limit = 20,
+    offset = 0,
+  } = {}) {
+    try {
+      if (!this.db) throw new Error("Database not initialized");
+
+      const conditions = ["note_type = 'meeting'", "deleted_at IS NULL"];
+      const params = [];
+      if (spaceId != null) {
+        conditions.push("space_id = ?");
+        params.push(spaceId);
+      }
+      if (folderId != null) {
+        conditions.push("folder_id = ?");
+        params.push(folderId);
+      }
+      // Compared as dates, not strings: created_at carries a time, so a bare
+      // "to" of 2026-08-19 would otherwise exclude everything recorded that day.
+      if (from) {
+        conditions.push("date(created_at) >= date(?)");
+        params.push(from);
+      }
+      if (to) {
+        conditions.push("date(created_at) <= date(?)");
+        params.push(to);
+      }
+      const where = `WHERE ${conditions.join(" AND ")}`;
+
+      const { total } = this.db
+        .prepare(`SELECT COUNT(*) AS total FROM notes ${where}`)
+        .get(...params);
+
+      const meetings = this.db
+        .prepare(
+          `SELECT id, title, created_at, updated_at, audio_duration_seconds, participants,
+                  calendar_event_id, folder_id, space_id,
+                  enhanced_content IS NOT NULL AND enhanced_content != '' AS has_notes,
+                  transcript IS NOT NULL AND transcript != '' AS has_transcript
+           FROM notes ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`
+        )
+        .all(...params, limit, offset);
+
+      return { total, meetings };
+    } catch (error) {
+      debugLogger.error("Error listing meetings", { error: error.message }, "notes");
+      throw error;
+    }
+  }
+
   getNoteIdsInFolder(folderId) {
     return this.getNoteIdsInScope(null, folderId);
   }
