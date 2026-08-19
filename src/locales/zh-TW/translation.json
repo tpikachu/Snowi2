@@ -892,7 +892,8 @@
         "transcriptionPipeline": "轉錄流程"
       },
       "title": "記錄的項目"
-    }
+    },
+    "copyPath": "複製記錄檔路徑"
   },
   "dictionarySuffix": "字典後綴",
   "emailVerification": {
@@ -1163,7 +1164,22 @@
         "label": "工作區"
       }
     },
-    "title": "設定"
+    "title": "設定",
+    "search": {
+      "label": "搜尋設定",
+      "placeholder": "搜尋設定",
+      "clear": "清除搜尋",
+      "noResults": "沒有與「{{query}}」相符的設定",
+      "resultsLabel": "搜尋結果"
+    },
+    "navLabel": "設定區段",
+    "closeHint": "關閉設定 (Esc)",
+    "groupTitles": {
+      "engine": "引擎",
+      "engineDescription": "由哪項服務將此音訊轉換為文字。",
+      "modelDescription": "由哪個語言模型處理此工作。",
+      "options": "選項"
+    }
   },
   "settingsPage": {
     "unifiedBilling": {
@@ -3520,6 +3536,27 @@
     },
     "start": "開始記錄",
     "join": "加入並轉錄"
+  },
+  "capture": {
+    "dictate": "聽寫",
+    "dictateHint": "開始聽寫 ({{hotkey}})",
+    "dictateNoHotkeyHint": "未啟用聽寫快速鍵 — 可從這裡開始",
+    "hotkeyMissing": "無快速鍵",
+    "meeting": "會議",
+    "meetingHint": "將會議錄製到新筆記中",
+    "meetingNoteTitle": "會議筆記",
+    "openNote": "開啟",
+    "meetingStartFailedTitle": "無法開始會議",
+    "meetingStartFailedDescription": "無法建立會議筆記，請再試一次。",
+    "status": {
+      "dictationRecording": "錄音中",
+      "meetingRecording": "會議",
+      "transcribing": "轉錄中",
+      "finishing": "正在完成"
+    },
+    "empty": {
+      "noHotkey": "目前未啟用聽寫快速鍵 — 請使用上方按鈕，或在設定中指定一個。"
+    }
   },
   "shell": {
     "contextPane": {

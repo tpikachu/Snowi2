@@ -7,6 +7,12 @@ interface CopyableCommandProps {
   className?: string;
 }
 
+/**
+ * A terminal plate: recessed well, functional edge, mono type — the same
+ * construction as an input, because that is what it is (a value you take out
+ * rather than put in). The label above it uses the Rule 5 micro-caps, so it
+ * matches every other field label in the app.
+ */
 export function CopyableCommand({ command, label, className = "" }: CopyableCommandProps) {
   const [copied, setCopied] = useState(false);
 
@@ -22,19 +28,19 @@ export function CopyableCommand({ command, label, className = "" }: CopyableComm
 
   return (
     <div className={className}>
-      {label && <div className="text-xs text-muted-foreground mb-1">{label}</div>}
-      <div className="relative bg-card border border-border p-3 rounded-md font-mono text-xs overflow-x-auto">
-        <span className="text-foreground pr-8">{command}</span>
+      {label && <div className="micro-caps mb-1 text-muted-foreground">{label}</div>}
+      <div className="relative overflow-x-auto rounded-control border border-border-control bg-input p-2.5 font-mono text-xs shadow-(--shadow-well)">
+        <span className="pr-8 text-foreground">{command}</span>
         <button
           type="button"
           onClick={handleCopy}
           aria-label={copied ? "Copied" : "Copy command"}
-          className="absolute top-2 right-2 h-6 w-6 flex items-center justify-center rounded text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted/50 active:scale-95 transition-all"
+          className="focus-ring-tight absolute right-1 top-1 flex size-7 items-center justify-center rounded-control text-muted-foreground transition-colors duration-100 ease-snap hover:bg-surface-3 hover:text-foreground"
         >
           {copied ? (
-            <Check className="w-3.5 h-3.5 text-success" />
+            <Check className="size-3.5 text-success" strokeWidth={2} />
           ) : (
-            <Copy className="w-3.5 h-3.5" />
+            <Copy className="size-3.5" strokeWidth={1.75} />
           )}
         </button>
       </div>

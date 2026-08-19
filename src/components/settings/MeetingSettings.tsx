@@ -2,7 +2,12 @@ import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Key, Cpu, Network } from "lucide-react";
 import { useSettingsStore } from "../../stores/settingsStore";
-import { InferenceModeSelector, SettingsRow } from "../ui/SettingsSection";
+import {
+  InferenceModeSelector,
+  SettingsPanel,
+  SettingsPanelRow,
+  SettingsRow,
+} from "../ui/SettingsSection";
 import type { InferenceModeOption } from "../ui/SettingsSection";
 import { Toggle } from "../ui/toggle";
 import TranscriptionModelPicker from "../TranscriptionModelPicker";
@@ -120,7 +125,11 @@ export function MeetingTranscriptionPanel() {
 
       {meetingTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
       {meetingTranscriptionMode === "local" && renderTranscriptionPicker("local")}
-      <MeetingSpeakerDetectionRow />
+      <SettingsPanel>
+        <SettingsPanelRow>
+          <MeetingSpeakerDetectionRow />
+        </SettingsPanelRow>
+      </SettingsPanel>
     </div>
   );
 }

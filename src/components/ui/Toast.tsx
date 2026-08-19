@@ -257,7 +257,7 @@ const Toast: React.FC<
         <button
           onClick={onClose}
           className={cn(
-            "absolute -left-2 -top-2 size-6 rounded-full",
+            "absolute -left-2 -top-2 size-6 rounded-control",
             "flex items-center justify-center",
             "bg-white/10 backdrop-blur-sm border border-white/10",
             "text-white/70 hover:text-white hover:bg-white/20",

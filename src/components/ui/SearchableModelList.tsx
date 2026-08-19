@@ -238,7 +238,7 @@ export default function SearchableModelList({
                       id={`${listboxId}-${row.data.value}`}
                       role="option"
                       aria-selected={row.data.value === selectedModel}
-                      className={`pb-0.5 rounded-md ${isActive ? "ring-1 ring-primary/50" : ""}`}
+                      className={`pb-0.5 rounded-control ${isActive ? "shadow-[inset_2px_0_0_var(--color-primary)]" : ""}`}
                     >
                       <ModelCard
                         model={row.data}

@@ -871,7 +871,8 @@
         "transcriptionPipeline": "Pipeline de transcrição"
       },
       "title": "O que é registrado"
-    }
+    },
+    "copyPath": "Copiar o caminho do ficheiro de registo"
   },
   "dictionarySuffix": "Sufixo do dicionário",
   "emailVerification": {
@@ -1142,7 +1143,22 @@
         "label": "Espaço de trabalho"
       }
     },
-    "title": "Configurações"
+    "title": "Configurações",
+    "search": {
+      "label": "Pesquisar nas definições",
+      "placeholder": "Pesquisar nas definições",
+      "clear": "Limpar a pesquisa",
+      "noResults": "Nada corresponde a \"{{query}}\"",
+      "resultsLabel": "Resultados da pesquisa"
+    },
+    "navLabel": "Secções das definições",
+    "closeHint": "Fechar as definições (Esc)",
+    "groupTitles": {
+      "engine": "Motor",
+      "engineDescription": "Que serviço transforma este áudio em texto.",
+      "modelDescription": "Que modelo de linguagem trata desta tarefa.",
+      "options": "Opções"
+    }
   },
   "settingsPage": {
     "unifiedBilling": {
@@ -3520,6 +3536,27 @@
     },
     "start": "Fazer anotações",
     "join": "Entrar e transcrever"
+  },
+  "capture": {
+    "dictate": "Ditar",
+    "dictateHint": "Iniciar ditado ({{hotkey}})",
+    "dictateNoHotkeyHint": "Nenhum atalho de ditado está ativo — comece por aqui",
+    "hotkeyMissing": "Sem atalho",
+    "meeting": "Reunião",
+    "meetingHint": "Gravar uma reunião em uma nova nota",
+    "meetingNoteTitle": "Notas da reunião",
+    "openNote": "Abrir",
+    "meetingStartFailedTitle": "Não foi possível iniciar a reunião",
+    "meetingStartFailedDescription": "Não foi possível criar a nota da reunião. Tente novamente.",
+    "status": {
+      "dictationRecording": "Gravando",
+      "meetingRecording": "Reunião",
+      "transcribing": "Transcrevendo",
+      "finishing": "Finalizando"
+    },
+    "empty": {
+      "noHotkey": "Nenhum atalho de ditado está ativo no momento — use os botões acima ou defina um nas Configurações."
+    }
   },
   "shell": {
     "contextPane": {

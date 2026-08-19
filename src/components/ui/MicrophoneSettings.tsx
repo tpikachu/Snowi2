@@ -128,7 +128,7 @@ export const MicrophoneSettings: React.FC<MicrophoneSettingsProps> = ({
       </SettingsRow>
 
       {preferBuiltInMic && builtInDevice && (
-        <div className="p-3 bg-success/10 dark:bg-success/20 border border-success/30 rounded-lg">
+        <div className="rounded-surface border border-border-subtle bg-surface-1 p-3 shadow-[var(--shadow-panel),inset_2px_0_0_var(--color-success)]">
           <div className="flex items-center gap-2">
             <Mic className="w-4 h-4 text-success dark:text-success" />
             <span className="text-sm text-success dark:text-success">
@@ -139,7 +139,7 @@ export const MicrophoneSettings: React.FC<MicrophoneSettingsProps> = ({
       )}
 
       {preferBuiltInMic && !builtInDevice && devices.length > 0 && (
-        <div className="p-3 bg-warning/10 dark:bg-warning/20 border border-warning/30 rounded-lg">
+        <div className="rounded-surface border border-border-subtle bg-surface-1 p-3 shadow-[var(--shadow-panel),inset_2px_0_0_var(--color-warning)]">
           <p className="text-sm text-warning dark:text-warning">
             {t("microphoneSettings.noBuiltInDetected")}
           </p>

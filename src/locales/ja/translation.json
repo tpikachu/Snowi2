@@ -892,7 +892,8 @@
         "transcriptionPipeline": "文字起こしパイプライン"
       },
       "title": "記録される内容"
-    }
+    },
+    "copyPath": "ログファイルのパスをコピー"
   },
   "dictionarySuffix": "辞書サフィックス",
   "emailVerification": {
@@ -1163,7 +1164,22 @@
         "label": "ワークスペース"
       }
     },
-    "title": "設定"
+    "title": "設定",
+    "search": {
+      "label": "設定を検索",
+      "placeholder": "設定を検索",
+      "clear": "検索をクリア",
+      "noResults": "「{{query}}」に一致する設定はありません",
+      "resultsLabel": "検索結果"
+    },
+    "navLabel": "設定のセクション",
+    "closeHint": "設定を閉じる (Esc)",
+    "groupTitles": {
+      "engine": "エンジン",
+      "engineDescription": "この音声をテキストに変換するサービスです。",
+      "modelDescription": "この処理を担当する言語モデルです。",
+      "options": "オプション"
+    }
   },
   "settingsPage": {
     "unifiedBilling": {
@@ -3520,6 +3536,27 @@
     },
     "start": "メモを取る",
     "join": "参加して文字起こし"
+  },
+  "capture": {
+    "dictate": "音声入力",
+    "dictateHint": "音声入力を開始 ({{hotkey}})",
+    "dictateNoHotkeyHint": "音声入力のショートカットが設定されていません。ここから開始できます",
+    "hotkeyMissing": "ショートカットなし",
+    "meeting": "会議",
+    "meetingHint": "会議を新しいノートに録音します",
+    "meetingNoteTitle": "会議メモ",
+    "openNote": "開く",
+    "meetingStartFailedTitle": "会議を開始できませんでした",
+    "meetingStartFailedDescription": "会議ノートを作成できませんでした。もう一度お試しください。",
+    "status": {
+      "dictationRecording": "録音中",
+      "meetingRecording": "会議",
+      "transcribing": "文字起こし中",
+      "finishing": "完了処理中"
+    },
+    "empty": {
+      "noHotkey": "現在、音声入力のショートカットは設定されていません。上のボタンを使うか、設定でショートカットを登録してください。"
+    }
   },
   "shell": {
     "contextPane": {

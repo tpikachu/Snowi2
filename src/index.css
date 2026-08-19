@@ -1269,3 +1269,285 @@ body:has(.agent-overlay-window) #root {
 .onboarding-step-enter {
   animation: onboarding-step-enter 180ms var(--ease-snap) both;
 }
+
+/* ============================================================================
+   Snowi component language — "machined instrument"                       (v2)
+   ----------------------------------------------------------------------------
+   Everything below is ADDITIVE. It introduces the vocabulary the shared
+   primitives in src/components/ui speak, so the component layer never invents
+   geometry of its own.
+
+   The seven rules:
+
+     1. MACHINED CORNERS. Three radii, assigned by role, never by taste.
+        Controls 3px, containers 6px, overlays 8px. Nothing is a pill.
+     2. RAISED vs RECESSED. Every surface declares which it is. Raised = a 1px
+        top highlight plus a hard, un-blurred 1px contact line. Recessed = a
+        real inset well. Controls never float on a soft drop shadow.
+     3. THE ACCENT RAIL. Selection and activation are a 2px accent bar on the
+        leading edge — never a full tinted wash. One idiom for menu items,
+        select items, tabs, alerts, option cards and list rows.
+     4. HAIRLINE SEAMS. Grouped regions are divided by 1px seams that run to
+        the container edge, not by nesting more rounded boxes.
+     5. MICRO-CAPS METADATA. Labels, badges and section headers are 11px
+        uppercase at 0.07em. Content type stays sentence case at 13px.
+     6. ONE FOCUS TREATMENT. A 2px `outline` (which follows the real corner
+        radius) at a transparent offset, so the gap shows the actual surface
+        behind the control instead of a painted-on ring colour.
+     7. TWO EDGE WEIGHTS. `--color-border-control` is the functional edge of
+        anything you type into or open (>= 3:1, so the boundary is genuinely
+        perceivable). `--color-border{,-subtle}` stays structural: seams,
+        panel outlines, separators.
+   ========================================================================== */
+
+@theme static {
+  /* ---- Rule 1: radii named by role ---------------------------------------
+     These deliberately shadow the size-named radii above; components address
+     radius by what the thing IS, so density can be retuned in one place. */
+  --radius-control: 0.1875rem; /* 3px - buttons, inputs, chips, menu rows */
+  --radius-surface: 0.375rem; /*  6px - cards, panels, list rows */
+  --radius-overlay: 0.5rem; /*    8px - dialogs, floating panels */
+
+  /* ---- Rule 7: the functional edge (light) --------------------------------
+     Computed against the surfaces controls actually sit on:
+     vs input 3.48:1, vs card 3.63:1, vs surface-1 3.48:1, vs surface-3 3.28:1.
+     `--color-border` (1.4:1) stays what it is and stays structural. */
+  --color-border-control: oklch(0.62 0.014 230);
+
+  /* Modal scrim. A tinted neutral, not `black/55` + backdrop-blur. */
+  --color-scrim: oklch(0.3 0.014 230 / 0.42);
+
+  /* ---- Rule 2: the elevation grammar (light) ------------------------------
+     Note every "raised" shadow ends in a 0-blur contact line. That hard edge
+     is what makes the controls read as machined rather than as paper. */
+  --shadow-control: inset 0 1px 0 oklch(1 0 0 / 0.7), 0 1px 0 oklch(0.2 0.01 230 / 0.1);
+  --shadow-control-pressed: inset 0 1px 2px oklch(0.2 0.01 230 / 0.14);
+  --shadow-well: inset 0 1px 2px oklch(0.2 0.01 230 / 0.08);
+  --shadow-panel: inset 0 1px 0 oklch(1 0 0 / 0.75), 0 1px 0 oklch(0.2 0.01 230 / 0.07);
+  --shadow-overlay:
+    inset 0 1px 0 oklch(1 0 0 / 0.85), 0 12px 30px -12px oklch(0.2 0.02 230 / 0.24),
+    0 2px 6px -2px oklch(0.2 0.02 230 / 0.1);
+
+  /* ---- Disclosure ---------------------------------------------------------
+     `animate-accordion-*` was referenced by the accordion primitive but never
+     defined, so disclosure panels snapped open. Registering it here makes the
+     utility real; 160ms on --ease-snap matches the rest of the system, and the
+     global prefers-reduced-motion rule collapses it. */
+  --animate-accordion-down: accordion-down 160ms var(--ease-snap);
+  --animate-accordion-up: accordion-up 160ms var(--ease-snap);
+}
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+.dark {
+  /* vs input 3.54:1, vs card 3.33:1, vs surface-1 3.47:1, vs surface-3 3.04:1 */
+  --color-border-control: oklch(0.53 0.013 230);
+  --color-scrim: oklch(0.03 0.002 230 / 0.78);
+
+  --shadow-control: inset 0 1px 0 oklch(1 0 0 / 0.06), 0 1px 0 oklch(0 0 0 / 0.5);
+  --shadow-control-pressed: inset 0 1px 3px oklch(0 0 0 / 0.55);
+  --shadow-well: inset 0 1px 2px oklch(0 0 0 / 0.45);
+  --shadow-panel: inset 0 1px 0 oklch(1 0 0 / 0.045), 0 1px 0 oklch(0 0 0 / 0.38);
+  --shadow-overlay:
+    inset 0 1px 0 oklch(1 0 0 / 0.07), 0 14px 34px -12px oklch(0 0 0 / 0.72),
+    0 2px 8px -3px oklch(0 0 0 / 0.55);
+}
+
+@layer components {
+  /* ---- Rule 6: the one focus treatment -----------------------------------
+     A real `outline` rather than a box-shadow ring: outlines follow the
+     element's border-radius (so a 3px control gets a 3px focus corner) and
+     `outline-offset` leaves a TRANSPARENT gap, which shows whatever surface
+     the control is actually sitting on. The shadcn `ring-offset-background`
+     idiom paints that gap with the page colour, which is wrong the moment a
+     control sits on a card or inside a popover.
+
+     Ring vs the surfaces it lands on: 9.16:1 / 8.32:1 / 8.86:1 dark,
+     5.76:1 / 5.76:1 / 5.52:1 light. Well past the 3:1 required for a
+     non-text indicator. */
+  .focus-ring {
+    outline: 2px solid transparent;
+    outline-offset: 2px;
+  }
+
+  .focus-ring:focus-visible {
+    outline-color: var(--color-ring);
+  }
+
+  /* Same treatment, tighter offset — for controls packed into dense lists
+     (menu rows, icon clusters, tab strips) where 2px would collide with the
+     neighbour. */
+  .focus-ring-tight {
+    outline: 2px solid transparent;
+    outline-offset: 1px;
+  }
+
+  .focus-ring-tight:focus-visible {
+    outline-color: var(--color-ring);
+  }
+
+  /* ---- Rule 5: micro-caps metadata --------------------------------------- */
+  .micro-caps {
+    font-size: 0.6875rem; /* 11px */
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+
+  /* ---- Rule 3: the accent rail -------------------------------------------
+     An inset box-shadow, so it costs no layout and never shifts the row it
+     marks. Set `--rail` to re-colour it. */
+  .rail-l {
+    box-shadow: inset 2px 0 0 var(--rail, var(--color-primary));
+  }
+
+  .rail-t {
+    box-shadow: inset 0 2px 0 var(--rail, var(--color-primary));
+  }
+
+  /* ---- Gauge track --------------------------------------------------------
+     Progress is an instrument read-out: a recessed well with 1px graticule
+     marks every 12.5%, so a glance gives you a value and not just a mood. */
+  .gauge-track {
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--color-border) 0 1px,
+      transparent 1px 12.5%
+    );
+  }
+
+  /* ---- Loading sheen ------------------------------------------------------
+     A single pass of light across a flat plate. Replaces `animate-pulse`,
+     which reads as "this thing is breathing" rather than "this is pending". */
+  .skeleton-sheen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(from var(--color-foreground) l c h / 0.06) 50%,
+      transparent 100%
+    );
+    animation: shimmer-slide 1.5s var(--ease-snap) infinite;
+  }
+
+  /* ---- Keycaps ------------------------------------------------------------
+     Snowi is driven by a global hotkey, so a key is a first-class object in
+     this UI and gets a real cap: recessed plate, machined corner, hard bottom
+     edge. Lives in the components layer so a utility class on any individual
+     <kbd> still wins. */
+  kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.375rem;
+    padding: 0.0625rem 0.3125rem;
+    font-family: var(--font-sans);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
+    color: var(--color-foreground);
+    background-color: var(--color-surface-2);
+    border: 1px solid var(--color-border-control);
+    border-radius: var(--radius-control);
+    box-shadow: var(--shadow-control);
+  }
+}
+
+/* ---- Rule 2 + 7 applied to text entry -------------------------------------
+   Restates the `input` / `textarea` chrome from the block further up: a
+   recessed well with a perceivable edge, and the Rule 6 focus outline in
+   place of the old 3px teal bloom. Same selectors, later in the file, so this
+   is a pure override and the original block stays untouched. */
+input:not(.input-inline),
+textarea:not(.input-inline) {
+  border-radius: var(--radius-control);
+  border-color: var(--color-border-control);
+  box-shadow: var(--shadow-well);
+}
+
+input:not(.input-inline):hover:not(:disabled),
+textarea:not(.input-inline):hover:not(:disabled) {
+  border-color: var(--color-border-hover);
+  background-color: var(--color-surface-1);
+}
+
+input:not(.input-inline):focus,
+textarea:not(.input-inline):focus {
+  border-color: var(--color-border-active);
+  box-shadow: var(--shadow-well);
+  outline: 2px solid var(--color-ring);
+  outline-offset: 1px;
+}
+
+input:not(.input-inline):disabled,
+textarea:not(.input-inline):disabled {
+  box-shadow: none;
+}
+
+/* Invalid state. The chrome above sets border-color unconditionally, so an
+   `aria-invalid:border-destructive` utility could never win — the invalid edge
+   has to be stated at the same (unlayered) level. */
+input:not(.input-inline)[aria-invalid="true"],
+textarea:not(.input-inline)[aria-invalid="true"] {
+  border-color: var(--color-destructive);
+}
+
+input:not(.input-inline)[aria-invalid="true"]:focus,
+textarea:not(.input-inline)[aria-invalid="true"]:focus {
+  border-color: var(--color-destructive);
+  outline-color: var(--color-destructive);
+}
+
+/* Section panels inherit the panel grammar rather than floating. */
+.section-panel {
+  border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+/* Cards: a seam and a contact line, never a lift. Hover moves the edge, not
+   the elevation — nothing in this system rises toward the cursor. */
+.card {
+  border-radius: var(--radius-surface);
+  box-shadow: var(--shadow-panel);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-panel);
+  border-color: var(--color-border);
+}
+
+/* Links pick up the Rule 6 outline geometry. */
+a:focus-visible {
+  outline-offset: 2px;
+  border-radius: var(--radius-control);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The global reduce rule collapses animation-duration, which would leave
+     the sheen parked at the far edge. Drop it entirely and let the flat plate
+     carry the pending state. */
+  .skeleton-sheen::after {
+    display: none;
+  }
+}

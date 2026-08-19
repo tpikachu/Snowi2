@@ -6,7 +6,7 @@ interface ProviderIconProps {
   className?: string;
 }
 
-export function ProviderIcon({ provider, className = "w-5 h-5" }: ProviderIconProps) {
+export function ProviderIcon({ provider, className = "size-3.5" }: ProviderIconProps) {
   if (provider === "custom") {
     return <Wrench className={className} />;
   }

@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
-import { FolderOpen, Copy, Check } from "lucide-react";
+import { FolderOpen, Copy, Check, AlertTriangle } from "lucide-react";
 import { useToast } from "./ui/useToast";
 import { Toggle } from "./ui/toggle";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
+import { SettingsPanel, SettingsPanelRow, SettingsRow } from "./ui/SettingsSection";
 import { useSettingsLayout } from "./ui/useSettingsLayout";
 import logger from "../utils/logger";
 
@@ -112,62 +114,48 @@ export default function DeveloperSection() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="mb-5">
-        <h3 className="text-[15px] font-semibold text-foreground tracking-tight">
-          {t("developerSection.title")}
-        </h3>
-        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-          {t("developerSection.description")}
-        </p>
-      </div>
-
-      {/* Debug Toggle */}
-      <div className="rounded-xl border border-border/60 dark:border-border-subtle bg-card dark:bg-surface-2 divide-y divide-border/40 dark:divide-border-subtle">
-        <div className="px-5 py-4">
-          <div className="flex items-center justify-between gap-6">
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <p className="text-xs font-medium text-foreground">
-                  {t("developerSection.debugMode.label")}
-                </p>
-                <div
-                  className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                    debugEnabled ? "bg-success" : "bg-muted-foreground/30"
-                  }`}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                {debugEnabled
-                  ? t("developerSection.debugMode.enabledDescription")
-                  : t("developerSection.debugMode.disabledDescription")}
-              </p>
-            </div>
-            <div className="shrink-0">
+    <div className="space-y-4">
+      <SettingsPanel>
+        <SettingsPanelRow>
+          <SettingsRow
+            label={t("developerSection.debugMode.label")}
+            description={
+              debugEnabled
+                ? t("developerSection.debugMode.enabledDescription")
+                : t("developerSection.debugMode.disabledDescription")
+            }
+          >
+            <div className="flex items-center gap-2">
+              <span
+                aria-hidden="true"
+                className={`h-1.5 w-1.5 rounded-full transition-colors ${
+                  debugEnabled ? "bg-success" : "bg-muted-foreground/40"
+                }`}
+              />
               <Toggle
                 checked={debugEnabled}
                 onChange={handleToggleDebug}
                 disabled={isLoading || isToggling}
               />
             </div>
-          </div>
-        </div>
+          </SettingsRow>
+        </SettingsPanelRow>
 
-        {/* Log Path — only when active */}
         {debugEnabled && logPath && (
-          <div className="px-5 py-4">
-            <p className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider mb-2">
+          <SettingsPanelRow>
+            <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               {t("developerSection.currentLogFile")}
             </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 text-xs text-muted-foreground font-mono break-all leading-relaxed bg-muted/30 dark:bg-surface-raised/30 px-3 py-2 rounded-lg border border-border/30">
+              <code className="min-w-0 flex-1 break-all rounded-md border border-border-subtle bg-muted px-2.5 py-1.5 font-mono text-xs leading-relaxed text-muted-foreground">
                 {logPath}
               </code>
               <Button
                 onClick={handleCopyPath}
                 variant="ghost"
                 size="sm"
-                className="shrink-0 h-8 w-8 p-0"
+                aria-label={t("developerSection.copyPath")}
+                className="size-8 shrink-0 p-0"
               >
                 {copiedPath ? (
                   <Check className="h-3.5 w-3.5 text-success" />
@@ -176,94 +164,78 @@ export default function DeveloperSection() {
                 )}
               </Button>
             </div>
-          </div>
+          </SettingsPanelRow>
         )}
 
-        {/* Actions */}
         {debugEnabled && (
-          <div className="px-5 py-4">
+          <SettingsPanelRow>
             <Button onClick={handleOpenLogsFolder} variant="outline" size="sm" className="w-full">
               <FolderOpen className="mr-2 h-3.5 w-3.5" />
               {t("developerSection.openLogsFolder")}
             </Button>
-          </div>
+          </SettingsPanelRow>
         )}
-      </div>
+      </SettingsPanel>
 
-      {/* What gets logged */}
-      <div>
-        <div className="mb-5">
-          <h3 className="text-[15px] font-semibold text-foreground tracking-tight">
-            {t("developerSection.whatGetsLogged.title")}
-          </h3>
-        </div>
-        <div className="rounded-xl border border-border/60 dark:border-border-subtle bg-card dark:bg-surface-2">
-          <div className="px-5 py-4">
-            <div
-              className={`grid gap-y-2 ${isCompact ? "grid-cols-1 gap-x-0" : "grid-cols-2 gap-x-6"}`}
-            >
-              {[
-                t("developerSection.whatGetsLogged.items.audioProcessing"),
-                t("developerSection.whatGetsLogged.items.apiRequests"),
-                t("developerSection.whatGetsLogged.items.ffmpegOperations"),
-                t("developerSection.whatGetsLogged.items.systemDiagnostics"),
-                t("developerSection.whatGetsLogged.items.transcriptionPipeline"),
-                t("developerSection.whatGetsLogged.items.errorDetails"),
-              ].map((item) => (
-                <div key={item} className="flex items-center gap-2">
-                  <div className="h-1 w-1 rounded-full bg-muted-foreground/30 shrink-0" />
-                  <span className="text-xs text-muted-foreground">{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Performance note — conditional */}
       {debugEnabled && (
-        <div className="rounded-xl border border-warning/20 bg-warning/5 dark:bg-warning/10">
-          <div className="px-5 py-4">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              <span className="font-medium text-warning">
-                {t("developerSection.performanceNote.label")}
-              </span>{" "}
-              {t("developerSection.performanceNote.description")}
-            </p>
-          </div>
-        </div>
+        <Alert variant="warning">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>{t("developerSection.performanceNote.label")}</AlertTitle>
+          <AlertDescription>{t("developerSection.performanceNote.description")}</AlertDescription>
+        </Alert>
       )}
 
-      {/* Sharing instructions — conditional */}
+      <SettingsPanel>
+        <SettingsPanelRow>
+          <p className="mb-2 text-xs font-medium text-foreground">
+            {t("developerSection.whatGetsLogged.title")}
+          </p>
+          <ul className={`grid gap-y-1.5 ${isCompact ? "grid-cols-1" : "grid-cols-2 gap-x-6"}`}>
+            {[
+              t("developerSection.whatGetsLogged.items.audioProcessing"),
+              t("developerSection.whatGetsLogged.items.apiRequests"),
+              t("developerSection.whatGetsLogged.items.ffmpegOperations"),
+              t("developerSection.whatGetsLogged.items.systemDiagnostics"),
+              t("developerSection.whatGetsLogged.items.transcriptionPipeline"),
+              t("developerSection.whatGetsLogged.items.errorDetails"),
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="h-1 w-1 shrink-0 rounded-full bg-border-hover"
+                />
+                <span className="text-xs text-muted-foreground">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </SettingsPanelRow>
+      </SettingsPanel>
+
       {debugEnabled && (
-        <div>
-          <div className="mb-5">
-            <h3 className="text-[15px] font-semibold text-foreground tracking-tight">
+        <SettingsPanel>
+          <SettingsPanelRow>
+            <p className="mb-2 text-xs font-medium text-foreground">
               {t("developerSection.sharing.title")}
-            </h3>
-          </div>
-          <div className="rounded-xl border border-border/60 dark:border-border-subtle bg-card dark:bg-surface-2">
-            <div className="px-5 py-4">
-              <div className="space-y-2">
-                {[
-                  t("developerSection.sharing.steps.0"),
-                  t("developerSection.sharing.steps.1"),
-                  t("developerSection.sharing.steps.2"),
-                ].map((step, i) => (
-                  <div key={i} className="flex items-start gap-3">
-                    <span className="shrink-0 text-xs font-mono text-muted-foreground/40 mt-0.5 w-4 text-right">
-                      {i + 1}
-                    </span>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{step}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-muted-foreground/40 mt-4 pt-3 border-t border-border/20">
-                {t("developerSection.sharing.footer")}
-              </p>
-            </div>
-          </div>
-        </div>
+            </p>
+            <ol className="space-y-1.5">
+              {[
+                t("developerSection.sharing.steps.0"),
+                t("developerSection.sharing.steps.1"),
+                t("developerSection.sharing.steps.2"),
+              ].map((step, i) => (
+                <li key={step} className="flex items-start gap-3">
+                  <span className="mt-0.5 w-4 shrink-0 text-right font-mono text-xs text-muted-foreground">
+                    {i + 1}
+                  </span>
+                  <p className="text-xs leading-relaxed text-muted-foreground">{step}</p>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-3 border-t border-border-subtle pt-3 text-xs text-muted-foreground">
+              {t("developerSection.sharing.footer")}
+            </p>
+          </SettingsPanelRow>
+        </SettingsPanel>
       )}
     </div>
   );

@@ -50,7 +50,7 @@ export default function NixOsPasteInfo({ status, onRecheck }: NixOsPasteInfoProp
   const copyLabel = t("settingsPage.general.waylandPaste.copy", { defaultValue: "Copy" });
 
   return (
-    <div className="rounded-xl border border-border p-4 space-y-4">
+    <div className="space-y-4 rounded-surface border border-border-subtle bg-surface-1 p-3.5 shadow-(--shadow-panel)">
       <p className="text-sm text-muted-foreground">
         {t("settingsPage.general.waylandPaste.nixos.intro", {
           defaultValue:

@@ -18,7 +18,7 @@ export default function PasteToolsInfo({
   const { t } = useTranslation();
   if (!pasteToolsInfo) {
     return (
-      <div className="border border-border rounded-lg p-4">
+      <div className="rounded-surface border border-border-subtle bg-surface-1 p-3.5 shadow-(--shadow-panel)">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Terminal className="w-6 h-6 text-primary" />
@@ -115,7 +115,7 @@ export default function PasteToolsInfo({
                   <code className="bg-warning/20 px-1 rounded font-mono">{recommendedTool}</code>:
                 </p>
 
-                <div className="mt-3 bg-card border border-border p-3 rounded-md font-mono text-xs overflow-x-auto">
+                <div className="mt-3 overflow-x-auto rounded-control border border-border-control bg-input p-2.5 font-mono text-xs shadow-(--shadow-well)">
                   {recommendedTool === "wtype" ? (
                     <>
                       <div className="text-muted-foreground">

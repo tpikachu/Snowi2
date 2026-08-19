@@ -932,7 +932,8 @@
         "transcriptionPipeline": "Pipeline de transcription"
       },
       "title": "Ce qui est enregistré"
-    }
+    },
+    "copyPath": "Copier le chemin du fichier journal"
   },
   "apiKeysSection": {
     "title": "Clés API",
@@ -1251,7 +1252,22 @@
         "label": "Système"
       }
     },
-    "title": "Paramètres"
+    "title": "Paramètres",
+    "search": {
+      "label": "Rechercher dans les réglages",
+      "placeholder": "Rechercher dans les réglages",
+      "clear": "Effacer la recherche",
+      "noResults": "Aucun résultat pour \"{{query}}\"",
+      "resultsLabel": "Résultats de recherche"
+    },
+    "navLabel": "Sections des réglages",
+    "closeHint": "Fermer les réglages (Échap)",
+    "groupTitles": {
+      "engine": "Moteur",
+      "engineDescription": "Le service qui transforme cet audio en texte.",
+      "modelDescription": "Le modèle de langage qui traite cette tâche.",
+      "options": "Options"
+    }
   },
   "settingsPage": {
     "workspace": {
@@ -3520,6 +3536,27 @@
     },
     "start": "Prendre des notes",
     "join": "Rejoindre et transcrire"
+  },
+  "capture": {
+    "dictate": "Dicter",
+    "dictateHint": "Démarrer la dictée ({{hotkey}})",
+    "dictateNoHotkeyHint": "Aucun raccourci de dictée actif — démarrez ici",
+    "hotkeyMissing": "Aucun raccourci",
+    "meeting": "Réunion",
+    "meetingHint": "Enregistrer une réunion dans une nouvelle note",
+    "meetingNoteTitle": "Notes de réunion",
+    "openNote": "Ouvrir",
+    "meetingStartFailedTitle": "Impossible de démarrer la réunion",
+    "meetingStartFailedDescription": "La note de réunion n'a pas pu être créée. Veuillez réessayer.",
+    "status": {
+      "dictationRecording": "Enregistrement",
+      "meetingRecording": "Réunion",
+      "transcribing": "Transcription",
+      "finishing": "Finalisation"
+    },
+    "empty": {
+      "noHotkey": "Aucun raccourci de dictée n'est actif pour le moment — utilisez les boutons ci-dessus ou définissez-en un dans les Réglages."
+    }
   },
   "shell": {
     "contextPane": {

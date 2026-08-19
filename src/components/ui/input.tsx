@@ -3,9 +3,13 @@ import * as React from "react";
 import { cn } from "../lib/utils";
 
 /**
- * Chrome (fill, border, hover and the teal focus ring) is owned by the global
- * `input:not(.input-inline)` rule in index.css so raw `<input>` elements match
- * this component exactly. Only layout, typography and state overrides live here.
+ * Chrome (recessed well, functional `--color-border-control` edge, and the
+ * Rule 6 focus outline) is owned by the global `input:not(.input-inline)`
+ * rules in index.css, so a raw `<input>` anywhere in the app matches this
+ * component exactly. Only geometry, typography and state overrides live here.
+ *
+ * 32px tall, 13px type: a field is the same height as a button so a field and
+ * its adjacent action sit on one baseline without either being nudged.
  */
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -13,13 +17,11 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
       type={type}
       data-slot="input"
       className={cn(
-        "flex h-9 w-full min-w-0 rounded-md px-3 py-1.5 text-sm text-foreground",
-        "placeholder:text-muted-foreground/60",
+        "flex h-8 w-full min-w-0 rounded-control px-2.5 py-1 text-[13px] text-foreground",
+        "placeholder:text-muted-foreground/90",
         "selection:bg-primary selection:text-primary-foreground",
-        "file:text-foreground file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium",
-        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-muted",
-        "hover:border-border-hover",
-        "aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/25",
+        "file:text-foreground file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-[13px] file:font-medium",
+        "disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-55 disabled:grayscale disabled:bg-muted",
         className
       )}
       {...props}

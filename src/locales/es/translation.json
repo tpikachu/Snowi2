@@ -892,7 +892,8 @@
         "transcriptionPipeline": "Flujo de transcripción"
       },
       "title": "Qué se registra"
-    }
+    },
+    "copyPath": "Copiar la ruta del archivo de registro"
   },
   "apiKeysSection": {
     "title": "Claves API",
@@ -1211,7 +1212,22 @@
         "description": "Miembros, espacios de equipo y claves API"
       }
     },
-    "title": "Ajustes"
+    "title": "Ajustes",
+    "search": {
+      "label": "Buscar en los ajustes",
+      "placeholder": "Buscar en los ajustes",
+      "clear": "Borrar la búsqueda",
+      "noResults": "Nada coincide con \"{{query}}\"",
+      "resultsLabel": "Resultados de la búsqueda"
+    },
+    "navLabel": "Secciones de ajustes",
+    "closeHint": "Cerrar los ajustes (Esc)",
+    "groupTitles": {
+      "engine": "Motor",
+      "engineDescription": "Qué servicio convierte este audio en texto.",
+      "modelDescription": "Qué modelo de lenguaje se encarga de esta tarea.",
+      "options": "Opciones"
+    }
   },
   "settingsPage": {
     "unifiedBilling": {
@@ -3520,6 +3536,27 @@
     },
     "start": "Tomar notas",
     "join": "Unirse y transcribir"
+  },
+  "capture": {
+    "dictate": "Dictar",
+    "dictateHint": "Iniciar dictado ({{hotkey}})",
+    "dictateNoHotkeyHint": "No hay ningún atajo de dictado activo: inícialo desde aquí",
+    "hotkeyMissing": "Sin atajo",
+    "meeting": "Reunión",
+    "meetingHint": "Grabar una reunión en una nota nueva",
+    "meetingNoteTitle": "Notas de reunión",
+    "openNote": "Abrir",
+    "meetingStartFailedTitle": "No se pudo iniciar la reunión",
+    "meetingStartFailedDescription": "No se pudo crear la nota de reunión. Inténtalo de nuevo.",
+    "status": {
+      "dictationRecording": "Grabando",
+      "meetingRecording": "Reunión",
+      "transcribing": "Transcribiendo",
+      "finishing": "Finalizando"
+    },
+    "empty": {
+      "noHotkey": "Ahora mismo no hay ningún atajo de dictado activo: usa los botones de arriba o configura uno en Ajustes."
+    }
   },
   "shell": {
     "contextPane": {

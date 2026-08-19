@@ -37,7 +37,8 @@ const actionClusterClass = [
   "transition-opacity duration-150 ease-snap",
 ].join(" ");
 
-const iconButtonClass = "size-6 rounded-sm text-muted-foreground";
+// 28px: the hit-target floor for a dense row action.
+const iconButtonClass = "size-7 rounded-control text-muted-foreground";
 
 interface TranscriptionItemProps {
   item: TranscriptionItemType;
@@ -113,20 +114,25 @@ export default function TranscriptionItem({
   return (
     <div
       className={cn(
-        "group/row relative rounded-lg border border-l-2 px-3 py-2.5",
-        "transition-colors duration-150 ease-snap",
+        // Rule 3 - the whole state vocabulary of a row lives on its leading
+        // edge: red rail = failed, neutral rail = discarded, teal rail =
+        // translated, no rail = an ordinary transcript. It is an inset shadow,
+        // so a rail never shifts the text by a pixel and a long history stays
+        // column-aligned however many states are mixed into it.
+        "group/row relative rounded-surface border px-2.5 py-2",
+        "transition-[background-color,border-color,box-shadow] duration-100 ease-snap",
         isFailed
-          ? "border-destructive/25 bg-destructive-subtle/70 hover:border-destructive/40"
+          ? "border-border-subtle bg-surface-1 shadow-[var(--shadow-panel),inset_2px_0_0_var(--color-destructive)]"
           : isDiscarded
-            ? "border-border-subtle bg-surface-1 hover:bg-surface-3"
-            : "border-border-subtle bg-card hover:border-border hover:bg-surface-3",
-        // Subtle left accent for translation records; transparent keeps others pixel-aligned.
-        item.route_kind === "translation" ? "border-l-primary/70" : "border-l-transparent"
+            ? "border-border-subtle bg-surface-1 shadow-[var(--shadow-panel),inset_2px_0_0_var(--color-border-hover)] hover:bg-surface-2"
+            : item.route_kind === "translation"
+              ? "border-border-subtle bg-card shadow-[var(--shadow-panel),inset_2px_0_0_var(--color-primary)] hover:border-border hover:bg-surface-2"
+              : "border-border-subtle bg-card shadow-(--shadow-panel) hover:border-border hover:bg-surface-2"
       )}
     >
       <div className="flex items-start gap-3">
         <span
-          className="min-w-10 shrink-0 whitespace-nowrap pt-0.5 text-[11px] leading-4 tabular-figures text-muted-foreground"
+          className="min-w-10 shrink-0 whitespace-nowrap pl-1 pt-0.5 text-[11px] leading-4 tabular-figures text-muted-foreground"
           aria-hidden={formattedTime ? undefined : true}
         >
           {formattedTime}
@@ -134,11 +140,11 @@ export default function TranscriptionItem({
 
         {isFailed ? (
           <div className="flex min-w-0 flex-1 items-start gap-2.5">
-            <span className="mt-px flex size-5 shrink-0 items-center justify-center rounded-sm bg-destructive/12 text-destructive">
-              <AlertCircle size={12} />
+            <span className="mt-px flex size-5 shrink-0 items-center justify-center rounded-control border border-destructive/30 bg-destructive/10 text-destructive">
+              <AlertCircle size={12} strokeWidth={1.75} />
             </span>
             <div className="min-w-0">
-              <p className="text-sm font-medium leading-5 text-foreground">
+              <p className="text-[13px] font-semibold leading-5 text-foreground">
                 {t("controlPanel.history.transcriptionFailed")}
               </p>
               {item.error_message && (
@@ -152,7 +158,7 @@ export default function TranscriptionItem({
                     <>
                       <button
                         onClick={() => onOpenSettings?.()}
-                        className="rounded-sm text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                        className="focus-ring-tight cursor-pointer rounded-control text-primary hover:underline"
                       >
                         {t("controlPanel.history.failedCtaSettings")}
                       </button>{" "}
@@ -161,7 +167,7 @@ export default function TranscriptionItem({
                   ) : (
                     <button
                       onClick={() => onOpenSettings?.()}
-                      className="rounded-sm text-primary outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+                      className="focus-ring-tight cursor-pointer rounded-control text-primary hover:underline"
                     >
                       {t("controlPanel.history.failedCtaSettingsOnly")}
                     </button>
@@ -185,7 +191,7 @@ export default function TranscriptionItem({
                   onClick={handleRetry}
                   disabled={isRetrying}
                   title={t(retryLabelKey)}
-                  className="mt-2 h-7 gap-1.5 px-2.5 text-xs text-destructive hover:border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+                  className="mt-2 gap-1.5 text-destructive hover:border-destructive/45 hover:bg-destructive/10 hover:text-destructive"
                 >
                   {isRetrying ? (
                     <Loader2 size={12} className="animate-spin" />
@@ -200,10 +206,10 @@ export default function TranscriptionItem({
         ) : isDiscarded ? (
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0 rounded-sm border border-border-subtle bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+              <span className="micro-caps shrink-0 rounded-control border border-border-subtle bg-surface-3 px-1.5 py-0.5 text-muted-foreground">
                 {t("controlPanel.history.discarded.badge")}
               </span>
-              <span className="truncate text-sm leading-5 text-muted-foreground">
+              <span className="truncate text-[13px] leading-5 text-muted-foreground">
                 {duration
                   ? t("controlPanel.history.discarded.recordingWithDuration", {
                       duration,
@@ -217,7 +223,7 @@ export default function TranscriptionItem({
                 size="sm"
                 onClick={handleRetry}
                 disabled={isRetrying}
-                className="mt-2 h-7 gap-1.5 px-2.5 text-xs"
+                className="mt-2 gap-1.5"
               >
                 {isRetrying ? (
                   <Loader2 size={12} className="animate-spin" />
@@ -230,7 +236,7 @@ export default function TranscriptionItem({
           </div>
         ) : (
           <div className="min-w-0 flex-1">
-            <p className="whitespace-pre-wrap wrap-break-word text-sm leading-5 text-foreground">
+            <p className="whitespace-pre-wrap wrap-break-word text-[13px] leading-5 text-foreground">
               {item.text}
             </p>
             {showMeta && (
@@ -262,9 +268,10 @@ export default function TranscriptionItem({
                 )}
               >
                 <div className="min-h-0 overflow-hidden">
-                  <div className="mt-2.5 border-t border-border-subtle pt-2.5">
+                  {/* Rule 4: the drawer seam bleeds to the row edge. */}
+                  <div className="-mx-2.5 mt-2 border-t border-border-subtle px-2.5 pt-2">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <span className="micro-caps text-muted-foreground">
                         {t("controlPanel.history.rawTranscript")}
                       </span>
                       <Tooltip content={t("controlPanel.history.copyRawTranscript")}>
@@ -272,7 +279,7 @@ export default function TranscriptionItem({
                           size="icon"
                           variant="ghost"
                           onClick={() => onCopy(rawText)}
-                          className="size-5 rounded-sm text-muted-foreground hover:text-foreground"
+                          className="size-5 rounded-control text-muted-foreground hover:text-foreground"
                         >
                           <Copy size={10} />
                         </Button>
@@ -282,7 +289,7 @@ export default function TranscriptionItem({
                       {rawText}
                     </p>
                     {rawText === item.text && (
-                      <p className="mt-1 text-[10px] italic text-muted-foreground/60">
+                      <p className="mt-1 text-[11px] italic text-muted-foreground">
                         {t("controlPanel.history.noAiProcessing")}
                       </p>
                     )}
@@ -310,8 +317,9 @@ export default function TranscriptionItem({
                 aria-expanded={isExpanded}
                 className={cn(
                   iconButtonClass,
-                  "hover:bg-primary/10 hover:text-primary",
-                  isExpanded && "bg-primary/10 text-primary"
+                  "hover:bg-surface-3 hover:text-foreground",
+                  isExpanded &&
+                    "bg-surface-3 text-primary shadow-[inset_2px_0_0_var(--color-primary)]"
                 )}
               >
                 <FileText size={12} />
@@ -324,7 +332,7 @@ export default function TranscriptionItem({
                 size="icon"
                 variant="ghost"
                 onClick={() => onShowAudioInFolder?.(item.id)}
-                className={cn(iconButtonClass, "hover:bg-primary/10 hover:text-primary")}
+                className={cn(iconButtonClass, "hover:bg-surface-3 hover:text-foreground")}
               >
                 <FolderOpen size={12} />
               </Button>
@@ -337,7 +345,7 @@ export default function TranscriptionItem({
                 variant="ghost"
                 onClick={handleRetry}
                 disabled={isRetrying}
-                className={cn(iconButtonClass, "hover:bg-primary/10 hover:text-primary")}
+                className={cn(iconButtonClass, "hover:bg-surface-3 hover:text-foreground")}
               >
                 {isRetrying ? (
                   <Loader2 size={12} className="animate-spin" />
@@ -367,10 +375,7 @@ export default function TranscriptionItem({
               size="icon"
               variant="ghost"
               onClick={() => onDelete(item.id)}
-              className={cn(
-                iconButtonClass,
-                "hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
-              )}
+              className={cn(iconButtonClass, "hover:bg-destructive/10 hover:text-destructive")}
             >
               <Trash2 size={12} />
             </Button>

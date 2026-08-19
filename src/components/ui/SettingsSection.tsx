@@ -3,6 +3,19 @@ import { useTranslation } from "react-i18next";
 import { useSettingsLayout } from "./useSettingsLayout";
 import type { InferenceMode } from "../../types/electron";
 
+/**
+ * The settings scaffolding, in the "machined instrument" language.
+ *
+ * Rule 4 does most of the work: a settings panel is ONE plate divided by
+ * full-width hairline seams (`divide-y`), not a stack of translucent cards.
+ * The previous version leaned on `/50` alpha fills and `backdrop-blur-sm`,
+ * which made every panel a slightly different colour depending on what
+ * happened to be behind it — the opposite of an instrument reading.
+ *
+ * Rule 5 puts section titles in micro-caps so a long settings page can be
+ * skimmed by its headers alone.
+ */
+
 interface SettingsSectionProps {
   title: string;
   description?: string;
@@ -17,11 +30,11 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
   className = "",
 }) => {
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-2.5 ${className}`}>
       <div>
-        <h3 className="text-xs font-semibold text-foreground tracking-tight">{title}</h3>
+        <h3 className="micro-caps text-muted-foreground">{title}</h3>
         {description && (
-          <p className="text-xs text-muted-foreground/80 mt-0.5 leading-relaxed">{description}</p>
+          <p className="mt-1 text-xs leading-snug text-muted-foreground">{description}</p>
         )}
       </div>
       {children}
@@ -42,15 +55,16 @@ export const SettingsGroup: React.FC<SettingsGroupProps> = ({
   variant = "default",
   className = "",
 }) => {
-  const baseClasses = "space-y-3 p-3 rounded-lg border";
+  const baseClasses = "space-y-2.5 rounded-surface border border-border-subtle p-3";
   const variantClasses = {
-    default: "bg-card/50 dark:bg-surface-2/50 border-border/50 dark:border-border-subtle",
-    highlighted: "bg-primary/5 dark:bg-primary/10 border-primary/20 dark:border-primary/30",
+    default: "bg-surface-1 shadow-(--shadow-panel)",
+    // Rule 3 — emphasis is a rail, not a tinted box.
+    highlighted: "bg-surface-1 shadow-[var(--shadow-panel),inset_2px_0_0_var(--color-primary)]",
   };
 
   return (
     <div className={`${baseClasses} ${variantClasses[variant]} ${className}`}>
-      {title && <h4 className="text-xs font-medium text-foreground">{title}</h4>}
+      {title && <h4 className="micro-caps text-muted-foreground">{title}</h4>}
       {children}
     </div>
   );
@@ -78,9 +92,9 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({
       } ${className}`}
     >
       <div className="min-w-0 flex-1">
-        <p className="text-xs font-medium text-foreground">{label}</p>
+        <p className="text-[13px] font-medium leading-tight text-foreground">{label}</p>
         {description && (
-          <p className="text-xs text-muted-foreground/80 mt-0.5 leading-relaxed">{description}</p>
+          <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{description}</p>
         )}
       </div>
       <div className={isCompact ? "" : "shrink-0"}>{children}</div>
@@ -97,7 +111,7 @@ export function SettingsPanel({
 }) {
   return (
     <div
-      className={`rounded-lg border border-border/50 dark:border-border-subtle/70 bg-card/50 dark:bg-surface-2/50 backdrop-blur-sm divide-y divide-border/30 dark:divide-border-subtle/50 ${className}`}
+      className={`divide-y divide-border-subtle overflow-hidden rounded-surface border border-border-subtle bg-surface-1 shadow-(--shadow-panel) ${className}`}
     >
       {children}
     </div>
@@ -114,16 +128,16 @@ export function SettingsPanelRow({
   const { isCompact } = useSettingsLayout();
 
   return (
-    <div className={`${isCompact ? "px-3 py-2.5" : "px-4 py-3"} ${className}`}>{children}</div>
+    <div className={`${isCompact ? "px-3 py-2.5" : "px-3.5 py-2.5"} ${className}`}>{children}</div>
   );
 }
 
 export function SectionHeader({ title, description }: { title: string; description?: string }) {
   return (
-    <div className="mb-3">
-      <h3 className="text-xs font-semibold text-foreground tracking-tight">{title}</h3>
+    <div className="mb-2.5">
+      <h3 className="micro-caps text-muted-foreground">{title}</h3>
       {description && (
-        <p className="text-xs text-muted-foreground/80 mt-0.5 leading-relaxed">{description}</p>
+        <p className="mt-1 text-xs leading-snug text-muted-foreground">{description}</p>
       )}
     </div>
   );
@@ -150,64 +164,64 @@ export function InferenceModeSelector({
   const { t } = useTranslation();
 
   return (
-    <SettingsPanel className="overflow-hidden">
+    <SettingsPanel>
       {modes.map((mode) => {
         const isActive = activeMode === mode.id;
         const isDisabled = !!mode.disabled;
         return (
           <SettingsPanelRow
             key={mode.id}
-            className={`transition-colors ${
-              isDisabled ? "" : "hover:bg-foreground/3 dark:hover:bg-white/3"
-            }`}
+            // Rule 3 — the live mode is marked on the leading edge of its row.
+            className={`relative transition-[background-color,box-shadow] duration-100 ease-snap ${
+              isActive ? "bg-surface-2 shadow-[inset_2px_0_0_var(--color-primary)]" : ""
+            } ${isDisabled || isActive ? "" : "hover:bg-surface-2"}`}
           >
             <button
               onClick={() => onSelect(mode.id)}
-              className={`w-full flex items-center gap-3 text-left cursor-pointer group ${
-                isDisabled ? "opacity-60" : ""
+              disabled={isDisabled}
+              aria-pressed={isActive}
+              className={`focus-ring-tight group flex w-full items-center gap-2.5 rounded-control text-left ${
+                isDisabled ? "cursor-not-allowed opacity-55 grayscale" : "cursor-pointer"
               }`}
             >
               <div
-                className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 transition-colors ${
+                className={`flex size-7 shrink-0 items-center justify-center rounded-control border transition-colors duration-100 ease-snap ${
                   isActive
-                    ? "bg-primary/10 dark:bg-primary/15"
-                    : "bg-muted/60 dark:bg-surface-raised group-hover:bg-muted dark:group-hover:bg-surface-3"
+                    ? "border-primary/35 bg-primary/10 text-primary"
+                    : "border-border-subtle bg-surface-3 text-muted-foreground group-hover:border-border"
                 }`}
               >
-                <div
-                  className={`transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`}
-                >
-                  {mode.icon}
-                </div>
+                {mode.icon}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-medium text-foreground">{mode.label}</span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[13px] font-semibold leading-tight text-foreground">
+                    {mode.label}
+                  </span>
                   {isActive && !isDisabled && (
-                    <span className="text-xs font-medium text-primary bg-primary/10 dark:bg-primary/15 px-1.5 py-px rounded-sm">
+                    <span className="micro-caps rounded-control border border-primary/25 bg-primary/10 px-1 py-px text-primary">
                       {t("common.active")}
                     </span>
                   )}
                   {isDisabled && mode.badge && (
-                    <span className="text-xs font-medium text-muted-foreground bg-muted/80 dark:bg-surface-3 px-1.5 py-px rounded-sm">
+                    <span className="micro-caps rounded-control border border-border-subtle bg-surface-3 px-1 py-px text-muted-foreground">
                       {mode.badge}
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-muted-foreground/80 mt-0.5">{mode.description}</p>
+                <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+                  {mode.description}
+                </p>
               </div>
+              {/* Square selection marker — nothing in this system is round. */}
               <div
-                className={`w-4 h-4 rounded-full border-2 shrink-0 transition-colors ${
+                className={`flex size-4 shrink-0 items-center justify-center rounded-[2px] border transition-colors duration-100 ease-snap ${
                   isActive
                     ? "border-primary bg-primary"
-                    : "border-border-hover dark:border-border-subtle"
+                    : "border-border-control bg-input shadow-(--shadow-well)"
                 }`}
               >
-                {isActive && (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 rounded-full bg-primary-foreground" />
-                  </div>
-                )}
+                {isActive && <div className="size-1.5 rounded-[1px] bg-primary-foreground" />}
               </div>
             </button>
           </SettingsPanelRow>

@@ -35,10 +35,14 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
             </a>
           ),
           code: ({ children }) => (
-            <code className="bg-black/10 px-1 py-0.5 rounded text-xs font-mono">{children}</code>
+            <code className="rounded-control border border-border-subtle bg-surface-3 px-1 py-0.5 font-mono text-xs">
+              {children}
+            </code>
           ),
           pre: ({ children }) => (
-            <pre className="bg-black/10 p-2 rounded overflow-x-auto text-xs mb-2">{children}</pre>
+            <pre className="mb-2 overflow-x-auto rounded-control border border-border-subtle bg-surface-3 p-2 text-xs">
+              {children}
+            </pre>
           ),
           strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
           em: ({ children }) => <em className="italic">{children}</em>,

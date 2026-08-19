@@ -13,6 +13,15 @@ function formatBytes(bytes: number): string {
   return `${(bytes / 1_000_000_000).toFixed(2)}GB`;
 }
 
+/**
+ * A read-out, matching `progress.tsx`: recessed graticule track, square fill,
+ * no glow. The percentage is a micro-caps tabular figure in its own machined
+ * cell so the row does not reflow as the digits change from 9% to 100%.
+ *
+ * The old version drew itself in raw `white/5` and `white/3` washes and hung a
+ * teal bloom off the fill. Both are gone — every colour here is a token, and
+ * elevation comes from the well, not from light leaking out of the bar.
+ */
 export function DownloadProgressBar({
   modelName,
   progress,
@@ -25,38 +34,29 @@ export function DownloadProgressBar({
   const indeterminate = !isInstalling && totalBytes === 0 && downloadedBytes > 0;
 
   return (
-    <div className="px-2.5 py-2 border-b border-white/5 dark:border-border-subtle">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="relative flex items-center justify-center h-6 min-w-6 px-1.5 shrink-0">
-          <div
-            className={`absolute inset-0 rounded-md bg-primary/15 ${isInstalling || indeterminate ? "animate-pulse" : ""}`}
-          />
+    <div className="border-b border-border-subtle px-2.5 py-2">
+      <div className="mb-2 flex items-center gap-2">
+        <div className="flex h-6 min-w-9 shrink-0 items-center justify-center rounded-control border border-border-subtle bg-surface-2 px-1 shadow-(--shadow-control)">
           {isInstalling ? (
-            <Loader2 className="relative w-3.5 h-3.5 text-primary animate-spin" />
+            <Loader2 className="size-3 animate-spin text-primary" strokeWidth={1.75} />
           ) : (
-            <span className="relative text-xs font-bold text-primary tabular-nums">
-              {indeterminate ? "···" : `${pct}%`}
-            </span>
+            <span className="micro-caps text-primary">{indeterminate ? "···" : `${pct}%`}</span>
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-foreground truncate">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-xs font-medium text-foreground">
             {isInstalling ? `Installing ${modelName}` : `Downloading ${modelName}`}
           </p>
           {!isInstalling && (indeterminate || speedText || etaText) && (
-            <div className="flex items-center gap-1.5 mt-0.5">
-              {indeterminate && (
-                <span className="text-xs text-muted-foreground/70 tabular-nums">
-                  {formatBytes(downloadedBytes)}
-                </span>
-              )}
-              {speedText && (
-                <span className="text-xs text-muted-foreground/70 tabular-nums">{speedText}</span>
-              )}
+            <div className="mt-0.5 flex items-center gap-1.5 text-[11px] tabular-nums text-muted-foreground">
+              {indeterminate && <span>{formatBytes(downloadedBytes)}</span>}
+              {speedText && <span>{speedText}</span>}
               {etaText && (
                 <>
-                  <span className="text-xs text-muted-foreground/30">·</span>
-                  <span className="text-xs text-muted-foreground/70 tabular-nums">{etaText}</span>
+                  <span aria-hidden="true" className="text-border-hover">
+                    ·
+                  </span>
+                  <span>{etaText}</span>
                 </>
               )}
             </div>
@@ -64,20 +64,15 @@ export function DownloadProgressBar({
         </div>
       </div>
 
-      <div
-        className="w-full rounded-full overflow-hidden bg-white/5 dark:bg-white/3"
-        style={{ height: 4 }}
-      >
+      <div className="gauge-track h-1 w-full overflow-hidden rounded-control bg-surface-3 shadow-(--shadow-well)">
         {indeterminate ? (
-          <div className="h-full w-1/3 rounded-full bg-primary shadow-[0_0_8px_color-mix(in_oklab,var(--color-primary)_40%,transparent)] animate-[indeterminate_1.5s_ease-in-out_infinite]" />
+          <div className="h-full w-1/3 bg-primary animate-[indeterminate_1.5s_ease-in-out_infinite]" />
         ) : (
           <div
-            className={`${isInstalling ? "animate-pulse" : ""} bg-primary shadow-[0_0_8px_color-mix(in_oklab,var(--color-primary)_40%,transparent)]`}
+            className={`h-full bg-primary ${isInstalling ? "animate-pulse" : ""}`}
             style={{
-              height: "100%",
               width: `${isInstalling ? 100 : Math.min(percentage, 100)}%`,
-              borderRadius: 9999,
-              transition: "width 300ms ease-out",
+              transition: "width 300ms var(--ease-snap)",
             }}
           />
         )}

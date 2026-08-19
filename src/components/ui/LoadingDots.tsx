@@ -17,7 +17,7 @@ export const LoadingDots = () => {
           style={{
             width: 4,
             height: 6 + 6 * (tick % 3 === i ? 1 : 0),
-            borderRadius: "var(--radius-sm)",
+            borderRadius: "var(--radius-control)",
             opacity: "var(--opacity-high)",
             transition: "height 0.2s",
           }}

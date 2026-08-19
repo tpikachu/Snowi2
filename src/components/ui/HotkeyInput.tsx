@@ -490,7 +490,7 @@ export function HotkeyInput({
           e.stopPropagation();
           onClear();
         }}
-        className="rounded opacity-0 group-hover:opacity-100 focus-visible:opacity-100 outline-none focus-visible:ring-2 focus-visible:ring-ring transition-opacity duration-150 text-muted-foreground/50 hover:text-destructive cursor-pointer"
+        className="focus-ring-tight cursor-pointer rounded-control text-muted-foreground opacity-0 transition-opacity duration-100 ease-snap hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100"
       >
         <Trash2 className="w-3.5 h-3.5" />
       </button>
@@ -511,15 +511,16 @@ export function HotkeyInput({
         onFocus={handleFocus}
         onBlur={handleBlur}
         className={`
-          relative group flex flex-col items-center justify-center py-4 px-5 min-h-28
-          rounded-md border cursor-pointer select-none outline-none
-          transition-colors duration-150
+          group relative flex min-h-28 select-none cursor-pointer flex-col items-center justify-center px-5 py-4
+          rounded-surface border
+          transition-[background-color,border-color,box-shadow] duration-100 ease-snap
+          focus-ring
           ${
             disabled
-              ? "bg-muted/30 border-border cursor-not-allowed opacity-50"
+              ? "cursor-not-allowed border-border-subtle bg-surface-1 opacity-55 grayscale"
               : isCapturing
-                ? "bg-primary/5 border-primary/30 shadow-[0_0_0_2px_color-mix(in_oklab,var(--color-primary)_18%,transparent)]"
-                : "bg-surface-1 border-border hover:border-border-hover hover:bg-surface-2"
+                ? "border-border-active bg-input shadow-[var(--shadow-well),inset_2px_0_0_var(--color-primary)]"
+                : "border-border-control bg-input shadow-(--shadow-well) hover:border-border-hover hover:bg-surface-1"
           }
         `}
       >
@@ -527,17 +528,14 @@ export function HotkeyInput({
         {isCapturing ? (
           <div className="flex flex-col items-center gap-3">
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <div className="size-1.5 rounded-[1px] bg-primary animate-pulse" />
               <span className="text-xs font-medium text-primary">{t("hotkeyInput.listening")}</span>
             </div>
             {activeModifiers.size > 0 ? (
               <div className="flex flex-col items-center gap-1.5">
                 <div className="flex items-center gap-1.5">
                   {Array.from(activeModifiers).map((mod) => (
-                    <kbd
-                      key={mod}
-                      className="px-2.5 py-1 bg-primary/10 border border-primary/20 rounded-sm text-xs font-semibold text-primary"
-                    >
+                    <kbd key={mod} className="border-primary/35 bg-primary/10 px-2 text-primary">
                       {mod}
                     </kbd>
                   ))}
@@ -555,11 +553,9 @@ export function HotkeyInput({
               </span>
             )}
             {validationWarning && (
-              <div className="flex items-center gap-1.5 mt-2 px-3 py-1.5 rounded-md bg-warning/8 border border-warning/20 dark:bg-warning/12 dark:border-warning/25">
-                <AlertTriangle className="w-3 h-3 text-warning shrink-0" />
-                <span className="text-xs text-warning dark:text-warning">
-                  {validationWarning}
-                </span>
+              <div className="mt-2 flex items-center gap-1.5 rounded-control border border-border-subtle bg-surface-1 px-2.5 py-1.5 shadow-[var(--shadow-panel),inset_2px_0_0_var(--color-warning)]">
+                <AlertTriangle className="size-3 shrink-0 text-warning" strokeWidth={1.75} />
+                <span className="text-xs text-foreground">{validationWarning}</span>
               </div>
             )}
           </div>
@@ -573,19 +569,13 @@ export function HotkeyInput({
                     {i > 0 && (
                       <span className="text-muted-foreground/40 text-lg font-light">+</span>
                     )}
-                    <kbd className="px-3 py-1.5 bg-surface-raised border border-border rounded-sm text-sm font-semibold text-foreground shadow-sm">
-                      {part}
-                    </kbd>
+                    <kbd className="px-2.5 py-1 text-[13px]">{part}</kbd>
                   </React.Fragment>
                 ))
               ) : isGlobe ? (
-                <kbd className="px-3 py-1.5 bg-surface-raised border border-border rounded-sm text-lg shadow-sm">
-                  🌐
-                </kbd>
+                <kbd className="px-2.5 py-1 text-base">🌐</kbd>
               ) : (
-                <kbd className="px-3 py-1.5 bg-surface-raised border border-border rounded-sm text-sm font-semibold text-foreground shadow-sm">
-                  {displayValue}
-                </kbd>
+                <kbd className="px-2.5 py-1 text-[13px]">{displayValue}</kbd>
               )}
             </div>
             <span className="text-xs text-muted-foreground/60 group-hover:text-muted-foreground transition-colors">
@@ -617,19 +607,20 @@ export function HotkeyInput({
       onFocus={handleFocus}
       onBlur={handleBlur}
       className={`
-        relative group overflow-hidden rounded-md border
-        transition-colors duration-150 cursor-pointer select-none focus:outline-none
+        group relative select-none cursor-pointer overflow-hidden rounded-surface border
+        transition-[background-color,border-color,box-shadow] duration-100 ease-snap
+        focus-ring
         ${
           disabled
-            ? "bg-muted/30 border-border cursor-not-allowed opacity-50"
+            ? "cursor-not-allowed border-border-subtle bg-surface-1 opacity-55 grayscale"
             : isCapturing
-              ? "bg-primary/5 border-primary/30 shadow-[0_0_0_2px_color-mix(in_oklab,var(--color-primary)_18%,transparent)]"
-              : "bg-surface-1 border-border hover:border-border-hover hover:bg-surface-2"
+              ? "border-border-active bg-input shadow-(--shadow-well)"
+              : "border-border-control bg-input shadow-(--shadow-well) hover:border-border-hover hover:bg-surface-1"
         }
       `}
     >
       {isCapturing && (
-        <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary animate-pulse" />
+        <div aria-hidden="true" className="absolute inset-y-0 left-0 w-0.5 bg-primary" />
       )}
 
       <div className="px-4 py-3">
@@ -637,7 +628,7 @@ export function HotkeyInput({
           <>
             <div className="flex items-center justify-center gap-3">
               <div className="flex items-center gap-1.5">
-                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
+                <div className="size-1.5 rounded-[1px] bg-primary animate-pulse" />
                 <span className="text-xs font-medium text-muted-foreground">
                   {t("hotkeyInput.recording")}
                 </span>
@@ -645,10 +636,7 @@ export function HotkeyInput({
               {activeModifiers.size > 0 ? (
                 <div className="flex items-center gap-1">
                   {Array.from(activeModifiers).map((mod) => (
-                    <kbd
-                      key={mod}
-                      className="px-2 py-0.5 bg-primary/10 border border-primary/20 rounded-sm text-xs font-semibold text-primary"
-                    >
+                    <kbd key={mod} className="border-primary/35 bg-primary/10 text-primary">
                       {mod}
                     </kbd>
                   ))}
@@ -663,11 +651,9 @@ export function HotkeyInput({
               )}
             </div>
             {validationWarning && (
-              <div className="flex items-center gap-1.5 mt-1.5 px-3 py-1.5 rounded-md bg-warning/8 border border-warning/20 dark:bg-warning/12 dark:border-warning/25">
-                <AlertTriangle className="w-3 h-3 text-warning shrink-0" />
-                <span className="text-xs text-warning dark:text-warning">
-                  {validationWarning}
-                </span>
+              <div className="mt-1.5 flex items-center gap-1.5 rounded-control border border-border-subtle bg-surface-1 px-2.5 py-1.5 shadow-[var(--shadow-panel),inset_2px_0_0_var(--color-warning)]">
+                <AlertTriangle className="size-3 shrink-0 text-warning" strokeWidth={1.75} />
+                <span className="text-xs text-foreground">{validationWarning}</span>
               </div>
             )}
           </>
@@ -682,23 +668,17 @@ export function HotkeyInput({
                   {hotkeyParts.map((part, i) => (
                     <React.Fragment key={part}>
                       {i > 0 && <span className="text-muted-foreground/30 text-xs">+</span>}
-                      <kbd className="px-2 py-0.5 bg-surface-raised border border-border rounded-sm text-xs font-semibold text-foreground">
-                        {part}
-                      </kbd>
+                      <kbd>{part}</kbd>
                     </React.Fragment>
                   ))}
                 </div>
               ) : isGlobe ? (
                 <div className="flex items-center gap-1.5">
-                  <kbd className="px-2 py-0.5 bg-surface-raised border border-border rounded-sm text-base">
-                    🌐
-                  </kbd>
+                  <kbd className="text-sm">🌐</kbd>
                   <span className="text-xs text-muted-foreground">{t("hotkeyInput.globe")}</span>
                 </div>
               ) : (
-                <kbd className="px-2.5 py-1 bg-surface-raised border border-border rounded-sm text-xs font-semibold text-foreground">
-                  {displayValue}
-                </kbd>
+                <kbd>{displayValue}</kbd>
               )}
               <span className="text-xs text-muted-foreground/50">
                 {t("hotkeyInput.clickToChangeLower")}

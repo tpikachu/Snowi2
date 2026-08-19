@@ -60,35 +60,24 @@ export default function MicPermissionWarning({
   }, [t]);
 
   return (
+    // Same construction as `alert.tsx`: neutral plate, severity carried by the
+    // Rule 3 rail and the glyph, so the message itself stays at full contrast
+    // (foreground on surface-1 = 16.27:1 dark, 17.13:1 light).
     <div
       className={cn(
-        "rounded-md p-2.5 border",
-        "bg-warning/8 border-warning/20 dark:bg-warning/10 dark:border-warning/20"
+        "relative rounded-surface border border-border-subtle bg-surface-1 p-2",
+        "shadow-[var(--shadow-panel),inset_2px_0_0_var(--color-warning)]"
       )}
     >
-      <div className="flex items-center gap-2.5">
-        <div className="w-6 h-6 rounded-md bg-warning/15 flex items-center justify-center shrink-0">
-          <AlertCircle className="w-3.5 h-3.5 text-warning" />
-        </div>
-        <p className="flex-1 text-xs text-foreground leading-snug">
-          {error || config.message}
-        </p>
-        <div className="flex items-center gap-1 shrink-0">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onOpenSoundSettings}
-            className="h-6 px-2 text-xs text-warning hover:text-warning hover:bg-warning/12"
-          >
+      <div className="flex items-center gap-2 pl-1.5">
+        <AlertCircle className="size-3.5 shrink-0 text-warning" strokeWidth={1.75} />
+        <p className="flex-1 text-xs leading-snug text-foreground">{error || config.message}</p>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={onOpenSoundSettings} className="px-2">
             {config.soundLabel}
           </Button>
           {config.showPrivacyButton && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onOpenPrivacySettings}
-              className="h-6 px-2 text-xs text-warning hover:text-warning hover:bg-warning/12"
-            >
+            <Button variant="ghost" size="sm" onClick={onOpenPrivacySettings} className="px-2">
               {config.privacyLabel}
             </Button>
           )}

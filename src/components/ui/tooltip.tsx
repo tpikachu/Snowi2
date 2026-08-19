@@ -1,6 +1,16 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 
+/**
+ * A label plate, not a speech bubble.
+ *
+ * The arrow is gone on purpose: a tail is the cartoon convention, and at
+ * 11px it costs more pixels of chrome than the label it points at. What
+ * identifies the tooltip instead is Rule 1 + Rule 2 geometry — a 3px corner,
+ * the functional edge, and `--shadow-overlay` (a top highlight over real
+ * depth), which is the same construction every floating layer in the system
+ * uses. Text: 14.82:1 dark, 17.88:1 light.
+ */
 interface TooltipProps {
   children: React.ReactNode;
   content: string;
@@ -73,7 +83,7 @@ export const Tooltip = ({ children, content, side = "top", showOnFocus }: Toolti
           <div
             ref={tooltipRef}
             role="tooltip"
-            className="fixed px-2 py-1 text-xs font-medium text-foreground bg-surface-raised border border-border rounded-md whitespace-nowrap z-[9999] shadow-(--shadow-elevated) animate-in fade-in-0 zoom-in-95 duration-100 pointer-events-none"
+            className="fixed z-[9999] whitespace-nowrap rounded-control border border-border-control bg-popover px-2 py-1 text-[11px] font-medium leading-tight tracking-[0.004em] text-foreground shadow-(--shadow-overlay) pointer-events-none animate-in fade-in-0 duration-100"
             style={{
               top: position.top,
               left: position.left,
@@ -82,11 +92,6 @@ export const Tooltip = ({ children, content, side = "top", showOnFocus }: Toolti
             }}
           >
             {content}
-            {side === "right" ? (
-              <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-surface-raised" />
-            ) : (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-surface-raised" />
-            )}
           </div>,
           document.body
         )}

@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Monitor } from "lucide-react";
 import { useSettingsStore } from "../../stores/settingsStore";
@@ -8,7 +8,8 @@ import { useScreenRecordingPermission } from "../../hooks/useScreenRecordingPerm
 import { Toggle } from "../ui/toggle";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { SettingsPanel, SettingsPanelRow, SettingsRow, SectionHeader } from "../ui/SettingsSection";
+import { SettingsPanel, SettingsPanelRow, SettingsRow } from "../ui/SettingsSection";
+import SettingsGroup, { SettingsPanelBody } from "./SettingsGroup";
 import PermissionCard from "../ui/PermissionCard";
 import PromptStudio from "../ui/PromptStudio";
 import InferenceConfigEditor from "./InferenceConfigEditor";
@@ -34,6 +35,7 @@ export default function DictationAgentSettings() {
 
   const { agentName, setAgentName } = useAgentName();
   const [agentNameInput, setAgentNameInput] = useState(agentName);
+  const agentNameInputId = useId();
   const { showAlertDialog } = useDialogs();
 
   const handleSaveAgentName = useCallback(() => {
@@ -71,90 +73,92 @@ export default function DictationAgentSettings() {
   ];
 
   const voiceAgentSection = (
-    <div className="border-t border-border/40 pt-6 space-y-5">
-      <SectionHeader
-        title={t("settingsPage.agentConfig.title")}
-        description={t("settingsPage.agentConfig.description")}
-      />
-
-      <div>
-        <p className="text-xs font-medium text-foreground mb-3">
-          {t("settingsPage.agentConfig.agentName")}
-        </p>
-        <SettingsPanel>
-          <SettingsPanelRow>
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <Input
-                  placeholder={t("settingsPage.agentConfig.placeholder")}
-                  value={agentNameInput}
-                  onChange={(e) => setAgentNameInput(e.target.value)}
-                  className="flex-1 text-center text-base font-mono"
-                />
-                <Button onClick={handleSaveAgentName} disabled={!agentNameInput.trim()} size="sm">
-                  {t("settingsPage.agentConfig.save")}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground/60">
-                {t("settingsPage.agentConfig.helper")}
-              </p>
+    <SettingsGroup
+      id="dictationAgentIdentity"
+      title={t("settingsPage.agentConfig.title")}
+      description={t("settingsPage.agentConfig.description")}
+    >
+      <SettingsPanel>
+        <SettingsPanelRow>
+          <div className="space-y-2">
+            <label htmlFor={agentNameInputId} className="block text-xs font-medium text-foreground">
+              {t("settingsPage.agentConfig.agentName")}
+            </label>
+            <div className="flex gap-2">
+              <Input
+                id={agentNameInputId}
+                placeholder={t("settingsPage.agentConfig.placeholder")}
+                value={agentNameInput}
+                onChange={(e) => setAgentNameInput(e.target.value)}
+                className="h-8 flex-1 font-mono text-sm"
+              />
+              <Button onClick={handleSaveAgentName} disabled={!agentNameInput.trim()} size="sm">
+                {t("settingsPage.agentConfig.save")}
+              </Button>
             </div>
-          </SettingsPanelRow>
-        </SettingsPanel>
-      </div>
-
-      <div>
-        <SectionHeader title={t("settingsPage.agentConfig.howItWorksTitle")} />
-        <SettingsPanel>
-          <SettingsPanelRow>
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {t("settingsPage.agentConfig.howItWorksDescription", { agentName })}
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              {t("settingsPage.agentConfig.helper")}
             </p>
-          </SettingsPanelRow>
-        </SettingsPanel>
-      </div>
+          </div>
+        </SettingsPanelRow>
 
-      <div>
-        <SectionHeader title={t("settingsPage.agentConfig.examplesTitle")} />
-        <SettingsPanel>
-          <SettingsPanelRow>
-            <div className="space-y-2.5">
-              {examples.map((input, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <span className="shrink-0 mt-0.5 text-xs font-medium uppercase tracking-wider px-1.5 py-px rounded bg-primary/10 text-primary dark:bg-primary/15">
-                    {instructionMode}
-                  </span>
-                  <p className="text-xs text-muted-foreground leading-relaxed">"{input}"</p>
-                </div>
-              ))}
-            </div>
-          </SettingsPanelRow>
-        </SettingsPanel>
-      </div>
-    </div>
+        <SettingsPanelRow>
+          <p className="mb-1 text-xs font-medium text-foreground">
+            {t("settingsPage.agentConfig.howItWorksTitle")}
+          </p>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            {t("settingsPage.agentConfig.howItWorksDescription", { agentName })}
+          </p>
+        </SettingsPanelRow>
+
+        <SettingsPanelRow>
+          <p className="mb-2 text-xs font-medium text-foreground">
+            {t("settingsPage.agentConfig.examplesTitle")}
+          </p>
+          <ul className="space-y-2">
+            {examples.map((input) => (
+              <li key={input} className="flex items-start gap-3">
+                <span className="mt-px shrink-0 rounded-sm bg-primary/10 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wider text-primary dark:bg-primary/15">
+                  {instructionMode}
+                </span>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  &ldquo;{input}&rdquo;
+                </p>
+              </li>
+            ))}
+          </ul>
+        </SettingsPanelRow>
+      </SettingsPanel>
+    </SettingsGroup>
   );
 
   return (
-    <div className="space-y-4">
-      <SettingsPanel>
-        <SettingsPanelRow>
-          <SettingsRow
-            label={t("dictationAgent.enabled")}
-            description={t("dictationAgent.enabledDescription", { agentName })}
-          >
-            <Toggle checked={useDictationAgent} onChange={setUseDictationAgent} />
-          </SettingsRow>
-        </SettingsPanelRow>
-      </SettingsPanel>
+    <SettingsPanelBody>
+      <SettingsGroup
+        id="dictationAgentModel"
+        title={t("common.model")}
+        description={t("settingsModal.groupTitles.modelDescription")}
+      >
+        <SettingsPanel>
+          <SettingsPanelRow>
+            <SettingsRow
+              label={t("dictationAgent.enabled")}
+              description={t("dictationAgent.enabledDescription", { agentName })}
+            >
+              <Toggle checked={useDictationAgent} onChange={setUseDictationAgent} />
+            </SettingsRow>
+          </SettingsPanelRow>
+        </SettingsPanel>
 
-      {useDictationAgent && <InferenceConfigEditor scope="dictationAgent" />}
+        {useDictationAgent && <InferenceConfigEditor scope="dictationAgent" />}
+      </SettingsGroup>
 
       {useDictationAgent && (
-        <div className="border-t border-border/40 pt-6 space-y-3">
-          <SectionHeader
-            title={t("dictationAgent.screenContext.title")}
-            description={t("dictationAgent.screenContext.description")}
-          />
+        <SettingsGroup
+          id="dictationAgentScreenContext"
+          title={t("dictationAgent.screenContext.title")}
+          description={t("dictationAgent.screenContext.description")}
+        >
           <SettingsPanel>
             <SettingsPanelRow>
               <SettingsRow
@@ -204,20 +208,20 @@ export default function DictationAgentSettings() {
           {screenContextActive && useDictationAgentVisionModel && (
             <InferenceConfigEditor scope="dictationAgentVision" allowedModes={["providers"]} />
           )}
-        </div>
+        </SettingsGroup>
       )}
 
       {voiceAgentSection}
 
       {useDictationAgent && (
-        <div className="border-t border-border/40 pt-6">
-          <SectionHeader
-            title={t("dictationAgent.prompt.title")}
-            description={t("dictationAgent.prompt.description")}
-          />
+        <SettingsGroup
+          id="dictationAgentPrompt"
+          title={t("dictationAgent.prompt.title")}
+          description={t("dictationAgent.prompt.description")}
+        >
           <PromptStudio kind="dictationAgent" />
-        </div>
+        </SettingsGroup>
       )}
-    </div>
+    </SettingsPanelBody>
   );
 }

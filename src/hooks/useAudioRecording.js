@@ -7,6 +7,11 @@ import { getSettings } from "../stores/settingsStore";
 import { expandSnippets } from "../utils/snippets";
 import { getRecordingErrorTitle, getRecordingErrorDescription } from "../utils/recordingErrors";
 import { isAccessibilitySkipped } from "../utils/permissions";
+import {
+  DICTATION_STATE_EVENT,
+  DICTATION_STATE_REQUEST_EVENT,
+  DICTATION_TOGGLE_EVENT,
+} from "../components/shell/captureBridge";
 
 // Maps a failed selection-replacement code to its `selectionEditing.*` toast
 // detail key; unlisted codes fall back to the generic "unavailable" message.
@@ -31,7 +36,23 @@ export const useAudioRecording = (toast, options = {}) => {
   const stopLockRef = useRef(false);
   const wasRecordingRef = useRef(false);
   const wasMicUnavailableRef = useRef(false);
+  // Wall-clock anchor for the current recording, mirrored to other windows so
+  // the shell's capture control can run the same elapsed clock as the HUD.
+  const dictationStartedAtRef = useRef(null);
   const { onToggle } = options;
+
+  useEffect(() => {
+    if (isRecording) {
+      if (dictationStartedAtRef.current == null) dictationStartedAtRef.current = Date.now();
+    } else {
+      dictationStartedAtRef.current = null;
+    }
+    void window.electronAPI?.emitSyncEvent?.(DICTATION_STATE_EVENT, {
+      isRecording,
+      isProcessing,
+      startedAt: isRecording ? dictationStartedAtRef.current : null,
+    });
+  }, [isRecording, isProcessing]);
 
   const performStartRecording = useCallback(
     async ({ voiceAgentRequested = false, translationRequested = false } = {}) => {
@@ -372,6 +393,29 @@ export const useAudioRecording = (toast, options = {}) => {
       onToggle?.();
     });
 
+    // The control panel is a separate renderer and cannot reach this recorder
+    // directly, so its capture button asks over the renderer broadcast bus and
+    // lands on the very same handleToggle the dictation hotkey runs. State goes
+    // back the same way so that window can show a live, stoppable capture.
+    const broadcastDictationState = () => {
+      const state = audioManagerRef.current?.getState?.();
+      if (!state) return;
+      void window.electronAPI?.emitSyncEvent?.(DICTATION_STATE_EVENT, {
+        isRecording: !!state.isRecording,
+        isProcessing: !!state.isProcessing,
+        startedAt: state.isRecording ? (dictationStartedAtRef.current ?? Date.now()) : null,
+      });
+    };
+
+    const disposeCaptureBridge = window.electronAPI?.onSyncEvent?.((event) => {
+      if (event?.name === DICTATION_TOGGLE_EVENT) {
+        handleToggle();
+        onToggle?.();
+      } else if (event?.name === DICTATION_STATE_REQUEST_EVENT) {
+        broadcastDictationState();
+      }
+    });
+
     const disposeVoiceAgentToggle = window.electronAPI.onToggleVoiceAgent?.(() => {
       handleToggle({ voiceAgentRequested: true });
       onToggle?.();
@@ -416,6 +460,7 @@ export const useAudioRecording = (toast, options = {}) => {
     // Cleanup
     return () => {
       disposeToggle?.();
+      disposeCaptureBridge?.();
       disposeVoiceAgentToggle?.();
       disposeTranslationToggle?.();
       disposeStart?.();

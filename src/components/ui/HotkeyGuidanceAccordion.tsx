@@ -76,12 +76,12 @@ export function HotkeyGuidanceAccordion({
     return (
       <div className="space-y-2">
         <p className="text-xs text-muted-foreground">{t("hotkeyGuidance.blockedDescription")}</p>
-        <ul className="flex flex-wrap gap-2">
+        <ul className="flex flex-wrap gap-1">
           {visible.map((shortcut) => (
             <li key={`${platformKey}-${shortcut}`}>
-              <kbd className="px-2 py-1 text-xs font-mono bg-surface-raised border border-border rounded-sm text-foreground">
-                {shortcut}
-              </kbd>
+              {/* Chrome comes from the global keycap rule in index.css: this
+                  app is driven by a hotkey, so a key is a real object here. */}
+              <kbd>{shortcut}</kbd>
             </li>
           ))}
         </ul>
@@ -94,7 +94,7 @@ export function HotkeyGuidanceAccordion({
                 [platformKey]: !prev[platformKey],
               }))
             }
-            className="text-xs text-primary hover:text-primary-hover cursor-pointer"
+            className="focus-ring-tight cursor-pointer rounded-control text-xs text-primary hover:text-primary-hover"
           >
             {showAll[platformKey] ? t("hotkeyGuidance.showFewer") : t("hotkeyGuidance.showAll")}
           </button>
@@ -117,10 +117,10 @@ export function HotkeyGuidanceAccordion({
         <AccordionContent>
           <div className="space-y-4">
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-2">
+              <h4 className="micro-caps mb-1.5 text-muted-foreground">
                 {t("hotkeyGuidance.recommendedTitle")}
               </h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
+              <ul className="space-y-0.5 text-[13px] text-muted-foreground">
                 {recommended.map((pattern) => (
                   <li key={`${platformKey}-${pattern}`}>{pattern}</li>
                 ))}
@@ -128,10 +128,10 @@ export function HotkeyGuidanceAccordion({
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-2">
+              <h4 className="micro-caps mb-1.5 text-muted-foreground">
                 {t("hotkeyGuidance.rulesTitle")}
               </h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
+              <ul className="space-y-0.5 text-[13px] text-muted-foreground">
                 {validationRules.map((rule) => (
                   <li key={`${platformKey}-${rule}`}>{rule}</li>
                 ))}
@@ -139,22 +139,20 @@ export function HotkeyGuidanceAccordion({
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-2">
+              <h4 className="micro-caps mb-1.5 text-muted-foreground">
                 {t("hotkeyGuidance.blockedTitle")}
               </h4>
               {renderReserved(platformKey)}
             </div>
 
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-2">
+              <h4 className="micro-caps mb-1.5 text-muted-foreground">
                 {t("hotkeyGuidance.examplesTitle")}
               </h4>
-              <ul className="flex flex-wrap gap-2">
+              <ul className="flex flex-wrap gap-1">
                 {formattedExamples.map((example) => (
                   <li key={`${platformKey}-${example}`}>
-                    <kbd className="px-2 py-1 text-xs font-mono bg-surface-raised border border-border rounded-sm text-foreground">
-                      {example}
-                    </kbd>
+                    <kbd>{example}</kbd>
                   </li>
                 ))}
               </ul>
@@ -166,16 +164,26 @@ export function HotkeyGuidanceAccordion({
   };
 
   return (
-    <div className={`border border-border-subtle rounded-xl bg-surface-1 p-4 ${className}`}>
-      <div className="mb-3">
-        <h3 className="text-sm font-semibold text-foreground">{t("hotkeyGuidance.title")}</h3>
-        <p className="text-xs text-muted-foreground">{t("hotkeyGuidance.description")}</p>
+    <div
+      className={`rounded-surface border border-border-subtle bg-surface-1 shadow-(--shadow-panel) ${className}`}
+    >
+      {/* Rule 4: the panel header is divided by a full-bleed seam, not by a
+          margin, so the disclosure list below reads as part of one plate. */}
+      <div className="border-b border-border-subtle px-3.5 py-2.5">
+        <h3 className="text-[13px] font-semibold leading-tight text-foreground">
+          {t("hotkeyGuidance.title")}
+        </h3>
+        <p className="mt-0.5 text-xs leading-snug text-muted-foreground">
+          {t("hotkeyGuidance.description")}
+        </p>
       </div>
-      <Accordion type="single" collapsible defaultValue={defaultValue}>
-        {renderSection("macos")}
-        {renderSection("windows")}
-        {renderSection("linux")}
-      </Accordion>
+      <div className="px-3.5 py-1">
+        <Accordion type="single" collapsible defaultValue={defaultValue}>
+          {renderSection("macos")}
+          {renderSection("windows")}
+          {renderSection("linux")}
+        </Accordion>
+      </div>
     </div>
   );
 }

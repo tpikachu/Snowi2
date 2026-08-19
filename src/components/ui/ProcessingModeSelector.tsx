@@ -8,47 +8,63 @@ interface ProcessingModeSelectorProps {
   className?: string;
 }
 
+/**
+ * The same segmented gate as `tabs.tsx`: a recessed track with one segment
+ * raised out of it and an accent rail under the live one.
+ *
+ * The old version painted itself in raw `white/5` washes, which meant it was
+ * the one control in the app that could not follow the theme. Everything here
+ * is a semantic token.
+ */
 export default function ProcessingModeSelector({
   useLocalWhisper,
   setUseLocalWhisper,
   className = "",
 }: ProcessingModeSelectorProps) {
   const { t } = useTranslation();
+
+  const optionClass = (active: boolean) =>
+    [
+      "relative z-10 flex flex-1 items-center justify-center gap-1.5 rounded-[2px] py-1.5",
+      "text-[13px] font-medium cursor-pointer",
+      "transition-colors duration-100 ease-snap focus-ring-tight",
+      active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+      // Rule 3: the activation rail.
+      "after:pointer-events-none after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:content-['']",
+      active ? "after:bg-primary" : "",
+    ].join(" ");
+
   return (
     <div
-      className={`relative flex p-0.5 rounded-lg bg-white/5 dark:bg-white/3 border border-white/10 dark:border-white/5 ${className}`}
+      className={`relative flex rounded-control border border-border-subtle bg-surface-1 p-0.5 shadow-(--shadow-well) ${className}`}
     >
-      {/* Sliding indicator */}
+      {/* Raised plate under the live segment. */}
       <div
-        className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-md bg-white/10 dark:bg-white/8 border border-white/10 transition-transform duration-200 ease-out ${
+        className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-[2px] border border-border-subtle bg-surface-2 shadow-(--shadow-control) transition-transform duration-150 ease-snap ${
           useLocalWhisper ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
         }`}
       />
 
       <button
+        type="button"
         onClick={() => setUseLocalWhisper(false)}
-        className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md transition-colors duration-150 ${
-          !useLocalWhisper ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-        }`}
+        aria-pressed={!useLocalWhisper}
+        className={optionClass(!useLocalWhisper)}
       >
-        <Cloud className="w-4 h-4" />
-        <span className="text-sm font-medium">{t("common.cloud")}</span>
-        {!useLocalWhisper && (
-          <span className="text-xs text-success font-medium">{t("common.fast")}</span>
-        )}
+        <Cloud className="size-3.5" strokeWidth={1.75} />
+        <span>{t("common.cloud")}</span>
+        {!useLocalWhisper && <span className="micro-caps text-success">{t("common.fast")}</span>}
       </button>
 
       <button
+        type="button"
         onClick={() => setUseLocalWhisper(true)}
-        className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md transition-colors duration-150 ${
-          useLocalWhisper ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-        }`}
+        aria-pressed={useLocalWhisper}
+        className={optionClass(useLocalWhisper)}
       >
-        <Lock className="w-4 h-4" />
-        <span className="text-sm font-medium">{t("common.local")}</span>
-        {useLocalWhisper && (
-          <span className="text-xs text-primary font-medium">{t("common.private")}</span>
-        )}
+        <Lock className="size-3.5" strokeWidth={1.75} />
+        <span>{t("common.local")}</span>
+        {useLocalWhisper && <span className="micro-caps text-primary">{t("common.private")}</span>}
       </button>
     </div>
   );

@@ -332,7 +332,7 @@ export default function PromptStudio({ className = "", kind = "cleanup" }: Promp
                       : t("promptStudio.view.defaultPrompt")}
                   </p>
                   {isCustomPrompt && (
-                    <span className="text-xs font-semibold uppercase tracking-wider px-1.5 py-px rounded-full bg-primary/10 text-primary">
+                    <span className="micro-caps rounded-control border border-primary/25 bg-primary/10 px-1.5 py-px text-primary">
                       {t("promptStudio.view.modified")}
                     </span>
                   )}

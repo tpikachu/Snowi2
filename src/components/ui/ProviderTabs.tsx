@@ -20,7 +20,7 @@ interface ProviderTabsProps {
   onSelect: (id: string) => void;
   renderIcon?: (providerId: string) => ReactNode;
   colorScheme?: ColorScheme;
-  /** Wrap pills onto multiple lines when there are many providers */
+  /** Wrap segments onto multiple lines when there are many providers */
   wrap?: boolean;
 }
 
@@ -74,9 +74,12 @@ export function ProviderTabs({
       ref={containerRef}
       className={cn("relative items-center gap-1 p-0.5", wrap ? "flex flex-wrap" : "inline-flex")}
     >
+      {/* The travelling plate. Rule 2 raises the live provider out of the
+          strip instead of washing it in accent, and Rule 3 puts the rail under
+          it so the selection also survives greyscale. */}
       <div
         ref={indicatorRef}
-        className="absolute top-0 left-0 rounded-full bg-primary/10 dark:bg-primary/15 ring-1 ring-primary/30 dark:ring-primary/25 transition-[width,height,transform,opacity] duration-200 ease-out pointer-events-none"
+        className="pointer-events-none absolute left-0 top-0 rounded-control border border-border-subtle bg-surface-2 shadow-(--shadow-control) transition-[width,height,transform,opacity] duration-150 ease-snap after:absolute after:inset-x-1.5 after:bottom-0 after:h-0.5 after:bg-primary after:content-['']"
         style={{ opacity: 0 }}
       />
 
@@ -97,25 +100,25 @@ export function ProviderTabs({
               onSelect(provider.id);
             }}
             className={cn(
-              "relative z-10 flex items-center gap-1 px-2.5 py-1 rounded-full font-medium text-xs whitespace-nowrap transition-colors duration-150",
+              // 28px tall: the target floor, and the same height as a small
+              // button, so a provider strip lines up with the controls beside it.
+              "focus-ring-tight relative z-10 flex h-7 items-center gap-1.5 whitespace-nowrap rounded-control px-2.5",
+              "text-xs font-medium transition-colors duration-100 ease-snap",
+              "[&_img]:size-3.5 [&_svg]:size-3.5",
               isDisabled
-                ? "text-muted-foreground/50 cursor-not-allowed ring-1 ring-border/40 dark:ring-white/5"
+                ? "cursor-not-allowed border border-border-subtle text-muted-foreground opacity-55 grayscale"
                 : isSelected
                   ? "text-foreground [&_svg]:text-primary"
-                  : "text-muted-foreground ring-1 ring-border/60 dark:ring-white/10 hover:text-foreground hover:bg-foreground/4 dark:hover:bg-white/5"
+                  : "cursor-pointer border border-border-subtle text-muted-foreground hover:border-border-hover hover:bg-surface-2 hover:text-foreground"
             )}
           >
             {renderIcon ? renderIcon(provider.id) : <ProviderIcon provider={provider.id} />}
             <span>{provider.name}</span>
             {provider.recommended && (
-              <span className="text-[10px] text-primary/70 font-medium">
-                {t("common.recommended")}
-              </span>
+              <span className="micro-caps text-primary">{t("common.recommended")}</span>
             )}
             {isDisabled && provider.disabledLabel && (
-              <span className="text-[10px] uppercase tracking-wide text-muted-foreground/70">
-                {provider.disabledLabel}
-              </span>
+              <span className="micro-caps text-muted-foreground">{provider.disabledLabel}</span>
             )}
           </button>
         );

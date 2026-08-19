@@ -32,6 +32,7 @@ import ActivityFilters from "./activity/ActivityFilters";
 import { useActivityFeed } from "./activity/useActivityFeed";
 import MeetingRecordingMount from "./MeetingRecordingMount";
 import MeetingRecordingPill from "./notes/MeetingRecordingPill";
+import CaptureControl from "./shell/CaptureControl";
 import WindowControls from "./WindowControls";
 
 import { getCachedPlatform } from "../utils/platform";
@@ -120,9 +121,10 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   const recordingFolderId = useMeetingRecordingStore((s) => s.recordingFolderId);
   const [meetingRecordingRequest, setMeetingRecordingRequest] = useState<{
     noteId: number;
-    folderId: number;
+    folderId: number | null;
     event: any;
   } | null>(null);
+  const [isStartingMeetingCapture, setIsStartingMeetingCapture] = useState(false);
   const [gpuAccelAvailable, setGpuAccelAvailable] = useState<{
     transcription: boolean;
     intelligence: boolean;
@@ -347,6 +349,53 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     () => setMeetingRecordingRequest(null),
     []
   );
+
+  // Shell capture control → meeting. Deliberately the same landing sequence the
+  // meeting-detection overlay produces (see the pending meeting-note drain
+  // above): create the meeting note, reveal it, then hand the start off to
+  // PersonalNotesView, which runs `handleMeetingRecordingRequest` →
+  // `meetingRecordingStore.startRecording`. Nothing about capture is duplicated
+  // here — only the note the detector would otherwise have created for us.
+  const handleStartMeetingCapture = useCallback(async () => {
+    if (isStartingMeetingCapture) return;
+    const { isRecording, isTranscribing } = useMeetingRecordingStore.getState();
+    if (isRecording || isTranscribing) return;
+    setIsStartingMeetingCapture(true);
+    try {
+      const result = await window.electronAPI.saveNote(
+        t("capture.meetingNoteTitle"),
+        "",
+        "meeting"
+      );
+      const note = result?.success ? result.note : null;
+      if (!note) throw new Error("Meeting note could not be created");
+
+      setActiveFolderId(note.folder_id);
+      setActiveNoteId(note.id);
+      setActiveView("personal-notes");
+      setMeetingRecordingRequest({ noteId: note.id, folderId: note.folder_id, event: null });
+      initializeNotes(null, 50, note.folder_id);
+    } catch (error) {
+      logger.warn(
+        "Failed to start meeting capture from the shell",
+        { error: (error as Error).message },
+        "meeting"
+      );
+      toast({
+        title: t("capture.meetingStartFailedTitle"),
+        description: t("capture.meetingStartFailedDescription"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsStartingMeetingCapture(false);
+    }
+  }, [isStartingMeetingCapture, t, toast]);
+
+  const returnToMeetingNote = useCallback(() => {
+    setActiveView("personal-notes");
+    setActiveFolderId(recordingFolderId);
+    setActiveNoteId(recordingNoteId);
+  }, [recordingFolderId, recordingNoteId]);
 
   const handleExitMeetingMode = useCallback(() => {
     window.electronAPI?.restoreFromMeetingMode?.();
@@ -738,11 +787,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
       <MeetingRecordingPill
         activeView={activeView}
         activeNoteId={activeNoteId}
-        onReturnToNote={() => {
-          setActiveView("personal-notes");
-          setActiveFolderId(recordingFolderId);
-          setActiveNoteId(recordingNoteId);
-        }}
+        onReturnToNote={returnToMeetingNote}
       />
       <ConfirmDialog
         open={confirmDialog.open}
@@ -896,6 +941,21 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   </>
                 )
               )}
+
+              {/* The window's one always-visible way to start capturing. It
+                  sits in the content header so it survives every section
+                  switch and every context-pane state, on the opposite edge
+                  from the window controls. The side-panel layout is the one
+                  exception: it is already a live meeting, and its header
+                  belongs to the way back out. */}
+              {!isSidePanelLayout && (
+                <CaptureControl
+                  onStartMeeting={handleStartMeetingCapture}
+                  isStartingMeeting={isStartingMeetingCapture}
+                  onOpenMeetingNote={returnToMeetingNote}
+                />
+              )}
+
               <div className="flex-1" />
               {platform !== "darwin" && (
                 <div style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
@@ -965,6 +1025,8 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   onShowAudioInFolder={showAudioInFolder}
                   onRetryTranscription={retryTranscription}
                   onOpenNote={openNoteFromFeed}
+                  onStartMeeting={handleStartMeetingCapture}
+                  isStartingMeeting={isStartingMeetingCapture}
                   onOpenSettings={(section) => {
                     setSettingsSection(section);
                     setShowSettings(true);

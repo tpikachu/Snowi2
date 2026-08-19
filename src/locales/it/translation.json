@@ -892,7 +892,8 @@
         "transcriptionPipeline": "Pipeline di trascrizione"
       },
       "title": "Cosa viene registrato"
-    }
+    },
+    "copyPath": "Copia il percorso del file di log"
   },
   "dictionarySuffix": "Suffisso dizionario",
   "emailVerification": {
@@ -1163,7 +1164,22 @@
         "label": "Area di lavoro"
       }
     },
-    "title": "Impostazioni"
+    "title": "Impostazioni",
+    "search": {
+      "label": "Cerca nelle impostazioni",
+      "placeholder": "Cerca nelle impostazioni",
+      "clear": "Cancella la ricerca",
+      "noResults": "Nessun risultato per \"{{query}}\"",
+      "resultsLabel": "Risultati della ricerca"
+    },
+    "navLabel": "Sezioni delle impostazioni",
+    "closeHint": "Chiudi le impostazioni (Esc)",
+    "groupTitles": {
+      "engine": "Motore",
+      "engineDescription": "Quale servizio trasforma questo audio in testo.",
+      "modelDescription": "Quale modello linguistico gestisce questa attività.",
+      "options": "Opzioni"
+    }
   },
   "settingsPage": {
     "unifiedBilling": {
@@ -3520,6 +3536,27 @@
     },
     "start": "Prendi appunti",
     "join": "Partecipa e trascrivi"
+  },
+  "capture": {
+    "dictate": "Detta",
+    "dictateHint": "Avvia la dettatura ({{hotkey}})",
+    "dictateNoHotkeyHint": "Nessuna scorciatoia di dettatura attiva: avvia da qui",
+    "hotkeyMissing": "Nessuna scorciatoia",
+    "meeting": "Riunione",
+    "meetingHint": "Registra una riunione in una nuova nota",
+    "meetingNoteTitle": "Note della riunione",
+    "openNote": "Apri",
+    "meetingStartFailedTitle": "Impossibile avviare la riunione",
+    "meetingStartFailedDescription": "Non è stato possibile creare la nota della riunione. Riprova.",
+    "status": {
+      "dictationRecording": "Registrazione",
+      "meetingRecording": "Riunione",
+      "transcribing": "Trascrizione",
+      "finishing": "Completamento"
+    },
+    "empty": {
+      "noHotkey": "Al momento non è attiva nessuna scorciatoia di dettatura: usa i pulsanti qui sopra oppure impostane una nelle Impostazioni."
+    }
   },
   "shell": {
     "contextPane": {

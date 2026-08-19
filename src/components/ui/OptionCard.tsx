@@ -10,6 +10,14 @@ interface OptionCardProps {
   disabled?: boolean;
 }
 
+/**
+ * Rule 3 — selection is the accent rail down the leading edge plus a raised
+ * plate, not a teal-tinted card. A grid of these used to turn half the screen
+ * the brand colour the moment anything was chosen.
+ *
+ * The state marker is a square 3px checkbox rather than a circle: this is a
+ * pick-one-of-many control, and nothing in the system is round.
+ */
 export default function OptionCard({
   icon: Icon,
   title,
@@ -25,48 +33,53 @@ export default function OptionCard({
       disabled={disabled}
       aria-pressed={selected}
       className={cn(
-        "group relative h-full w-full rounded-lg border p-3.5 text-left",
-        "transition-[background-color,border-color,box-shadow] duration-150 ease-snap",
-        "outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+        "group relative h-full w-full rounded-surface border p-3 text-left",
+        "transition-[background-color,border-color,box-shadow] duration-100 ease-snap",
+        "focus-ring",
         selected
-          ? "border-primary/45 bg-primary/8 dark:bg-primary/10 shadow-(--shadow-selected)"
-          : "border-border-subtle bg-surface-1 hover:border-border-hover hover:bg-surface-2",
-        disabled && "cursor-not-allowed border-border-subtle bg-muted text-muted-foreground"
+          ? "border-border-control bg-surface-2 shadow-[var(--shadow-control),inset_2px_0_0_var(--color-primary)]"
+          : "border-border-subtle bg-surface-1 shadow-(--shadow-panel) hover:border-border-hover hover:bg-surface-2",
+        disabled && "cursor-not-allowed opacity-55 grayscale"
       )}
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2.5">
         <span
           className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
-            "transition-colors duration-150 ease-snap",
+            "flex size-7 shrink-0 items-center justify-center rounded-control border",
+            "transition-colors duration-100 ease-snap",
             selected
-              ? "bg-primary/15 dark:bg-primary/20"
-              : "bg-surface-3 group-hover:bg-primary/12 dark:bg-surface-3"
+              ? "border-primary/35 bg-primary/10"
+              : "border-border-subtle bg-surface-3 group-hover:border-border"
           )}
         >
           <Icon
             className={cn(
-              "h-4 w-4 transition-colors duration-150 ease-snap",
-              selected ? "text-primary" : "text-muted-foreground group-hover:text-primary"
+              "size-3.5 transition-colors duration-100 ease-snap",
+              selected ? "text-primary" : "text-muted-foreground group-hover:text-foreground"
             )}
+            strokeWidth={1.75}
           />
         </span>
 
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium leading-snug text-foreground">{title}</span>
-          <span className="mt-1 block text-xs leading-snug text-muted-foreground">
+          <span className="block text-[13px] font-semibold leading-snug text-foreground">
+            {title}
+          </span>
+          <span className="mt-0.5 block text-xs leading-snug text-muted-foreground">
             {description}
           </span>
         </span>
 
         <span
           className={cn(
-            "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border",
-            "transition-colors duration-150 ease-snap",
-            selected ? "border-primary bg-primary" : "border-border bg-transparent"
+            "flex size-4 shrink-0 items-center justify-center rounded-[2px] border",
+            "transition-colors duration-100 ease-snap",
+            selected
+              ? "border-primary bg-primary"
+              : "border-border-control bg-input shadow-(--shadow-well)"
           )}
         >
-          {selected && <Check className="h-3 w-3 text-primary-foreground" strokeWidth={3} />}
+          {selected && <Check className="size-3 text-primary-foreground" strokeWidth={2.5} />}
         </span>
       </div>
     </button>

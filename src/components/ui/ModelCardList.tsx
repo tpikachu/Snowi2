@@ -21,6 +21,19 @@ export interface ModelCardOption {
   recommended?: boolean;
 }
 
+/**
+ * Rule 3 — a selected model is a raised plate with an accent rail, not a
+ * teal-tinted row. In a list of thirty models a tinted row loses against its
+ * neighbours the moment the list scrolls; a rail holds the leading edge.
+ *
+ * Both colour schemes now resolve to the same construction (the app has one
+ * accent), so `colorScheme` survives as a prop but no longer forks the look.
+ */
+const ROW_SELECTED =
+  "border-border-control bg-surface-2 shadow-[var(--shadow-control),inset_2px_0_0_var(--color-primary)]";
+const ROW_DEFAULT =
+  "border-border-subtle bg-surface-1 shadow-(--shadow-panel) hover:border-border-hover hover:bg-surface-2";
+
 const COLOR_CONFIG: Record<
   ColorScheme,
   {
@@ -28,18 +41,8 @@ const COLOR_CONFIG: Record<
     default: string;
   }
 > = {
-  purple: {
-    selected:
-      "border-primary/30 bg-primary/8 dark:bg-primary/6 dark:border-primary/20 shadow-(--shadow-selected)",
-    default:
-      "border-border bg-surface-1 hover:border-border-hover hover:bg-muted dark:border-white/5 dark:bg-white/3 dark:hover:border-white/20 dark:hover:bg-white/8",
-  },
-  blue: {
-    selected:
-      "border-primary/30 bg-primary/10 dark:bg-primary/6 shadow-(--shadow-selected)",
-    default:
-      "border-border bg-surface-1 hover:border-border-hover hover:bg-muted dark:border-white/5 dark:bg-white/3 dark:hover:border-white/20 dark:hover:bg-white/8",
-  },
+  purple: { selected: ROW_SELECTED, default: ROW_DEFAULT },
+  blue: { selected: ROW_SELECTED, default: ROW_DEFAULT },
 };
 
 interface ModelCardProps {
@@ -87,38 +90,32 @@ export function ModelCard({
     }
   };
 
+  // A square status pip. No glow: this system reads state from shape and
+  // position, and a bloom on a 6px dot is decoration, not information.
   const getStatusDotClass = () => {
     if (!isLocalMode) {
-      return isSelected
-        ? "bg-primary shadow-[0_0_5px_color-mix(in_oklab,var(--color-primary)_55%,transparent)]"
-        : "bg-muted-foreground/30";
+      return isSelected ? "bg-primary" : "bg-border-hover";
     }
     if (isDownloaded) {
-      return isSelected
-        ? "bg-primary shadow-[0_0_5px_color-mix(in_oklab,var(--color-primary)_55%,transparent)]"
-        : "bg-success shadow-[0_0_5px_color-mix(in_oklab,var(--color-success)_50%,transparent)]";
+      return isSelected ? "bg-primary" : "bg-success";
     }
     if (isDownloading) {
       return "bg-warning";
     }
-    return "bg-muted-foreground/20";
+    return "bg-border-subtle";
   };
 
   return (
     <div
       onClick={handleCardClick}
-      className={`relative w-full p-2 rounded-md border text-left transition-colors duration-200 group overflow-hidden ${
+      className={`group relative w-full overflow-hidden rounded-surface border p-1.5 pl-2.5 text-left transition-[background-color,border-color,box-shadow] duration-100 ease-snap ${
         isSelected ? styles.selected : styles.default
       } ${!isLocalMode || (isDownloaded && !isSelected) ? "cursor-pointer" : ""}`}
     >
       <div className="flex items-center gap-1.5">
         <div
-          className={`w-1.5 h-1.5 rounded-full shrink-0 ${getStatusDotClass()} ${
-            isSelected && isDownloaded
-              ? "animate-[pulse-glow_2s_ease-in-out_infinite]"
-              : isDownloading
-                ? "animate-[spinner-rotate_1s_linear_infinite]"
-                : ""
+          className={`size-1.5 shrink-0 rounded-[1px] ${getStatusDotClass()} ${
+            isDownloading ? "animate-pulse" : ""
           }`}
         />
 
@@ -135,7 +132,7 @@ export function ModelCard({
 
         <span
           className={cn(
-            "text-sm font-semibold text-foreground truncate tracking-tight",
+            "truncate text-[13px] font-semibold tracking-[-0.008em] text-foreground",
             truncateDescription && (model.description ? "shrink-0 max-w-[60%]" : "min-w-0 flex-1")
           )}
         >
@@ -145,8 +142,8 @@ export function ModelCard({
           <span
             className={
               truncateDescription
-                ? "text-xs text-muted-foreground/60 truncate min-w-0 flex-1"
-                : "text-xs text-muted-foreground/50 tabular-nums shrink-0"
+                ? "min-w-0 flex-1 truncate text-[11px] text-muted-foreground"
+                : "shrink-0 text-[11px] tabular-nums text-muted-foreground"
             }
           >
             {model.description}
@@ -156,7 +153,7 @@ export function ModelCard({
           <a
             href={specHref}
             onClick={createExternalLinkHandler(specHref)}
-            className="inline-flex items-center gap-0.5 text-xs text-primary/60 hover:text-primary transition-colors shrink-0"
+            className="inline-flex shrink-0 items-center gap-0.5 text-[11px] text-primary transition-colors hover:text-primary-hover"
           >
             {t("models.learnMore")}
             <ExternalLink size={9} />
@@ -164,14 +161,14 @@ export function ModelCard({
         )}
 
         {model.recommended && (
-          <span className="text-xs font-medium text-primary px-1.5 py-0.5 bg-primary/10 rounded-sm shrink-0">
+          <span className="micro-caps shrink-0 rounded-control border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-primary">
             {t("common.recommended")}
           </span>
         )}
 
         <div className="ml-auto flex items-center gap-1.5 shrink-0">
           {isSelected && (
-            <span className="text-xs font-medium text-primary px-2 py-0.5 bg-primary/10 rounded-sm">
+            <span className="micro-caps rounded-control border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-primary">
               {t("common.active")}
             </span>
           )}
@@ -186,7 +183,7 @@ export function ModelCard({
                   }}
                   size="sm"
                   variant="ghost"
-                  className="h-6 w-6 p-0 text-muted-foreground/40 hover:text-destructive opacity-0 group-hover:opacity-100 transition-[color,opacity,transform] active:scale-95"
+                  className="size-7 p-0 text-muted-foreground opacity-0 transition-[color,background-color,opacity] group-hover:opacity-100 hover:text-destructive"
                 >
                   <Trash2 size={12} />
                 </Button>
@@ -199,7 +196,7 @@ export function ModelCard({
                   disabled={isCancelling || isInstalling}
                   size="sm"
                   variant="outline"
-                  className="h-6 px-2.5 text-xs text-destructive border-destructive/25 hover:bg-destructive/8"
+                  className="h-6 border-destructive/35 px-2 text-destructive hover:border-destructive/50 hover:bg-destructive/10"
                 >
                   <X size={11} className="mr-0.5" />
                   {isCancelling ? "..." : t("common.cancel")}
@@ -212,7 +209,7 @@ export function ModelCard({
                   }}
                   size="sm"
                   variant="default"
-                  className="h-6 px-2.5 text-xs"
+                  className="h-6 px-2"
                 >
                   <Download size={11} className="mr-1" />
                   {t("common.download")}
@@ -257,7 +254,7 @@ export default function ModelCardList({
   const { t } = useTranslation();
 
   if (models.length === 0) {
-    return <p className="text-sm text-muted-foreground py-2">{t("models.noneAvailable")}</p>;
+    return <p className="py-2 text-[13px] text-muted-foreground">{t("models.noneAvailable")}</p>;
   }
 
   return (

@@ -1,30 +1,42 @@
+import { useId } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "../../stores/settingsStore";
-import { SectionHeader } from "../ui/SettingsSection";
+import SettingsGroup, { SettingsPanelBody } from "./SettingsGroup";
 import InferenceConfigEditor from "./InferenceConfigEditor";
 
 export default function ChatAgentSettings() {
   const { t } = useTranslation();
   const chatAgentPrompt = useSettingsStore((s) => s.customPrompts.chatAgent);
   const setCustomPrompt = useSettingsStore((s) => s.setCustomPrompt);
+  const promptId = useId();
 
   return (
-    <div className="space-y-6">
-      <InferenceConfigEditor scope="chatIntelligence" />
+    <SettingsPanelBody>
+      <SettingsGroup
+        id="chatAgentModel"
+        title={t("common.model")}
+        description={t("settingsModal.groupTitles.modelDescription")}
+      >
+        <InferenceConfigEditor scope="chatIntelligence" />
+      </SettingsGroup>
 
-      <div>
-        <SectionHeader
-          title={t("agentMode.settings.systemPrompt")}
-          description={t("agentMode.settings.systemPromptDescription")}
-        />
+      <SettingsGroup
+        id="chatAgentPrompt"
+        title={t("agentMode.settings.systemPrompt")}
+        description={t("agentMode.settings.systemPromptDescription")}
+      >
+        <label htmlFor={promptId} className="sr-only">
+          {t("agentMode.settings.systemPrompt")}
+        </label>
         <textarea
+          id={promptId}
           value={chatAgentPrompt}
           onChange={(e) => setCustomPrompt("chatAgent", e.target.value)}
           placeholder={t("agentMode.settings.systemPromptPlaceholder")}
-          rows={4}
-          className="w-full text-xs bg-transparent border border-border/50 rounded-md px-3 py-2 resize-y focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-primary/30 placeholder:text-muted-foreground/50"
+          rows={5}
+          className="w-full resize-y rounded-md px-3 py-2 text-xs leading-relaxed"
         />
-      </div>
-    </div>
+      </SettingsGroup>
+    </SettingsPanelBody>
   );
 }

@@ -932,7 +932,8 @@
         "transcriptionPipeline": "Transcription pipeline"
       },
       "title": "What gets logged"
-    }
+    },
+    "copyPath": "Copy log file path"
   },
   "apiKeysSection": {
     "title": "API Keys",
@@ -1251,7 +1252,22 @@
         "label": "System"
       }
     },
-    "title": "Settings"
+    "title": "Settings",
+    "search": {
+      "label": "Search settings",
+      "placeholder": "Search settings",
+      "clear": "Clear search",
+      "noResults": "Nothing matches \"{{query}}\"",
+      "resultsLabel": "Search results"
+    },
+    "navLabel": "Settings sections",
+    "closeHint": "Close settings (Esc)",
+    "groupTitles": {
+      "engine": "Engine",
+      "engineDescription": "Which service turns this audio into text.",
+      "modelDescription": "Which language model handles this task.",
+      "options": "Options"
+    }
   },
   "settingsPage": {
     "workspace": {
@@ -3520,6 +3536,27 @@
     },
     "start": "Take notes",
     "join": "Join & transcribe"
+  },
+  "capture": {
+    "dictate": "Dictate",
+    "dictateHint": "Start dictation ({{hotkey}})",
+    "dictateNoHotkeyHint": "No dictation shortcut is active — start from here",
+    "hotkeyMissing": "No shortcut",
+    "meeting": "Meeting",
+    "meetingHint": "Record a meeting into a new note",
+    "meetingNoteTitle": "Meeting notes",
+    "openNote": "Open",
+    "meetingStartFailedTitle": "Couldn't start the meeting",
+    "meetingStartFailedDescription": "The meeting note could not be created. Please try again.",
+    "status": {
+      "dictationRecording": "Recording",
+      "meetingRecording": "Meeting",
+      "transcribing": "Transcribing",
+      "finishing": "Finishing"
+    },
+    "empty": {
+      "noHotkey": "No dictation shortcut is active right now — use the buttons above, or set one in Settings."
+    }
   },
   "shell": {
     "contextPane": {

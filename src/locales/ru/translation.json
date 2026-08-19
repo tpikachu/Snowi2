@@ -892,7 +892,8 @@
         "transcriptionPipeline": "Конвейер транскрипции"
       },
       "title": "Что записывается в логи"
-    }
+    },
+    "copyPath": "Скопировать путь к файлу журнала"
   },
   "dictionarySuffix": "Суффикс словаря",
   "emailVerification": {
@@ -1163,7 +1164,22 @@
         "label": "Рабочее пространство"
       }
     },
-    "title": "Настройки"
+    "title": "Настройки",
+    "search": {
+      "label": "Поиск по настройкам",
+      "placeholder": "Поиск по настройкам",
+      "clear": "Очистить поиск",
+      "noResults": "Ничего не найдено по запросу «{{query}}»",
+      "resultsLabel": "Результаты поиска"
+    },
+    "navLabel": "Разделы настроек",
+    "closeHint": "Закрыть настройки (Esc)",
+    "groupTitles": {
+      "engine": "Движок",
+      "engineDescription": "Какая служба превращает этот звук в текст.",
+      "modelDescription": "Какая языковая модель выполняет эту задачу.",
+      "options": "Параметры"
+    }
   },
   "settingsPage": {
     "unifiedBilling": {
@@ -3550,6 +3566,27 @@
     },
     "start": "Вести заметки",
     "join": "Присоединиться и вести заметки"
+  },
+  "capture": {
+    "dictate": "Диктовка",
+    "dictateHint": "Начать диктовку ({{hotkey}})",
+    "dictateNoHotkeyHint": "Сочетание клавиш для диктовки не назначено — начните отсюда",
+    "hotkeyMissing": "Нет сочетания",
+    "meeting": "Встреча",
+    "meetingHint": "Записать встречу в новую заметку",
+    "meetingNoteTitle": "Заметки встречи",
+    "openNote": "Открыть",
+    "meetingStartFailedTitle": "Не удалось начать встречу",
+    "meetingStartFailedDescription": "Не удалось создать заметку встречи. Попробуйте ещё раз.",
+    "status": {
+      "dictationRecording": "Запись",
+      "meetingRecording": "Встреча",
+      "transcribing": "Расшифровка",
+      "finishing": "Завершение"
+    },
+    "empty": {
+      "noHotkey": "Сейчас не назначено сочетание клавиш для диктовки — используйте кнопки выше или задайте его в настройках."
+    }
   },
   "shell": {
     "contextPane": {

@@ -12,11 +12,9 @@ import {
   Sun,
   Moon,
   Monitor,
-  Cloud,
   Key,
   Cpu,
   Network,
-  Sparkles,
   AlertTriangle,
   Loader2,
   CircleCheck,
@@ -25,11 +23,7 @@ import {
   BookOpen,
   Copy,
   Info,
-  MessageSquare,
-  FileAudio,
-  Wand2,
-  Upload,
-  Languages,
+  ChevronDown,
 } from "lucide-react";
 import MicPermissionWarning from "./ui/MicPermissionWarning";
 import MicrophoneSettings from "./ui/MicrophoneSettings";
@@ -57,11 +51,9 @@ import { useClipboard } from "../hooks/useClipboard";
 import { useUpdater } from "../hooks/useUpdater";
 
 import PromptStudio from "./ui/PromptStudio";
-import { ProviderTabs } from "./ui/ProviderTabs";
 import { HotkeyListInput } from "./ui/HotkeyListInput";
 import { useHotkeyRegistration } from "../hooks/useHotkeyRegistration";
 import { useHotkeyModeInfo } from "../hooks/useHotkeyModeInfo";
-import { useLocalStorage } from "../hooks/useLocalStorage";
 import { validateHotkeyForSlot } from "../utils/hotkeyValidation";
 import { getCachedPlatform } from "../utils/platform";
 import { formatHotkeyLabel } from "../utils/hotkeys";
@@ -86,26 +78,31 @@ import type {
   InferenceMode,
 } from "../types/electron";
 import logger from "../utils/logger";
-import { SettingsRow, InferenceModeSelector } from "./ui/SettingsSection";
+import {
+  SettingsRow,
+  SettingsPanel,
+  SettingsPanelRow,
+  InferenceModeSelector,
+} from "./ui/SettingsSection";
 import type { InferenceModeOption } from "./ui/SettingsSection";
-import { useSettingsLayout } from "./ui/useSettingsLayout";
+import SettingsGroup, {
+  SettingsFieldGrid,
+  SettingsPanelBody,
+  SettingsSectionBody,
+} from "./settings/SettingsGroup";
+import type { LlmTab, SettingsSectionType, SpeechTab } from "./settings/settingsNav";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { formatBytes } from "../utils/formatBytes";
 import { clearMissingLocalModelSelections, useSettingsStore } from "../stores/settingsStore";
 import { canManageSystemAudioInApp } from "../utils/systemAudioAccess";
 
-export type SettingsSectionType =
-  | "general"
-  | "hotkeys"
-  | "speechToText"
-  | "llms"
-  | "privacyData"
-  | "system";
+export type { SettingsSectionType };
 
 interface SettingsPageProps {
   activeSection?: SettingsSectionType;
-  /** When a legacy section ID was used (e.g. `meetings`), land on the matching sub-tab. */
-  initialSubTab?: string;
+  /** Active sub-surface of the panelled sections. Owned by SettingsModal. */
+  speechTab?: SpeechTab;
+  llmTab?: LlmTab;
 }
 
 const UI_LANGUAGE_OPTIONS: import("./ui/LanguageSelector").LanguageOption[] = [
@@ -123,60 +120,11 @@ const UI_LANGUAGE_OPTIONS: import("./ui/LanguageSelector").LanguageOption[] = [
 
 const RETENTION_DAY_OPTIONS = [1, 7, 14, 30, 60, 90];
 
-const RETENTION_SELECT_CLASS =
-  "h-7 rounded border border-border/70 bg-surface-1/80 px-2.5 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm hover:border-border-hover hover:bg-surface-2/70 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 transition-colors duration-200";
+/** Shared chrome for the small inline `<select>` controls in this page. */
+const SELECT_CLASS =
+  "h-8 rounded-md border border-border bg-input px-2.5 text-xs font-medium text-foreground transition-colors duration-150 ease-snap hover:border-border-hover focus:border-border-active focus:outline-none focus:ring-2 focus:ring-ring/35 disabled:cursor-not-allowed disabled:opacity-50";
 
 const noop = () => {};
-
-function SettingsPanel({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`rounded-lg border border-border/50 dark:border-border-subtle/70 bg-card/50 dark:bg-surface-2/50 backdrop-blur-sm divide-y divide-border/30 dark:divide-border-subtle/50 ${className}`}
-    >
-      {children}
-    </div>
-  );
-}
-
-function SettingsPanelRow({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  const { isCompact } = useSettingsLayout();
-
-  return (
-    <div className={`${isCompact ? "px-3 py-2.5" : "px-4 py-3"} ${className}`}>{children}</div>
-  );
-}
-
-function SectionHeader({
-  title,
-  description,
-  note,
-}: {
-  title: string;
-  description?: string;
-  note?: string;
-}) {
-  return (
-    <div className="mb-3">
-      <h3 className="text-xs font-semibold text-foreground tracking-tight">{title}</h3>
-      {description && (
-        <p className="text-xs text-muted-foreground/80 mt-0.5 leading-relaxed">{description}</p>
-      )}
-      {note && <p className="text-xs text-muted-foreground/80 mt-0.5 leading-relaxed">{note}</p>}
-    </div>
-  );
-}
 
 interface TranscriptionSectionProps {
   cloudTranscriptionMode: string;
@@ -333,33 +281,39 @@ function TranscriptionSection({
   );
 
   return (
-    <div className="space-y-4">
-      <InferenceModeSelector
-        modes={transcriptionModes}
-        activeMode={transcriptionMode}
-        onSelect={handleTranscriptionModeSelect}
-      />
-
-      {transcriptionMode === "providers" && renderTranscriptionPicker("cloud")}
-      {transcriptionMode === "local" && (
-        <>
-          {renderTranscriptionPicker("local")}
-          {renderPreviewToggle()}
-        </>
-      )}
-
-      {transcriptionMode === "self-hosted" && (
-        <SelfHostedPanel
-          service="transcription"
-          url={remoteTranscriptionUrl}
-          onUrlChange={setRemoteTranscriptionUrl}
-          model={remoteTranscriptionModel}
-          onModelChange={setRemoteTranscriptionModel}
+    <>
+      <SettingsGroup
+        id="dictationEngine"
+        title={t("settingsModal.groupTitles.engine")}
+        description={t("settingsModal.groupTitles.engineDescription")}
+      >
+        <InferenceModeSelector
+          modes={transcriptionModes}
+          activeMode={transcriptionMode}
+          onSelect={handleTranscriptionModeSelect}
         />
-      )}
 
-      <GpuDeviceSelector purpose="transcription" />
-    </div>
+        {transcriptionMode === "providers" && renderTranscriptionPicker("cloud")}
+        {transcriptionMode === "local" && (
+          <>
+            {renderTranscriptionPicker("local")}
+            {renderPreviewToggle()}
+          </>
+        )}
+
+        {transcriptionMode === "self-hosted" && (
+          <SelfHostedPanel
+            service="transcription"
+            url={remoteTranscriptionUrl}
+            onUrlChange={setRemoteTranscriptionUrl}
+            model={remoteTranscriptionModel}
+            onModelChange={setRemoteTranscriptionModel}
+          />
+        )}
+      </SettingsGroup>
+
+      <GpuDeviceSelector purpose="transcription" anchorId="dictationGpu" />
+    </>
   );
 }
 
@@ -387,19 +341,28 @@ function NoteFormattingSettings() {
   const setAutoGenerateNoteTitle = useSettingsStore((s) => s.setAutoGenerateNoteTitle);
 
   return (
-    <div className="space-y-4">
-      <SettingsPanel>
-        <SettingsPanelRow>
-          <SettingsRow
-            label={t("settingsPage.noteFormatting.autoGenerateTitle")}
-            description={t("settingsPage.noteFormatting.autoGenerateTitleDescription")}
-          >
-            <Toggle checked={autoGenerateNoteTitle} onChange={setAutoGenerateNoteTitle} />
-          </SettingsRow>
-        </SettingsPanelRow>
-      </SettingsPanel>
-      <InferenceConfigEditor scope="noteFormatting" />
-    </div>
+    <SettingsPanelBody>
+      <SettingsGroup id="noteFormattingOptions" title={t("settingsModal.groupTitles.options")}>
+        <SettingsPanel>
+          <SettingsPanelRow>
+            <SettingsRow
+              label={t("settingsPage.noteFormatting.autoGenerateTitle")}
+              description={t("settingsPage.noteFormatting.autoGenerateTitleDescription")}
+            >
+              <Toggle checked={autoGenerateNoteTitle} onChange={setAutoGenerateNoteTitle} />
+            </SettingsRow>
+          </SettingsPanelRow>
+        </SettingsPanel>
+      </SettingsGroup>
+
+      <SettingsGroup
+        id="noteFormattingModel"
+        title={t("common.model")}
+        description={t("settingsModal.groupTitles.modelDescription")}
+      >
+        <InferenceConfigEditor scope="noteFormatting" />
+      </SettingsGroup>
+    </SettingsPanelBody>
   );
 }
 
@@ -417,59 +380,45 @@ function AiModelsSection({ useCleanupModel, setUseCleanupModel, toast }: AiModel
   };
 
   return (
-    <div className="space-y-4">
-      <SettingsPanel>
-        <SettingsPanelRow>
-          <SettingsRow
-            label={t("settingsPage.aiModels.enableTextCleanup")}
-            description={t("settingsPage.aiModels.enableTextCleanupDescription")}
-          >
-            <Toggle checked={useCleanupModel} onChange={setUseCleanupModel} />
-          </SettingsRow>
-        </SettingsPanelRow>
-      </SettingsPanel>
+    <>
+      <SettingsGroup
+        id="cleanupModel"
+        title={t("common.model")}
+        description={t("settingsPage.aiModels.description")}
+      >
+        <SettingsPanel>
+          <SettingsPanelRow>
+            <SettingsRow
+              label={t("settingsPage.aiModels.enableTextCleanup")}
+              description={t("settingsPage.aiModels.enableTextCleanupDescription")}
+            >
+              <Toggle checked={useCleanupModel} onChange={setUseCleanupModel} />
+            </SettingsRow>
+          </SettingsPanelRow>
+        </SettingsPanel>
 
-      {useCleanupModel && (
-        <>
+        {useCleanupModel && (
           <InferenceConfigEditor scope="dictationCleanup" onModeChange={handleCleanupModeChange} />
-          <GpuDeviceSelector purpose="intelligence" />
-        </>
-      )}
-    </div>
+        )}
+      </SettingsGroup>
+
+      {useCleanupModel && <GpuDeviceSelector purpose="intelligence" anchorId="cleanupGpu" />}
+    </>
   );
 }
 
-type SpeechTab = "dictation" | "noteRecording" | "upload";
-type LlmTab =
-  | "dictationCleanup"
-  | "dictationAgent"
-  | "dictationTranslation"
-  | "noteFormatting"
-  | "chatIntelligence";
-
-const SPEECH_TABS: SpeechTab[] = ["dictation", "noteRecording", "upload"];
-const LLM_TABS: LlmTab[] = [
-  "dictationCleanup",
-  "dictationAgent",
-  "dictationTranslation",
-  "noteFormatting",
-  "chatIntelligence",
-];
-
-function useSubTab<T extends string>(storageKey: string, options: readonly T[], initial?: T) {
-  const [tab, setTab] = useLocalStorage<T>(storageKey, initial ?? options[0]);
-  useEffect(() => {
-    if (initial && initial !== tab) setTab(initial);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initial]);
-  const safeTab = options.includes(tab) ? tab : options[0];
-  return [safeTab, setTab] as const;
-}
-
-function VADLabelWithInfo({ label, description }: { label: string; description: string }) {
+function VADLabelWithInfo({
+  htmlFor,
+  label,
+  description,
+}: {
+  htmlFor: string;
+  label: string;
+  description: string;
+}) {
   return (
     <div className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground">
-      <span>{label}</span>
+      <label htmlFor={htmlFor}>{label}</label>
       <Popover>
         <PopoverTrigger asChild>
           <button
@@ -492,111 +441,18 @@ function TabPanel({ active, children }: { active: boolean; children: React.React
   return <div className={active ? undefined : "hidden"}>{children}</div>;
 }
 
-function SpeechToTextTabs({
-  initialTab,
-  renderDictation,
-  renderNoteRecording,
-  renderUpload,
+function GpuDeviceSelector({
+  purpose,
+  anchorId,
 }: {
-  initialTab?: SpeechTab;
-  renderDictation: () => React.ReactNode;
-  renderNoteRecording: () => React.ReactNode;
-  renderUpload: () => React.ReactNode;
+  purpose: "transcription" | "intelligence";
+  anchorId: string;
 }) {
-  const { t } = useTranslation();
-  const [tab, setTab] = useSubTab<SpeechTab>("settings.speechToTextTab", SPEECH_TABS, initialTab);
-
-  const subTabs = [
-    { id: "dictation", name: t("settingsPage.speechToText.tabs.dictation") },
-    { id: "noteRecording", name: t("settingsPage.speechToText.tabs.noteRecording") },
-    { id: "upload", name: t("settingsPage.speechToText.tabs.upload") },
-  ];
-
-  return (
-    <div className="space-y-4">
-      <SectionHeader
-        title={t("settingsPage.speechToText.title")}
-        description={t("settingsPage.speechToText.description")}
-      />
-      <ProviderTabs
-        providers={subTabs}
-        selectedId={tab}
-        onSelect={(id) => setTab(id as SpeechTab)}
-        renderIcon={(id) =>
-          id === "dictation" ? (
-            <Mic className="w-3.5 h-3.5" />
-          ) : id === "upload" ? (
-            <Upload className="w-3.5 h-3.5" />
-          ) : (
-            <FileAudio className="w-3.5 h-3.5" />
-          )
-        }
-      />
-      <TabPanel active={tab === "dictation"}>{renderDictation()}</TabPanel>
-      <TabPanel active={tab === "noteRecording"}>{renderNoteRecording()}</TabPanel>
-      <TabPanel active={tab === "upload"}>{renderUpload()}</TabPanel>
-    </div>
-  );
-}
-
-function LlmsTabs({
-  initialTab,
-  renderDictationCleanup,
-  renderDictationAgent,
-  renderDictationTranslation,
-  renderNoteFormatting,
-  renderChatIntelligence,
-}: {
-  initialTab?: LlmTab;
-  renderDictationCleanup: () => React.ReactNode;
-  renderDictationAgent: () => React.ReactNode;
-  renderDictationTranslation: () => React.ReactNode;
-  renderNoteFormatting: () => React.ReactNode;
-  renderChatIntelligence: () => React.ReactNode;
-}) {
-  const { t } = useTranslation();
-  const [tab, setTab] = useSubTab<LlmTab>("settings.llmsTab", LLM_TABS, initialTab);
-
-  const subTabs = [
-    { id: "dictationCleanup", name: t("settingsPage.llms.tabs.dictationCleanup") },
-    { id: "dictationAgent", name: t("settingsPage.llms.tabs.dictationAgent") },
-    { id: "dictationTranslation", name: t("settingsPage.llms.tabs.dictationTranslation") },
-    { id: "noteFormatting", name: t("settingsPage.llms.tabs.noteFormatting") },
-    { id: "chatIntelligence", name: t("settingsPage.llms.tabs.chatIntelligence") },
-  ];
-
-  return (
-    <div className="space-y-4">
-      <SectionHeader
-        title={t("settingsPage.llms.title")}
-        description={t("settingsPage.llms.description")}
-      />
-      <ProviderTabs
-        providers={subTabs}
-        selectedId={tab}
-        onSelect={(id) => setTab(id as LlmTab)}
-        renderIcon={(id) => {
-          if (id === "dictationCleanup") return <Wand2 className="w-3.5 h-3.5" />;
-          if (id === "dictationAgent") return <Sparkles className="w-3.5 h-3.5" />;
-          if (id === "dictationTranslation") return <Languages className="w-3.5 h-3.5" />;
-          if (id === "noteFormatting") return <BookOpen className="w-3.5 h-3.5" />;
-          return <MessageSquare className="w-3.5 h-3.5" />;
-        }}
-      />
-      <TabPanel active={tab === "dictationCleanup"}>{renderDictationCleanup()}</TabPanel>
-      <TabPanel active={tab === "dictationAgent"}>{renderDictationAgent()}</TabPanel>
-      <TabPanel active={tab === "dictationTranslation"}>{renderDictationTranslation()}</TabPanel>
-      <TabPanel active={tab === "noteFormatting"}>{renderNoteFormatting()}</TabPanel>
-      <TabPanel active={tab === "chatIntelligence"}>{renderChatIntelligence()}</TabPanel>
-    </div>
-  );
-}
-
-function GpuDeviceSelector({ purpose }: { purpose: "transcription" | "intelligence" }) {
   const { t } = useTranslation();
   const [gpus, setGpus] = useState<GpuDevice[]>([]);
   const [selectedUuid, setSelectedUuid] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const selectId = `gpu-device-${purpose}`;
 
   useEffect(() => {
     Promise.all([
@@ -614,22 +470,26 @@ function GpuDeviceSelector({ purpose }: { purpose: "transcription" | "intelligen
   if (!loaded || gpus.length < 2) return null;
 
   return (
-    <div className="border-t border-border/40 pt-4 mt-4">
-      <SectionHeader
-        title={t(`settingsPage.${purpose}.gpuDevice.title`)}
-        description={t(`settingsPage.${purpose}.gpuDevice.description`)}
-      />
+    <SettingsGroup
+      id={anchorId}
+      title={t(`settingsPage.${purpose}.gpuDevice.title`)}
+      description={t(`settingsPage.${purpose}.gpuDevice.description`)}
+    >
       <SettingsPanel>
         <SettingsPanelRow>
+          <label htmlFor={selectId} className="sr-only">
+            {t(`settingsPage.${purpose}.gpuDevice.title`)}
+          </label>
           <div className="relative w-full">
             <select
+              id={selectId}
               value={selectedUuid}
               onChange={async (e) => {
                 const uuid = e.target.value;
                 setSelectedUuid(uuid);
                 await window.electronAPI?.setGpuDeviceIndex?.(purpose, uuid);
               }}
-              className="w-full appearance-none rounded-md border border-border bg-background px-3 pr-10 py-2 text-sm"
+              className={`${SELECT_CLASS} h-9 w-full appearance-none pr-9`}
             >
               {gpus.map((gpu) => (
                 <option key={gpu.uuid} value={gpu.uuid}>
@@ -637,28 +497,21 @@ function GpuDeviceSelector({ purpose }: { purpose: "transcription" | "intelligen
                 </option>
               ))}
             </select>
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m6 9 6 6 6-6" />
-            </svg>
+            <ChevronDown
+              aria-hidden="true"
+              className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+            />
           </div>
         </SettingsPanelRow>
       </SettingsPanel>
-    </div>
+    </SettingsGroup>
   );
 }
 
 export default function SettingsPage({
   activeSection = "general",
-  initialSubTab,
+  speechTab = "dictation",
+  llmTab = "dictationCleanup",
 }: SettingsPageProps) {
   const {
     confirmDialog,
@@ -1256,12 +1109,12 @@ export default function SettingsPage({
     });
   }, [isRemovingModels, cachePathHint, showConfirmDialog, showAlertDialog, t]);
 
-  const renderWhisperVadSettings = () => (
-    <div>
-      <SectionHeader
-        title={t("settingsPage.transcription.vad.title")}
-        description={t("settingsPage.transcription.vad.description")}
-      />
+  const renderWhisperVadSettings = (anchorId: string) => (
+    <SettingsGroup
+      id={anchorId}
+      title={t("settingsPage.transcription.vad.title")}
+      description={t("settingsPage.transcription.vad.description")}
+    >
       <SettingsPanel>
         <SettingsPanelRow>
           <SettingsRow
@@ -1288,13 +1141,15 @@ export default function SettingsPage({
           </SettingsRow>
         </SettingsPanelRow>
         <SettingsPanelRow>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+          <SettingsFieldGrid>
             <div className="space-y-1.5">
               <VADLabelWithInfo
+                htmlFor="vad-threshold"
                 label={t("settingsPage.transcription.vad.fields.threshold.label")}
                 description={t("settingsPage.transcription.vad.fields.threshold.info")}
               />
               <Input
+                id="vad-threshold"
                 type="number"
                 step="0.01"
                 min="0.1"
@@ -1305,10 +1160,12 @@ export default function SettingsPage({
             </div>
             <div className="space-y-1.5">
               <VADLabelWithInfo
+                htmlFor="vad-min-speech"
                 label={t("settingsPage.transcription.vad.fields.minSpeechDurationMs.label")}
                 description={t("settingsPage.transcription.vad.fields.minSpeechDurationMs.info")}
               />
               <Input
+                id="vad-min-speech"
                 type="number"
                 step="10"
                 min="50"
@@ -1319,10 +1176,12 @@ export default function SettingsPage({
             </div>
             <div className="space-y-1.5">
               <VADLabelWithInfo
+                htmlFor="vad-min-silence"
                 label={t("settingsPage.transcription.vad.fields.minSilenceDurationMs.label")}
                 description={t("settingsPage.transcription.vad.fields.minSilenceDurationMs.info")}
               />
               <Input
+                id="vad-min-silence"
                 type="number"
                 step="10"
                 min="50"
@@ -1333,10 +1192,12 @@ export default function SettingsPage({
             </div>
             <div className="space-y-1.5">
               <VADLabelWithInfo
+                htmlFor="vad-max-speech"
                 label={t("settingsPage.transcription.vad.fields.maxSpeechDurationS.label")}
                 description={t("settingsPage.transcription.vad.fields.maxSpeechDurationS.info")}
               />
               <Input
+                id="vad-max-speech"
                 type="number"
                 step="1"
                 min="5"
@@ -1347,10 +1208,12 @@ export default function SettingsPage({
             </div>
             <div className="space-y-1.5">
               <VADLabelWithInfo
+                htmlFor="vad-speech-pad"
                 label={t("settingsPage.transcription.vad.fields.speechPadMs.label")}
                 description={t("settingsPage.transcription.vad.fields.speechPadMs.info")}
               />
               <Input
+                id="vad-speech-pad"
                 type="number"
                 step="10"
                 min="0"
@@ -1361,10 +1224,12 @@ export default function SettingsPage({
             </div>
             <div className="space-y-1.5">
               <VADLabelWithInfo
+                htmlFor="vad-samples-overlap"
                 label={t("settingsPage.transcription.vad.fields.samplesOverlap.label")}
                 description={t("settingsPage.transcription.vad.fields.samplesOverlap.info")}
               />
               <Input
+                id="vad-samples-overlap"
                 type="number"
                 step="0.01"
                 min="0"
@@ -1373,30 +1238,34 @@ export default function SettingsPage({
                 onChange={(e) => setWhisperVadSamplesOverlap(Number(e.target.value))}
               />
             </div>
-          </div>
+          </SettingsFieldGrid>
         </SettingsPanelRow>
       </SettingsPanel>
-    </div>
+    </SettingsGroup>
   );
 
   const renderSectionContent = () => {
     switch (activeSection) {
       case "general":
         return (
-          <div className="space-y-6">
+          <SettingsSectionBody section="general">
             {/* Appearance */}
-            <div>
-              <SectionHeader
-                title={t("settingsPage.general.appearance.title")}
-                description={t("settingsPage.general.appearance.description")}
-              />
+            <SettingsGroup
+              id="appearance"
+              title={t("settingsPage.general.appearance.title")}
+              description={t("settingsPage.general.appearance.description")}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
                     label={t("settingsPage.general.appearance.theme")}
                     description={t("settingsPage.general.appearance.themeDescription")}
                   >
-                    <div className="inline-flex items-center gap-px p-0.5 bg-muted/60 dark:bg-surface-2 rounded-md">
+                    <div
+                      role="group"
+                      aria-label={t("settingsPage.general.appearance.theme")}
+                      className="inline-flex items-center gap-px rounded-md bg-muted p-0.5"
+                    >
                       {(
                         [
                           {
@@ -1421,18 +1290,19 @@ export default function SettingsPage({
                         return (
                           <button
                             key={option.value}
+                            type="button"
                             onClick={() => setTheme(option.value)}
-                            className={`
-                              flex items-center gap-1 px-2.5 py-1 rounded-[5px] text-xs font-medium
-                              transition-colors duration-100
-                              ${
-                                isSelected
-                                  ? "bg-background dark:bg-surface-raised text-foreground shadow-sm"
-                                  : "text-muted-foreground hover:text-foreground"
-                              }
-                            `}
+                            aria-pressed={isSelected}
+                            className={[
+                              "flex items-center gap-1 rounded-sm px-2.5 py-1 text-xs font-medium",
+                              "outline-none transition-colors duration-150 ease-snap",
+                              "focus-visible:ring-2 focus-visible:ring-ring",
+                              isSelected
+                                ? "bg-surface-0 text-foreground shadow-(--shadow-card) dark:bg-surface-raised"
+                                : "text-muted-foreground hover:text-foreground",
+                            ].join(" ")}
                           >
-                            <Icon className={`w-3 h-3 ${isSelected ? "text-primary" : ""}`} />
+                            <Icon className={`h-3 w-3 ${isSelected ? "text-primary" : ""}`} />
                             {option.label}
                           </button>
                         );
@@ -1441,11 +1311,10 @@ export default function SettingsPage({
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Sound Effects */}
-            <div>
-              <SectionHeader title={t("settingsPage.general.soundEffects.title")} />
+            <SettingsGroup id="sound" title={t("settingsPage.general.soundEffects.title")}>
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
@@ -1464,14 +1333,14 @@ export default function SettingsPage({
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Notifications */}
-            <div>
-              <SectionHeader
-                title={t("settingsPage.general.notifications.title")}
-                description={t("settingsPage.general.notifications.description")}
-              />
+            <SettingsGroup
+              id="notifications"
+              title={t("settingsPage.general.notifications.title")}
+              description={t("settingsPage.general.notifications.description")}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
@@ -1525,11 +1394,10 @@ export default function SettingsPage({
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Clipboard */}
-            <div>
-              <SectionHeader title={t("settingsPage.general.clipboard.title")} />
+            <SettingsGroup id="clipboard" title={t("settingsPage.general.clipboard.title")}>
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
@@ -1551,11 +1419,10 @@ export default function SettingsPage({
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Save Notes as Files */}
-            <div>
-              <SectionHeader title={t("settings.noteFiles.title")} />
+            <SettingsGroup id="noteFiles" title={t("settings.noteFiles.title")}>
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
@@ -1605,14 +1472,14 @@ export default function SettingsPage({
                   </>
                 )}
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Floating Icon */}
-            <div>
-              <SectionHeader
-                title={t("settingsPage.general.floatingIcon.title")}
-                description={t("settingsPage.general.floatingIcon.description")}
-              />
+            <SettingsGroup
+              id="floatingIcon"
+              title={t("settingsPage.general.floatingIcon.title")}
+              description={t("settingsPage.general.floatingIcon.description")}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
@@ -1628,13 +1495,14 @@ export default function SettingsPage({
                     description={t("settingsPage.general.floatingIcon.startPositionDescription")}
                   >
                     <select
+                      aria-label={t("settingsPage.general.floatingIcon.startPosition")}
                       value={panelStartPosition}
                       onChange={(e) =>
                         setPanelStartPosition(
                           e.target.value as "bottom-right" | "center" | "bottom-left"
                         )
                       }
-                      className="h-7 rounded border border-border/70 bg-surface-1/80 px-2.5 text-xs font-medium text-foreground shadow-sm backdrop-blur-sm hover:border-border-hover hover:bg-surface-2/70 focus:outline-none focus:ring-2 focus:ring-ring/30 focus:ring-offset-1 transition-colors duration-200"
+                      className={SELECT_CLASS}
                     >
                       <option value="bottom-right">
                         {t("settingsPage.general.floatingIcon.bottomRight")}
@@ -1649,14 +1517,14 @@ export default function SettingsPage({
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Language */}
-            <div>
-              <SectionHeader
-                title={t("settings.language.sectionTitle")}
-                description={t("settings.language.sectionDescription")}
-              />
+            <SettingsGroup
+              id="language"
+              title={t("settings.language.sectionTitle")}
+              description={t("settings.language.sectionDescription")}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
@@ -1715,14 +1583,14 @@ export default function SettingsPage({
                   </SettingsPanelRow>
                 )}
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Startup */}
-            <div>
-              <SectionHeader
-                title={t("settingsPage.general.startup.title")}
-                description={t("settingsPage.general.startup.description")}
-              />
+            <SettingsGroup
+              id="startup"
+              title={t("settingsPage.general.startup.title")}
+              description={t("settingsPage.general.startup.description")}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
@@ -1738,9 +1606,7 @@ export default function SettingsPage({
                 </SettingsPanelRow>
                 {autoStartNeedsApproval && (
                   <SettingsPanelRow>
-                    <Alert
-                      variant="warning"
-                    >
+                    <Alert variant="warning">
                       <AlertTriangle className="h-4 w-4" />
                       <AlertTitle>
                         {t("settingsPage.general.startup.needsApproval.title")}
@@ -1767,14 +1633,14 @@ export default function SettingsPage({
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Microphone */}
-            <div>
-              <SectionHeader
-                title={t("settingsPage.general.microphone.title")}
-                description={t("settingsPage.general.microphone.description")}
-              />
+            <SettingsGroup
+              id="microphone"
+              title={t("settingsPage.general.microphone.title")}
+              description={t("settingsPage.general.microphone.description")}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <MicrophoneSettings
@@ -1788,15 +1654,15 @@ export default function SettingsPage({
                   />
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Dictionary */}
-            <div>
-              <SectionHeader
-                title={t("settingsPage.dictionary.autoLearnTitle", {
-                  defaultValue: "Auto-learn from corrections",
-                })}
-              />
+            <SettingsGroup
+              id="dictionary"
+              title={t("settingsPage.dictionary.autoLearnTitle", {
+                defaultValue: "Auto-learn from corrections",
+              })}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
@@ -1812,20 +1678,20 @@ export default function SettingsPage({
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Wayland Paste Diagnostics — only on Linux + Wayland */}
             {ydotoolStatus?.isLinux && ydotoolStatus?.isWayland && (
-              <div>
-                <SectionHeader
-                  title={t("settingsPage.general.waylandPaste.title", {
-                    defaultValue: "Wayland Paste Setup",
-                  })}
-                  description={t("settingsPage.general.waylandPaste.description", {
-                    defaultValue:
-                      "Auto-paste on Wayland requires ydotool. Check the status of each component below.",
-                  })}
-                />
+              <SettingsGroup
+                id="waylandPaste"
+                title={t("settingsPage.general.waylandPaste.title", {
+                  defaultValue: "Wayland Paste Setup",
+                })}
+                description={t("settingsPage.general.waylandPaste.description", {
+                  defaultValue:
+                    "Auto-paste on Wayland requires ydotool. Check the status of each component below.",
+                })}
+              >
                 {(() => {
                   if (ydotoolStatus.isNixOS) {
                     return (
@@ -2156,8 +2022,12 @@ EOF`,
                                 </span>
                               </div>
                               <button
+                                type="button"
                                 onClick={refreshYdotoolStatus}
-                                className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                                aria-label={t("settingsPage.general.waylandPaste.recheck", {
+                                  defaultValue: "Re-check",
+                                })}
+                                className="shrink-0 rounded-sm text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                               >
                                 <RotateCw className="w-3.5 h-3.5" />
                               </button>
@@ -2189,8 +2059,9 @@ EOF`,
                                     </div>
                                     {!item.ok && (
                                       <button
+                                        type="button"
                                         onClick={() => setYdotoolGuideKey(item.key)}
-                                        className="shrink-0 flex items-center gap-1 text-xs px-2.5 py-1 rounded-md border border-border hover:bg-muted transition-colors text-foreground"
+                                        className="flex shrink-0 items-center gap-1 rounded-md border border-border px-2.5 py-1 text-xs text-foreground outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
                                       >
                                         <BookOpen className="w-3 h-3" />
                                         {t("settingsPage.general.waylandPaste.guide.open", {
@@ -2204,8 +2075,9 @@ EOF`,
                             </div>
                           </div>
                           <button
+                            type="button"
                             onClick={refreshYdotoolStatus}
-                            className="flex items-center gap-1.5 mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            className="mt-3 flex items-center gap-1.5 rounded-sm text-xs text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             <RotateCw className="w-3 h-3" />
                             {t("settingsPage.general.waylandPaste.recheck", {
@@ -2258,10 +2130,15 @@ EOF`,
                                                     {c.cmd}
                                                   </pre>
                                                   <button
+                                                    type="button"
                                                     onClick={() =>
                                                       navigator.clipboard.writeText(c.cmd)
                                                     }
-                                                    className="shrink-0 p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                                                    aria-label={t(
+                                                      "settingsPage.general.waylandPaste.copy",
+                                                      { defaultValue: "Copy" }
+                                                    )}
+                                                    className="shrink-0 rounded-md p-1.5 text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
                                                     title={t(
                                                       "settingsPage.general.waylandPaste.copy",
                                                       { defaultValue: "Copy" }
@@ -2286,14 +2163,14 @@ EOF`,
                     </>
                   );
                 })()}
-              </div>
+              </SettingsGroup>
             )}
-          </div>
+          </SettingsSectionBody>
         );
 
       case "hotkeys":
         return (
-          <div className="space-y-6">
+          <SettingsSectionBody section="hotkeys">
             {isUsingHyprland && hyprlandConfigStatus && !hyprlandConfigStatus.canWrite && (
               <Alert>
                 <Info className="h-4 w-4" />
@@ -2308,12 +2185,12 @@ EOF`,
               </Alert>
             )}
             {/* Dictation Hotkey */}
-            <div>
-              <SectionHeader
-                title={t("settingsPage.general.hotkey.title")}
-                description={t("settingsPage.general.hotkey.description")}
-                note={isUsingHyprland && t("settingsPage.general.hotkey.hyprlandUnbindDescription")}
-              />
+            <SettingsGroup
+              id="dictationHotkey"
+              title={t("settingsPage.general.hotkey.title")}
+              description={t("settingsPage.general.hotkey.description")}
+              note={isUsingHyprland && t("settingsPage.general.hotkey.hyprlandUnbindDescription")}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <HotkeyListInput
@@ -2328,9 +2205,10 @@ EOF`,
                       dictationKey &&
                       dictationKey !== effectiveDefaultHotkey ? (
                         <button
+                          type="button"
                           onClick={() => registerHotkey(effectiveDefaultHotkey)}
                           disabled={isHotkeyRegistering}
-                          className="text-xs text-muted-foreground/70 hover:text-foreground transition-colors disabled:opacity-50"
+                          className="rounded-sm text-xs text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
                         >
                           {t("settingsPage.general.hotkey.resetToDefault", {
                             hotkey: formatHotkeyLabel(effectiveDefaultHotkey),
@@ -2355,14 +2233,14 @@ EOF`,
                   </SettingsPanelRow>
                 )}
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Voice Agent Hotkey */}
-            <div>
-              <SectionHeader
-                title={t("settingsPage.general.voiceAgentHotkey.title")}
-                description={t("settingsPage.general.voiceAgentHotkey.description")}
-              />
+            <SettingsGroup
+              id="voiceAgentHotkey"
+              title={t("settingsPage.general.voiceAgentHotkey.title")}
+              description={t("settingsPage.general.voiceAgentHotkey.description")}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <HotkeyListInput
@@ -2375,14 +2253,14 @@ EOF`,
                   />
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Translation Hotkey */}
-            <div>
-              <SectionHeader
-                title={t("settingsPage.general.translationHotkey.title")}
-                description={t("settingsPage.general.translationHotkey.description")}
-              />
+            <SettingsGroup
+              id="translationHotkey"
+              title={t("settingsPage.general.translationHotkey.title")}
+              description={t("settingsPage.general.translationHotkey.description")}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <HotkeyListInput
@@ -2395,14 +2273,14 @@ EOF`,
                   />
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Meeting Mode Hotkey */}
-            <div>
-              <SectionHeader
-                title={t("settingsPage.general.meetingHotkey.title")}
-                description={t("settingsPage.general.meetingHotkey.description")}
-              />
+            <SettingsGroup
+              id="meetingHotkey"
+              title={t("settingsPage.general.meetingHotkey.title")}
+              description={t("settingsPage.general.meetingHotkey.description")}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <HotkeyListInput
@@ -2447,14 +2325,14 @@ EOF`,
                   </Select>
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Chat Agent Hotkey */}
-            <div>
-              <SectionHeader
-                title={t("agentMode.settings.hotkey")}
-                description={t("agentMode.settings.hotkeyDescription")}
-              />
+            <SettingsGroup
+              id="chatAgentHotkey"
+              title={t("agentMode.settings.hotkey")}
+              description={t("agentMode.settings.hotkeyDescription")}
+            >
               <SettingsPanel>
                 <SettingsPanelRow>
                   <HotkeyListInput
@@ -2467,8 +2345,8 @@ EOF`,
                   />
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
-          </div>
+            </SettingsGroup>
+          </SettingsSectionBody>
         );
 
       case "speechToText":
@@ -2477,14 +2355,9 @@ EOF`,
 
       case "privacyData":
         return (
-          <div className="space-y-6">
+          <SettingsSectionBody section="privacyData">
             {/* Audio Retention */}
-            <div>
-              <SectionHeader
-                title={t("settingsPage.privacy.audioRetention")}
-                description={t("settingsPage.privacy.audioRetentionDescription")}
-              />
-
+            <SettingsGroup id="audioRetention" title={t("settingsPage.privacy.audioRetention")}>
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
@@ -2492,11 +2365,12 @@ EOF`,
                     description={t("settingsPage.privacy.audioRetentionDescription")}
                   >
                     <select
+                      aria-label={t("settingsPage.privacy.audioRetention")}
                       value={audioRetentionDays}
                       onChange={(e) => {
                         setAudioRetentionDays(parseInt(e.target.value, 10));
                       }}
-                      className={RETENTION_SELECT_CLASS}
+                      className={SELECT_CLASS}
                     >
                       <option value={0}>{t("settingsPage.privacy.audioRetentionDisabled")}</option>
                       {audioRetentionDays > 0 &&
@@ -2539,10 +2413,10 @@ EOF`,
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Data Retention */}
-            <div className="border-t border-border/40 pt-6">
+            <SettingsGroup id="dataRetention" title={t("settingsPage.privacy.dataRetention")}>
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
@@ -2558,10 +2432,11 @@ EOF`,
                     description={t("settingsPage.privacy.transcriptRetentionDescription")}
                   >
                     <select
+                      aria-label={t("settingsPage.privacy.transcriptRetention")}
                       value={transcriptRetentionDays}
                       disabled={!dataRetentionEnabled}
                       onChange={(e) => setTranscriptRetentionDays(parseInt(e.target.value, 10))}
-                      className={RETENTION_SELECT_CLASS}
+                      className={SELECT_CLASS}
                     >
                       <option value={0}>
                         {t("settingsPage.privacy.transcriptRetentionForever")}
@@ -2587,15 +2462,14 @@ EOF`,
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Permissions */}
-            <div className="border-t border-border/40 pt-6">
-              <SectionHeader
-                title={t("settingsPage.permissions.title")}
-                description={t("settingsPage.permissions.description")}
-              />
-
+            <SettingsGroup
+              id="permissions"
+              title={t("settingsPage.permissions.title")}
+              description={t("settingsPage.permissions.description")}
+            >
               <div className="space-y-3">
                 <PermissionCard
                   icon={Mic}
@@ -2677,16 +2551,15 @@ EOF`,
                   </SettingsPanel>
                 </div>
               )}
-            </div>
-          </div>
+            </SettingsGroup>
+          </SettingsSectionBody>
         );
 
       case "system":
         return (
-          <div className="space-y-6">
+          <SettingsSectionBody section="system">
             {/* Software Updates */}
-            <div>
-              <SectionHeader title={t("settingsPage.general.updates.title")} />
+            <SettingsGroup id="updates" title={t("settingsPage.general.updates.title")}>
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
@@ -2786,9 +2659,18 @@ EOF`,
                         </Button>
 
                         {downloadingUpdate && (
-                          <div className="h-1 w-full overflow-hidden rounded-full bg-muted/50">
+                          <div
+                            role="progressbar"
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuenow={Math.round(updateDownloadProgress)}
+                            aria-label={t("settingsPage.general.updates.downloading", {
+                              progress: Math.round(updateDownloadProgress),
+                            })}
+                            className="h-1 w-full overflow-hidden rounded-full bg-muted"
+                          >
                             <div
-                              className="h-full bg-success transition-[width] duration-200 rounded-full"
+                              className="h-full rounded-full bg-success transition-[width] duration-200"
                               style={{
                                 width: `${Math.min(100, Math.max(0, updateDownloadProgress))}%`,
                               }}
@@ -2856,20 +2738,23 @@ EOF`,
                   )}
                 </SettingsPanelRow>
               </SettingsPanel>
-            </div>
+            </SettingsGroup>
 
             {/* Developer Tools */}
-            <div className="border-t border-border/40 pt-6">
+            <SettingsGroup
+              id="developerTools"
+              title={t("developerSection.title")}
+              description={t("developerSection.description")}
+            >
               <DeveloperSection />
-            </div>
+            </SettingsGroup>
 
             {/* Data Management */}
-            <div className="border-t border-border/40 pt-6">
-              <SectionHeader
-                title={t("settingsPage.developer.dataManagementTitle")}
-                description={t("settingsPage.developer.dataManagementDescription")}
-              />
-
+            <SettingsGroup
+              id="dataManagement"
+              title={t("settingsPage.developer.dataManagementTitle")}
+              description={t("settingsPage.developer.dataManagementDescription")}
+            >
               <div className="space-y-4">
                 <SettingsPanel>
                   <SettingsPanelRow>
@@ -2947,8 +2832,8 @@ EOF`,
                   </SettingsPanelRow>
                 </SettingsPanel>
               </div>
-            </div>
-          </div>
+            </SettingsGroup>
+          </SettingsSectionBody>
         );
 
       default:
@@ -2977,95 +2862,111 @@ EOF`,
         onOk={() => {}}
       />
 
-      {/* Mounted on first visit and kept alive so model-download progress and IPC listeners survive section switches. */}
+      {/* Mounted on first visit and kept alive so model-download progress and IPC
+          listeners survive section switches. */}
       {hasMountedSpeechToText && (
         <TabPanel active={activeSection === "speechToText"}>
-          <SpeechToTextTabs
-            initialTab={
-              activeSection === "speechToText"
-                ? (initialSubTab as SpeechTab | undefined)
-                : undefined
-            }
-            renderDictation={() => (
-              <div className="space-y-6">
-                <TranscriptionSection
-                  cloudTranscriptionMode={cloudTranscriptionMode}
-                  setCloudTranscriptionMode={setCloudTranscriptionMode}
-                  useLocalWhisper={useLocalWhisper}
-                  setUseLocalWhisper={setUseLocalWhisper}
-                  updateTranscriptionSettings={updateTranscriptionSettings}
-                  cloudTranscriptionProvider={cloudTranscriptionProvider}
-                  setCloudTranscriptionProvider={setCloudTranscriptionProvider}
-                  cloudTranscriptionModel={cloudTranscriptionModel}
-                  setCloudTranscriptionModel={setCloudTranscriptionModel}
-                  localTranscriptionProvider={localTranscriptionProvider}
-                  setLocalTranscriptionProvider={setLocalTranscriptionProvider}
-                  whisperModel={whisperModel}
-                  setWhisperModel={setWhisperModel}
-                  parakeetModel={parakeetModel}
-                  setParakeetModel={setParakeetModel}
-                  cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
-                  setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
-                  transcriptionMode={transcriptionMode}
-                  setTranscriptionMode={setTranscriptionMode}
-                  remoteTranscriptionUrl={remoteTranscriptionUrl}
-                  setRemoteTranscriptionUrl={setRemoteTranscriptionUrl}
-                  remoteTranscriptionModel={remoteTranscriptionModel}
-                  setRemoteTranscriptionModel={setRemoteTranscriptionModel}
-                  showTranscriptionPreview={showTranscriptionPreview}
-                  setShowTranscriptionPreview={setShowTranscriptionPreview}
-                  toast={toast}
-                />
-                {transcriptionMode === "local" &&
-                  localTranscriptionProvider !== "nvidia" &&
-                  renderWhisperVadSettings()}
-              </div>
-            )}
-            renderNoteRecording={() => (
-              <div className="space-y-6">
+          <TabPanel active={speechTab === "dictation"}>
+            <SettingsPanelBody>
+              <TranscriptionSection
+                cloudTranscriptionMode={cloudTranscriptionMode}
+                setCloudTranscriptionMode={setCloudTranscriptionMode}
+                useLocalWhisper={useLocalWhisper}
+                setUseLocalWhisper={setUseLocalWhisper}
+                updateTranscriptionSettings={updateTranscriptionSettings}
+                cloudTranscriptionProvider={cloudTranscriptionProvider}
+                setCloudTranscriptionProvider={setCloudTranscriptionProvider}
+                cloudTranscriptionModel={cloudTranscriptionModel}
+                setCloudTranscriptionModel={setCloudTranscriptionModel}
+                localTranscriptionProvider={localTranscriptionProvider}
+                setLocalTranscriptionProvider={setLocalTranscriptionProvider}
+                whisperModel={whisperModel}
+                setWhisperModel={setWhisperModel}
+                parakeetModel={parakeetModel}
+                setParakeetModel={setParakeetModel}
+                cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
+                setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
+                transcriptionMode={transcriptionMode}
+                setTranscriptionMode={setTranscriptionMode}
+                remoteTranscriptionUrl={remoteTranscriptionUrl}
+                setRemoteTranscriptionUrl={setRemoteTranscriptionUrl}
+                remoteTranscriptionModel={remoteTranscriptionModel}
+                setRemoteTranscriptionModel={setRemoteTranscriptionModel}
+                showTranscriptionPreview={showTranscriptionPreview}
+                setShowTranscriptionPreview={setShowTranscriptionPreview}
+                toast={toast}
+              />
+              {transcriptionMode === "local" &&
+                localTranscriptionProvider !== "nvidia" &&
+                renderWhisperVadSettings("dictationVad")}
+            </SettingsPanelBody>
+          </TabPanel>
+
+          <TabPanel active={speechTab === "noteRecording"}>
+            <SettingsPanelBody>
+              <SettingsGroup
+                id="noteRecordingEngine"
+                title={t("settingsModal.groupTitles.engine")}
+                description={t("settingsModal.groupTitles.engineDescription")}
+              >
                 <MeetingTranscriptionPanel />
-                {transcriptionMode === "local" &&
-                  localTranscriptionProvider !== "nvidia" &&
-                  renderWhisperVadSettings()}
-              </div>
-            )}
-            renderUpload={() => (
-              <div className="space-y-6">
+              </SettingsGroup>
+              {transcriptionMode === "local" &&
+                localTranscriptionProvider !== "nvidia" &&
+                renderWhisperVadSettings("noteRecordingVad")}
+            </SettingsPanelBody>
+          </TabPanel>
+
+          <TabPanel active={speechTab === "upload"}>
+            <SettingsPanelBody>
+              <SettingsGroup
+                id="uploadEngine"
+                title={t("settingsModal.groupTitles.engine")}
+                description={t("settingsModal.groupTitles.engineDescription")}
+              >
                 <UploadTranscriptionPanel />
-              </div>
-            )}
-          />
+              </SettingsGroup>
+            </SettingsPanelBody>
+          </TabPanel>
         </TabPanel>
       )}
+
       {hasMountedLlms && (
         <TabPanel active={activeSection === "llms"}>
-          <LlmsTabs
-            initialTab={
-              activeSection === "llms" ? (initialSubTab as LlmTab | undefined) : undefined
-            }
-            renderChatIntelligence={() => <ChatAgentSettings />}
-            renderDictationCleanup={() => (
-              <div className="space-y-6">
-                <AiModelsSection
-                  useCleanupModel={useCleanupModel}
-                  setUseCleanupModel={(value) => {
-                    updateCleanupSettings({ useCleanupModel: value });
-                  }}
-                  toast={toast}
-                />
-                <div className="border-t border-border/40 pt-6">
-                  <SectionHeader
-                    title={t("settingsPage.prompts.title")}
-                    description={t("settingsPage.prompts.description")}
-                  />
-                  <PromptStudio />
-                </div>
-              </div>
-            )}
-            renderDictationAgent={() => <DictationAgentSettings />}
-            renderDictationTranslation={() => <DictationTranslationSettings />}
-            renderNoteFormatting={() => <NoteFormattingSettings />}
-          />
+          <TabPanel active={llmTab === "dictationCleanup"}>
+            <SettingsPanelBody>
+              <AiModelsSection
+                useCleanupModel={useCleanupModel}
+                setUseCleanupModel={(value) => {
+                  updateCleanupSettings({ useCleanupModel: value });
+                }}
+                toast={toast}
+              />
+              <SettingsGroup
+                id="cleanupPrompts"
+                title={t("settingsPage.prompts.title")}
+                description={t("settingsPage.prompts.description")}
+              >
+                <PromptStudio />
+              </SettingsGroup>
+            </SettingsPanelBody>
+          </TabPanel>
+
+          <TabPanel active={llmTab === "dictationAgent"}>
+            <DictationAgentSettings />
+          </TabPanel>
+
+          <TabPanel active={llmTab === "dictationTranslation"}>
+            <DictationTranslationSettings />
+          </TabPanel>
+
+          <TabPanel active={llmTab === "noteFormatting"}>
+            <NoteFormattingSettings />
+          </TabPanel>
+
+          <TabPanel active={llmTab === "chatIntelligence"}>
+            <ChatAgentSettings />
+          </TabPanel>
         </TabPanel>
       )}
       {renderSectionContent()}

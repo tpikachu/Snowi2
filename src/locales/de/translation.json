@@ -932,7 +932,8 @@
         "transcriptionPipeline": "Transkriptionspipeline"
       },
       "title": "Was protokolliert wird"
-    }
+    },
+    "copyPath": "Pfad der Protokolldatei kopieren"
   },
   "apiKeysSection": {
     "title": "API-Schlüssel",
@@ -1251,7 +1252,22 @@
         "label": "System"
       }
     },
-    "title": "Einstellungen"
+    "title": "Einstellungen",
+    "search": {
+      "label": "Einstellungen durchsuchen",
+      "placeholder": "Einstellungen durchsuchen",
+      "clear": "Suche zurücksetzen",
+      "noResults": "Keine Treffer für \"{{query}}\"",
+      "resultsLabel": "Suchergebnisse"
+    },
+    "navLabel": "Einstellungsbereiche",
+    "closeHint": "Einstellungen schließen (Esc)",
+    "groupTitles": {
+      "engine": "Engine",
+      "engineDescription": "Welcher Dienst dieses Audio in Text umwandelt.",
+      "modelDescription": "Welches Sprachmodell diese Aufgabe übernimmt.",
+      "options": "Optionen"
+    }
   },
   "settingsPage": {
     "workspace": {
@@ -3520,6 +3536,27 @@
     },
     "start": "Notizen aufnehmen",
     "join": "Beitreten & transkribieren"
+  },
+  "capture": {
+    "dictate": "Diktieren",
+    "dictateHint": "Diktat starten ({{hotkey}})",
+    "dictateNoHotkeyHint": "Kein Diktat-Kürzel aktiv – hier starten",
+    "hotkeyMissing": "Kein Kürzel",
+    "meeting": "Meeting",
+    "meetingHint": "Ein Meeting in einer neuen Notiz aufzeichnen",
+    "meetingNoteTitle": "Meeting-Notizen",
+    "openNote": "Öffnen",
+    "meetingStartFailedTitle": "Meeting konnte nicht gestartet werden",
+    "meetingStartFailedDescription": "Die Meeting-Notiz konnte nicht erstellt werden. Bitte erneut versuchen.",
+    "status": {
+      "dictationRecording": "Aufnahme",
+      "meetingRecording": "Meeting",
+      "transcribing": "Transkription",
+      "finishing": "Wird abgeschlossen"
+    },
+    "empty": {
+      "noHotkey": "Derzeit ist kein Diktat-Kürzel aktiv – nutzen Sie die Schaltflächen oben oder legen Sie in den Einstellungen eines fest."
+    }
   },
   "shell": {
     "contextPane": {

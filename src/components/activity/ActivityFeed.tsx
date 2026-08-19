@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   CalendarClock,
   FileAudio,
+  Loader2,
   Mic,
   NotebookPen,
   ShieldOff,
@@ -22,6 +23,12 @@ import { cn } from "../lib/utils";
 import { formatHotkeyLabel, parseHotkeyList } from "../../utils/hotkeys";
 import { useUpcomingEvents } from "../../hooks/useUpcomingEvents";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { useMeetingRecordingStore } from "../../stores/meetingRecordingStore";
+import {
+  requestDictationToggle,
+  useDictationCaptureState,
+  useDictationHotkeyStatus,
+} from "../shell/captureBridge";
 
 const sectionLabelClass =
   "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground";
@@ -117,8 +124,32 @@ function FeedSkeleton({ label }: { label: string }) {
   );
 }
 
-function EmptyActivity({ hotkey }: { hotkey: string }) {
+/**
+ * First-run invitation. The hotkey line alone left a user who never learned
+ * the shortcut with nothing to click, so the two capture actions lead and the
+ * shortcut is taught underneath them — or replaced by a plain-language
+ * fallback when nothing is actually registered.
+ */
+function EmptyActivity({
+  hotkey,
+  onStartMeeting,
+  isStartingMeeting,
+}: {
+  hotkey: string;
+  onStartMeeting: () => void;
+  isStartingMeeting: boolean;
+}) {
   const { t } = useTranslation();
+  const dictation = useDictationCaptureState();
+  const { isResolving, isRegistered } = useDictationHotkeyStatus();
+  const isMeetingRecording = useMeetingRecordingStore((s) => s.isRecording);
+  const isMeetingTranscribing = useMeetingRecordingStore((s) => s.isTranscribing);
+  const isBusy =
+    dictation.isRecording ||
+    dictation.isProcessing ||
+    isMeetingRecording ||
+    isMeetingTranscribing ||
+    isStartingMeeting;
 
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border px-6 py-16 text-center">
@@ -129,18 +160,50 @@ function EmptyActivity({ hotkey }: { hotkey: string }) {
       <p className="mt-1.5 max-w-sm text-xs text-muted-foreground">
         {t("activity.empty.description")}
       </p>
-      <p className="mt-3 flex flex-wrap items-center justify-center gap-1.5 text-xs text-muted-foreground">
-        <span>{t("controlPanel.history.press")}</span>
-        {parseHotkeyList(hotkey).map((hk, index) => (
-          <Fragment key={hk}>
-            {index > 0 && <span className="text-muted-foreground/50">/</span>}
-            <kbd className="inline-flex h-5 items-center rounded-sm border border-border-subtle bg-surface-3 px-1.5 font-mono text-[11px] font-medium text-foreground">
-              {formatHotkeyLabel(hk)}
-            </kbd>
-          </Fragment>
-        ))}
-        <span>{t("controlPanel.history.toStart")}</span>
-      </p>
+
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+        <Button
+          variant="default"
+          size="sm"
+          disabled={isBusy}
+          onClick={() => void requestDictationToggle()}
+          className="h-8 gap-1.5 text-xs"
+        >
+          <Mic size={14} strokeWidth={2} aria-hidden="true" />
+          {t("capture.dictate")}
+        </Button>
+        <Button
+          variant="outline-flat"
+          size="sm"
+          disabled={isBusy}
+          onClick={onStartMeeting}
+          className="h-8 gap-1.5 text-xs"
+        >
+          {isStartingMeeting ? (
+            <Loader2 size={14} className="animate-spin" aria-hidden="true" />
+          ) : (
+            <CalendarClock size={14} strokeWidth={2} aria-hidden="true" />
+          )}
+          {t("capture.meeting")}
+        </Button>
+      </div>
+
+      {!isResolving && !isRegistered ? (
+        <p className="mt-3 max-w-sm text-xs text-muted-foreground">{t("capture.empty.noHotkey")}</p>
+      ) : (
+        <p className="mt-3 flex flex-wrap items-center justify-center gap-1.5 text-xs text-muted-foreground">
+          <span>{t("controlPanel.history.press")}</span>
+          {parseHotkeyList(hotkey).map((hk, index) => (
+            <Fragment key={hk}>
+              {index > 0 && <span className="text-muted-foreground/50">/</span>}
+              <kbd className="inline-flex h-5 items-center rounded-sm border border-border-subtle bg-surface-3 px-1.5 font-mono text-[11px] font-medium text-foreground">
+                {formatHotkeyLabel(hk)}
+              </kbd>
+            </Fragment>
+          ))}
+          <span>{t("controlPanel.history.toStart")}</span>
+        </p>
+      )}
     </div>
   );
 }
@@ -179,6 +242,9 @@ interface ActivityFeedProps {
   onShowAudioInFolder: (id: number) => void;
   onRetryTranscription: (id: number, options?: { isRecover?: boolean }) => Promise<void>;
   onOpenNote: (note: NoteItem) => void;
+  /** Empty-state capture invitation — same handler as the shell's control. */
+  onStartMeeting: () => void;
+  isStartingMeeting: boolean;
 }
 
 /**
@@ -200,6 +266,8 @@ export default function ActivityFeed({
   onShowAudioInFolder,
   onRetryTranscription,
   onOpenNote,
+  onStartMeeting,
+  isStartingMeeting,
 }: ActivityFeedProps) {
   const { t } = useTranslation();
   const dataRetentionEnabled = useSettingsStore((s) => s.dataRetentionEnabled);
@@ -308,7 +376,11 @@ export default function ActivityFeed({
             ) : visibleCount === 0 ? (
               <div className="mt-2">
                 {totalCount === 0 ? (
-                  <EmptyActivity hotkey={hotkey} />
+                  <EmptyActivity
+                    hotkey={hotkey}
+                    onStartMeeting={onStartMeeting}
+                    isStartingMeeting={isStartingMeeting}
+                  />
                 ) : (
                   <EmptyFilter filter={filter} onClear={() => setFilter("all")} />
                 )}

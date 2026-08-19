@@ -14,6 +14,11 @@ const OPTIONS = [
   { mode: "push", Icon: MicVocal, labelKey: "common.hold" },
 ] as const;
 
+/**
+ * Segmented gate, identical construction to `tabs.tsx` and
+ * `ProcessingModeSelector` — recessed track, one raised segment, accent rail
+ * under the live one.
+ */
 export function ActivationModeSelector({
   value,
   onChange,
@@ -23,20 +28,15 @@ export function ActivationModeSelector({
 
   return (
     <div
-      className={`
-        relative flex rounded-md border p-0.5 transition-colors duration-200
-        bg-surface-1 border-border-subtle
-        ${disabled ? "opacity-50 cursor-not-allowed" : ""}
-      `}
+      className={`relative flex rounded-control border border-border-subtle bg-surface-1 p-0.5 shadow-(--shadow-well) ${
+        disabled ? "cursor-not-allowed opacity-55 grayscale" : ""
+      }`}
     >
-      {/* Sliding indicator */}
+      {/* Raised plate under the live segment. */}
       <div
-        className={`
-          absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded
-          bg-surface-raised border border-border-subtle
-          transition-transform duration-200 ease-out
-          ${value === "push" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"}
-        `}
+        className={`absolute top-0.5 bottom-0.5 w-[calc(50%-2px)] rounded-[2px] border border-border-subtle bg-surface-2 shadow-(--shadow-control) transition-transform duration-150 ease-snap ${
+          value === "push" ? "translate-x-[calc(100%+4px)]" : "translate-x-0"
+        }`}
       />
 
       {OPTIONS.map(({ mode, Icon, labelKey }) => (
@@ -44,16 +44,19 @@ export function ActivationModeSelector({
           key={mode}
           type="button"
           disabled={disabled}
+          aria-pressed={value === mode}
           onClick={() => onChange(mode)}
-          className={`
-            relative z-10 flex-1 flex items-center justify-center gap-1 rounded px-2.5 py-1
-            transition-colors duration-150
-            ${disabled ? "cursor-not-allowed" : "cursor-pointer"}
-            ${value === mode ? "text-foreground" : "text-muted-foreground hover:text-foreground"}
-          `}
+          className={[
+            "relative z-10 flex flex-1 items-center justify-center gap-1 rounded-[2px] px-2.5 py-1",
+            "text-xs font-medium transition-colors duration-100 ease-snap focus-ring-tight",
+            disabled ? "cursor-not-allowed" : "cursor-pointer",
+            value === mode ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+            "after:pointer-events-none after:absolute after:inset-x-2.5 after:bottom-0 after:h-0.5 after:content-['']",
+            value === mode ? "after:bg-primary" : "",
+          ].join(" ")}
         >
-          <Icon className="w-3 h-3" />
-          <span className="text-xs font-medium">{t(labelKey)}</span>
+          <Icon className="size-3" strokeWidth={1.75} />
+          <span>{t(labelKey)}</span>
         </button>
       ))}
     </div>

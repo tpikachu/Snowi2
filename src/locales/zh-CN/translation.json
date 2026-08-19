@@ -892,7 +892,8 @@
         "transcriptionPipeline": "转录管道"
       },
       "title": "记录的内容"
-    }
+    },
+    "copyPath": "复制日志文件路径"
   },
   "dictionarySuffix": "词典后缀",
   "emailVerification": {
@@ -1163,7 +1164,22 @@
         "label": "工作区"
       }
     },
-    "title": "设置"
+    "title": "设置",
+    "search": {
+      "label": "搜索设置",
+      "placeholder": "搜索设置",
+      "clear": "清除搜索",
+      "noResults": "没有与“{{query}}”匹配的设置",
+      "resultsLabel": "搜索结果"
+    },
+    "navLabel": "设置分区",
+    "closeHint": "关闭设置 (Esc)",
+    "groupTitles": {
+      "engine": "引擎",
+      "engineDescription": "由哪项服务将此音频转换为文本。",
+      "modelDescription": "由哪个语言模型处理此任务。",
+      "options": "选项"
+    }
   },
   "settingsPage": {
     "unifiedBilling": {
@@ -3520,6 +3536,27 @@
     },
     "start": "开始记录",
     "join": "加入并转录"
+  },
+  "capture": {
+    "dictate": "听写",
+    "dictateHint": "开始听写 ({{hotkey}})",
+    "dictateNoHotkeyHint": "未启用听写快捷键 — 可从这里开始",
+    "hotkeyMissing": "无快捷键",
+    "meeting": "会议",
+    "meetingHint": "将会议录制到新笔记中",
+    "meetingNoteTitle": "会议笔记",
+    "openNote": "打开",
+    "meetingStartFailedTitle": "无法开始会议",
+    "meetingStartFailedDescription": "无法创建会议笔记，请重试。",
+    "status": {
+      "dictationRecording": "录音中",
+      "meetingRecording": "会议",
+      "transcribing": "转写中",
+      "finishing": "正在完成"
+    },
+    "empty": {
+      "noHotkey": "当前未启用听写快捷键 — 请使用上方按钮，或在设置中指定一个。"
+    }
   },
   "shell": {
     "contextPane": {

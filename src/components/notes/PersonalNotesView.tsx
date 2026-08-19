@@ -87,7 +87,9 @@ interface PersonalNotesViewProps {
   onOpenSearch?: () => void;
   meetingRecordingRequest?: {
     noteId: number;
-    folderId: number;
+    // Nullable: a note created outside a folder falls back to the note's own
+    // folder_id, which this effect reads from the loaded note anyway.
+    folderId: number | null;
     event: any;
   } | null;
   onMeetingRecordingRequestHandled?: () => void;

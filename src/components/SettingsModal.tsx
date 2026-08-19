@@ -1,43 +1,22 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Sliders, Mic, Brain, Wrench, Keyboard, Shield } from "lucide-react";
-import SidebarModal, { type SidebarItem } from "./ui/SidebarModal";
-import SettingsPage, { SettingsSectionType } from "./SettingsPage";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import SettingsPage from "./SettingsPage";
+import SettingsSurface from "./settings/SettingsSurface";
+import { useLocalStorage } from "../hooks/useLocalStorage";
+import {
+  LEGACY_SUB_TAB,
+  LLM_TAB_STORAGE_KEY,
+  LLM_TABS,
+  resolveSectionId,
+  SPEECH_TAB_STORAGE_KEY,
+  SPEECH_TABS,
+  type LlmTab,
+  type SettingsSectionType,
+  type SpeechTab,
+} from "./settings/settingsNav";
 
 export type { SettingsSectionType };
-
-// The old AI Models sidebar had four items (transcription, meetings,
-// intelligence, agentMode) — they now collapse into two: speechToText + llms.
-// Legacy deep-links land on the matching sub-tab via LEGACY_SUB_TAB.
-const SECTION_ALIASES: Record<string, SettingsSectionType> = {
-  aiModels: "llms",
-  agentConfig: "llms",
-  agentMode: "llms",
-  intelligence: "llms",
-  meetings: "llms",
-  prompts: "llms",
-  transcription: "speechToText",
-  uploadTranscription: "speechToText",
-  softwareUpdates: "system",
-  privacy: "privacyData",
-  permissions: "privacyData",
-  developer: "system",
-  // Cloud-era sections that no longer exist; land deep links somewhere sane.
-  account: "general",
-  plansBilling: "general",
-  workspace: "general",
-};
-
-const LEGACY_SUB_TAB: Record<string, string> = {
-  transcription: "dictation",
-  uploadTranscription: "upload",
-  meetings: "noteFormatting",
-  intelligence: "dictationCleanup",
-  agentMode: "chatIntelligence",
-  agentConfig: "chatIntelligence",
-  aiModels: "dictationCleanup",
-  prompts: "dictationCleanup",
-};
 
 interface SettingsModalProps {
   open: boolean;
@@ -45,93 +24,102 @@ interface SettingsModalProps {
   initialSection?: string;
 }
 
+/**
+ * Settings is a full-window workspace, not a centred dialog: there is far too
+ * much configuration here to read through a letterbox, and reusing the shell's
+ * own context-pane + content-pane language means the surface a user enters from
+ * the rail's gear reads as part of the same app.
+ *
+ * It is still a Radix dialog, which is what buys the focus trap, the restore of
+ * focus to the gear on the way out, Escape-to-dismiss and `aria-modal` — the
+ * Content is simply laid out edge to edge instead of as a floating box.
+ */
 export default function SettingsModal({ open, onOpenChange, initialSection }: SettingsModalProps) {
   const { t } = useTranslation();
-  const sidebarItems: SidebarItem<SettingsSectionType>[] = useMemo(() => {
-    const items: SidebarItem<SettingsSectionType>[] = [
-      {
-        id: "general",
-        label: t("settingsModal.sections.general.label"),
-        icon: Sliders,
-        description: t("settingsModal.sections.general.description"),
-        group: t("settingsModal.groups.app"),
-      },
-      {
-        id: "hotkeys",
-        label: t("settingsModal.sections.hotkeys.label"),
-        icon: Keyboard,
-        description: t("settingsModal.sections.hotkeys.description"),
-        group: t("settingsModal.groups.app"),
-      },
-      {
-        id: "speechToText",
-        label: t("settingsModal.sections.speechToText.label"),
-        icon: Mic,
-        description: t("settingsModal.sections.speechToText.description"),
-        group: t("settingsModal.groups.aiModels"),
-      },
-      {
-        id: "llms",
-        label: t("settingsModal.sections.llms.label"),
-        icon: Brain,
-        description: t("settingsModal.sections.llms.description"),
-        group: t("settingsModal.groups.aiModels"),
-      },
-      {
-        id: "privacyData",
-        label: t("settingsModal.sections.privacyData.label"),
-        icon: Shield,
-        description: t("settingsModal.sections.privacyData.description"),
-        group: t("settingsModal.groups.system"),
-      },
-      {
-        id: "system",
-        label: t("settingsModal.sections.system.label"),
-        icon: Wrench,
-        description: t("settingsModal.sections.system.description"),
-        group: t("settingsModal.groups.system"),
-      },
-    ];
-    return items;
-  }, [t]);
 
-  const resolveSection = (section: string | undefined): SettingsSectionType => {
-    if (!section) return "general";
-    return (SECTION_ALIASES[section] ?? section) as SettingsSectionType;
-  };
-
-  const [activeSection, setActiveSection] = React.useState<SettingsSectionType>(() =>
-    resolveSection(initialSection)
+  const [activeSection, setActiveSection] = useState<SettingsSectionType>(() =>
+    resolveSectionId(initialSection)
   );
-  const [initialSubTab, setInitialSubTab] = useState<string | undefined>(() =>
-    initialSection ? LEGACY_SUB_TAB[initialSection] : undefined
+  const [speechTab, setSpeechTab] = useLocalStorage<SpeechTab>(
+    SPEECH_TAB_STORAGE_KEY,
+    SPEECH_TABS[0]
   );
+  const [llmTab, setLlmTab] = useLocalStorage<LlmTab>(LLM_TAB_STORAGE_KEY, LLM_TABS[0]);
   const [prevOpen, setPrevOpen] = useState(open);
 
-  if (open && !prevOpen && initialSection) {
+  const applySubTab = useCallback(
+    (section: SettingsSectionType, subTab: string | undefined) => {
+      if (!subTab) return;
+      if (section === "speechToText" && SPEECH_TABS.includes(subTab as SpeechTab)) {
+        setSpeechTab(subTab as SpeechTab);
+      } else if (section === "llms" && LLM_TABS.includes(subTab as LlmTab)) {
+        setLlmTab(subTab as LlmTab);
+      }
+    },
+    [setSpeechTab, setLlmTab]
+  );
+
+  // Re-resolve the deep link every time the surface is opened, not just on mount.
+  if (open && !prevOpen) {
     setPrevOpen(open);
-    setActiveSection(resolveSection(initialSection));
-    setInitialSubTab(LEGACY_SUB_TAB[initialSection]);
+    if (initialSection) {
+      const resolved = resolveSectionId(initialSection);
+      setActiveSection(resolved);
+      applySubTab(resolved, LEGACY_SUB_TAB[initialSection]);
+    }
   } else if (open !== prevOpen) {
     setPrevOpen(open);
-    if (!open) setInitialSubTab(undefined);
   }
 
-  const handleSectionChange = (section: SettingsSectionType) => {
-    setActiveSection(section);
-    setInitialSubTab(undefined);
-  };
+  // A stored tab from an older build can name a panel that no longer exists.
+  const safeSpeechTab = SPEECH_TABS.includes(speechTab) ? speechTab : SPEECH_TABS[0];
+  const safeLlmTab = LLM_TABS.includes(llmTab) ? llmTab : LLM_TABS[0];
+
+  const activePanel =
+    activeSection === "speechToText"
+      ? safeSpeechTab
+      : activeSection === "llms"
+        ? safeLlmTab
+        : undefined;
+
+  const handlePanelChange = useCallback(
+    (section: SettingsSectionType, panel: string) => {
+      setActiveSection(section);
+      applySubTab(section, panel);
+    },
+    [applySubTab]
+  );
 
   return (
-    <SidebarModal<SettingsSectionType>
-      open={open}
-      onOpenChange={onOpenChange}
-      title={t("settingsModal.title")}
-      sidebarItems={sidebarItems}
-      activeSection={activeSection}
-      onSectionChange={handleSectionChange}
-    >
-      <SettingsPage activeSection={activeSection} initialSubTab={initialSubTab} />
-    </SidebarModal>
+    <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
+      <DialogPrimitive.Portal>
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content
+          aria-describedby={undefined}
+          onEscapeKeyDown={(event) => {
+            // A hotkey capture field owns the keyboard while it is recording.
+            if (document.querySelector("[data-capturing]")) event.preventDefault();
+          }}
+          className="fixed inset-0 z-50 flex overflow-hidden bg-background duration-150 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+        >
+          <DialogPrimitive.Title className="sr-only">
+            {t("settingsModal.title")}
+          </DialogPrimitive.Title>
+          <SettingsSurface
+            activeSection={activeSection}
+            onSectionChange={setActiveSection}
+            activePanel={activePanel}
+            onPanelChange={handlePanelChange}
+            onClose={() => onOpenChange(false)}
+          >
+            <SettingsPage
+              activeSection={activeSection}
+              speechTab={safeSpeechTab}
+              llmTab={safeLlmTab}
+            />
+          </SettingsSurface>
+        </DialogPrimitive.Content>
+      </DialogPrimitive.Portal>
+    </DialogPrimitive.Root>
   );
 }
