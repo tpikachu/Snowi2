@@ -3667,6 +3667,15 @@
     }
   },
   "home": {
+    "activity": {
+      "busiest": "stärkster Tag: {{day}}",
+      "meetingCount_one": "{{count}} Meeting",
+      "meetingCount_other": "{{count}} Meetings",
+      "range": "Letzte {{count}} Tage",
+      "recorded": "{{hours}} Std. aufgezeichnet",
+      "thisWeek": "{{count}} diese Woche",
+      "title": "Meeting-Aktivität"
+    },
     "now": {
       "inProgress": "Läuft gerade",
       "openNote": "Notiz öffnen",

@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 import type { NoteItem } from "../../types/electron";
 import { cn } from "../lib/utils";
 import { formatMmSs } from "../../utils/formatDuration";
+import { formatMeetingWindow, formatSessionLength } from "../../utils/meetingWindow";
 import { normalizeDbDate } from "../../utils/dateFormatting";
 
 function countWords(note: NoteItem): number {
@@ -46,8 +47,13 @@ export default function ActivityNoteRow({
   }, [note.updated_at, note.created_at, preferCreatedAt, i18n.language]);
 
   const isMeeting = note.note_type === "meeting";
-  const duration =
-    note.audio_duration_seconds && note.audio_duration_seconds > 0
+  // A meeting reports the window it ran for; anything else has only a length.
+  // "14:05 – 14:52" answers "when was that call" without opening the note,
+  // which a bare "47:18" never does.
+  const sessionWindow = isMeeting ? formatMeetingWindow(note, i18n.language) : null;
+  const duration = isMeeting
+    ? formatSessionLength(note)
+    : note.audio_duration_seconds && note.audio_duration_seconds > 0
       ? formatMmSs(Math.round(note.audio_duration_seconds))
       : null;
   const words = countWords(note);
@@ -64,6 +70,13 @@ export default function ActivityNoteRow({
 
   const meta = [
     typeLabel,
+    // The tilde marks a window inferred from a legacy row's duration, which is
+    // wrong by however long the meeting was paused.
+    sessionWindow
+      ? sessionWindow.approximate
+        ? `~${sessionWindow.text}`
+        : sessionWindow.text
+      : null,
     duration,
     words > 0 ? t("activity.words", { count: words }) : null,
     speakers ? t("activity.speakers", { count: speakers }) : null,

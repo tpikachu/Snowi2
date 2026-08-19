@@ -6,6 +6,7 @@ import { Skeleton } from "../ui/skeleton";
 import UpcomingMeetings from "../UpcomingMeetings";
 import ActivityNoteRow from "../activity/ActivityNoteRow";
 import NowCard from "./NowCard";
+import MeetingActivityCard from "./MeetingActivityCard";
 import StatusPanel from "./StatusPanel";
 import { useRecentMeetings } from "../../hooks/useRecentMeetings";
 import { useUpcomingEvents } from "../../hooks/useUpcomingEvents";
@@ -65,6 +66,8 @@ export default function HomeView({
           isStartingMeeting={isStartingMeeting}
           onOpenRecordingNote={onOpenRecordingNote}
         />
+
+        <MeetingActivityCard />
 
         <div className="mt-4 flex gap-6">
           <div className="min-w-0 flex-1">

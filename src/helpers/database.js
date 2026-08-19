@@ -728,6 +728,22 @@ class DatabaseManager {
       } catch (err) {
         if (!err.message.includes("duplicate column")) throw err;
       }
+      // When the session actually ran, as ISO strings. Both are stored rather
+      // than derived: created_at is when the note row was inserted, which is
+      // close to the start but not it, and the end cannot be computed from
+      // audio_duration_seconds because pausing excludes the gaps from the
+      // duration — a meeting paused for 20 minutes would report ending 20
+      // minutes before it did.
+      try {
+        this.db.exec("ALTER TABLE notes ADD COLUMN recording_started_at TEXT");
+      } catch (err) {
+        if (!err.message.includes("duplicate column")) throw err;
+      }
+      try {
+        this.db.exec("ALTER TABLE notes ADD COLUMN recording_ended_at TEXT");
+      } catch (err) {
+        if (!err.message.includes("duplicate column")) throw err;
+      }
 
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS contacts (
@@ -2206,6 +2222,7 @@ class DatabaseManager {
       const meetings = this.db
         .prepare(
           `SELECT id, title, created_at, updated_at, audio_duration_seconds, participants,
+                  recording_started_at, recording_ended_at,
                   calendar_event_id, folder_id, space_id,
                   enhanced_content IS NOT NULL AND enhanced_content != '' AS has_notes,
                   transcript IS NOT NULL AND transcript != '' AS has_transcript
@@ -2217,6 +2234,90 @@ class DatabaseManager {
     } catch (error) {
       debugLogger.error("Error listing meetings", { error: error.message }, "notes");
       throw error;
+    }
+  }
+
+  /**
+   * Meetings per local day for the home page chart, plus the headline figures
+   * beside it.
+   *
+   * Grouped in SQL rather than by counting rows in the renderer: a year of
+   * meetings is a lot of rows to ship across IPC to produce 30 integers. The
+   * returned series is dense — days with no meetings come back as zero — so the
+   * chart never has to invent the gaps, which is where an off-by-one lands.
+   *
+   * `created_at` is stored UTC, so the day bucket is converted to local time
+   * first. Without that, an evening meeting lands on tomorrow's bar for anyone
+   * west of UTC.
+   */
+  getMeetingActivity({ days = 30, spaceId = null } = {}) {
+    const empty = { days: [], total: 0, totalSeconds: 0, busiestWeekday: null };
+    if (!this.db) return empty;
+    try {
+      const span = Math.max(1, Math.min(365, Math.floor(days)));
+      const conditions = [
+        "note_type = 'meeting'",
+        "deleted_at IS NULL",
+        "date(created_at, 'localtime') >= date('now', 'localtime', ?)",
+      ];
+      const params = [`-${span - 1} days`];
+      if (spaceId != null) {
+        conditions.push("space_id = ?");
+        params.push(spaceId);
+      }
+      const where = `WHERE ${conditions.join(" AND ")}`;
+
+      const rows = this.db
+        .prepare(
+          `SELECT date(created_at, 'localtime') AS day,
+                  COUNT(*) AS count,
+                  COALESCE(SUM(
+                    CASE
+                      WHEN recording_started_at IS NOT NULL AND recording_ended_at IS NOT NULL
+                        THEN MAX(0, strftime('%s', recording_ended_at) - strftime('%s', recording_started_at))
+                      ELSE COALESCE(audio_duration_seconds, 0)
+                    END
+                  ), 0) AS seconds
+           FROM notes ${where}
+           GROUP BY day`
+        )
+        .all(...params);
+
+      const byDay = new Map(rows.map((row) => [row.day, row]));
+      const series = [];
+      const today = new Date();
+      for (let back = span - 1; back >= 0; back--) {
+        const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() - back);
+        // Built from local Y/M/D parts, not toISOString, which would shift the
+        // label back a day for anyone with a negative UTC offset.
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+        const row = byDay.get(key);
+        series.push({
+          date: key,
+          count: row?.count ?? 0,
+          seconds: row?.seconds ?? 0,
+          weekday: date.getDay(),
+        });
+      }
+
+      const weekdayTotals = new Array(7).fill(0);
+      for (const entry of series) weekdayTotals[entry.weekday] += entry.count;
+      const busiest = weekdayTotals.reduce(
+        (best, count, weekday) => (count > best.count ? { weekday, count } : best),
+        { weekday: -1, count: 0 }
+      );
+
+      return {
+        days: series,
+        total: series.reduce((sum, entry) => sum + entry.count, 0),
+        totalSeconds: series.reduce((sum, entry) => sum + entry.seconds, 0),
+        // Null rather than Sunday when nothing was recorded: "busiest day:
+        // Sunday" on an empty chart reads as a fact.
+        busiestWeekday: busiest.count > 0 ? busiest.weekday : null,
+      };
+    } catch (error) {
+      debugLogger.error("Error building meeting activity", { error: error.message }, "notes");
+      return empty;
     }
   }
 
@@ -2301,6 +2402,8 @@ class DatabaseManager {
         "participants",
         "diarization_enabled",
         "expected_speaker_count",
+        "recording_started_at",
+        "recording_ended_at",
         "sync_status",
         "deleted_at",
         "client_note_id",

@@ -3667,6 +3667,15 @@
     }
   },
   "home": {
+    "activity": {
+      "busiest": "最も多い曜日: {{day}}",
+      "meetingCount_one": "{{count}}件の会議",
+      "meetingCount_other": "{{count}}件の会議",
+      "range": "過去{{count}}日間",
+      "recorded": "{{hours}}時間録音",
+      "thisWeek": "今週{{count}}件",
+      "title": "会議のアクティビティ"
+    },
     "now": {
       "inProgress": "進行中",
       "openNote": "ノートを開く",

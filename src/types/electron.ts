@@ -110,6 +110,24 @@ export interface MeetingListOptions {
   offset?: number;
 }
 
+export interface MeetingActivityDay {
+  /** Local YYYY-MM-DD. */
+  date: string;
+  count: number;
+  seconds: number;
+  /** 0 = Sunday, matching Date.getDay(). */
+  weekday: number;
+}
+
+export interface MeetingActivity {
+  /** Dense: days with no meetings are present with count 0. */
+  days: MeetingActivityDay[];
+  total: number;
+  totalSeconds: number;
+  /** Null when nothing was recorded in the window. */
+  busiestWeekday: number | null;
+}
+
 export interface MeetingListRow {
   id: number;
   title: string;
@@ -117,6 +135,8 @@ export interface MeetingListRow {
   updated_at: string;
   audio_duration_seconds: number | null;
   participants: string | null;
+  recording_started_at: string | null;
+  recording_ended_at: string | null;
   calendar_event_id: string | null;
   folder_id: number | null;
   space_id: number | null;
@@ -203,6 +223,9 @@ export interface NoteItem {
   transcript: string | null;
   calendar_event_id: string | null;
   participants: string | null;
+  /** When the meeting session actually ran. Null for notes that were not recorded. */
+  recording_started_at: string | null;
+  recording_ended_at: string | null;
   diarization_enabled: number | null;
   expected_speaker_count: number | null;
   cloud_id: string | null;
@@ -940,6 +963,10 @@ declare global {
       ) => Promise<NoteItem[]>;
       getSpaceNotes: (spaceId: number, limit?: number) => Promise<NoteItem[]>;
       listMeetings: (options?: MeetingListOptions) => Promise<MeetingListResult>;
+      getMeetingActivity: (options?: {
+        days?: number;
+        spaceId?: number | null;
+      }) => Promise<MeetingActivity>;
       getNoteSegments: (noteId: number) => Promise<MeetingSegmentRow[]>;
       getSegmentsByIds: (ids: string[]) => Promise<MeetingSegmentRow[]>;
       ingestMemory: (payload: {
@@ -965,6 +992,8 @@ declare global {
           participants?: string | null;
           diarization_enabled?: number | null;
           expected_speaker_count?: number | null;
+          recording_started_at?: string | null;
+          recording_ended_at?: string | null;
           client_note_id?: string;
           cloud_id?: string | null;
           cloud_updated_at?: string | null;

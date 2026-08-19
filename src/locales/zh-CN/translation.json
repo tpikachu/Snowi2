@@ -3667,6 +3667,15 @@
     }
   },
   "home": {
+    "activity": {
+      "busiest": "最忙碌：{{day}}",
+      "meetingCount_one": "{{count}} 场会议",
+      "meetingCount_other": "{{count}} 场会议",
+      "range": "最近 {{count}} 天",
+      "recorded": "已录制 {{hours}} 小时",
+      "thisWeek": "本周 {{count}} 场",
+      "title": "会议活动"
+    },
     "now": {
       "inProgress": "正在进行",
       "openNote": "打开笔记",

@@ -3697,6 +3697,15 @@
     }
   },
   "home": {
+    "activity": {
+      "busiest": "самый загруженный день: {{day}}",
+      "meetingCount_one": "{{count}} встреча",
+      "meetingCount_other": "{{count}} встреч",
+      "range": "Последние {{count}} дней",
+      "recorded": "записано {{hours}} ч",
+      "thisWeek": "{{count}} на этой неделе",
+      "title": "Активность встреч"
+    },
     "now": {
       "inProgress": "Идёт сейчас",
       "openNote": "Открыть заметку",

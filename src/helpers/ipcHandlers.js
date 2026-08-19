@@ -1440,6 +1440,11 @@ class IPCHandlers {
       return this.databaseManager.listMeetings(options ?? {});
     });
 
+    // Backs the home page activity chart.
+    ipcMain.handle("db-meeting-activity", async (event, options = {}) => {
+      return this.databaseManager.getMeetingActivity(options ?? {});
+    });
+
     ipcMain.handle("db-update-note", async (event, id, updates) => {
       const result = this.databaseManager.updateNote(id, updates);
       if (result?.success && result?.note) {

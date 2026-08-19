@@ -3667,6 +3667,15 @@
     }
   },
   "home": {
+    "activity": {
+      "busiest": "día con más actividad: {{day}}",
+      "meetingCount_one": "{{count}} reunión",
+      "meetingCount_other": "{{count}} reuniones",
+      "range": "Últimos {{count}} días",
+      "recorded": "{{hours}} h grabadas",
+      "thisWeek": "{{count}} esta semana",
+      "title": "Actividad de reuniones"
+    },
     "now": {
       "inProgress": "Sucediendo ahora",
       "openNote": "Abrir nota",

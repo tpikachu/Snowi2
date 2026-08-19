@@ -1703,6 +1703,10 @@ export async function stopRecording(): Promise<StopRecordingResult> {
     return { diarizationSessionId: null };
   }
 
+  // Read before the state is cleared below, and written after cleanup so a
+  // failed write cannot hold up stopping the capture.
+  const { recordingNoteId, recordingStartedAt } = useMeetingRecordingStore.getState();
+
   isRecordingFlag = false;
   isStartingFlag = false;
   isPausedFlag = false;
@@ -1714,6 +1718,25 @@ export async function stopRecording(): Promise<StopRecordingResult> {
   });
 
   await cleanup();
+
+  // The session window. Recorded here because nothing else knows it: the note
+  // row was inserted when the user pressed record, before capture began, and
+  // the end cannot be derived from the duration once a meeting has been paused.
+  // Best-effort — losing the timestamps must never cost the recording.
+  if (recordingNoteId != null && recordingStartedAt != null) {
+    try {
+      await window.electronAPI?.updateNote?.(recordingNoteId, {
+        recording_started_at: new Date(recordingStartedAt).toISOString(),
+        recording_ended_at: new Date().toISOString(),
+      });
+    } catch (error) {
+      logger.warn(
+        "Could not record the meeting's start and end time",
+        { error: (error as Error).message },
+        "meeting"
+      );
+    }
+  }
 
   let diarizationSessionId: string | null = null;
   try {
