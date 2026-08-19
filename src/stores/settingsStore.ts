@@ -121,6 +121,53 @@ function readNumber(key: string, fallback: number): number {
   return isNaN(parsed) ? fallback : parsed;
 }
 
+function isStored(key: string): boolean {
+  return isBrowser && localStorage.getItem(key) !== null;
+}
+
+const TRANSCRIPTION_MODES: ReadonlySet<string> = new Set(["providers", "local", "self-hosted"]);
+
+/**
+ * A derived scope's local/cloud flag, falling back to dictation's.
+ *
+ * Meeting and upload are refinements of the dictation setup, not independent
+ * configurations — which is why every other field in
+ * selectResolvedMeetingTranscription already reads `state.meetingX || state.x`.
+ * This one could not: it is a boolean, and `||` cannot tell "never set" from
+ * "set to false", so it was the single field that kept its own default while
+ * everything around it inherited. That is how choosing cloud transcription in
+ * onboarding still sent the first meeting to a local Whisper model the user had
+ * deliberately not downloaded.
+ */
+function readScopedUseLocalWhisper(useLocalKey: string, modeKey: string): boolean {
+  if (isStored(useLocalKey)) return readBoolean(useLocalKey, true);
+  if (isStored(modeKey)) return readString(modeKey, "local") === "local";
+  return readBoolean("useLocalWhisper", readString("transcriptionMode", "local") === "local");
+}
+
+/**
+ * A derived scope's transcription mode, kept in step with its lane.
+ *
+ * Dictation's own `transcriptionMode` is not simply copied, because it can lag:
+ * `migrateProviderSettings` writes it once at first launch and
+ * `updateTranscriptionSettings` never rewrites it, so an install can hold
+ * `useLocalWhisper=false` beside `transcriptionMode="local"`. Inheriting that
+ * verbatim would give a scope a mode contradicting its own flag. It is used
+ * only when the two agree — which is what preserves a genuine "self-hosted" —
+ * and otherwise derived from the lane.
+ */
+function readScopedTranscriptionMode(modeKey: string, useLocalKey: string): InferenceMode {
+  const stored = readString(modeKey, "");
+  if (TRANSCRIPTION_MODES.has(stored)) return stored as InferenceMode;
+
+  const useLocal = readScopedUseLocalWhisper(useLocalKey, modeKey);
+  const dictation = readString("transcriptionMode", "");
+  if (TRANSCRIPTION_MODES.has(dictation) && (dictation === "local") === useLocal) {
+    return dictation as InferenceMode;
+  }
+  return deriveTranscriptionMode(useLocal, readString("cloudTranscriptionProvider", ""));
+}
+
 // Durations offered by the mic warm-hold select; unknown values snap to 0 (off)
 // so a hand-edited localStorage entry can never hold the mic open indefinitely.
 export const MIC_WARM_HOLD_CHOICES = [0, 10, 60, 900] as const;
@@ -971,6 +1018,7 @@ export interface SettingsState
 
   updateTranscriptionSettings: (settings: Partial<TranscriptionSettings>) => void;
   setCloudTranscriptionForAllScopes: (settings: Partial<TranscriptionSettings>) => void;
+  mirrorTranscriptionToDerivedScopes: () => void;
   updateCleanupSettings: (settings: Partial<CleanupSettings>) => void;
   setCloudReasoningForAllScopes: (settings: Partial<CleanupSettings>) => void;
   updateApiKeys: (keys: Partial<ApiKeySettings>) => void;
@@ -1415,14 +1463,13 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   })(),
   cleanupRemoteUrl: readString("cleanupRemoteUrl", ""),
 
-  meetingTranscriptionMode: (() => {
-    const v = readString("meetingTranscriptionMode", "local");
-    if (v === "providers" || v === "local" || v === "self-hosted") return v;
-    return "local" as InferenceMode;
-  })(),
-  meetingUseLocalWhisper: readBoolean(
+  meetingTranscriptionMode: readScopedTranscriptionMode(
+    "meetingTranscriptionMode",
+    "meetingUseLocalWhisper"
+  ),
+  meetingUseLocalWhisper: readScopedUseLocalWhisper(
     "meetingUseLocalWhisper",
-    readString("meetingTranscriptionMode", "local") === "local"
+    "meetingTranscriptionMode"
   ),
   meetingWhisperModel: readString("meetingWhisperModel", ""),
   meetingLocalTranscriptionProvider: (readString("meetingLocalTranscriptionProvider", "whisper") ===
@@ -1440,14 +1487,13 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   })(),
   meetingRemoteTranscriptionUrl: readString("meetingRemoteTranscriptionUrl", ""),
 
-  uploadTranscriptionMode: (() => {
-    const v = readString("uploadTranscriptionMode", "local");
-    if (v === "providers" || v === "local" || v === "self-hosted") return v;
-    return "local" as InferenceMode;
-  })(),
-  uploadUseLocalWhisper: readBoolean(
+  uploadTranscriptionMode: readScopedTranscriptionMode(
+    "uploadTranscriptionMode",
+    "uploadUseLocalWhisper"
+  ),
+  uploadUseLocalWhisper: readScopedUseLocalWhisper(
     "uploadUseLocalWhisper",
-    readString("uploadTranscriptionMode", "local") === "local"
+    "uploadTranscriptionMode"
   ),
   uploadWhisperModel: readString("uploadWhisperModel", ""),
   uploadLocalTranscriptionProvider: (readString("uploadLocalTranscriptionProvider", "whisper") ===
@@ -2226,8 +2272,22 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   // note recording and audio upload — used when onboarding picks one provider
   // for everything (e.g. Corti for medical providers).
   setCloudTranscriptionForAllScopes: (settings: Partial<TranscriptionSettings>) => {
+    useSettingsStore.getState().updateTranscriptionSettings(settings);
+    useSettingsStore.getState().mirrorTranscriptionToDerivedScopes();
+  },
+
+  /**
+   * Copies the dictation transcription routing onto note recording and audio
+   * upload.
+   *
+   * Onboarding asks the question once, so the answer has to reach all three
+   * scopes. It used to reach only dictation, which meant choosing cloud
+   * transcription still sent meetings to a local Whisper model the user had
+   * deliberately not downloaded — "Whisper model 'base' not downloaded" on the
+   * first recording, with nothing in Settings looking wrong.
+   */
+  mirrorTranscriptionToDerivedScopes: () => {
     const s = useSettingsStore.getState();
-    s.updateTranscriptionSettings(settings);
     const {
       useLocalWhisper,
       cloudTranscriptionMode,

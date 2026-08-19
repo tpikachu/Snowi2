@@ -353,6 +353,14 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       updateTranscriptionSettings({ cloudTranscriptionMode: "byok" });
     }
 
+    // Onboarding configures dictation, but the question it asked — local or
+    // cloud, and which provider — was about transcription generally. Meeting
+    // recording and audio upload have their own scopes and their own local
+    // defaults, so without this a user who chose cloud still had their first
+    // meeting sent to a Whisper model they never downloaded. The Corti path
+    // already did this; it belongs on every path.
+    useSettingsStore.getState().mirrorTranscriptionToDerivedScopes();
+
     try {
       await window.electronAPI?.saveAllKeysToEnv?.();
     } catch (error) {
