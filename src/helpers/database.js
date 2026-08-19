@@ -2566,6 +2566,92 @@ class DatabaseManager {
   }
 
   /**
+   * Structural search over memory objects, for the agent's search_memory tool.
+   *
+   * Nine types are extracted from every meeting and, until this existed, chat
+   * could read two of them. The rest were written, cited and never read back:
+   * "what did I commit to" and "what is overdue" were unanswerable because
+   * `status` and `due_at` were columns no tool could filter.
+   *
+   * Every filter here is an indexed plaintext column, deliberately. `content`
+   * and `owner` are sealed (§21.1, see memoryStore.js), so filtering on them
+   * would mean decrypting every meeting to answer one question — and would make
+   * `total` describe the page rather than the library. The caller hydrates only
+   * the rows this returns.
+   */
+  searchMemoryObjects({
+    types = null,
+    subject = null,
+    status = null,
+    dueBefore = null,
+    dueAfter = null,
+    includeSuperseded = false,
+    spaceId = null,
+    folderId = null,
+    limit = 25,
+    offset = 0,
+  } = {}) {
+    if (!this.db) return { total: 0, objects: [] };
+    try {
+      // Joined so a claim whose note was deleted or filed elsewhere cannot leak
+      // into a scoped chat. LEFT JOIN keeps objects whose note_id is null.
+      const conditions = ["(n.id IS NULL OR n.deleted_at IS NULL)"];
+      const params = [];
+
+      if (Array.isArray(types) && types.length > 0) {
+        conditions.push(`m.type IN (${types.map(() => "?").join(", ")})`);
+        params.push(...types);
+      }
+      if (subject) {
+        conditions.push("m.subject = ?");
+        params.push(subject);
+      }
+      if (status) {
+        conditions.push("m.status = ?");
+        params.push(status);
+      } else if (!includeSuperseded) {
+        // A decision that was later reversed is worse than no answer, so the
+        // superseded half of a chain is invisible unless asked for by name.
+        conditions.push("m.status NOT IN ('superseded', 'dismissed')");
+      }
+      if (dueAfter) {
+        conditions.push("m.due_at IS NOT NULL AND m.due_at >= ?");
+        params.push(dueAfter);
+      }
+      if (dueBefore) {
+        conditions.push("m.due_at IS NOT NULL AND m.due_at <= ?");
+        params.push(dueBefore);
+      }
+      if (spaceId != null) {
+        conditions.push("n.space_id = ?");
+        params.push(spaceId);
+      }
+      if (folderId != null) {
+        conditions.push("n.folder_id = ?");
+        params.push(folderId);
+      }
+
+      const where = `FROM memory_objects m LEFT JOIN notes n ON n.id = m.note_id WHERE ${conditions.join(" AND ")}`;
+
+      const { total } = this.db.prepare(`SELECT COUNT(*) AS total ${where}`).get(...params);
+      const objects = this.db
+        .prepare(
+          // Dated claims first and soonest-first, because a deadline is the
+          // reason to ask; undated ones fall back to most recently touched.
+          `SELECT m.* ${where}
+           ORDER BY m.due_at IS NULL, m.due_at ASC, m.updated_at DESC
+           LIMIT ? OFFSET ?`
+        )
+        .all(...params, limit, offset);
+
+      return { total, objects };
+    } catch (error) {
+      debugLogger.error("Error searching memory", { error: error.message }, "memory");
+      return { total: 0, objects: [] };
+    }
+  }
+
+  /**
    * Open commitments, soonest due first. This is the query that justifies
    * keeping status and due date outside the sealed document — answering it by
    * decrypting every meeting the user has ever had would not scale past a year.

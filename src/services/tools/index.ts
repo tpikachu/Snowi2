@@ -1,6 +1,7 @@
 import { ToolRegistry } from "./ToolRegistry";
 import { createSearchNotesTool } from "./searchNotesTool";
 import { createListMeetingsTool } from "./listMeetingsTool";
+import { createSearchMemoryTool } from "./searchMemoryTool";
 import { getNoteTool } from "./getNoteTool";
 import { createNoteTool } from "./createNoteTool";
 import { updateNoteTool } from "./updateNoteTool";
@@ -25,6 +26,10 @@ export function createToolRegistry(settings: ToolRegistrySettings): ToolRegistry
   // Same fixed scope as search: a container chat that could enumerate meetings
   // from other spaces would leak exactly what the scope exists to contain.
   registry.register(createListMeetingsTool({ fixedScope: settings.searchScope }));
+  // Same pin again: memory objects carry the note they came from, so an
+  // unscoped memory query in a container chat would report claims from meetings
+  // that chat is not allowed to see.
+  registry.register(createSearchMemoryTool({ fixedScope: settings.searchScope }));
   registry.register(getNoteTool);
   registry.register(createNoteTool);
   registry.register(updateNoteTool);

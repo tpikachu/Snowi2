@@ -1410,6 +1410,14 @@ class IPCHandlers {
       return store ? store.listOpenActions({ subject, limit }) : [];
     });
 
+    // Backs the agent's search_memory tool. Structural for the same reason
+    // db-list-meetings is: retrieval finds passages that sound like a question,
+    // and can never answer "what is still open".
+    ipcMain.handle("memory-search", async (event, options = {}) => {
+      const store = this._getMemoryStore();
+      return store ? store.search(options ?? {}) : { total: 0, objects: [] };
+    });
+
     ipcMain.handle("memory-profile", async () => {
       const store = this._getMemoryStore();
       if (!store) return "";

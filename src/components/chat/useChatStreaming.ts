@@ -4,6 +4,7 @@ import ReasoningService, { type AgentStreamChunk } from "../../services/Reasonin
 import { isEnterpriseProvider } from "../../models/ModelRegistry";
 import { getSettings, selectResolvedLLMConfig } from "../../stores/settingsStore";
 import { getAgentSystemPrompt } from "../../config/prompts";
+import { formatOpenCommitments } from "../../utils/memoryPrompt";
 import { createToolRegistry } from "../../services/tools";
 import type { ToolRegistry } from "../../services/tools/ToolRegistry";
 import type { Message, AgentState, ToolCallInfo } from "./types";
@@ -245,11 +246,19 @@ export function useChatStreaming({
         .join("\n\n");
       // Fetched per turn rather than cached: a meeting that just ended can add
       // to it, and it is one indexed read over a capped row set.
-      const memoryProfile = await window.electronAPI?.getMemoryProfile?.().catch(() => "");
+      const [memoryProfile, openActions] = await Promise.all([
+        window.electronAPI?.getMemoryProfile?.().catch(() => "") ?? "",
+        // Indexed read over a capped row set, like the profile beside it: the
+        // status and due date live outside the sealed document precisely so
+        // this does not have to decrypt the user's whole history.
+        window.electronAPI?.listOpenMemoryActions?.("user", 40).catch(() => []) ?? [],
+      ]);
+      const today = new Date().toISOString().slice(0, 10);
       const systemPrompt = getAgentSystemPrompt({
         availableTools: registry?.getAll().map((t) => t.name),
         noteContext: combinedContext || undefined,
         memoryProfile: memoryProfile || undefined,
+        openCommitments: formatOpenCommitments(openActions, today) || undefined,
         focusNote: focusNoteRef.current,
       });
 

@@ -163,6 +163,31 @@ export interface MemoryObjectRow {
   content_available: boolean;
 }
 
+/**
+ * Filters for `search_memory`. Every field maps to an indexed plaintext column;
+ * `content` and `owner` are sealed and deliberately absent (see memoryStore.js).
+ */
+export interface MemorySearchOptions {
+  types?: string[] | null;
+  subject?: string | null;
+  status?: string | null;
+  /** ISO date; matches objects due on or before it. */
+  dueBefore?: string | null;
+  /** ISO date; matches objects due on or after it. */
+  dueAfter?: string | null;
+  includeSuperseded?: boolean;
+  spaceId?: number | null;
+  folderId?: number | null;
+  limit?: number;
+  offset?: number;
+}
+
+export interface MemorySearchResult {
+  /** How many matched in the library, which may exceed `objects.length`. */
+  total: number;
+  objects: MemoryObjectRow[];
+}
+
 export interface NoteItem {
   id: number;
   title: string;
@@ -924,6 +949,7 @@ declare global {
       listNoteMemory: (noteId: number) => Promise<MemoryObjectRow[]>;
       listOpenMemoryActions: (subject?: string, limit?: number) => Promise<MemoryObjectRow[]>;
       getMemoryProfile: () => Promise<string>;
+      searchMemory: (options: MemorySearchOptions) => Promise<MemorySearchResult>;
       updateNote: (
         id: number,
         updates: {

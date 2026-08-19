@@ -152,6 +152,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   listOpenMemoryActions: (subject, limit) =>
     ipcRenderer.invoke("memory-open-actions", subject, limit),
   getMemoryProfile: () => ipcRenderer.invoke("memory-profile"),
+  searchMemory: (options) => ipcRenderer.invoke("memory-search", options),
   updateNote: (id, updates) => ipcRenderer.invoke("db-update-note", id, updates),
   deleteNote: (id) => ipcRenderer.invoke("db-delete-note", id),
   exportNote: (noteId, format) => ipcRenderer.invoke("export-note", noteId, format),

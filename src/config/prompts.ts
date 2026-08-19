@@ -29,6 +29,8 @@ const TOOL_INSTRUCTIONS: Record<string, string> = {
     "Use search_notes to find information from the user's past meetings, discussions, or personal notes before answering from memory.",
   list_meetings:
     "Use list_meetings for any question about which meetings happened or how many — counts, date ranges, or enumerating them. search_notes returns only the closest few matches and can never tell you how many exist, so never count its results. When list_meetings reports a total larger than the number of meetings it listed, state the total and say how many you are showing.",
+  search_memory:
+    'Use search_memory for what was decided, what anyone committed to or owes, what is still open, and anything with a due date — it is the only tool that can filter on status and due date, which search_notes cannot express. For what is overdue, pass status "open" with due_before set to today. When a question needs both the decision and the discussion around it, call search_memory and search_notes together. Like list_meetings it reports an exact total: when it exceeds the number of claims listed, state the total.',
   get_note:
     "Use get_note to fetch the full content of a specific note by ID. If the current note's ID is provided in the context, use it directly. Otherwise, use search_notes first to find the note ID.",
   create_note:
@@ -51,12 +53,14 @@ export interface AgentPromptContext {
   noteContext?: string;
   /** Durable facts about the user, pinned on every message (§19). */
   memoryProfile?: string;
+  /** Open commitments and deadlines, pinned on every message (§19, §20). */
+  openCommitments?: string;
   /** The note a bare "this meeting" refers to, when the conversation has one. */
   focusNote?: { id: number; title: string };
 }
 
 export function getAgentSystemPrompt(context: AgentPromptContext = {}): string {
-  const { availableTools, noteContext, memoryProfile, focusNote } = context;
+  const { availableTools, noteContext, memoryProfile, openCommitments, focusNote } = context;
   let prompt = resolvePrompt("chatAgent", { agentName: null });
 
   // Durable facts about the user, pinned on every message (§19). This is what
@@ -68,6 +72,18 @@ export function getAgentSystemPrompt(context: AgentPromptContext = {}): string {
       "\n\nWhat you know about this user, learned from their past meetings. " +
       "Treat it as background, not as something to recite:\n" +
       memoryProfile.trim();
+  }
+
+  // Pinned alongside the profile, and for the same reason: an agent that has to
+  // decide to go looking for commitments does not, so "anything I should know?"
+  // would never surface them. Capped upstream (utils/memoryPrompt.ts).
+  if (openCommitments?.trim()) {
+    prompt +=
+      "\n\nOpen commitments and deadlines from the user's meetings. " +
+      "Raise them when they bear on the question or when the user asks what is " +
+      "outstanding, and do not recite them otherwise. For anything beyond this " +
+      "list, use search_memory:\n" +
+      openCommitments.trim();
   }
 
   // "For this meeting, what was the purpose?" has no referent on its own: the

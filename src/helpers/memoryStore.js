@@ -174,7 +174,17 @@ function createMemoryStore({ database, store }) {
     return hydrate(database.getProfileMemoryObjects(limit));
   }
 
-  return { ingest, listForNote, listOpenActions, listProfileFacts, hydrate };
+  /**
+   * Backs the agent's search_memory tool. The filtering happens in SQL over
+   * indexed columns, so only the returned page is ever decrypted — `total`
+   * describes the library, the hydrated objects describe the page.
+   */
+  function search(options = {}) {
+    const { total, objects } = database.searchMemoryObjects(options);
+    return { total, objects: hydrate(objects) };
+  }
+
+  return { ingest, listForNote, listOpenActions, listProfileFacts, search, hydrate };
 }
 
 module.exports = { SEALED_FIELDS, createMemoryStore, mintMeetingId, splitObject };
