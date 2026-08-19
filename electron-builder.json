@@ -182,6 +182,7 @@
     "target": ["AppImage", "deb", "rpm", "tar.gz"],
     "icon": "src/assets/icon.png",
     "category": "Utility",
+    "maintainer": "Snowball <46133358+tpikachu@users.noreply.github.com>",
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}"
   },
   "flatpak": {
