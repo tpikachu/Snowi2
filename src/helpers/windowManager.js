@@ -1236,6 +1236,10 @@ class WindowManager {
     this.mainWindow.once("ready-to-show", () => {
       clearTimeout(showTimeout);
       this.enforceMainWindowOnTop();
+      // This is the one path that reaches the panel without a user asking for
+      // it, so it needs the flag as much as the callers do — without it the HUD
+      // surfaces on every launch no matter what the rest of the app hides.
+      if (!DICTATION_ENABLED) return;
       if (!this.mainWindow.isVisible() && !this._floatingIconAutoHide) {
         if (typeof this.mainWindow.showInactive === "function") {
           this.mainWindow.showInactive();

@@ -1,7 +1,7 @@
 {
   "name": "snowi",
   "version": "0.1.0",
-  "description": "Snowi — local-first voice dictation and meeting copilot",
+  "description": "Snowi — local-first meeting copilot",
   "main": "main.js",
   "private": true,
   "engines": {
@@ -25,6 +25,7 @@
     "prestart": "npm run compile:native && npm run download:whisper-cpp && npm run download:meeting-aec-helper && npm run download:sherpa-onnx && npm run download:yt-dlp && npm run download:qdrant && npm run download:embedding-model && npm run download:whisper-vad-model",
     "start": "electron .",
     "dev": "concurrently -k -r \"npm:dev:renderer\" \"npm:dev:main\"",
+    "reset:dev": "node scripts/reset-dev-data.js",
     "predev:main": "npm run compile:native && npm run download:whisper-cpp && npm run download:meeting-aec-helper && npm run download:sherpa-onnx && npm run download:yt-dlp && npm run download:qdrant && npm run download:embedding-model && npm run download:whisper-vad-model",
     "dev:main": "cross-env NODE_ENV=development node scripts/run-electron.js --dev",
     "dev:renderer": "cd src && vite",

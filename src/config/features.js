@@ -1,5 +1,11 @@
-// Feature visibility switches. CommonJS + pure data so the main process and the
-// Vite renderer share one source of truth, like `secretKeys.js`.
+// Feature visibility switches — one source of truth for the main process and
+// the Vite renderer.
+//
+// ESM, not CommonJS, because both sides have to read it. Vite serves source
+// `.js` as ESM, so `module.exports` gives the renderer a module with no named
+// exports (it fails at import, not at use). Electron's Node can `require()` an
+// ESM module, so going the other way costs the main process nothing — the same
+// reason `helpers/meetingJoinUrl.js` is written this way.
 //
 // These hide surfaces; they never delete capability. Everything behind a false
 // flag stays built, tested and reachable in code, so turning it back on is a
@@ -17,10 +23,10 @@
  *
  * The engine, the IPC surface and every test stay in place.
  */
-const DICTATION_ENABLED = false;
+export const DICTATION_ENABLED = false;
 
 /** Settings anchors, panels and search entries that only exist for dictation. */
-const DICTATION_SETTINGS_IDS = new Set([
+export const DICTATION_SETTINGS_IDS = new Set([
   "dictationHotkey",
   "voiceAgentHotkey",
   "translationHotkey",
@@ -31,10 +37,4 @@ const DICTATION_SETTINGS_IDS = new Set([
 ]);
 
 /** Hotkey slots owned by dictation, in `hotkeyManager` slot naming. */
-const DICTATION_HOTKEY_SLOTS = new Set(["dictation", "voiceAgent", "translation"]);
-
-module.exports = {
-  DICTATION_ENABLED,
-  DICTATION_SETTINGS_IDS,
-  DICTATION_HOTKEY_SLOTS,
-};
+export const DICTATION_HOTKEY_SLOTS = new Set(["dictation", "voiceAgent", "translation"]);

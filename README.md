@@ -1,6 +1,8 @@
 # Snowi
 
-Snowi is a local-first voice dictation and meeting copilot desktop app for macOS, Windows, and Linux. Press a hotkey, speak, and your words appear at your cursor — transcribed on-device with whisper.cpp or NVIDIA Parakeet, or through your own cloud API keys. It also detects and transcribes meetings with on-device speaker diarization, and keeps searchable local notes. No accounts, no telemetry, no auto-update feed.
+Snowi is a local-first meeting copilot for macOS, Windows, and Linux. It detects your meetings, captures both sides of the conversation, and transcribes them on-device — with speaker diarization via whisper.cpp or NVIDIA Parakeet, or through your own cloud API keys — then writes the notes and keeps them searchable. No accounts, no telemetry, no auto-update feed.
+
+The dictation engine Snowi was forked from is still in the tree but is switched off for V1 (`DICTATION_ENABLED` in `src/config/features.js`); the product is the meeting copilot.
 
 Snowi is a private fork of OpenWhispr 1.8.3 by Snowball — see [UPSTREAM.md](UPSTREAM.md) for fork provenance and the approved V1 scope.
 
