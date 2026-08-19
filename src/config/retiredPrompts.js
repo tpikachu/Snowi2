@@ -80,6 +80,8 @@ export const RETIRED_DEFAULT_PROMPT_HASHES = new Set([
   "88aa19874565e2c0621485640b71d45ab89f6f8237f178dd71d44c4b0c92941f",
   //  9888ch 1e3ed5d3 promptData.json UNIFIED_SYSTEM_PROMPT
   "c667ef52a6ae19354cd5f93f06dca6372df09e8a87ecd81179e65f45e7543081",
+  //   232ch registry.ts chatAgent — the inherited "helpful voice assistant"
+  "ca35b88c4f8a0e1fd0b2b6efea1b066c70b772e6a55033e0fca731b2e74fbf06",
 ]);
 
 // Hashes of the defaults currently shipped, keyed by locale/bundle key. Not
@@ -116,7 +118,7 @@ export const CURRENT_DEFAULT_PROMPT_HASHES = {
   "zh-TW/cleanupPrompt": "9b586c6141f09263fdf9d06973b9bb9579fc325b2b6f906a0a7804f9418824be",
   "zh-TW/fullPrompt": "9312644f8de56d874e0de9e18d610a3ed6afd0ca1b31411f02d021e012fee601",
   "zh-TW/translatePrompt": "6b1c867216603f9741d13b8c564fcf6d484c817e69e2c7d6fe2de83118ed862e",
-  chatAgent: "ca35b88c4f8a0e1fd0b2b6efea1b066c70b772e6a55033e0fca731b2e74fbf06",
+  chatAgent: "2dfefe633d081c59e68d9f02c9c1ff90eb3074651e6ce434dad05283681c1383",
 };
 
 export async function hashPromptText(text) {
