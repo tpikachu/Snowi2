@@ -68,8 +68,8 @@ export function useEmbeddedChat({
     messages: persistence.messages,
     setMessages: persistence.setMessages,
     noteContext,
-    onStreamComplete: (_id, content, toolCalls) => {
-      persistence.saveAssistantMessage(content, toolCalls);
+    onStreamComplete: (_id, content, toolCalls, sources) => {
+      persistence.saveAssistantMessage(content, toolCalls, sources);
     },
   });
 

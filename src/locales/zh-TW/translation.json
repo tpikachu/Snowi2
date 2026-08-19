@@ -3145,6 +3145,10 @@
       "typeMessage": "輸入訊息...",
       "send": "傳送"
     },
+    "sources": {
+      "cited": "來源",
+      "related": "相關筆記"
+    },
     "tools": {
       "search_notesStatus": "正在搜尋筆記...",
       "web_searchStatus": "正在搜尋網頁...",

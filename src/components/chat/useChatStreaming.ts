@@ -6,7 +6,7 @@ import { getSettings, selectResolvedLLMConfig } from "../../stores/settingsStore
 import { getAgentSystemPrompt } from "../../config/prompts";
 import { createToolRegistry } from "../../services/tools";
 import type { ToolRegistry } from "../../services/tools/ToolRegistry";
-import type { Message, AgentState, ToolCallInfo } from "./types";
+import type { Message, AgentState, MessageSource, ToolCallInfo } from "./types";
 import type { ContainerScope } from "../../types/chat";
 
 // Raised from 5 now that a hit returns the passage that matched rather than
@@ -24,8 +24,15 @@ function estimateModelSizeB(modelId: string): number {
   return match ? parseFloat(match[1]) : 0;
 }
 
-async function buildRAGContext(userText: string, scope?: ContainerScope): Promise<string> {
-  if (!window.electronAPI?.semanticSearchNotes) return "";
+interface RAGResult {
+  context: string;
+  sources: MessageSource[];
+}
+
+const EMPTY_RAG: RAGResult = { context: "", sources: [] };
+
+async function buildRAGContext(userText: string, scope?: ContainerScope): Promise<RAGResult> {
+  if (!window.electronAPI?.semanticSearchNotes) return EMPTY_RAG;
   try {
     const results = await window.electronAPI.semanticSearchNotes(
       userText,
@@ -33,9 +40,9 @@ async function buildRAGContext(userText: string, scope?: ContainerScope): Promis
       scope?.spaceId ?? null,
       scope?.folderId ?? null
     );
-    if (!results || results.length === 0) return "";
+    if (!results || results.length === 0) return EMPTY_RAG;
 
-    const snippets = await Promise.all(
+    const retrieved = await Promise.all(
       results.map(
         async (r: { id: number; title: string; score?: number; matched_snippet?: string }) => {
           // The passage that matched, when search could say which. Falling
@@ -43,7 +50,11 @@ async function buildRAGContext(userText: string, scope?: ContainerScope): Promis
           // useless as context: the vector matched something on page 3 and the
           // model was handed page 1.
           if (r.matched_snippet?.trim()) {
-            return `<note id="${r.id}" title="${r.title}">\n${r.matched_snippet.trim()}\n</note>`;
+            const snippet = r.matched_snippet.trim();
+            return {
+              block: `<note id="${r.id}" title="${r.title}">\n${snippet}\n</note>`,
+              source: { noteId: r.id, title: r.title, snippet },
+            };
           }
           const note = await window.electronAPI.getNote(r.id);
           if (!note) return null;
@@ -51,14 +62,21 @@ async function buildRAGContext(userText: string, scope?: ContainerScope): Promis
             0,
             RAG_NOTE_SNIPPET_LENGTH
           );
-          return `<note id="${note.id}" title="${note.title}">\n${body}\n</note>`;
+          return {
+            block: `<note id="${note.id}" title="${note.title}">\n${body}\n</note>`,
+            source: { noteId: note.id, title: note.title },
+          };
         }
       )
     );
 
-    return snippets.filter(Boolean).join("\n\n");
+    const kept = retrieved.filter((entry): entry is NonNullable<typeof entry> => entry != null);
+    return {
+      context: kept.map((entry) => entry.block).join("\n\n"),
+      sources: kept.map((entry) => entry.source),
+    };
   } catch {
-    return "";
+    return EMPTY_RAG;
   }
 }
 
@@ -69,7 +87,12 @@ interface UseChatStreamingOptions {
   noteContext?: string;
   /** Optional container scope applied to RAG and the search_notes tool (container overview chat). */
   searchScope?: ContainerScope;
-  onStreamComplete?: (assistantId: string, content: string, toolCalls?: ToolCallInfo[]) => void;
+  onStreamComplete?: (
+    assistantId: string,
+    content: string,
+    toolCalls?: ToolCallInfo[],
+    sources?: MessageSource[]
+  ) => void;
 }
 
 export interface ChatStreaming {
@@ -179,8 +202,8 @@ export function useChatStreaming({
         }
       }
 
-      const ragContext = await buildRAGContext(userText, scope);
-      const combinedContext = [noteContextRef.current, ragContext].filter(Boolean).join("\n\n");
+      const rag = await buildRAGContext(userText, scope);
+      const combinedContext = [noteContextRef.current, rag.context].filter(Boolean).join("\n\n");
       const systemPrompt = getAgentSystemPrompt(
         registry?.getAll().map((t) => t.name),
         combinedContext || undefined
@@ -194,7 +217,16 @@ export function useChatStreaming({
       const assistantId = crypto.randomUUID();
       setMessages((prev) => [
         ...prev,
-        { id: assistantId, role: "assistant", content: "", isStreaming: true },
+        {
+          id: assistantId,
+          role: "assistant",
+          content: "",
+          isStreaming: true,
+          // Attached up front, not on completion: citations render while the
+          // answer streams, and a citation can only resolve against sources
+          // the message already carries.
+          ...(rag.sources.length ? { sources: rag.sources } : {}),
+        },
       ]);
       setAgentState("streaming");
 
@@ -285,7 +317,7 @@ export function useChatStreaming({
         );
 
         const finalMsg = messagesRef.current.find((m) => m.id === assistantId);
-        onStreamComplete?.(assistantId, fullContent, finalMsg?.toolCalls);
+        onStreamComplete?.(assistantId, fullContent, finalMsg?.toolCalls, rag.sources);
       } catch (error) {
         setMessages((prev) =>
           prev.map((m) =>

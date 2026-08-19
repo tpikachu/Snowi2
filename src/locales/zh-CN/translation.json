@@ -3145,6 +3145,10 @@
       "typeMessage": "输入消息...",
       "send": "发送"
     },
+    "sources": {
+      "cited": "来源",
+      "related": "相关笔记"
+    },
     "tools": {
       "search_notesStatus": "正在搜索笔记...",
       "web_searchStatus": "正在搜索网页...",

@@ -3145,6 +3145,10 @@
       "typeMessage": "Scrivi un messaggio...",
       "send": "Invia"
     },
+    "sources": {
+      "cited": "Fonti",
+      "related": "Note correlate"
+    },
     "tools": {
       "search_notesStatus": "Ricerca nelle note...",
       "web_searchStatus": "Ricerca sul web...",

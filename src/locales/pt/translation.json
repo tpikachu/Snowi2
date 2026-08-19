@@ -3145,6 +3145,10 @@
       "typeMessage": "Digite uma mensagem...",
       "send": "Enviar"
     },
+    "sources": {
+      "cited": "Fontes",
+      "related": "Notas relacionadas"
+    },
     "tools": {
       "search_notesStatus": "Pesquisando notas...",
       "web_searchStatus": "Pesquisando na web...",

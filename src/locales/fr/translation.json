@@ -3310,6 +3310,10 @@
       "typeMessage": "Écrivez un message...",
       "send": "Envoyer"
     },
+    "sources": {
+      "cited": "Sources",
+      "related": "Notes associées"
+    },
     "tools": {
       "search_notesStatus": "Recherche de notes...",
       "web_searchStatus": "Recherche sur le web...",

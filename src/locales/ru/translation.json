@@ -3173,6 +3173,10 @@
       "typeMessage": "Введите сообщение...",
       "send": "Отправить"
     },
+    "sources": {
+      "cited": "Источники",
+      "related": "Связанные заметки"
+    },
     "tools": {
       "search_notesStatus": "Поиск в заметках...",
       "web_searchStatus": "Поиск в интернете...",

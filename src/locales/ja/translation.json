@@ -3145,6 +3145,10 @@
       "typeMessage": "メッセージを入力...",
       "send": "送信"
     },
+    "sources": {
+      "cited": "出典",
+      "related": "関連ノート"
+    },
     "tools": {
       "search_notesStatus": "ノートを検索中...",
       "web_searchStatus": "ウェブを検索中...",

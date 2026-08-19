@@ -3193,6 +3193,10 @@
       "typeMessage": "Escribe un mensaje...",
       "send": "Enviar"
     },
+    "sources": {
+      "cited": "Fuentes",
+      "related": "Notas relacionadas"
+    },
     "tools": {
       "search_notesStatus": "Buscando notas...",
       "web_searchStatus": "Buscando en la web...",

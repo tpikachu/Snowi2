@@ -3310,6 +3310,10 @@
       "typeMessage": "Type a message...",
       "send": "Send"
     },
+    "sources": {
+      "cited": "Sources",
+      "related": "Related notes"
+    },
     "tools": {
       "search_notesStatus": "Searching notes...",
       "web_searchStatus": "Searching the web...",

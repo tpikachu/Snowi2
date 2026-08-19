@@ -11,8 +11,9 @@ import {
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { MarkdownRenderer } from "../ui/MarkdownRenderer";
-import type { ToolCallInfo } from "./types";
-import { extractNoteCards } from "./noteCards";
+import type { MessageSource, ToolCallInfo } from "./types";
+import { resolveMessageSources } from "./messageSources";
+import { renderCitations, renderStreamingCitations } from "../../utils/chatCitations";
 import { toolIcons } from "./toolIcons";
 
 interface ChatMessageProps {
@@ -20,6 +21,7 @@ interface ChatMessageProps {
   content: string;
   isStreaming: boolean;
   toolCalls?: ToolCallInfo[];
+  sources?: MessageSource[];
   onOpenNote?: (noteId: number) => void;
 }
 
@@ -128,21 +130,24 @@ function ToolCallStep({ toolCall }: { toolCall: ToolCallInfo }) {
 function NoteCard({
   noteId,
   title,
+  index,
+  subtitle,
   onOpenNote,
 }: {
   noteId: number;
   title: string;
+  /** Citation number, when the answer cited this note. */
+  index?: number;
+  subtitle: string;
   onOpenNote?: (noteId: number) => void;
 }) {
-  const { t } = useTranslation();
-
   return (
     <button
       onClick={() =>
         onOpenNote ? onOpenNote(noteId) : window.electronAPI?.agentOpenNote?.(noteId)
       }
       className={cn(
-        "flex items-center gap-2 w-full mt-2 px-2.5 py-2 rounded-md",
+        "flex items-center gap-2 w-full mt-1.5 px-2.5 py-2 rounded-md",
         "bg-primary/6 border border-primary/12",
         "hover:bg-primary/10 hover:border-primary/20",
         "active:scale-[0.99]",
@@ -150,12 +155,21 @@ function NoteCard({
         "text-left group/note"
       )}
     >
-      <div className={cn("shrink-0 p-1 rounded", "bg-primary/10")}>
-        <FileText size={12} className="text-primary/70" />
+      <div
+        className={cn(
+          "shrink-0 rounded bg-primary/10",
+          index != null
+            ? "flex size-[22px] items-center justify-center text-[10px] font-semibold text-primary"
+            : "p-1"
+        )}
+      >
+        {index != null ? index : <FileText size={12} className="text-primary/70" />}
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-[12px] font-medium text-foreground truncate">{title}</p>
-        <p className="text-[10px] text-muted-foreground/50">{t("agentMode.tools.openNote")}</p>
+        {/* A matched passage runs to hundreds of characters and arrives with
+            its own newlines; one clamped line is the whole budget here. */}
+        <p className="line-clamp-1 text-[10px] text-muted-foreground/50">{subtitle}</p>
       </div>
       <ChevronRight
         size={12}
@@ -170,6 +184,7 @@ export function ChatMessage({
   content,
   isStreaming,
   toolCalls,
+  sources,
   onOpenNote,
 }: ChatMessageProps) {
   const { t } = useTranslation();
@@ -207,7 +222,20 @@ export function ChatMessage({
 
   const hasToolCalls = toolCalls && toolCalls.length > 0;
   const hasContent = content.length > 0;
-  const noteCards = extractNoteCards(toolCalls, t("notes.list.untitledNote"));
+
+  const knownIds = sources?.map((s) => s.noteId) ?? [];
+  const { content: renderedContent, citedIds } = isStreaming
+    ? renderStreamingCitations(content, knownIds)
+    : renderCitations(content, knownIds);
+  const { items: sourceItems, cited } = resolveMessageSources(
+    sources,
+    toolCalls,
+    citedIds,
+    t("notes.list.untitledNote")
+  );
+
+  const openNote = (noteId: number) =>
+    onOpenNote ? onOpenNote(noteId) : void window.electronAPI?.agentOpenNote?.(noteId);
 
   return (
     <div
@@ -225,7 +253,7 @@ export function ChatMessage({
         {hasToolCalls && (
           <div
             className={cn(
-              (hasContent || noteCards.length > 0) && "mb-2 pb-1.5 border-b border-border/15"
+              (hasContent || sourceItems.length > 0) && "mb-2 pb-1.5 border-b border-border/15"
             )}
           >
             {toolCalls.map((tc) => (
@@ -236,7 +264,8 @@ export function ChatMessage({
 
         {hasContent && (
           <MarkdownRenderer
-            content={content}
+            content={renderedContent}
+            onOpenNote={openNote}
             className="text-[13px] leading-relaxed [&_p]:text-[13px] [&_li]:text-[13px]"
           />
         )}
@@ -254,13 +283,18 @@ export function ChatMessage({
           </span>
         )}
 
-        {noteCards.length > 0 && !isStreaming && (
-          <div>
-            {noteCards.map((card) => (
+        {sourceItems.length > 0 && !isStreaming && (
+          <div className="mt-2">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground/50">
+              {cited ? t("agentMode.sources.cited") : t("agentMode.sources.related")}
+            </p>
+            {sourceItems.map((item, i) => (
               <NoteCard
-                key={card.noteId}
-                noteId={card.noteId}
-                title={card.title}
+                key={item.noteId}
+                noteId={item.noteId}
+                title={item.title}
+                index={cited ? i + 1 : undefined}
+                subtitle={item.snippet?.trim() || t("agentMode.tools.openNote")}
                 onOpenNote={onOpenNote}
               />
             ))}

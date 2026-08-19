@@ -3310,6 +3310,10 @@
       "typeMessage": "Nachricht eingeben...",
       "send": "Senden"
     },
+    "sources": {
+      "cited": "Quellen",
+      "related": "Verwandte Notizen"
+    },
     "tools": {
       "search_notesStatus": "Notizen werden durchsucht...",
       "web_searchStatus": "Websuche...",

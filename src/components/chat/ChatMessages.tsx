@@ -34,6 +34,7 @@ export function ChatMessages({ messages, emptyState, onOpenNote }: ChatMessagesP
                 content={msg.content}
                 isStreaming={msg.isStreaming}
                 toolCalls={msg.toolCalls}
+                sources={msg.sources}
                 onOpenNote={onOpenNote}
               />
             ))}

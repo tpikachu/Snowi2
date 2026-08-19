@@ -54,9 +54,17 @@ export function getAgentSystemPrompt(availableTools?: string[], noteContext?: st
   }
 
   if (noteContext) {
+    // The citation marker is parsed back out by `utils/chatCitations.ts` and
+    // rendered as a link to the note, so the id has to be the one on the tag.
+    // Markers naming a note that was not supplied are dropped rather than
+    // linked, which is why the instruction is explicit about not inventing one.
     prompt +=
       "\n\nBelow are notes from the user's library that may be relevant. " +
-      "Reference them naturally if they help answer the question.\n\n" +
+      "Use them when they help answer the question, and ignore them when they do not.\n\n" +
+      "When a statement comes from one of these notes, cite it by appending " +
+      "[[note:ID]] — the ID from that note's tag — at the end of the sentence. " +
+      "Cite only notes listed below; never invent an ID. Do not add a sources " +
+      "list of your own at the end: the app renders one from your citations.\n\n" +
       noteContext;
   }
 

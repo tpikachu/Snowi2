@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import type { Message, ToolCallInfo } from "./types";
+import type { Message, MessageSource, ToolCallInfo } from "./types";
 import type { ContainerScope } from "../../types/chat";
 
 interface UseChatPersistenceOptions {
@@ -18,7 +18,11 @@ export interface ChatPersistence {
   ) => Promise<number>;
   loadConversation: (id: number) => Promise<void>;
   saveUserMessage: (text: string) => Promise<void>;
-  saveAssistantMessage: (content: string, toolCalls?: ToolCallInfo[]) => Promise<void>;
+  saveAssistantMessage: (
+    content: string,
+    toolCalls?: ToolCallInfo[],
+    sources?: MessageSource[]
+  ) => Promise<void>;
   handleNewChat: () => void;
 }
 
@@ -61,12 +65,14 @@ export function useChatPersistence(options: UseChatPersistenceOptions = {}): Cha
     const loaded: Message[] = conv.messages.map((m) => {
       const parsed = m.metadata ? tryParseMetadata(m.metadata) : undefined;
       const toolCalls = parsed?.toolCalls as ToolCallInfo[] | undefined;
+      const sources = parsed?.sources as MessageSource[] | undefined;
       return {
         id: crypto.randomUUID(),
         role: m.role as Message["role"],
         content: m.content,
         isStreaming: false,
         ...(toolCalls ? { toolCalls } : {}),
+        ...(sources ? { sources } : {}),
       };
     });
     setMessages(loaded);
@@ -78,16 +84,24 @@ export function useChatPersistence(options: UseChatPersistenceOptions = {}): Cha
     }
   }, []);
 
-  const saveAssistantMessage = useCallback(async (content: string, toolCalls?: ToolCallInfo[]) => {
-    if (conversationIdRef.current) {
+  const saveAssistantMessage = useCallback(
+    async (content: string, toolCalls?: ToolCallInfo[], sources?: MessageSource[]) => {
+      if (!conversationIdRef.current) return;
+      const metadata = {
+        ...(toolCalls?.length ? { toolCalls } : {}),
+        // Without this a reopened conversation loses every citation link: the
+        // markers stay in the text but have nothing to resolve against.
+        ...(sources?.length ? { sources } : {}),
+      };
       window.electronAPI?.addAgentMessage?.(
         conversationIdRef.current,
         "assistant",
         content,
-        toolCalls?.length ? { toolCalls } : undefined
+        Object.keys(metadata).length ? metadata : undefined
       );
-    }
-  }, []);
+    },
+    []
+  );
 
   const handleNewChat = useCallback(() => {
     setMessages([]);
