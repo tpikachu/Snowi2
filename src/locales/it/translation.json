@@ -2872,9 +2872,7 @@
     "integrations": "Integrazioni",
     "defaultUser": "Utente",
     "notSignedIn": "Non hai effettuato l'accesso",
-    "chat": "Chat",
-    "collapse": "Comprimi barra laterale",
-    "expand": "Espandi barra laterale"
+    "chat": "Chat"
   },
   "chat": {
     "newChat": "Nuova chat",
@@ -3521,5 +3519,39 @@
     },
     "start": "Prendi appunti",
     "join": "Partecipa e trascrivi"
+  },
+  "shell": {
+    "contextPane": {
+      "collapse": "Nascondi pannello",
+      "expand": "Mostra pannello"
+    }
+  },
+  "activity": {
+    "paneTitle": "Attività",
+    "open": "Apri",
+    "notesError": "Impossibile caricare note e riunioni",
+    "words": "{{count}} parole",
+    "speakers": "{{count}} interlocutori",
+    "types": {
+      "dictation": "Dettatura",
+      "meeting": "Riunione",
+      "note": "Nota",
+      "upload": "Caricamento"
+    },
+    "filters": {
+      "label": "Tipo",
+      "all": "Tutto",
+      "dictations": "Dettature",
+      "meetings": "Riunioni",
+      "notes": "Note",
+      "clear": "Rimuovi filtro"
+    },
+    "empty": {
+      "title": "Qui non c'è ancora nulla",
+      "description": "Dettature, riunioni e note confluiscono tutte in questo flusso.",
+      "dictations": "Ancora nessuna dettatura",
+      "meetings": "Ancora nessuna riunione",
+      "notes": "Ancora nessuna nota"
+    }
   }
 }

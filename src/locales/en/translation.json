@@ -2378,9 +2378,7 @@
     "integrations": "Integrations",
     "defaultUser": "User",
     "notSignedIn": "Not signed in",
-    "chat": "Chat",
-    "collapse": "Collapse sidebar",
-    "expand": "Expand sidebar"
+    "chat": "Chat"
   },
   "workspaces": {
     "switcher": {
@@ -3521,5 +3519,39 @@
     },
     "start": "Take notes",
     "join": "Join & transcribe"
+  },
+  "shell": {
+    "contextPane": {
+      "collapse": "Hide panel",
+      "expand": "Show panel"
+    }
+  },
+  "activity": {
+    "paneTitle": "Activity",
+    "open": "Open",
+    "notesError": "Couldn't load notes and meetings",
+    "words": "{{count}} words",
+    "speakers": "{{count}} speakers",
+    "types": {
+      "dictation": "Dictation",
+      "meeting": "Meeting",
+      "note": "Note",
+      "upload": "Upload"
+    },
+    "filters": {
+      "label": "Type",
+      "all": "All",
+      "dictations": "Dictations",
+      "meetings": "Meetings",
+      "notes": "Notes",
+      "clear": "Clear filter"
+    },
+    "empty": {
+      "title": "Nothing here yet",
+      "description": "Dictations, meetings and notes all land in this stream.",
+      "dictations": "No dictations yet",
+      "meetings": "No meetings yet",
+      "notes": "No notes yet"
+    }
   }
 }

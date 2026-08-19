@@ -2378,9 +2378,7 @@
     "integrations": "Intégrations",
     "defaultUser": "Utilisateur",
     "notSignedIn": "Non connecté",
-    "chat": "Chat",
-    "collapse": "Réduire la barre latérale",
-    "expand": "Développer la barre latérale"
+    "chat": "Chat"
   },
   "workspaces": {
     "switcher": {
@@ -3521,5 +3519,39 @@
     },
     "start": "Prendre des notes",
     "join": "Rejoindre et transcrire"
+  },
+  "shell": {
+    "contextPane": {
+      "collapse": "Masquer le panneau",
+      "expand": "Afficher le panneau"
+    }
+  },
+  "activity": {
+    "paneTitle": "Activité",
+    "open": "Ouvrir",
+    "notesError": "Impossible de charger les notes et les réunions",
+    "words": "{{count}} mots",
+    "speakers": "{{count}} intervenants",
+    "types": {
+      "dictation": "Dictée",
+      "meeting": "Réunion",
+      "note": "Note",
+      "upload": "Import"
+    },
+    "filters": {
+      "label": "Type",
+      "all": "Tout",
+      "dictations": "Dictées",
+      "meetings": "Réunions",
+      "notes": "Notes",
+      "clear": "Effacer le filtre"
+    },
+    "empty": {
+      "title": "Rien pour le moment",
+      "description": "Les dictées, les réunions et les notes arrivent toutes dans ce flux.",
+      "dictations": "Aucune dictée pour le moment",
+      "meetings": "Aucune réunion pour le moment",
+      "notes": "Aucune note pour le moment"
+    }
   }
 }

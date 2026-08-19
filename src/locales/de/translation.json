@@ -2378,9 +2378,7 @@
     "integrations": "Integrationen",
     "defaultUser": "Benutzer",
     "notSignedIn": "Nicht angemeldet",
-    "chat": "Chat",
-    "collapse": "Seitenleiste einklappen",
-    "expand": "Seitenleiste ausklappen"
+    "chat": "Chat"
   },
   "workspaces": {
     "switcher": {
@@ -3521,5 +3519,39 @@
     },
     "start": "Notizen aufnehmen",
     "join": "Beitreten & transkribieren"
+  },
+  "shell": {
+    "contextPane": {
+      "collapse": "Leiste ausblenden",
+      "expand": "Leiste einblenden"
+    }
+  },
+  "activity": {
+    "paneTitle": "Aktivität",
+    "open": "Öffnen",
+    "notesError": "Notizen und Meetings konnten nicht geladen werden",
+    "words": "{{count}} Wörter",
+    "speakers": "{{count}} Sprecher",
+    "types": {
+      "dictation": "Diktat",
+      "meeting": "Meeting",
+      "note": "Notiz",
+      "upload": "Upload"
+    },
+    "filters": {
+      "label": "Typ",
+      "all": "Alle",
+      "dictations": "Diktate",
+      "meetings": "Meetings",
+      "notes": "Notizen",
+      "clear": "Filter zurücksetzen"
+    },
+    "empty": {
+      "title": "Hier ist noch nichts",
+      "description": "Diktate, Meetings und Notizen landen alle in diesem Stream.",
+      "dictations": "Noch keine Diktate",
+      "meetings": "Noch keine Meetings",
+      "notes": "Noch keine Notizen"
+    }
   }
 }

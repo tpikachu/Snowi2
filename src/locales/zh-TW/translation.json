@@ -2872,9 +2872,7 @@
     "integrations": "整合",
     "defaultUser": "使用者",
     "notSignedIn": "尚未登入",
-    "chat": "聊天",
-    "collapse": "收合側邊欄",
-    "expand": "展開側邊欄"
+    "chat": "聊天"
   },
   "chat": {
     "newChat": "新對話",
@@ -3521,5 +3519,39 @@
     },
     "start": "開始記錄",
     "join": "加入並轉錄"
+  },
+  "shell": {
+    "contextPane": {
+      "collapse": "隱藏面板",
+      "expand": "顯示面板"
+    }
+  },
+  "activity": {
+    "paneTitle": "動態",
+    "open": "開啟",
+    "notesError": "無法載入筆記和會議",
+    "words": "{{count}} 個字",
+    "speakers": "{{count}} 位發言者",
+    "types": {
+      "dictation": "聽寫",
+      "meeting": "會議",
+      "note": "筆記",
+      "upload": "上傳"
+    },
+    "filters": {
+      "label": "類型",
+      "all": "全部",
+      "dictations": "聽寫",
+      "meetings": "會議",
+      "notes": "筆記",
+      "clear": "清除篩選"
+    },
+    "empty": {
+      "title": "這裡還沒有內容",
+      "description": "聽寫、會議和筆記都會出現在這個動態流中。",
+      "dictations": "尚未有聽寫",
+      "meetings": "尚未有會議",
+      "notes": "尚未有筆記"
+    }
   }
 }

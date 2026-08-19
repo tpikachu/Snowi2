@@ -4,6 +4,7 @@ import { Plus, SquarePen, Search, Sparkles } from "lucide-react";
 import { useToast } from "../ui/useToast";
 import NoteEditor from "./NoteEditor";
 import SpacesTree from "./SpacesTree";
+import ContextPaneSection from "../shell/ContextPaneSection";
 import { ContainerOverview } from "./overview/ContainerOverview";
 import ActionPicker from "./ActionPicker";
 import ActionManagerDialog from "./ActionManagerDialog";
@@ -36,8 +37,6 @@ import {
 } from "../../stores/noteStore";
 import {
   useMeetingRecordingStore,
-  useIsMeetingMode,
-  useIsNarrowWindow,
   startRecording as storeStartRecording,
   stopRecording as storeStopRecording,
   lockSpeaker,
@@ -100,12 +99,9 @@ export default function PersonalNotesView({
   meetingRecordingRequest,
   onMeetingRecordingRequestHandled,
 }: PersonalNotesViewProps) {
-  const isMeetingMode = useIsMeetingMode();
-  const isNarrowWindow = useIsNarrowWindow();
   const { t } = useTranslation();
   const notes = useNotes();
   const activeNoteId = useActiveNoteId();
-  const isSidePanelLayout = isMeetingMode || (isNarrowWindow && activeNoteId != null);
   const activeFolderId = useActiveFolderId();
   const [isSaving, setIsSaving] = useState(false);
   const [draft, setDraftState] = useState<NoteEditorDraft | null>(null);
@@ -603,11 +599,9 @@ export default function PersonalNotesView({
 
   return (
     <div className="flex h-full">
-      <div
-        className="shrink-0 overflow-hidden transition-[width] duration-300 ease-out"
-        style={{ width: isSidePanelLayout ? 0 : "13rem" }}
-      >
-        <div className="w-52 shrink-0 border-r border-border/15 dark:border-white/4 flex flex-col h-full">
+      {/* Hoisted into the shell's context pane; the tree keeps its state here. */}
+      <ContextPaneSection inlineClassName="w-52 shrink-0 border-r border-border-subtle">
+        <div className="flex h-full min-h-0 flex-col">
           <div className="px-2 pt-2 pb-1 shrink-0 space-y-0.5">
             <button
               onClick={handleNewNoteInPrivate}
@@ -656,7 +650,7 @@ export default function PersonalNotesView({
             onNewNote={handleNewNoteIn}
           />
         </div>
-      </div>
+      </ContextPaneSection>
 
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {editorNote ? (

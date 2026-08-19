@@ -8,6 +8,7 @@ import { ChatInput } from "./ChatInput";
 import { ChatEmptyIllustration } from "./ChatEmptyIllustration";
 import ConversationList from "./ConversationList";
 import EmptyChatState from "./EmptyChatState";
+import ContextPaneSection from "../shell/ContextPaneSection";
 import { ConfirmDialog } from "../ui/dialog";
 import { useDialogs } from "../../hooks/useDialogs";
 import { getCachedPlatform } from "../../utils/platform";
@@ -149,7 +150,8 @@ export default function ChatView() {
         </Suspense>
       )}
       <div className="flex h-full">
-        <div className="w-56 min-w-50 shrink-0 border-r border-border/15 dark:border-white/6">
+        {/* Hoisted into the shell's context pane; the list keeps its state here. */}
+        <ContextPaneSection inlineClassName="w-56 min-w-50 shrink-0 border-r border-border-subtle">
           <ConversationList
             activeConversationId={activeConversationId}
             onSelectConversation={handleSelectConversation}
@@ -159,8 +161,8 @@ export default function ChatView() {
             onDelete={handleDelete}
             refreshKey={refreshKey}
           />
-        </div>
-        <div className="flex-1 min-w-80 flex flex-col">
+        </ContextPaneSection>
+        <div className="flex-1 min-w-0 flex flex-col">
           {hasActiveChat ? (
             <>
               <ChatMessages messages={persistence.messages} emptyState={<NewChatEmptyState />} />

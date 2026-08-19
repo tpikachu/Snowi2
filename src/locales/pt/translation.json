@@ -2872,9 +2872,7 @@
     "integrations": "Integrações",
     "defaultUser": "Usuário",
     "notSignedIn": "Não conectado",
-    "chat": "Chat",
-    "collapse": "Recolher barra lateral",
-    "expand": "Expandir barra lateral"
+    "chat": "Chat"
   },
   "chat": {
     "newChat": "Novo chat",
@@ -3521,5 +3519,39 @@
     },
     "start": "Fazer anotações",
     "join": "Entrar e transcrever"
+  },
+  "shell": {
+    "contextPane": {
+      "collapse": "Ocultar painel",
+      "expand": "Mostrar painel"
+    }
+  },
+  "activity": {
+    "paneTitle": "Atividade",
+    "open": "Abrir",
+    "notesError": "Não foi possível carregar as notas e as reuniões",
+    "words": "{{count}} palavras",
+    "speakers": "{{count}} interlocutores",
+    "types": {
+      "dictation": "Ditado",
+      "meeting": "Reunião",
+      "note": "Nota",
+      "upload": "Envio"
+    },
+    "filters": {
+      "label": "Tipo",
+      "all": "Tudo",
+      "dictations": "Ditados",
+      "meetings": "Reuniões",
+      "notes": "Notas",
+      "clear": "Limpar filtro"
+    },
+    "empty": {
+      "title": "Ainda não há nada aqui",
+      "description": "Ditados, reuniões e notas aparecem todos neste fluxo.",
+      "dictations": "Ainda não há ditados",
+      "meetings": "Ainda não há reuniões",
+      "notes": "Ainda não há notas"
+    }
   }
 }

@@ -167,22 +167,13 @@ export default function ConversationList({
   if (isLoading && showSkeleton) {
     return (
       <div className="flex flex-col h-full">
-        <div className="px-2 pt-2 pb-1 flex items-center gap-1.5">
-          <h2 className="text-xs font-medium text-foreground px-1 flex-1">{t("sidebar.chat")}</h2>
-        </div>
         <SkeletonRows />
       </div>
     );
   }
 
   if (isLoading && !showSkeleton) {
-    return (
-      <div className="flex flex-col h-full">
-        <div className="px-2 pt-2 pb-1 flex items-center gap-1.5">
-          <h2 className="text-xs font-medium text-foreground px-1 flex-1">{t("sidebar.chat")}</h2>
-        </div>
-      </div>
-    );
+    return <div className="flex flex-col h-full" />;
   }
 
   return (

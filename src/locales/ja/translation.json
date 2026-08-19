@@ -2872,9 +2872,7 @@
     "integrations": "連携",
     "defaultUser": "ユーザー",
     "notSignedIn": "未サインイン",
-    "chat": "チャット",
-    "collapse": "サイドバーを折りたたむ",
-    "expand": "サイドバーを展開"
+    "chat": "チャット"
   },
   "chat": {
     "newChat": "新しいチャット",
@@ -3521,5 +3519,39 @@
     },
     "start": "メモを取る",
     "join": "参加して文字起こし"
+  },
+  "shell": {
+    "contextPane": {
+      "collapse": "パネルを隠す",
+      "expand": "パネルを表示"
+    }
+  },
+  "activity": {
+    "paneTitle": "アクティビティ",
+    "open": "開く",
+    "notesError": "ノートと会議を読み込めませんでした",
+    "words": "{{count}} 語",
+    "speakers": "{{count}} 人の話者",
+    "types": {
+      "dictation": "音声入力",
+      "meeting": "会議",
+      "note": "ノート",
+      "upload": "アップロード"
+    },
+    "filters": {
+      "label": "種類",
+      "all": "すべて",
+      "dictations": "音声入力",
+      "meetings": "会議",
+      "notes": "ノート",
+      "clear": "フィルターを解除"
+    },
+    "empty": {
+      "title": "まだ何もありません",
+      "description": "音声入力、会議、ノートはすべてこのストリームに表示されます。",
+      "dictations": "音声入力はまだありません",
+      "meetings": "会議はまだありません",
+      "notes": "ノートはまだありません"
+    }
   }
 }

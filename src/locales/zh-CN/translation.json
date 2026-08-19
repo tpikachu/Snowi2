@@ -2872,9 +2872,7 @@
     "integrations": "集成",
     "defaultUser": "用户",
     "notSignedIn": "未登录",
-    "chat": "聊天",
-    "collapse": "折叠侧边栏",
-    "expand": "展开侧边栏"
+    "chat": "聊天"
   },
   "chat": {
     "newChat": "新对话",
@@ -3521,5 +3519,39 @@
     },
     "start": "开始记录",
     "join": "加入并转录"
+  },
+  "shell": {
+    "contextPane": {
+      "collapse": "隐藏面板",
+      "expand": "显示面板"
+    }
+  },
+  "activity": {
+    "paneTitle": "动态",
+    "open": "打开",
+    "notesError": "无法加载笔记和会议",
+    "words": "{{count}} 个词",
+    "speakers": "{{count}} 位发言人",
+    "types": {
+      "dictation": "听写",
+      "meeting": "会议",
+      "note": "笔记",
+      "upload": "上传"
+    },
+    "filters": {
+      "label": "类型",
+      "all": "全部",
+      "dictations": "听写",
+      "meetings": "会议",
+      "notes": "笔记",
+      "clear": "清除筛选"
+    },
+    "empty": {
+      "title": "这里还没有内容",
+      "description": "听写、会议和笔记都会出现在这条动态流中。",
+      "dictations": "还没有听写",
+      "meetings": "还没有会议",
+      "notes": "还没有笔记"
+    }
   }
 }
