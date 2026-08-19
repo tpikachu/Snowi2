@@ -4295,26 +4295,53 @@ class DatabaseManager {
     }
   }
 
-  cleanup() {
-    try {
-      if (this.db) {
-        try {
-          this.db.close();
-        } catch (closeError) {
-          debugLogger.error("Error closing database", { error: closeError.message }, "database");
-        }
-        this.db = null;
+  _databaseFilePath() {
+    return path.join(
+      app.getPath("userData"),
+      process.env.NODE_ENV === "development" ? "transcriptions-dev.db" : "transcriptions.db"
+    );
+  }
+
+  /**
+   * Erases every row and returns to a freshly seeded schema.
+   *
+   * Reopening is not optional. "Reset app data" only reloads the renderer — the
+   * main process keeps running, so a manager left holding a closed handle stays
+   * broken until the app is quit: `this.db` is still truthy, every "not
+   * initialized" guard passes, and each query dies inside better-sqlite3 with
+   * "The database connection is not open".
+   *
+   * WAL and SHM go with the database file. They are separate files that survive
+   * unlinking the main one, and a stale -wal against a new database is exactly
+   * the kind of corruption that reads as data coming back from the dead.
+   */
+  reset() {
+    if (this.db) {
+      try {
+        this.db.close();
+      } catch (closeError) {
+        debugLogger.error("Error closing database", { error: closeError.message }, "database");
       }
-      const dbPath = path.join(
-        app.getPath("userData"),
-        process.env.NODE_ENV === "development" ? "transcriptions-dev.db" : "transcriptions.db"
-      );
-      if (fs.existsSync(dbPath)) {
-        fs.unlinkSync(dbPath);
-      }
-    } catch (error) {
-      debugLogger.error("Error deleting database file", { error: error.message }, "database");
+      this.db = null;
     }
+
+    const dbPath = this._databaseFilePath();
+    for (const file of [dbPath, `${dbPath}-wal`, `${dbPath}-shm`]) {
+      try {
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      } catch (error) {
+        debugLogger.error(
+          "Error deleting database file",
+          { file, error: error.message },
+          "database"
+        );
+      }
+    }
+
+    // Throws on failure rather than swallowing: a reset that cannot rebuild the
+    // schema has left the app with no database at all, and the caller needs to
+    // report that instead of claiming success.
+    this.initDatabase();
   }
   getAgentConversationsWithPreview(limit = 50, offset = 0, includeArchived = false) {
     try {

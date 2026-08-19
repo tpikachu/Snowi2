@@ -449,21 +449,40 @@ class IPCHandlers {
    */
   _getMemoryStore() {
     if (this._memoryStore !== undefined) return this._memoryStore;
+    const store = this._getEncryptedMeetingStore();
+    if (!store) {
+      this._memoryStore = null;
+      return null;
+    }
     try {
       const { createMemoryStore } = require("./memoryStore");
-      const { createEncryptedMeetingStore } = require("./encryptedMeetingStore");
-      const keyService = require("./meetingKeyService").getDefault();
-      const { app } = require("electron");
-      const store = createEncryptedMeetingStore({
-        baseDir: app.getPath("userData"),
-        keyService,
-      });
       this._memoryStore = createMemoryStore({ database: this.databaseManager, store });
     } catch (error) {
       debugLogger.error("Memory store unavailable", { error: error.message }, "memory");
       this._memoryStore = null;
     }
     return this._memoryStore;
+  }
+
+  /**
+   * The sealed-document store the memory store is built on, kept separately so
+   * "reset app data" can erase meetings without going through memory.
+   */
+  _getEncryptedMeetingStore() {
+    if (this._encryptedMeetingStore !== undefined) return this._encryptedMeetingStore;
+    try {
+      const { createEncryptedMeetingStore } = require("./encryptedMeetingStore");
+      const keyService = require("./meetingKeyService").getDefault();
+      const { app } = require("electron");
+      this._encryptedMeetingStore = createEncryptedMeetingStore({
+        baseDir: app.getPath("userData"),
+        keyService,
+      });
+    } catch (error) {
+      debugLogger.error("Encrypted meeting store unavailable", { error: error.message }, "memory");
+      this._encryptedMeetingStore = null;
+    }
+    return this._encryptedMeetingStore;
   }
 
   /**
@@ -3088,11 +3107,37 @@ class IPCHandlers {
         errors.push(`GCal revoke: ${e.message}`);
       }
 
-      // Close DB connection before deleting the file
+      // Erase and rebuild in one step. The renderer only reloads itself after
+      // this returns — main keeps running — so a database left closed here
+      // stays closed for the rest of the session, and every query after the
+      // "reset complete" dialog fails with "the database connection is not
+      // open" until the user quits the app.
       try {
-        this.databaseManager?.db?.close();
+        this.databaseManager?.reset();
       } catch (e) {
-        errors.push(`DB close: ${e.message}`);
+        errors.push(`DB reset: ${e.message}`);
+      }
+
+      // Meeting transcripts and memory objects are sealed under `meetings/`,
+      // not in the database — deleting rows leaves the ciphertext and its
+      // wrapped keys behind. deleteMeeting destroys the key first, so an
+      // interrupted pass leaves what survives undecryptable (§21.6).
+      try {
+        const meetingStore = this._getEncryptedMeetingStore();
+        for (const meetingId of meetingStore?.listMeetingIds() ?? []) {
+          meetingStore.deleteMeeting(meetingId);
+        }
+      } catch (e) {
+        errors.push(`Meeting store: ${e.message}`);
+      }
+
+      // Embeddings live in Qdrant's own store, so an untouched index would keep
+      // answering searches with notes that no longer exist — passage text and
+      // all, since chunk payloads carry it.
+      try {
+        await require("./vectorIndex").resetAll();
+      } catch (e) {
+        errors.push(`Vector index: ${e.message}`);
       }
 
       // Delete audio files
@@ -3122,25 +3167,23 @@ class IPCHandlers {
         errors.push(`LLM models: ${e.message}`);
       }
 
-      // Delete database file + WAL/SHM
-      try {
-        const dbPath = path.join(
-          app.getPath("userData"),
-          process.env.NODE_ENV === "development" ? "transcriptions-dev.db" : "transcriptions.db"
-        );
-        if (fs.existsSync(dbPath)) fs.unlinkSync(dbPath);
-        if (fs.existsSync(dbPath + "-wal")) fs.unlinkSync(dbPath + "-wal");
-        if (fs.existsSync(dbPath + "-shm")) fs.unlinkSync(dbPath + "-shm");
-      } catch (e) {
-        errors.push(`DB file: ${e.message}`);
-      }
-
       // Delete .env file
       try {
         const envPath = path.join(app.getPath("userData"), ".env");
         if (fs.existsSync(envPath)) fs.unlinkSync(envPath);
       } catch (e) {
         errors.push(`Env file: ${e.message}`);
+      }
+
+      // API keys live in `secure-keys/`, not the .env deleted above, and are
+      // also held in this process's environment — so unlinking the .env erases
+      // neither. Without this a "reset app data" hands the next user of the
+      // machine every key the previous one entered.
+      try {
+        const keyErrors = (await this.environmentManager?.clearAllSecrets?.()) ?? [];
+        for (const failure of keyErrors) errors.push(`Secret: ${failure}`);
+      } catch (e) {
+        errors.push(`Secrets: ${e.message}`);
       }
 
       // Clear session cookies

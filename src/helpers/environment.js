@@ -180,6 +180,30 @@ class EnvironmentManager {
     }
   }
 
+  /**
+   * Erases every stored secret — the encrypted files and the live process.env
+   * copy — for "reset app data".
+   *
+   * Both halves matter, and deleting the .env is neither of them: secrets moved
+   * out of that file into `secure-keys/` long ago, so unlinking it leaves every
+   * API key encrypted on disk and still loaded in this process, ready to be
+   * written straight back out by the next saveAllKeysToEnvFile().
+   *
+   * Returns the failures rather than throwing, so one unreadable file cannot
+   * abandon the rest of the keys.
+   */
+  async clearAllSecrets() {
+    const failures = [];
+    for (const name of SECRET_KEYS) {
+      try {
+        await this._deleteSecretKey(name);
+      } catch (error) {
+        failures.push(`${name}: ${error.message}`);
+      }
+    }
+    return failures;
+  }
+
   async _migrateToSecureStorage() {
     const dir = this._getSecureKeysDir();
     await fsPromises.mkdir(dir, { recursive: true });

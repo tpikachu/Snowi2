@@ -378,6 +378,35 @@ class VectorIndex {
   isReady() {
     return this.client !== null;
   }
+
+  /**
+   * Drops every collection and recreates them empty, for "reset app data".
+   *
+   * Vectors live in Qdrant's own store, not the SQLite file, so erasing the
+   * database leaves the whole index standing. Semantic search would keep
+   * returning notes that no longer exist — and each chunk point carries its
+   * passage text in the payload, so the deleted content comes back with them.
+   */
+  async resetAll() {
+    if (!this.client) return;
+    for (const name of [
+      this.collectionName,
+      this.noteChunksCollection,
+      this.conversationChunksCollection,
+    ]) {
+      try {
+        await this.client.deleteCollection(name);
+      } catch (err) {
+        debugLogger.error("Failed to delete Qdrant collection", {
+          collection: name,
+          error: err.message,
+        });
+      }
+    }
+    await this.ensureCollection();
+    await this.ensureNoteChunksCollection();
+    await this.ensureConversationChunksCollection();
+  }
 }
 
 module.exports = new VectorIndex();
