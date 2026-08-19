@@ -540,6 +540,11 @@
     },
     "corti": {
       "euOnly": "Les modèles Corti ne sont disponibles que dans la région UE."
+    },
+    "providerGrid": {
+      "keyMissing": "Pas encore de clé API",
+      "keySet": "Clé API enregistrée",
+      "label": "Fournisseur"
     }
   },
   "transcription": {
@@ -999,7 +1004,10 @@
     "backToSignIn": "Retour à la connexion"
   },
   "errorBoundary": {
+    "copied": "Copié",
+    "copy": "Copier les détails",
     "description": "Une erreur inattendue s'est produite. Veuillez recharger pour réessayer.",
+    "details": "Détails techniques",
     "reload": "Recharger",
     "title": "Une erreur est survenue"
   },
@@ -2246,6 +2254,18 @@
       "endpointUrl": "URL du point d'accès",
       "serverUrl": "URL du serveur",
       "apiKeyOptional": "Clé API (facultative)"
+    },
+    "hotkeys": {
+      "description": "Ils fonctionnent dans n'importe quelle application, que Snowi soit au premier plan ou non. Seule la dictée est attribuée par défaut.",
+      "slots": {
+        "chatAgent": "Agent de discussion",
+        "dictation": "Dictée",
+        "meeting": "Mode réunion",
+        "translation": "Traduction",
+        "voiceAgent": "Agent vocal"
+      },
+      "title": "Raccourcis",
+      "useSuggested": "Utiliser {{hotkey}}"
     }
   },
   "models": {

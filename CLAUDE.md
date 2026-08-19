@@ -70,7 +70,7 @@ Snowi is an Electron-based desktop dictation application that uses whisper.cpp f
 - **environment.js**: Environment variable and OpenAI API management
 - **hotkeyManager.js**: Global hotkey registration and management
   - Named hotkey slots: `dictation`, `agent` (chat agent overlay), `voiceAgent` (dictation routed straight to the dictation agent), `meeting`
-  - Handles platform-specific defaults (GLOBE on macOS, Control+Super on Windows/Linux)
+  - Handles platform-specific defaults (GLOBE on macOS, `Control+Shift+Space` on Windows/Linux)
   - Auto-fallback to F8/F9 if default hotkey is unavailable
   - Notifies renderer via IPC when hotkey registration fails
   - Integrates with GnomeShortcutManager for GNOME Wayland support
@@ -822,7 +822,7 @@ const { t } = useTranslation();
 - **GNOME Wayland global hotkeys**:
   - Uses native GNOME shortcuts via D-Bus and gsettings (no special permissions needed)
   - Hotkeys visible in GNOME Settings → Keyboard → Shortcuts → Custom
-  - Default fallback: `F8` when `Control+Super` cannot be registered
+  - Default fallback: `F8` when `Control+Shift+Space` cannot be registered
   - Push-to-talk unavailable (GNOME shortcuts only fire single toggle event)
   - Falls back to X11/globalShortcut if GNOME integration fails
   - D-Bus transport: `@homebridge/dbus-native` (pure JavaScript, no native addons)

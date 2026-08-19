@@ -11,10 +11,18 @@ const { parseHotkeyList } = require("./hotkeyList");
 const HOTKEY_REGISTRATION_DELAY_MS = 1000;
 
 // Fallback hotkeys tried when primary hotkey registration fails on startup
-const FALLBACK_HOTKEYS = ["F8", "F9", "Control+Shift+Space"];
+const FALLBACK_HOTKEYS = ["F8", "F9", "Control+Super"];
 
-// Default hotkey for dictation if no saved value exists
-const DEFAULT_HOTKEY = "Control+Super";
+// Default hotkey for dictation if no saved value exists.
+//
+// A regular chord rather than a modifier-only one (the previous default was
+// "Control+Super"): modifier-only combos cannot go through Electron's
+// globalShortcut at all, so they need the native key-listener binary even for
+// plain tap-to-talk, and they are rejected outright on X11 and by GNOME's
+// gsettings. This registers everywhere, and it is still holdable for
+// push-to-talk. "Control+Super" stays as a fallback for the machines where
+// something else has already claimed this chord.
+const DEFAULT_HOTKEY = "Control+Shift+Space";
 
 // Slots routed through GNOME native gsettings (not globalShortcut).
 // Temporary slots like "cancel" stay on globalShortcut.
@@ -86,7 +94,7 @@ class HotkeyManager extends EventEmitter {
     // Each slot holds a list of hotkeys (#936). `accelerators` mirrors `hotkeys`
     // index-for-index (null for native-listener entries).
     this.slots = new Map();
-    const defaultDictation = process.platform === "darwin" ? "GLOBE" : "Control+Super";
+    const defaultDictation = process.platform === "darwin" ? "GLOBE" : DEFAULT_HOTKEY;
     this.slots.set("dictation", { hotkeys: [defaultDictation], callback: null, accelerators: [] });
     this.isInitialized = false;
     this.isListeningMode = false;
@@ -476,7 +484,7 @@ class HotkeyManager extends EventEmitter {
    * slot back to its previous bindings on any failure.
    */
   setupShortcuts(
-    hotkeyInput = "Control+Super",
+    hotkeyInput = DEFAULT_HOTKEY,
     callback,
     slotName = "dictation",
     { atomic = false } = {}
@@ -1056,8 +1064,8 @@ class HotkeyManager extends EventEmitter {
 
   /**
    * Returns the effective default hotkey for the current platform.
-   * On platforms where Control+Super doesn't work (X11 modifier-only,
-   * GNOME gsettings requires a regular key), returns the first fallback (F8).
+   * Kept for the Linux backends that reject whole classes of accelerator: a
+   * modifier-only default would be unusable there, so it degrades to F8.
    */
   getEffectiveDefaultHotkey() {
     if (process.platform === "darwin") return "GLOBE";

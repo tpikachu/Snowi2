@@ -540,6 +540,11 @@
     },
     "corti": {
       "euOnly": "Corti のモデルは EU リージョンでのみ利用できます。"
+    },
+    "providerGrid": {
+      "keyMissing": "API キー未設定",
+      "keySet": "API キー保存済み",
+      "label": "プロバイダー"
     }
   },
   "transcription": {
@@ -911,7 +916,10 @@
     "backToSignIn": "サインインに戻る"
   },
   "errorBoundary": {
+    "copied": "コピーしました",
+    "copy": "詳細をコピー",
     "description": "予期しないエラーが発生しました。再読み込みしてもう一度お試しください。",
+    "details": "技術的な詳細",
     "reload": "再読み込み",
     "title": "問題が発生しました"
   },
@@ -2158,6 +2166,18 @@
           }
         }
       }
+    },
+    "hotkeys": {
+      "description": "Snowi がフォーカスされていなくても、どのアプリでも動作します。既定で割り当てられているのはディクテーションのみです。",
+      "slots": {
+        "chatAgent": "チャットエージェント",
+        "dictation": "ディクテーション",
+        "meeting": "会議モード",
+        "translation": "翻訳",
+        "voiceAgent": "音声エージェント"
+      },
+      "title": "ショートカット",
+      "useSuggested": "{{hotkey}} を使う"
     }
   },
   "models": {

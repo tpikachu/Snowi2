@@ -540,6 +540,11 @@
     },
     "corti": {
       "euOnly": "Corti 模型僅在歐盟地區可用。"
+    },
+    "providerGrid": {
+      "keyMissing": "尚無 API 金鑰",
+      "keySet": "已儲存 API 金鑰",
+      "label": "供應商"
     }
   },
   "transcription": {
@@ -911,7 +916,10 @@
     "backToSignIn": "返回登入"
   },
   "errorBoundary": {
+    "copied": "已複製",
+    "copy": "複製詳情",
     "description": "發生意外錯誤。請重新載入後再試。",
+    "details": "技術詳情",
     "reload": "重新載入",
     "title": "發生錯誤"
   },
@@ -2158,6 +2166,18 @@
           }
         }
       }
+    },
+    "hotkeys": {
+      "description": "無論 Snowi 是否在焦點中，這些快速鍵在任何應用程式中都有效。預設僅綁定聽寫。",
+      "slots": {
+        "chatAgent": "聊天代理",
+        "dictation": "聽寫",
+        "meeting": "會議模式",
+        "translation": "翻譯",
+        "voiceAgent": "語音代理"
+      },
+      "title": "快速鍵",
+      "useSuggested": "使用 {{hotkey}}"
     }
   },
   "models": {

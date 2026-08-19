@@ -540,6 +540,11 @@
     },
     "corti": {
       "euOnly": "Corti's models are only available in the EU region."
+    },
+    "providerGrid": {
+      "keyMissing": "No API key yet",
+      "keySet": "API key saved",
+      "label": "Provider"
     }
   },
   "transcription": {
@@ -999,7 +1004,10 @@
     "backToSignIn": "Back to sign in"
   },
   "errorBoundary": {
+    "copied": "Copied",
+    "copy": "Copy details",
     "description": "An unexpected error occurred. Please reload to try again.",
+    "details": "Technical details",
     "reload": "Reload",
     "title": "Something went wrong"
   },
@@ -2246,6 +2254,18 @@
       "endpointUrl": "Endpoint URL",
       "serverUrl": "Server URL",
       "apiKeyOptional": "API Key (optional)"
+    },
+    "hotkeys": {
+      "description": "These work in any app, whether or not Snowi is focused. Only dictation is bound by default.",
+      "slots": {
+        "chatAgent": "Chat agent",
+        "dictation": "Dictation",
+        "meeting": "Meeting mode",
+        "translation": "Translation",
+        "voiceAgent": "Voice agent"
+      },
+      "title": "Shortcuts",
+      "useSuggested": "Use {{hotkey}}"
     }
   },
   "models": {

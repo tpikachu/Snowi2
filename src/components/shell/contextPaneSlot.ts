@@ -33,6 +33,55 @@ export function useContextPaneSlot(): ContextPaneSlot {
   return useContext(ContextPaneSlotContext);
 }
 
+/**
+ * The portal host for the context pane — a node React never owns.
+ *
+ * The obvious implementation (`<div ref={setNode}/>` rendered by the pane) has
+ * a defect that only shows up as a crash: the pane's mount point unmounts
+ * whenever the pane collapses, the window narrows into the side-panel layout,
+ * or the section changes — while the children portalled into it live in a
+ * completely different subtree (the section that owns their state). React does
+ * not support a portal container it also unmounts; the two deletions are
+ * unordered, and whichever loses calls `removeChild` on a node that no longer
+ * holds the child. That surfaces as "Failed to execute 'removeChild' on
+ * 'Node'" and takes the whole window down through the error boundary.
+ *
+ * So the container is a plain detached div, created once and never rendered by
+ * React. The pane only *adopts* it: React mounts and unmounts the mount point,
+ * and `mountRef` moves this host in and out of it. The portal's container
+ * therefore always exists and always still owns its children, whatever order
+ * the two subtrees unmount in.
+ *
+ * It also removes a frame of latency — the old ref-callback-into-state version
+ * could not portal anything until the render *after* the pane appeared.
+ */
+export function useContextPaneHost(): {
+  host: HTMLElement | null;
+  mountRef: (element: HTMLElement | null) => void;
+} {
+  const [host] = useState<HTMLElement | null>(() => {
+    if (typeof document === "undefined") return null;
+    const element = document.createElement("div");
+    element.className = "flex min-h-0 flex-1 flex-col";
+    return element;
+  });
+
+  // The host outlives every mount point, so the only thing left to clean up is
+  // the host itself when the whole shell goes away.
+  useEffect(() => () => host?.remove(), [host]);
+
+  const mountRef = useCallback(
+    (element: HTMLElement | null) => {
+      if (!host) return;
+      if (element) element.appendChild(host);
+      else host.remove();
+    },
+    [host]
+  );
+
+  return { host, mountRef };
+}
+
 function readStoredCollapsed(): boolean {
   try {
     return localStorage.getItem(STORAGE_KEY) === "true";

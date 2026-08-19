@@ -519,6 +519,11 @@
     },
     "corti": {
       "euOnly": "Os modelos da Corti estão disponíveis apenas na região da UE."
+    },
+    "providerGrid": {
+      "keyMissing": "Ainda sem chave de API",
+      "keySet": "Chave de API salva",
+      "label": "Provedor"
     }
   },
   "transcription": {
@@ -890,7 +895,10 @@
     "backToSignIn": "Voltar para o login"
   },
   "errorBoundary": {
+    "copied": "Copiado",
+    "copy": "Copiar detalhes",
     "description": "Ocorreu um erro inesperado. Recarregue para tentar novamente.",
+    "details": "Detalhes técnicos",
     "reload": "Recarregar",
     "title": "Algo deu errado"
   },
@@ -2137,6 +2145,18 @@
           }
         }
       }
+    },
+    "hotkeys": {
+      "description": "Funcionam em qualquer aplicativo, esteja o Snowi em foco ou não. Apenas o ditado vem atribuído por padrão.",
+      "slots": {
+        "chatAgent": "Agente de chat",
+        "dictation": "Ditado",
+        "meeting": "Modo reunião",
+        "translation": "Tradução",
+        "voiceAgent": "Agente de voz"
+      },
+      "title": "Atalhos",
+      "useSuggested": "Usar {{hotkey}}"
     }
   },
   "models": {

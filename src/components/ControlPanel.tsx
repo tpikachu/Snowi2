@@ -26,7 +26,11 @@ import {
 } from "../stores/meetingRecordingStore";
 import IconRail, { type ControlPanelView } from "./shell/IconRail";
 import ContextPane from "./shell/ContextPane";
-import { ContextPaneSlotContext, useContextPaneCollapse } from "./shell/contextPaneSlot";
+import {
+  ContextPaneSlotContext,
+  useContextPaneCollapse,
+  useContextPaneHost,
+} from "./shell/contextPaneSlot";
 import ActivityFeed from "./activity/ActivityFeed";
 import ActivityFilters from "./activity/ActivityFilters";
 import { useActivityFeed } from "./activity/useActivityFeed";
@@ -100,7 +104,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   const showDiscarded = useShowDiscarded();
   const [activeView, setActiveView] = useState<ControlPanelView>("home");
   const { collapsed: contextPaneCollapsed, toggle: toggleContextPane } = useContextPaneCollapse();
-  const [contextPaneNode, setContextPaneNode] = useState<HTMLElement | null>(null);
+  const { host: contextPaneHost, mountRef: contextPaneMountRef } = useContextPaneHost();
   const isMeetingMode = useIsMeetingMode();
   const isNarrowWindow = useIsNarrowWindow();
   const activeNoteId = useActiveNoteId();
@@ -114,8 +118,8 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   // Sections hoist their own list/tree into the pane through this slot; a null
   // node means "hidden", which is why `managed` is pinned true in the shell.
   const contextPaneSlot = useMemo(
-    () => ({ node: showContextPane ? contextPaneNode : null, managed: true }),
-    [showContextPane, contextPaneNode]
+    () => ({ node: showContextPane ? contextPaneHost : null, managed: true }),
+    [showContextPane, contextPaneHost]
   );
   const recordingNoteId = useMeetingRecordingStore((s) => s.recordingNoteId);
   const recordingFolderId = useMeetingRecordingStore((s) => s.recordingFolderId);
@@ -894,7 +898,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   onJumpToGroup={jumpToActivityGroup}
                 />
               ) : (
-                <div ref={setContextPaneNode} className="flex min-h-0 flex-1 flex-col" />
+                <div ref={contextPaneMountRef} className="flex min-h-0 flex-1 flex-col" />
               )}
             </ContextPane>
           )}

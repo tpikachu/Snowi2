@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Download, Trash2, Cloud, Lock, X, Zap, Check, Loader2 } from "lucide-react";
 import { ProviderIcon } from "./ui/ProviderIcon";
 import { ProviderTabs } from "./ui/ProviderTabs";
+import { ProviderGrid, type ProviderGridItem } from "./ui/ProviderGrid";
 import ModelCardList from "./ui/ModelCardList";
 import { DownloadProgressBar } from "./ui/DownloadProgressBar";
 import ApiKeyInput from "./ui/ApiKeyInput";
@@ -1014,6 +1015,38 @@ export default function TranscriptionModelPicker({
     tinfoilApiKey: setTinfoilApiKey,
   };
 
+  // Readiness for the provider grid: every *secret* the provider needs is
+  // filled in, not just the first one — Corti takes a client ID and a secret,
+  // and one of the two alone gets you nowhere.
+  const cloudProviderGridItems = useMemo<ProviderGridItem[]>(
+    () =>
+      cloudProviderTabs.map((provider) => {
+        const fields = PROVIDER_CREDENTIALS[provider.id]?.fields;
+        return {
+          id: provider.id,
+          name: provider.name,
+          configured:
+            provider.id === "custom"
+              ? !!cloudTranscriptionBaseUrl?.trim()
+              : !!fields?.every(
+                  (field) => field.input !== "secret" || !!credentialValues[field.key]?.trim()
+                ),
+        };
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- credentialValues is rebuilt every render; the credentials themselves are the real inputs
+    [
+      cloudProviderTabs,
+      cloudTranscriptionBaseUrl,
+      openaiApiKey,
+      groqApiKey,
+      xaiApiKey,
+      mistralApiKey,
+      cortiClientId,
+      cortiClientSecret,
+      tinfoilApiKey,
+    ]
+  );
+
   const cloudModelOptions = useMemo(() => {
     if (!currentCloudProvider) return [];
     const { icon, invertInDark } = getRemoteProviderIcon(displayedCloudProvider);
@@ -1225,13 +1258,11 @@ export default function TranscriptionModelPicker({
 
       {!effectiveLocal ? (
         <>
-          {cloudProviderTabs.length > 0 && (
-            <ProviderTabs
-              providers={cloudProviderTabs}
+          {cloudProviderGridItems.length > 0 && (
+            <ProviderGrid
+              providers={cloudProviderGridItems}
               selectedId={displayedCloudProvider}
               onSelect={handleCloudProviderChange}
-              colorScheme="purple"
-              wrap
             />
           )}
 

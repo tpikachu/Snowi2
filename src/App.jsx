@@ -33,22 +33,25 @@ const BAR_WEIGHTS = [0.58, 0.84, 1, 0.84, 0.58];
 const METER_HEIGHT_PX = 14;
 const BAR_FLOOR = 0.2;
 
-// Snowi's mark: the ring plus three strokes. Inherits currentColor so a single
-// class recolours it across every HUD state.
+// Snowi's mark: the six-spoke snowflake, geometry copied verbatim from
+// src/assets/logo.svg so the HUD, the icon rail and the app icon all draw the
+// same shape. Inherits currentColor, so a single class recolours it across
+// every HUD state.
 const SnowiMark = ({ size = 17, className = "" }) => (
-  <svg viewBox="0 0 1024 1024" width={size} height={size} className={className} aria-hidden="true">
-    <circle
-      cx="512"
-      cy="512"
-      r="300"
-      fill="none"
+  <svg
+    viewBox="0 0 16 16"
+    width={size}
+    height={size}
+    fill="none"
+    className={className}
+    aria-hidden="true"
+  >
+    <path
+      d="M8 1.5v13M2.4 4.75l11.2 6.5M2.4 11.25l11.2-6.5"
       stroke="currentColor"
-      strokeWidth="76"
-      opacity="0.55"
+      strokeWidth="1.8"
+      strokeLinecap="round"
     />
-    <path d="M512 379V645" stroke="currentColor" strokeWidth="86" strokeLinecap="round" />
-    <path d="M632 452V572" stroke="currentColor" strokeWidth="86" strokeLinecap="round" />
-    <path d="M392 452V572" stroke="currentColor" strokeWidth="86" strokeLinecap="round" />
   </svg>
 );
 

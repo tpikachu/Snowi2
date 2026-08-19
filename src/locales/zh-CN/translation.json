@@ -540,6 +540,11 @@
     },
     "corti": {
       "euOnly": "Corti 模型仅在欧盟地区可用。"
+    },
+    "providerGrid": {
+      "keyMissing": "尚无 API 密钥",
+      "keySet": "已保存 API 密钥",
+      "label": "提供商"
     }
   },
   "transcription": {
@@ -911,7 +916,10 @@
     "backToSignIn": "返回登录"
   },
   "errorBoundary": {
+    "copied": "已复制",
+    "copy": "复制详情",
     "description": "发生了意外错误，请重新加载后重试。",
+    "details": "技术详情",
     "reload": "重新加载",
     "title": "出了点问题"
   },
@@ -2158,6 +2166,18 @@
           }
         }
       }
+    },
+    "hotkeys": {
+      "description": "无论 Snowi 是否处于焦点，这些快捷键在任何应用中都有效。默认仅绑定听写。",
+      "slots": {
+        "chatAgent": "聊天代理",
+        "dictation": "听写",
+        "meeting": "会议模式",
+        "translation": "翻译",
+        "voiceAgent": "语音代理"
+      },
+      "title": "快捷键",
+      "useSuggested": "使用 {{hotkey}}"
     }
   },
   "models": {

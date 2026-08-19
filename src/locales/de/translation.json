@@ -540,6 +540,11 @@
     },
     "corti": {
       "euOnly": "Corti-Modelle sind nur in der EU-Region verfügbar."
+    },
+    "providerGrid": {
+      "keyMissing": "Noch kein API-Schlüssel",
+      "keySet": "API-Schlüssel gespeichert",
+      "label": "Anbieter"
     }
   },
   "transcription": {
@@ -999,7 +1004,10 @@
     "backToSignIn": "Zurück zur Anmeldung"
   },
   "errorBoundary": {
+    "copied": "Kopiert",
+    "copy": "Details kopieren",
     "description": "Ein unerwarteter Fehler ist aufgetreten. Bitte laden Sie die Seite neu.",
+    "details": "Technische Details",
     "reload": "Neu laden",
     "title": "Etwas ist schiefgelaufen"
   },
@@ -2246,6 +2254,18 @@
       "endpointUrl": "Endpunkt-URL",
       "serverUrl": "Server-URL",
       "apiKeyOptional": "API-Schlüssel (optional)"
+    },
+    "hotkeys": {
+      "description": "Diese funktionieren in jeder App, auch wenn Snowi nicht im Vordergrund ist. Nur das Diktat ist standardmäßig belegt.",
+      "slots": {
+        "chatAgent": "Chat-Agent",
+        "dictation": "Diktat",
+        "meeting": "Meeting-Modus",
+        "translation": "Übersetzung",
+        "voiceAgent": "Sprachagent"
+      },
+      "title": "Tastenkürzel",
+      "useSuggested": "{{hotkey}} verwenden"
     }
   },
   "models": {

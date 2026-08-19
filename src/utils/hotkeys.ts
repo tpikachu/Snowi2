@@ -179,9 +179,38 @@ export function isCompoundHotkey(hotkey: string): boolean {
  * - macOS: GLOBE key (Fn key on modern Macs)
  * - Windows/Linux: Control+Super (Ctrl+Win / Ctrl+Super)
  */
+/**
+ * Snowi's default dictation hotkey. Keep in sync with `DEFAULT_HOTKEY` in
+ * src/helpers/hotkeyManager.js — the main process owns registration, this is
+ * only what the UI shows before it has heard back.
+ */
 export function getDefaultHotkey(): string {
   const platform = getPlatform();
-  return platform === "darwin" ? "GLOBE" : "Control+Super";
+  return platform === "darwin" ? "GLOBE" : "Control+Shift+Space";
+}
+
+/** The shortcut slots that ship unbound and are the user's to opt into. */
+export type OptionalHotkeySlot = "voiceAgent" | "translation" | "meeting" | "chatAgent";
+
+const SUGGESTED_SLOT_KEYS: Record<OptionalHotkeySlot, string> = {
+  voiceAgent: "A",
+  translation: "L",
+  meeting: "M",
+  chatAgent: "K",
+};
+
+/**
+ * What Snowi offers for a slot the user has not bound yet.
+ *
+ * Only ever a suggestion: registering four extra global accelerators on first
+ * launch would silently take them away from whatever already owned them, so
+ * these stay unbound until the user accepts one. They share the dictation
+ * default's modifier pair so the whole keymap is one shape to remember, and
+ * none of them collide with it.
+ */
+export function getSuggestedHotkey(slot: OptionalHotkeySlot): string {
+  const modifiers = getPlatform() === "darwin" ? "Command+Shift" : "Control+Shift";
+  return `${modifiers}+${SUGGESTED_SLOT_KEYS[slot]}`;
 }
 
 /**

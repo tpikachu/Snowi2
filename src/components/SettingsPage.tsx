@@ -24,6 +24,10 @@ import {
   Copy,
   Info,
   ChevronDown,
+  Languages,
+  MessageSquare,
+  Video,
+  Wand2,
 } from "lucide-react";
 import MicPermissionWarning from "./ui/MicPermissionWarning";
 import MicrophoneSettings from "./ui/MicrophoneSettings";
@@ -56,7 +60,8 @@ import { useHotkeyRegistration } from "../hooks/useHotkeyRegistration";
 import { useHotkeyModeInfo } from "../hooks/useHotkeyModeInfo";
 import { validateHotkeyForSlot } from "../utils/hotkeyValidation";
 import { getCachedPlatform } from "../utils/platform";
-import { formatHotkeyLabel } from "../utils/hotkeys";
+import { formatHotkeyLabel, getSuggestedHotkey } from "../utils/hotkeys";
+import HotkeyMap, { type HotkeyMapRow } from "./settings/HotkeyMap";
 import { ActivationModeSelector } from "./ui/ActivationModeSelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import LinuxPttSetupInfo from "./ui/LinuxPttSetupInfo";
@@ -2168,7 +2173,187 @@ EOF`,
           </SettingsSectionBody>
         );
 
-      case "hotkeys":
+      case "hotkeys": {
+        const hotkeyRows: HotkeyMapRow[] = [
+          {
+            id: "dictationHotkey",
+            icon: Mic,
+            label: t("settingsPage.hotkeys.slots.dictation"),
+            description: t("settingsPage.general.hotkey.description"),
+            control: (
+              <HotkeyListInput
+                value={dictationKey}
+                onChange={(list) => registerHotkey(list)}
+                validate={validateDictationHotkey}
+                disabled={isHotkeyRegistering}
+                maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
+                required
+                footerEnd={
+                  effectiveDefaultHotkey &&
+                  dictationKey &&
+                  dictationKey !== effectiveDefaultHotkey ? (
+                    <button
+                      type="button"
+                      onClick={() => registerHotkey(effectiveDefaultHotkey)}
+                      disabled={isHotkeyRegistering}
+                      className="rounded-sm text-xs text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                    >
+                      {t("settingsPage.general.hotkey.resetToDefault", {
+                        hotkey: formatHotkeyLabel(effectiveDefaultHotkey),
+                      })}
+                    </button>
+                  ) : null
+                }
+              />
+            ),
+            extra:
+              !isUsingNativeShortcut || getCachedPlatform() === "linux" ? (
+                <>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs text-muted-foreground">
+                      {t("settingsPage.general.hotkey.activationMode")}
+                    </span>
+                    <ActivationModeSelector value={activationMode} onChange={setActivationMode} />
+                  </div>
+                  {getCachedPlatform() === "linux" && activationMode === "push" && (
+                    <div className="mt-2">
+                      <LinuxPttSetupInfo isAvailable={linuxPttAvailable} />
+                    </div>
+                  )}
+                </>
+              ) : undefined,
+          },
+          {
+            id: "voiceAgentHotkey",
+            icon: Wand2,
+            label: t("settingsPage.hotkeys.slots.voiceAgent"),
+            description: t("settingsPage.general.voiceAgentHotkey.description"),
+            control: (
+              <HotkeyListInput
+                value={voiceAgentKey}
+                onChange={(list) => commitAgentHotkey(setVoiceAgentKey, list)}
+                onClear={() => commitAgentHotkey(setVoiceAgentKey, "")}
+                validate={validateVoiceAgentHotkey}
+                disabled={isAgentHotkeyCommitting}
+                maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
+              />
+            ),
+            suggestion: voiceAgentKey
+              ? undefined
+              : {
+                  hotkey: getSuggestedHotkey("voiceAgent"),
+                  disabled: isAgentHotkeyCommitting,
+                  onApply: () =>
+                    commitAgentHotkey(setVoiceAgentKey, getSuggestedHotkey("voiceAgent")),
+                },
+          },
+          {
+            id: "translationHotkey",
+            icon: Languages,
+            label: t("settingsPage.hotkeys.slots.translation"),
+            description: t("settingsPage.general.translationHotkey.description"),
+            control: (
+              <HotkeyListInput
+                value={translationKey}
+                onChange={(list) => commitAgentHotkey(setTranslationKey, list)}
+                onClear={() => commitAgentHotkey(setTranslationKey, "")}
+                validate={validateTranslationHotkey}
+                disabled={isAgentHotkeyCommitting}
+                maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
+              />
+            ),
+            suggestion: translationKey
+              ? undefined
+              : {
+                  hotkey: getSuggestedHotkey("translation"),
+                  disabled: isAgentHotkeyCommitting,
+                  onApply: () =>
+                    commitAgentHotkey(setTranslationKey, getSuggestedHotkey("translation")),
+                },
+          },
+          {
+            id: "meetingHotkey",
+            icon: Video,
+            label: t("settingsPage.hotkeys.slots.meeting"),
+            description: t("settingsPage.general.meetingHotkey.description"),
+            control: (
+              <HotkeyListInput
+                value={meetingKey}
+                onChange={(list) => registerMeetingHotkey(list)}
+                onClear={async () => {
+                  await window.electronAPI?.registerMeetingHotkey?.("");
+                  setMeetingKey("");
+                }}
+                validate={validateMeetingHotkey}
+                disabled={isMeetingHotkeyRegistering}
+                maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
+              />
+            ),
+            suggestion: meetingKey
+              ? undefined
+              : {
+                  hotkey: getSuggestedHotkey("meeting"),
+                  disabled: isMeetingHotkeyRegistering,
+                  onApply: () => registerMeetingHotkey(getSuggestedHotkey("meeting")),
+                },
+            extra: (
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs text-muted-foreground">
+                  {t("settingsPage.general.meetingHotkey.layoutLabel")}
+                </span>
+                <Select
+                  value={meetingHotkeyLayoutMode}
+                  onValueChange={(value) =>
+                    setMeetingHotkeyLayoutMode(value as "side-panel" | "full-width")
+                  }
+                >
+                  <SelectTrigger className="h-7 w-36 text-xs rounded-lg px-2.5 [&>svg]:h-3 [&>svg]:w-3">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem
+                      value="full-width"
+                      className="text-xs py-1.5 pl-2.5 pr-7 rounded-md"
+                    >
+                      {t("settingsPage.general.meetingHotkey.layoutFullWidth")}
+                    </SelectItem>
+                    <SelectItem
+                      value="side-panel"
+                      className="text-xs py-1.5 pl-2.5 pr-7 rounded-md"
+                    >
+                      {t("settingsPage.general.meetingHotkey.layoutSidePanel")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ),
+          },
+          {
+            id: "chatAgentHotkey",
+            icon: MessageSquare,
+            label: t("settingsPage.hotkeys.slots.chatAgent"),
+            description: t("agentMode.settings.hotkeyDescription"),
+            control: (
+              <HotkeyListInput
+                value={chatAgentKey}
+                onChange={(list) => commitAgentHotkey(setChatAgentKey, list)}
+                onClear={() => commitAgentHotkey(setChatAgentKey, "")}
+                validate={validateChatAgentHotkey}
+                disabled={isAgentHotkeyCommitting}
+                maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
+              />
+            ),
+            suggestion: chatAgentKey
+              ? undefined
+              : {
+                  hotkey: getSuggestedHotkey("chatAgent"),
+                  disabled: isAgentHotkeyCommitting,
+                  onApply: () =>
+                    commitAgentHotkey(setChatAgentKey, getSuggestedHotkey("chatAgent")),
+                },
+          },
+        ];
+
         return (
           <SettingsSectionBody section="hotkeys">
             {isUsingHyprland && hyprlandConfigStatus && !hyprlandConfigStatus.canWrite && (
@@ -2184,170 +2369,26 @@ EOF`,
                 </AlertDescription>
               </Alert>
             )}
-            {/* Dictation Hotkey */}
-            <SettingsGroup
-              id="dictationHotkey"
-              title={t("settingsPage.general.hotkey.title")}
-              description={t("settingsPage.general.hotkey.description")}
-              note={isUsingHyprland && t("settingsPage.general.hotkey.hyprlandUnbindDescription")}
-            >
-              <SettingsPanel>
-                <SettingsPanelRow>
-                  <HotkeyListInput
-                    value={dictationKey}
-                    onChange={(list) => registerHotkey(list)}
-                    validate={validateDictationHotkey}
-                    disabled={isHotkeyRegistering}
-                    maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
-                    required
-                    footerEnd={
-                      effectiveDefaultHotkey &&
-                      dictationKey &&
-                      dictationKey !== effectiveDefaultHotkey ? (
-                        <button
-                          type="button"
-                          onClick={() => registerHotkey(effectiveDefaultHotkey)}
-                          disabled={isHotkeyRegistering}
-                          className="rounded-sm text-xs text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                        >
-                          {t("settingsPage.general.hotkey.resetToDefault", {
-                            hotkey: formatHotkeyLabel(effectiveDefaultHotkey),
-                          })}
-                        </button>
-                      ) : null
-                    }
-                  />
-                </SettingsPanelRow>
 
-                {(!isUsingNativeShortcut || getCachedPlatform() === "linux") && (
-                  <SettingsPanelRow>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs text-muted-foreground/80">
-                        {t("settingsPage.general.hotkey.activationMode")}
-                      </span>
-                      <ActivationModeSelector value={activationMode} onChange={setActivationMode} />
-                    </div>
-                    {getCachedPlatform() === "linux" && activationMode === "push" && (
-                      <LinuxPttSetupInfo isAvailable={linuxPttAvailable} />
-                    )}
-                  </SettingsPanelRow>
+            <div>
+              <div className="mb-2">
+                <h3 className="text-[13px] font-semibold leading-tight tracking-tight text-foreground">
+                  {t("settingsPage.hotkeys.title")}
+                </h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  {t("settingsPage.hotkeys.description")}
+                </p>
+                {isUsingHyprland && (
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    {t("settingsPage.general.hotkey.hyprlandUnbindDescription")}
+                  </p>
                 )}
-              </SettingsPanel>
-            </SettingsGroup>
-
-            {/* Voice Agent Hotkey */}
-            <SettingsGroup
-              id="voiceAgentHotkey"
-              title={t("settingsPage.general.voiceAgentHotkey.title")}
-              description={t("settingsPage.general.voiceAgentHotkey.description")}
-            >
-              <SettingsPanel>
-                <SettingsPanelRow>
-                  <HotkeyListInput
-                    value={voiceAgentKey}
-                    onChange={(list) => commitAgentHotkey(setVoiceAgentKey, list)}
-                    onClear={() => commitAgentHotkey(setVoiceAgentKey, "")}
-                    validate={validateVoiceAgentHotkey}
-                    disabled={isAgentHotkeyCommitting}
-                    maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
-                  />
-                </SettingsPanelRow>
-              </SettingsPanel>
-            </SettingsGroup>
-
-            {/* Translation Hotkey */}
-            <SettingsGroup
-              id="translationHotkey"
-              title={t("settingsPage.general.translationHotkey.title")}
-              description={t("settingsPage.general.translationHotkey.description")}
-            >
-              <SettingsPanel>
-                <SettingsPanelRow>
-                  <HotkeyListInput
-                    value={translationKey}
-                    onChange={(list) => commitAgentHotkey(setTranslationKey, list)}
-                    onClear={() => commitAgentHotkey(setTranslationKey, "")}
-                    validate={validateTranslationHotkey}
-                    disabled={isAgentHotkeyCommitting}
-                    maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
-                  />
-                </SettingsPanelRow>
-              </SettingsPanel>
-            </SettingsGroup>
-
-            {/* Meeting Mode Hotkey */}
-            <SettingsGroup
-              id="meetingHotkey"
-              title={t("settingsPage.general.meetingHotkey.title")}
-              description={t("settingsPage.general.meetingHotkey.description")}
-            >
-              <SettingsPanel>
-                <SettingsPanelRow>
-                  <HotkeyListInput
-                    value={meetingKey}
-                    onChange={(list) => registerMeetingHotkey(list)}
-                    onClear={async () => {
-                      await window.electronAPI?.registerMeetingHotkey?.("");
-                      setMeetingKey("");
-                    }}
-                    validate={validateMeetingHotkey}
-                    disabled={isMeetingHotkeyRegistering}
-                    maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
-                  />
-                </SettingsPanelRow>
-                <SettingsPanelRow className="flex items-center justify-between gap-3 border-t border-border/40 dark:border-white/5">
-                  <span className="text-xs text-muted-foreground/80">
-                    {t("settingsPage.general.meetingHotkey.layoutLabel")}
-                  </span>
-                  <Select
-                    value={meetingHotkeyLayoutMode}
-                    onValueChange={(value) =>
-                      setMeetingHotkeyLayoutMode(value as "side-panel" | "full-width")
-                    }
-                  >
-                    <SelectTrigger className="h-7 w-36 text-xs rounded-lg px-2.5 [&>svg]:h-3 [&>svg]:w-3">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem
-                        value="full-width"
-                        className="text-xs py-1.5 pl-2.5 pr-7 rounded-md"
-                      >
-                        {t("settingsPage.general.meetingHotkey.layoutFullWidth")}
-                      </SelectItem>
-                      <SelectItem
-                        value="side-panel"
-                        className="text-xs py-1.5 pl-2.5 pr-7 rounded-md"
-                      >
-                        {t("settingsPage.general.meetingHotkey.layoutSidePanel")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </SettingsPanelRow>
-              </SettingsPanel>
-            </SettingsGroup>
-
-            {/* Chat Agent Hotkey */}
-            <SettingsGroup
-              id="chatAgentHotkey"
-              title={t("agentMode.settings.hotkey")}
-              description={t("agentMode.settings.hotkeyDescription")}
-            >
-              <SettingsPanel>
-                <SettingsPanelRow>
-                  <HotkeyListInput
-                    value={chatAgentKey}
-                    onChange={(list) => commitAgentHotkey(setChatAgentKey, list)}
-                    onClear={() => commitAgentHotkey(setChatAgentKey, "")}
-                    validate={validateChatAgentHotkey}
-                    disabled={isAgentHotkeyCommitting}
-                    maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
-                  />
-                </SettingsPanelRow>
-              </SettingsPanel>
-            </SettingsGroup>
+              </div>
+              <HotkeyMap rows={hotkeyRows} />
+            </div>
           </SettingsSectionBody>
         );
+      }
 
       case "speechToText":
       case "llms":

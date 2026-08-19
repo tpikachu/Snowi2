@@ -540,6 +540,11 @@
     },
     "corti": {
       "euOnly": "I modelli Corti sono disponibili solo nella regione UE."
+    },
+    "providerGrid": {
+      "keyMissing": "Nessuna chiave API",
+      "keySet": "Chiave API salvata",
+      "label": "Provider"
     }
   },
   "transcription": {
@@ -911,7 +916,10 @@
     "backToSignIn": "Torna all'accesso"
   },
   "errorBoundary": {
+    "copied": "Copiato",
+    "copy": "Copia dettagli",
     "description": "Si è verificato un errore imprevisto. Ricarica per riprovare.",
+    "details": "Dettagli tecnici",
     "reload": "Ricarica",
     "title": "Qualcosa è andato storto"
   },
@@ -2158,6 +2166,18 @@
           }
         }
       }
+    },
+    "hotkeys": {
+      "description": "Funzionano in qualsiasi app, che Snowi sia in primo piano o meno. Solo la dettatura è assegnata per impostazione predefinita.",
+      "slots": {
+        "chatAgent": "Agente chat",
+        "dictation": "Dettatura",
+        "meeting": "Modalità riunione",
+        "translation": "Traduzione",
+        "voiceAgent": "Agente vocale"
+      },
+      "title": "Scorciatoie",
+      "useSuggested": "Usa {{hotkey}}"
     }
   },
   "models": {
