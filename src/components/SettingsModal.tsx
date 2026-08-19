@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import SettingsPage from "./SettingsPage";
 import SettingsSurface from "./settings/SettingsSurface";
+import { useUpperLayerDismissGuard } from "./ui/useUpperLayerDismissGuard";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import {
   LEGACY_SUB_TAB,
@@ -36,6 +37,11 @@ interface SettingsModalProps {
  */
 export default function SettingsModal({ open, onOpenChange, initialSection }: SettingsModalProps) {
   const { t } = useTranslation();
+  // Settings is dense with Selects. Closing one by clicking away must not also
+  // close settings — which, on a full-window surface, reads as being thrown
+  // back to Home rather than as a dialog dismissing.
+  const { guardInteractOutside, setContentRef } =
+    useUpperLayerDismissGuard<React.ElementRef<typeof DialogPrimitive.Content>>();
 
   const [activeSection, setActiveSection] = useState<SettingsSectionType>(() =>
     resolveSectionId(initialSection)
@@ -95,7 +101,9 @@ export default function SettingsModal({ open, onOpenChange, initialSection }: Se
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
+          ref={setContentRef}
           aria-describedby={undefined}
+          onInteractOutside={guardInteractOutside}
           onEscapeKeyDown={(event) => {
             // A hotkey capture field owns the keyboard while it is recording.
             if (document.querySelector("[data-capturing]")) event.preventDefault();

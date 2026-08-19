@@ -3,6 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
+import { useUpperLayerDismissGuard } from "./useUpperLayerDismissGuard";
 
 /**
  * Dialogs in the "machined instrument" language.
@@ -18,7 +19,7 @@ import { Button } from "./button";
  *   - Entry is fade + a 1% rise. No zoom.
  *
  * Behaviour — the portal, the focus trap, and the layered outside-click guard
- * below — is untouched.
+ * from `useUpperLayerDismissGuard` — is untouched.
  */
 const Dialog = DialogPrimitive.Root;
 
@@ -51,47 +52,17 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, onInteractOutside, ...props }, ref) => {
-  // With another layer open above this dialog — a popper (Select/Popover/
-  // DropdownMenu) or a stacked dialog — an outside click dismisses that
-  // layer, never this dialog. Radix defers outside-click dismissal to a
-  // one-time document `click` listener, and the upper layer can unmount
-  // before it runs (e.g. a stacked dialog's Cancel closes it mid-click),
-  // which un-gates this layer's own dismissal. So "was something above us"
-  // must be snapshotted at pointerdown capture time, ahead of every Radix
-  // handler.
-  const contentRef = React.useRef<React.ElementRef<typeof DialogPrimitive.Content> | null>(null);
-  const layerWasAboveRef = React.useRef(false);
-  React.useEffect(() => {
-    const snapshotLayersAbove = () => {
-      // Later-mounted portals stack on top, so the last open dialog in DOM
-      // order is the topmost one.
-      const openDialogs = document.querySelectorAll('[role="dialog"][data-state="open"]');
-      layerWasAboveRef.current =
-        !!document.querySelector("[data-radix-popper-content-wrapper]") ||
-        (openDialogs.length > 0 && openDialogs[openDialogs.length - 1] !== contentRef.current);
-    };
-    document.addEventListener("pointerdown", snapshotLayersAbove, { capture: true });
-    return () => {
-      document.removeEventListener("pointerdown", snapshotLayersAbove, { capture: true });
-    };
-  }, []);
+  const { guardInteractOutside, setContentRef } =
+    useUpperLayerDismissGuard<React.ElementRef<typeof DialogPrimitive.Content>>(ref);
 
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Content
-        ref={(node) => {
-          contentRef.current = node;
-          if (typeof ref === "function") ref(node);
-          else if (ref) ref.current = node;
-        }}
+        ref={setContentRef}
         onInteractOutside={(event) => {
           onInteractOutside?.(event);
-          if (event.defaultPrevented) return;
-          // Focus-outside dismissals would read a snapshot left over from the
-          // last pointerdown, however long ago — the guard is pointer-only.
-          if (event.detail.originalEvent.type !== "pointerdown") return;
-          if (layerWasAboveRef.current) event.preventDefault();
+          guardInteractOutside(event);
         }}
         className={cn(
           // `--dlg-pad` is the single source of the dialog's inset; the header

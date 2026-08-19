@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { useUpperLayerDismissGuard } from "./ui/useUpperLayerDismissGuard";
 import {
   Search,
   FileText,
@@ -106,6 +107,10 @@ export default function CommandSearch({
   onConversationSelect,
 }: CommandSearchProps) {
   const { t } = useTranslation();
+  // Same guard the shared DialogContent carries: an outside click that
+  // dismisses a layer above this one must not close the palette too.
+  const { guardInteractOutside, setContentRef } =
+    useUpperLayerDismissGuard<React.ElementRef<typeof DialogPrimitive.Content>>();
   const [query, setQuery] = useState("");
   const [notes, setNotes] = useState<NoteItem[]>([]);
   const [folders, setFolders] = useState<FolderItem[]>([]);
@@ -350,6 +355,8 @@ export default function CommandSearch({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
+          ref={setContentRef}
+          onInteractOutside={guardInteractOutside}
           className={cn(
             "fixed left-[50%] top-[18%] z-50 w-full max-w-xl translate-x-[-50%]",
             "rounded-xl border border-border bg-popover shadow-(--shadow-modal) overflow-hidden",
