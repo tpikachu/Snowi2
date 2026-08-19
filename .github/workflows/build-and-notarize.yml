@@ -339,42 +339,49 @@ jobs:
           APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_API_KEY_BASE64: ${{ secrets.APPLE_API_KEY_BASE64 }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
 
-          # No Developer ID certificate yet. Build unsigned rather than failing:
-          # an unsigned .app is still testable, whereas a red X here blocks
-          # packaging entirely. `security import` of an empty file is what used
-          # to fail, with "SecKeychainItemImport: Unable to decode the provided
-          # data" — an error that names the decode, not the missing secret.
-          if [ -z "${APPLE_CERTIFICATE_BASE64:-}" ]; then
+          # Signing must never decide whether packaging happens. An absent
+          # certificate is the normal case today; a present-but-broken one
+          # (expired, wrong password, truncated base64) used to kill the job
+          # with "SecKeychainItemImport: Unable to decode the provided data" —
+          # an error that names the decode rather than the cause. Either way an
+          # unsigned .app is a useful artifact and a red X is not, so every
+          # failure here degrades to unsigned and the build continues.
+          install_signing_identity() {
+            [ -n "${APPLE_CERTIFICATE_BASE64:-}" ] || return 1
+
+            CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+            KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+            echo "$APPLE_CERTIFICATE_BASE64" | base64 --decode > "$CERTIFICATE_PATH" || return 1
+            # A truncated or mistyped secret decodes to something, so check that
+            # it is actually a certificate before building a keychain for it.
+            [ -s "$CERTIFICATE_PATH" ] || return 1
+
+            security create-keychain -p "runner" "$KEYCHAIN_PATH" || return 1
+            security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH" || return 1
+            security unlock-keychain -p "runner" "$KEYCHAIN_PATH" || return 1
+            security import "$CERTIFICATE_PATH" -P "${APPLE_CERTIFICATE_PASSWORD:-}" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH" || return 1
+            security list-keychain -d user -s "$KEYCHAIN_PATH" || return 1
+            security set-key-partition-list -S apple-tool:,apple: -s -k "runner" "$KEYCHAIN_PATH" || return 1
+
+            # Notarization credentials are a separate secret, so a build can
+            # legitimately be signed without being notarized.
+            if [ -n "${APPLE_API_KEY_BASE64:-}" ]; then
+              API_KEY_PATH=$RUNNER_TEMP/api_key.p8
+              echo "$APPLE_API_KEY_BASE64" | base64 --decode > "$API_KEY_PATH" \
+                && echo "APPLE_API_KEY=$API_KEY_PATH" >> "$GITHUB_ENV"
+            fi
+            return 0
+          }
+
+          if install_signing_identity; then
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          else
             echo "signed=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=Unsigned macOS build::APPLE_CERTIFICATE_BASE64 is not set, so this build is not code signed. Gatekeeper will refuse it on first launch until the user right-clicks → Open."
-            exit 0
+            echo "::warning title=Unsigned macOS build::No usable Developer ID certificate, so this build is not code signed. Packaging continued; Gatekeeper will refuse the app on first launch until the user right-clicks → Open."
           fi
-
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-
-          echo "$APPLE_CERTIFICATE_BASE64" | base64 --decode > "$CERTIFICATE_PATH"
-
-          security create-keychain -p "runner" "$KEYCHAIN_PATH"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "runner" "$KEYCHAIN_PATH"
-
-          security import "$CERTIFICATE_PATH" -P "$APPLE_CERTIFICATE_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
-          security list-keychain -d user -s "$KEYCHAIN_PATH"
-
-          security set-key-partition-list -S apple-tool:,apple: -s -k "runner" "$KEYCHAIN_PATH"
-
-          # Notarization credentials are a separate secret from the signing
-          # certificate, so a build can legitimately be signed but not notarized.
-          if [ -n "${APPLE_API_KEY_BASE64:-}" ]; then
-            API_KEY_PATH=$RUNNER_TEMP/api_key.p8
-            echo "$APPLE_API_KEY_BASE64" | base64 --decode > "$API_KEY_PATH"
-            echo "APPLE_API_KEY=$API_KEY_PATH" >> "$GITHUB_ENV"
-          fi
-
-          echo "signed=true" >> "$GITHUB_OUTPUT"
 
       - name: Create runtime env
         run: |

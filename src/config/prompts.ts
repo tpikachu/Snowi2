@@ -43,8 +43,23 @@ const TOOL_INSTRUCTIONS: Record<string, string> = {
     "Use get_calendar_events to check the user's schedule, upcoming meetings, or calendar events.",
 };
 
-export function getAgentSystemPrompt(availableTools?: string[], noteContext?: string): string {
+export function getAgentSystemPrompt(
+  availableTools?: string[],
+  noteContext?: string,
+  memoryProfile?: string
+): string {
   let prompt = resolvePrompt("chatAgent", { agentName: null });
+
+  // Durable facts about the user, pinned on every message (§19). This is what
+  // separates memory from search: retrieval answers "what was said about X",
+  // but the assistant should not have to look up who it is talking to. Kept
+  // small because every single message pays for it.
+  if (memoryProfile?.trim()) {
+    prompt +=
+      "\n\nWhat you know about this user, learned from their past meetings. " +
+      "Treat it as background, not as something to recite:\n" +
+      memoryProfile.trim();
+  }
 
   if (availableTools && availableTools.length > 0) {
     const toolLines = availableTools.map((name) => TOOL_INSTRUCTIONS[name]).filter(Boolean);

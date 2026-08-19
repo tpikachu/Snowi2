@@ -12,6 +12,7 @@ import {
 import { ConfirmDialog } from "./ui/dialog";
 import { useMeetingPanelBridge } from "../hooks/useMeetingPanelBridge";
 import { autoGenerateMeetingNotes } from "../helpers/meetingNoteGeneration";
+import { generateMeetingMemory } from "../helpers/memoryGeneration";
 import { MEETING_TITLE_PLACEHOLDERS } from "../utils/meetingNoteInput";
 
 const EMA_PREV = 0.5;
@@ -63,6 +64,17 @@ function MeetingStopDialog() {
     }).then((started) => {
       if (!cancelled) setIsGenerating(started);
     });
+
+    // Memory extraction rides the same trigger but is not tied to the note
+    // result: it reads segments back from the database (so the ids it cites are
+    // the ones a citation resolves against), and a meeting should still yield
+    // its commitments when note generation is off or fails. Silent by design —
+    // nothing about it is worth interrupting the stop dialog for.
+    void generateMeetingMemory({
+      noteId,
+      speakerLabels: { you: t("notes.speaker.you"), them: t("notes.speaker.them") },
+    });
+
     return () => {
       cancelled = true;
     };

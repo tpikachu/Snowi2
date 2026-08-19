@@ -146,6 +146,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getSpaceNotes: (spaceId, limit) => ipcRenderer.invoke("db-get-space-notes", spaceId, limit),
   getNoteSegments: (noteId) => ipcRenderer.invoke("db-get-note-segments", noteId),
   getSegmentsByIds: (ids) => ipcRenderer.invoke("db-get-segments-by-ids", ids),
+  ingestMemory: (payload) => ipcRenderer.invoke("memory-ingest", payload),
+  listNoteMemory: (noteId) => ipcRenderer.invoke("memory-list-for-note", noteId),
+  listOpenMemoryActions: (subject, limit) =>
+    ipcRenderer.invoke("memory-open-actions", subject, limit),
+  getMemoryProfile: () => ipcRenderer.invoke("memory-profile"),
   updateNote: (id, updates) => ipcRenderer.invoke("db-update-note", id, updates),
   deleteNote: (id) => ipcRenderer.invoke("db-delete-note", id),
   exportNote: (noteId, format) => ipcRenderer.invoke("export-note", noteId, format),

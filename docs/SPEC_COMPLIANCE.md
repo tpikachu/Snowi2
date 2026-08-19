@@ -59,17 +59,17 @@ Status: **Done** · **Partial** · **Missing** · **Waived** (recorded owner dec
 
 ## §14–§20 Transcription, intelligence, artifact
 
-| Item                                  | Status  | Notes                                                                                                          |
-| ------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------- |
-| §14.1 local-first transcription       | Done    | whisper.cpp / Parakeet default; no cloud audio by default                                                      |
-| §14.2 segment contract                | Partial | Persisted segments are addressable rows (`meeting_segments`); the live `is_final` contract is still absent     |
-| §15 running meeting state             | Missing |                                                                                                                |
-| §15.4 `TranscriptRetriever`           | Missing | Qdrant + FTS5 exist for notes, not as this interface                                                           |
-| §16 in-meeting assistant + citations  | Partial | Post-meeting chat is grounded and cites notes (clickable, persisted); no in-meeting assistant                  |
-| §17 finalization pipeline             | Missing |                                                                                                                |
-| §18 immutable artifact + content hash | Missing |                                                                                                                |
-| §19 memory objects                    | Partial | Schema, consolidation and the encrypted/indexed split are built and tested; extraction and retrieval not wired |
-| §20 action items + revision events    | Partial | `action_item`/`commitment`/`deadline` are stored with due dates and evidence; no UI, edits or revision events  |
+| Item                                  | Status  | Notes                                                                                                            |
+| ------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------- |
+| §14.1 local-first transcription       | Done    | whisper.cpp / Parakeet default; no cloud audio by default                                                        |
+| §14.2 segment contract                | Partial | Persisted segments are addressable rows (`meeting_segments`); the live `is_final` contract is still absent       |
+| §15 running meeting state             | Missing |                                                                                                                  |
+| §15.4 `TranscriptRetriever`           | Missing | Qdrant + FTS5 exist for notes, not as this interface                                                             |
+| §16 in-meeting assistant + citations  | Partial | Post-meeting chat is grounded and cites notes (clickable, persisted); no in-meeting assistant                    |
+| §17 finalization pipeline             | Missing |                                                                                                                  |
+| §18 immutable artifact + content hash | Missing |                                                                                                                  |
+| §19 memory objects                    | Done    | Schema, consolidation, encrypted/indexed split, extraction at Stop with cited evidence, pinned profile in chat   |
+| §20 action items + revision events    | Partial | Extracted and stored with due dates, owners and evidence; queryable. No UI, edits, completion or revision events |
 
 ## §21 Local encrypted storage
 

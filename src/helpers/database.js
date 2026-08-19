@@ -700,6 +700,13 @@ class DatabaseManager {
       } catch (err) {
         if (!err.message.includes("duplicate column")) throw err;
       }
+      // Where this note's sealed content is filed. Null until the note first
+      // produces memory; see getOrCreateNoteMeetingId.
+      try {
+        this.db.exec("ALTER TABLE notes ADD COLUMN meeting_id TEXT");
+      } catch (err) {
+        if (!err.message.includes("duplicate column")) throw err;
+      }
 
       try {
         this.db.exec("ALTER TABLE calendar_events ADD COLUMN attendees TEXT");
@@ -2364,6 +2371,34 @@ class DatabaseManager {
 
   // ---- Memory objects (§19) ------------------------------------------------
   // The indexed half. Content lives sealed; see memoryStore.js.
+
+  /**
+   * The meeting id a note's sealed content is filed under, minted on first use.
+   *
+   * Meetings are still notes (§18 has no entity yet), so this is where the two
+   * identities meet. It is stored rather than derived so a second extraction
+   * pass extends the same sealed document instead of starting a rival one — and
+   * so the eventual meeting entity adopts this id rather than reconciling a
+   * second one.
+   */
+  getOrCreateNoteMeetingId(noteId) {
+    if (!this.db) return null;
+    try {
+      const row = this.db.prepare("SELECT meeting_id FROM notes WHERE id = ?").get(noteId);
+      if (!row) return null;
+      if (row.meeting_id) return row.meeting_id;
+
+      const { mintMeetingId } = require("./memoryStore");
+      const meetingId = mintMeetingId();
+      // Deliberately not through updateNote: this is an internal identity, not
+      // a user edit, and must not mark the note dirty for sync.
+      this.db.prepare("UPDATE notes SET meeting_id = ? WHERE id = ?").run(meetingId, noteId);
+      return meetingId;
+    } catch (error) {
+      debugLogger.error("Error resolving note meeting id", { error: error.message }, "memory");
+      return null;
+    }
+  }
 
   insertMemoryObject(row) {
     if (!this.db) return { success: false };

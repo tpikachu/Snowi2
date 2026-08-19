@@ -100,6 +100,39 @@ export interface MeetingSegmentRow {
   text: string;
 }
 
+/** Outcome of one extraction batch. */
+export interface MemoryIngestSummary {
+  inserted: number;
+  superseded: number;
+  duplicates: number;
+  rejected: string[];
+}
+
+/**
+ * A memory object as the renderer sees it: indexed columns plus the content
+ * decrypted from the meeting's sealed document. `content_available` is false
+ * when the key is gone — the commitment and its date are still real.
+ */
+export interface MemoryObjectRow {
+  id: string;
+  meeting_id: string;
+  note_id: number | null;
+  type: string;
+  subject: string;
+  status: string;
+  due_at: string | null;
+  confidence: number | null;
+  supersedes: string | null;
+  superseded_by: string | null;
+  created_at: string;
+  updated_at: string;
+  sync_status: string;
+  content: string | null;
+  owner: string | null;
+  source_segments: string[];
+  content_available: boolean;
+}
+
 export interface NoteItem {
   id: number;
   title: string;
@@ -853,6 +886,13 @@ declare global {
       getSpaceNotes: (spaceId: number, limit?: number) => Promise<NoteItem[]>;
       getNoteSegments: (noteId: number) => Promise<MeetingSegmentRow[]>;
       getSegmentsByIds: (ids: string[]) => Promise<MeetingSegmentRow[]>;
+      ingestMemory: (payload: {
+        noteId: number;
+        objects: unknown[];
+      }) => Promise<MemoryIngestSummary>;
+      listNoteMemory: (noteId: number) => Promise<MemoryObjectRow[]>;
+      listOpenMemoryActions: (subject?: string, limit?: number) => Promise<MemoryObjectRow[]>;
+      getMemoryProfile: () => Promise<string>;
       updateNote: (
         id: number,
         updates: {

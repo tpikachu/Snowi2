@@ -440,6 +440,33 @@ class IPCHandlers {
   }
 
   /**
+   * The memory store, built on first use.
+   *
+   * Lazy because it needs `safeStorage`, which is only meaningful once the app
+   * is ready, and because an install whose keychain is unavailable should lose
+   * memory rather than fail to start. Returns null in that case; every caller
+   * degrades to "no memory" instead of throwing.
+   */
+  _getMemoryStore() {
+    if (this._memoryStore !== undefined) return this._memoryStore;
+    try {
+      const { createMemoryStore } = require("./memoryStore");
+      const { createEncryptedMeetingStore } = require("./encryptedMeetingStore");
+      const keyService = require("./meetingKeyService").getDefault();
+      const { app } = require("electron");
+      const store = createEncryptedMeetingStore({
+        baseDir: app.getPath("userData"),
+        keyService,
+      });
+      this._memoryStore = createMemoryStore({ database: this.databaseManager, store });
+    } catch (error) {
+      debugLogger.error("Memory store unavailable", { error: error.message }, "memory");
+      this._memoryStore = null;
+    }
+    return this._memoryStore;
+  }
+
+  /**
    * Projects transcript segments for meetings recorded before the index
    * existed, so evidence links work on the whole library rather than only on
    * meetings recorded from here on.
@@ -1331,6 +1358,44 @@ class IPCHandlers {
 
     ipcMain.handle("db-get-note-segments", async (event, noteId) => {
       return this.databaseManager.getNoteSegments(noteId);
+    });
+
+    // ---- Memory objects (§19) ---------------------------------------------
+    // Ingest lives in main because both halves do: the sealed document needs
+    // the meeting key, and the indexed rows need the database. The renderer
+    // only ever hands over extracted objects.
+
+    ipcMain.handle("memory-ingest", async (event, { noteId, objects } = {}) => {
+      try {
+        const store = this._getMemoryStore();
+        if (!store) return { inserted: 0, superseded: 0, duplicates: 0, rejected: ["unavailable"] };
+        // One meeting id per note, minted on first use and reused after, so a
+        // second pass over the same meeting extends its sealed document rather
+        // than starting a rival one.
+        const meetingId = this.databaseManager.getOrCreateNoteMeetingId(noteId);
+        if (!meetingId) return { inserted: 0, superseded: 0, duplicates: 0, rejected: ["no_note"] };
+        return store.ingest({ meetingId, noteId, objects });
+      } catch (error) {
+        debugLogger.error("Memory ingest failed", { error: error.message }, "memory");
+        return { inserted: 0, superseded: 0, duplicates: 0, rejected: ["error"] };
+      }
+    });
+
+    ipcMain.handle("memory-list-for-note", async (event, noteId) => {
+      const store = this._getMemoryStore();
+      return store ? store.listForNote(noteId) : [];
+    });
+
+    ipcMain.handle("memory-open-actions", async (event, subject = "user", limit = 50) => {
+      const store = this._getMemoryStore();
+      return store ? store.listOpenActions({ subject, limit }) : [];
+    });
+
+    ipcMain.handle("memory-profile", async () => {
+      const store = this._getMemoryStore();
+      if (!store) return "";
+      const { buildMemoryProfile } = require("./memoryObjects");
+      return buildMemoryProfile(store.listProfileFacts());
     });
 
     // Resolves citation targets to the lines they point at (§19.3, §20).

@@ -235,9 +235,13 @@ export function useChatStreaming({
       const combinedContext = [noteContextRef.current, formatGroundingContext(grounding)]
         .filter(Boolean)
         .join("\n\n");
+      // Fetched per turn rather than cached: a meeting that just ended can add
+      // to it, and it is one indexed read over a capped row set.
+      const memoryProfile = await window.electronAPI?.getMemoryProfile?.().catch(() => "");
       const systemPrompt = getAgentSystemPrompt(
         registry?.getAll().map((t) => t.name),
-        combinedContext || undefined
+        combinedContext || undefined,
+        memoryProfile || undefined
       );
 
       const llmMessages = [
