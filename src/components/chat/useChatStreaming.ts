@@ -9,8 +9,13 @@ import type { ToolRegistry } from "../../services/tools/ToolRegistry";
 import type { Message, AgentState, ToolCallInfo } from "./types";
 import type { ContainerScope } from "../../types/chat";
 
-const RAG_NOTE_LIMIT = 5;
-const RAG_NOTE_SNIPPET_LENGTH = 500;
+// Raised from 5 now that a hit returns the passage that matched rather than
+// the note's opening paragraph — the context is both smaller per note and
+// actually about the question, so more of it fits usefully.
+const RAG_NOTE_LIMIT = 8;
+// Only used for notes indexed before passage search existed, or when a hit
+// came from keyword search and carries no passage of its own.
+const RAG_NOTE_SNIPPET_LENGTH = 1200;
 
 const LOCAL_TOOL_MIN_PARAMS_B = 4;
 
@@ -31,12 +36,24 @@ async function buildRAGContext(userText: string, scope?: ContainerScope): Promis
     if (!results || results.length === 0) return "";
 
     const snippets = await Promise.all(
-      results.map(async (r: { id: number; title: string; score?: number }) => {
-        const note = await window.electronAPI.getNote(r.id);
-        if (!note) return null;
-        const content = (note.content || "").slice(0, RAG_NOTE_SNIPPET_LENGTH);
-        return `<note id="${note.id}" title="${note.title}">\n${content}\n</note>`;
-      })
+      results.map(
+        async (r: { id: number; title: string; score?: number; matched_snippet?: string }) => {
+          // The passage that matched, when search could say which. Falling
+          // back to the note's first N characters is what made long meetings
+          // useless as context: the vector matched something on page 3 and the
+          // model was handed page 1.
+          if (r.matched_snippet?.trim()) {
+            return `<note id="${r.id}" title="${r.title}">\n${r.matched_snippet.trim()}\n</note>`;
+          }
+          const note = await window.electronAPI.getNote(r.id);
+          if (!note) return null;
+          const body = (note.enhanced_content || note.content || note.transcript || "").slice(
+            0,
+            RAG_NOTE_SNIPPET_LENGTH
+          );
+          return `<note id="${note.id}" title="${note.title}">\n${body}\n</note>`;
+        }
+      )
     );
 
     return snippets.filter(Boolean).join("\n\n");

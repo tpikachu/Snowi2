@@ -105,6 +105,12 @@ const MEETING_RECONNECT_BUFFER_MAX_BYTES = MEETING_STREAM_SAMPLE_RATE * 2 * 30;
 // anywhere that can talk to this one.
 const MEETING_PANEL_COMMANDS = new Set(["pause", "resume", "stop", "open"]);
 
+// Passage-vector backfill for notes that predate chunking. Bounded per launch
+// so a large library is caught up over a few sessions rather than in one long
+// stall at startup.
+const NOTE_CHUNK_BACKFILL_LIMIT = 300;
+const NOTE_CHUNK_BACKFILL_PAUSE_MS = 25;
+
 const MISTRAL_TRANSCRIPTION_URL = "https://api.mistral.ai/v1/audio/transcriptions";
 
 const XAI_STT_URL = "https://api.x.ai/v1/stt";
@@ -377,6 +383,9 @@ class IPCHandlers {
       vectorIndex
         .upsertNote(note.id, text, { space_id: note.space_id, folder_id: note.folder_id ?? null })
         .catch(() => {});
+      // Passage vectors alongside the note-level one: the note vector still
+      // ranks whole notes, these make the inside of a long note reachable.
+      vectorIndex.upsertNoteChunks(note).catch(() => {});
     });
   }
 
@@ -385,6 +394,46 @@ class IPCHandlers {
       const vectorIndex = require("./vectorIndex");
       if (!vectorIndex.isReady()) return;
       vectorIndex.deleteNote(noteId).catch(() => {});
+      vectorIndex.deleteNoteChunks(noteId).catch(() => {});
+    });
+  }
+
+  /**
+   * Gives passage vectors to notes that predate chunking.
+   *
+   * Runs once per launch and walks notes that have no chunks yet, a few at a
+   * time. Embedding is CPU-bound and this is startup, so it yields between
+   * batches rather than racing the window that the user is waiting for.
+   */
+  backfillNoteChunks() {
+    setImmediate(() => {
+      void (async () => {
+        const vectorIndex = require("./vectorIndex");
+        if (!vectorIndex.isReady()) return;
+
+        const notes = this.databaseManager.getNotes(null, NOTE_CHUNK_BACKFILL_LIMIT, null, null);
+        if (!Array.isArray(notes) || notes.length === 0) return;
+
+        let indexed = 0;
+        for (const note of notes) {
+          if (await vectorIndex.hasNoteChunks(note.id)) continue;
+          await vectorIndex.upsertNoteChunks(note);
+          indexed += 1;
+          // A breather between notes so a large library does not monopolise
+          // the main process while the user is trying to use the app.
+          await new Promise((resolve) => setTimeout(resolve, NOTE_CHUNK_BACKFILL_PAUSE_MS));
+        }
+
+        if (indexed > 0) {
+          debugLogger.info(
+            "Backfilled passage vectors for notes",
+            { indexed },
+            "semantic-search"
+          );
+        }
+      })().catch((error) => {
+        debugLogger.debug("Note chunk backfill failed", { error: error?.message });
+      });
     });
   }
 
@@ -397,6 +446,9 @@ class IPCHandlers {
         if (!vectorIndex.isReady()) return;
         for (const { space_id } of this.databaseManager.getPendingVectorPurges()) {
           if (await vectorIndex.deleteBySpace(space_id)) {
+            // Passages go with the notes they came from — a purge that left
+            // them behind would keep answering questions from a deleted space.
+            await vectorIndex.deleteNoteChunksBySpace(space_id);
             this.databaseManager.clearPendingVectorPurge(space_id);
           }
         }
@@ -1278,10 +1330,27 @@ class IPCHandlers {
             spaceId != null
               ? { must: [{ key: "space_id", match: { value: spaceId } }] }
               : undefined;
-          const [ftsResults, vectorResults] = await Promise.all([
+          // Passage search leads and the note-level index backs it up: chunks
+          // reach inside long notes, while the whole-note vector still catches
+          // notes that are about a topic without stating it in any one passage.
+          const [ftsResults, chunkResults, noteResults] = await Promise.all([
             this.databaseManager.searchNotes(query, overFetch, spaceId, folderId),
+            vectorIndex.searchNoteChunks(query, overFetch, vectorFilter),
             vectorIndex.search(query, overFetch, vectorFilter),
           ]);
+
+          // Best passage per note, so a snippet can be attached to the result.
+          const snippets = new Map();
+          for (const hit of chunkResults) {
+            if (hit.snippet) snippets.set(hit.noteId, hit.snippet);
+          }
+
+          const seenVectorIds = new Set();
+          const vectorResults = [...chunkResults, ...noteResults].filter(({ noteId }) => {
+            if (seenVectorIds.has(noteId)) return false;
+            seenVectorIds.add(noteId);
+            return true;
+          });
           const scopedIds = new Set(
             this.databaseManager.getNoteIdsInScope(
               spaceId,
@@ -1318,7 +1387,17 @@ class IPCHandlers {
             }
           }
 
-          return rankedIds.map((id) => noteMap.get(id)).filter(Boolean);
+          // The matched passage rides along, so callers can show *why* a note
+          // matched instead of falling back to its opening paragraph — which
+          // for a long meeting is rarely the part that answered the question.
+          return rankedIds
+            .map((id) => {
+              const note = noteMap.get(id);
+              if (!note) return null;
+              const snippet = snippets.get(id);
+              return snippet ? { ...note, matched_snippet: snippet } : note;
+            })
+            .filter(Boolean);
         } catch (error) {
           debugLogger.error("Semantic search failed, falling back to FTS5", {
             error: error.message,
@@ -1336,10 +1415,21 @@ class IPCHandlers {
       let done = 0;
       const { failed } = await vectorIndex.reindexAll(notes, (completed, total) => {
         done = completed;
-        broadcastToWindows("semantic-reindex-progress", { done: completed, total });
+        // Halved: passages are rebuilt in a second pass, so note-level
+        // progress is only the first half of the work.
+        broadcastToWindows("semantic-reindex-progress", { done: completed / 2, total });
       });
+      const { failed: chunkFailed } = await vectorIndex.reindexAllNoteChunks(
+        notes,
+        (completed, total) => {
+          broadcastToWindows("semantic-reindex-progress", {
+            done: total / 2 + completed / 2,
+            total,
+          });
+        }
+      );
       // Report failed batches so callers only latch their done-flag on a clean pass.
-      return { success: failed === 0, indexed: done - failed };
+      return { success: failed === 0 && chunkFailed === 0, indexed: done - failed };
     });
 
     ipcMain.handle("db-update-note-cloud-id", async (event, id, cloudId) => {

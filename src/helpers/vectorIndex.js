@@ -3,11 +3,18 @@ const localEmbeddings = require("./localEmbeddings");
 const { LocalEmbeddings } = localEmbeddings;
 const debugLogger = require("./debugLogger");
 const { chunkConversation } = require("./conversationChunker");
+const { chunkNote } = require("./noteChunker");
+
+// Chunk points are addressed by packing the chunk index into the low digits of
+// the note id, so one note's chunks never collide with another's. Requires
+// MAX_CHUNKS_PER_NOTE < CHUNK_ID_STRIDE, which noteChunker's tests assert.
+const CHUNK_ID_STRIDE = 1000;
 
 class VectorIndex {
   constructor() {
     this.client = null;
     this.collectionName = "notes";
+    this.noteChunksCollection = "note_chunks";
     this.conversationChunksCollection = "conversation_chunks";
   }
 
@@ -102,6 +109,156 @@ class VectorIndex {
         debugLogger.debug("Vector reindex batch failed", { offset: i, error: err.message });
       }
       if (onProgress) onProgress(Math.min(i + BATCH_SIZE, notes.length), notes.length);
+    }
+    return { failed };
+  }
+
+  // ------------------------------------------------------------ note chunks
+  //
+  // The `notes` collection holds one vector per note over its first 1500
+  // characters. This one holds a vector per passage, over the whole note
+  // including its transcript — so a long meeting is searchable past its
+  // opening minute, and a hit can point at the part that actually matched.
+
+  async ensureNoteChunksCollection() {
+    if (!this.client) return;
+    try {
+      await this.client.getCollection(this.noteChunksCollection);
+    } catch {
+      try {
+        await this.client.createCollection(this.noteChunksCollection, {
+          vectors: { size: 384, distance: "Cosine" },
+        });
+      } catch (err) {
+        debugLogger.error("Failed to create note_chunks collection", { error: err.message });
+      }
+    }
+  }
+
+  async upsertNoteChunks(note) {
+    if (!this.client || !note?.id) return;
+    try {
+      // Replaced wholesale: an edit that shortens a note would otherwise leave
+      // its old tail chunks behind, still matching text that no longer exists.
+      await this.deleteNoteChunks(note.id);
+
+      const chunks = chunkNote({
+        title: note.title,
+        content: note.content,
+        enhancedContent: note.enhanced_content,
+        transcript: note.transcript,
+      });
+      if (chunks.length === 0) return;
+
+      const vectors = await localEmbeddings.embedTexts(chunks.map((c) => c.text));
+      const points = chunks.map((chunk, i) => ({
+        id: note.id * CHUNK_ID_STRIDE + chunk.chunkIndex,
+        vector: Array.from(vectors[i]),
+        payload: {
+          note_id: note.id,
+          chunk_index: chunk.chunkIndex,
+          space_id: note.space_id ?? null,
+          folder_id: note.folder_id ?? null,
+          // Carried so a hit returns the passage itself; without it every
+          // result needs a second read just to show what matched.
+          text: chunk.text,
+        },
+      }));
+      await this.client.upsert(this.noteChunksCollection, { points });
+    } catch (err) {
+      debugLogger.debug("Note chunk upsert failed", { noteId: note.id, error: err.message });
+    }
+  }
+
+  async deleteNoteChunks(noteId) {
+    if (!this.client) return;
+    try {
+      await this.client.delete(this.noteChunksCollection, {
+        filter: { must: [{ key: "note_id", match: { value: noteId } }] },
+      });
+    } catch (err) {
+      debugLogger.debug("Note chunk delete failed", { noteId, error: err.message });
+    }
+  }
+
+  /** Whether this note already has passage vectors — drives the backfill. */
+  async hasNoteChunks(noteId) {
+    if (!this.client) return true;
+    try {
+      const result = await this.client.count(this.noteChunksCollection, {
+        filter: { must: [{ key: "note_id", match: { value: noteId } }] },
+        exact: false,
+      });
+      return (result?.count ?? 0) > 0;
+    } catch {
+      // Claim it is indexed on failure: re-embedding a note that already has
+      // chunks is wasted CPU, and the next launch tries again anyway.
+      return true;
+    }
+  }
+
+  async deleteNoteChunksBySpace(spaceId) {
+    if (!this.client) return;
+    try {
+      await this.client.delete(this.noteChunksCollection, {
+        filter: { must: [{ key: "space_id", match: { value: spaceId } }] },
+      });
+    } catch (err) {
+      debugLogger.debug("Note chunk space delete failed", { spaceId, error: err.message });
+    }
+  }
+
+  /**
+   * Passage search, collapsed to one hit per note.
+   *
+   * A note whose every chunk matches would otherwise fill the whole result set
+   * and crowd out other notes that answer the question just as well. The best
+   * passage wins and represents its note.
+   */
+  async searchNoteChunks(queryText, limit = 8, filter) {
+    if (!this.client) return [];
+    try {
+      const vector = await localEmbeddings.embedText(queryText);
+      const results = await this.client.search(this.noteChunksCollection, {
+        vector: Array.from(vector),
+        // Over-fetched because several hits can collapse onto one note.
+        limit: limit * 4,
+        with_payload: true,
+        ...(filter ? { filter } : {}),
+      });
+
+      const best = new Map();
+      for (const hit of results) {
+        const noteId = hit.payload?.note_id;
+        if (typeof noteId !== "number") continue;
+        const existing = best.get(noteId);
+        if (!existing || hit.score > existing.score) {
+          best.set(noteId, {
+            noteId,
+            score: hit.score,
+            chunkIndex: hit.payload?.chunk_index ?? 0,
+            snippet: typeof hit.payload?.text === "string" ? hit.payload.text : null,
+          });
+        }
+      }
+
+      return [...best.values()].sort((a, b) => b.score - a.score).slice(0, limit);
+    } catch (err) {
+      debugLogger.debug("Note chunk search failed", { error: err.message });
+      return [];
+    }
+  }
+
+  async reindexAllNoteChunks(notes, onProgress) {
+    if (!this.client) return { failed: 0 };
+    let failed = 0;
+    for (let i = 0; i < notes.length; i++) {
+      try {
+        await this.upsertNoteChunks(notes[i]);
+      } catch {
+        failed += 1;
+      }
+      if (onProgress) onProgress(i + 1, notes.length);
     }
     return { failed };
   }

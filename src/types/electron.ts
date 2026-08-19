@@ -103,6 +103,11 @@ export interface NoteItem {
   cloud_id: string | null;
   is_shared: number;
   share_token: string | null;
+  /**
+   * The passage that matched, attached only by semantic search. Never stored —
+   * it belongs to a query, not to the note.
+   */
+  matched_snippet?: string;
   // The note's owner (CloudNote.user_id) — who created it, not who last
   // edited it. Only populated from the cloud; NULL on local-only rows and on
   // team notes mirrored before ownership shipped (the UI fails closed on

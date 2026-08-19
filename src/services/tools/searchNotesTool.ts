@@ -123,7 +123,15 @@ async function executeLocalSearch(
     date: note.created_at,
     type: note.note_type,
     space: spaceNameById.get(note.space_id) ?? null,
-    content: (note.enhanced_content || note.content).slice(0, MAX_CONTENT_LENGTH),
+    // The passage that matched when semantic search could name one. The note's
+    // opening is a poor stand-in for a long meeting: the vector matched
+    // something in the middle and the agent would be shown the beginning.
+    content:
+      note.matched_snippet?.trim() ||
+      (note.enhanced_content || note.content || note.transcript || "").slice(
+        0,
+        MAX_CONTENT_LENGTH
+      ),
   }));
 
   return {

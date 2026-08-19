@@ -229,7 +229,11 @@ Always-on offline semantic search that finds notes by meaning, not just keywords
 - **Qdrant sidecar**: Rust binary spawned as child process (`qdrantManager.js`), port 6333–6350
 - **Embedding model**: `all-MiniLM-L6-v2` via ONNX Runtime (`localEmbeddings.js`), 384-dim vectors
 - **Vector index**: Qdrant collection management (`vectorIndex.js`), cosine distance
-- **Hybrid search**: FTS5 + Qdrant in parallel → Reciprocal Rank Fusion (K=60) with 0.3 cosine score threshold
+- **Two note collections**:
+  - `notes` — one vector per note over `title + content/enhanced` truncated to 1500 chars. Ranks whole notes.
+  - `note_chunks` — one vector per ~900-char overlapping passage over `enhanced_content + content + transcript` (`noteChunker.js`, pure + unit-tested). The transcript is only indexed here, so meeting substance is reachable at all; and because passages carry their text in the payload, a hit returns *what* matched rather than the note's opening paragraph. Point id is `noteId * 1000 + chunkIndex`, which is why `MAX_CHUNKS_PER_NOTE` must stay under 1000.
+- **Hybrid search**: FTS5 + `note_chunks` + `notes` in parallel → Reciprocal Rank Fusion (K=60) with 0.3 cosine score threshold. Chunk hits collapse to one per note (best passage wins) and attach `matched_snippet` to the result, which chat RAG and the `search_notes` tool prefer over truncating the note.
+- **Backfill**: `ipcHandlers.backfillNoteChunks()` runs on launch and gives passage vectors to notes that predate chunking, bounded per session so a large library catches up over a few launches rather than stalling startup.
 
 **Pipeline**:
 

@@ -902,7 +902,12 @@ async function startApp() {
           vectorIndex.init(qdrantManager.getPort());
           vectorIndex
             .ensureCollection()
+            .then(() => vectorIndex.ensureNoteChunksCollection())
             .then(() => ipcHandlers?.drainPendingVectorPurges())
+            // Backfills passage vectors for notes indexed before chunking
+            // existed. No-ops once every note has chunks, so it is safe to run
+            // on every launch.
+            .then(() => ipcHandlers?.backfillNoteChunks())
             .catch((err) => {
               debugLogger.debug("Qdrant collection setup error (non-fatal)", {
                 error: err.message,
