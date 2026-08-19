@@ -71,7 +71,7 @@ test("flags whether a meeting has notes and a transcript", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  const bare = makeMeeting(db, "Bare");
+  makeMeeting(db, "Bare"); // left without notes or transcript on purpose
   const full = makeMeeting(db, "Full");
   db.updateNote(full, { enhanced_content: "## Decisions", transcript: "[]" });
 

@@ -12,7 +12,7 @@ on:
         type: string
 
 permissions:
-  contents: read # Publishing/auto-update feed is disabled; builds are uploaded as workflow artifacts
+  contents: read # Build jobs only read. publish-release raises this for itself.
 
 env:
   RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
@@ -447,3 +447,112 @@ jobs:
           security delete-keychain $RUNNER_TEMP/app-signing.keychain-db || true
           rm -f $RUNNER_TEMP/build_certificate.p12
           rm -f $RUNNER_TEMP/api_key.p8
+
+  publish-release:
+    # Uploading a workflow artifact is not publishing. Those live on the run
+    # page, expire in 30 days, download as a zip wrapper instead of the
+    # installer, and are invisible to anyone not signed in. This job is what
+    # actually puts installers on the Releases page.
+    needs: [build-linux, build-windows, build-macos]
+    # Not `success()`: one platform failing should not withhold the three that
+    # built. An incomplete set is published as a draft instead — see below.
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # the only job that writes anything back to the repo
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect installers
+        run: |
+          set -euo pipefail
+          mkdir -p release
+
+          # Depth 2 (artifacts/<job>/<file>) is deliberate. electron-builder
+          # writes installers directly into dist/, and everything below that —
+          # win-unpacked/, mac-arm64/Snowi.app, linux-unpacked/ — is build
+          # scaffolding that must never be published. Extension filtering alone
+          # would drag .zip and .exe files out of those trees.
+          while IFS= read -r -d '' file; do
+            name=$(basename "$file")
+            # Two jobs producing the same filename would mean one silently
+            # overwrites the other, publishing one platform's build under a name
+            # users read as another's.
+            if [ -e "release/$name" ]; then
+              echo "::error title=Duplicate asset::$name was produced by more than one build job"
+              exit 1
+            fi
+            cp "$file" "release/$name"
+          done < <(find artifacts -mindepth 2 -maxdepth 2 -type f \
+            \( -name '*.AppImage' -o -name '*.deb' -o -name '*.rpm' -o -name '*.tar.gz' \
+               -o -name '*.exe' -o -name '*.dmg' -o -name '*.zip' \) -print0)
+
+          if [ -z "$(ls -A release)" ]; then
+            echo "::error title=Nothing to release::No build job produced an installer."
+            exit 1
+          fi
+
+          {
+            echo "### Release assets"
+            echo
+            echo '```'
+            (cd release && du -h -- *)
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INCOMPLETE: ${{ needs.build-linux.result != 'success' || needs.build-windows.result != 'success' || needs.build-macos.result != 'success' }}
+        run: |
+          set -euo pipefail
+
+          # Release notes come from the CHANGELOG entry for this exact version,
+          # so the notes cannot drift from the file in the tag.
+          VERSION="${RELEASE_TAG#v}"
+          awk -v hdr="## [$VERSION]" '
+            index($0, hdr) == 1 { found = 1; next }
+            found && /^## / { exit }
+            found { print }
+          ' CHANGELOG.md > notes-body.md
+
+          {
+            echo "Downloads: **macOS** \`.dmg\` · **Windows** \`Snowi Setup *.exe\` · **Linux** \`.AppImage\`, \`.deb\`, \`.rpm\`"
+            echo
+            if [ -s notes-body.md ]; then
+              cat notes-body.md
+            else
+              echo "See [CHANGELOG.md](https://github.com/${GITHUB_REPOSITORY}/blob/${RELEASE_TAG}/CHANGELOG.md)."
+            fi
+          } > notes.md
+
+          flags=()
+          # Any tag with a suffix (-rc1, -beta.2) is not a final release.
+          case "$RELEASE_TAG" in *-*) flags+=(--prerelease) ;; esac
+
+          if [ "$INCOMPLETE" = "true" ]; then
+            # A public release page missing the Windows installer does not read
+            # as "Windows failed to build", it reads as "Windows unsupported".
+            # Hold it as a draft until someone decides.
+            flags+=(--draft)
+            echo "::warning title=Incomplete release::A platform did not build. Published as a draft so a half-populated release is never public."
+          fi
+
+          # Re-running the workflow must refresh the assets, not fail on a tag
+          # that already has a release.
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" release/* --clobber
+          else
+            gh release create "$RELEASE_TAG" release/* \
+              --target "$GITHUB_SHA" \
+              --title "Snowi $RELEASE_TAG" \
+              --notes-file notes.md \
+              "${flags[@]}"
+          fi
+
+          echo "Release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/${RELEASE_TAG}" >> "$GITHUB_STEP_SUMMARY"
