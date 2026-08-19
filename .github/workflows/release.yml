@@ -158,7 +158,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: linux-release
-          path: dist/
+          # Not dist/. That directory also holds linux-unpacked/, the fully
+          # expanded ~700 MB app that every one of these four packages already
+          # contains — uploading it ships the same build five times.
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
           retention-days: 30
 
   build-windows:
@@ -270,7 +277,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-release
-          path: dist/
+          # Excludes win-unpacked/, which the installer and the portable build
+          # both already contain. *.exe does not match *.exe.blockmap.
+          path: dist/*.exe
           retention-days: 30
 
   build-macos:
@@ -438,7 +447,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macos-${{ matrix.arch }}-release
-          path: dist/
+          # Excludes mac*/Snowi.app, which the .dmg and the .zip both contain.
+          path: |
+            dist/*.dmg
+            dist/*.zip
           retention-days: 30
 
       - name: Cleanup Certificates
