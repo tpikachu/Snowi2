@@ -1383,6 +1383,18 @@ class IPCHandlers {
             }
           }
 
+          // Best cosine per note. RRF collapses everything to rank and throws
+          // the score away, which leaves callers unable to tell "this note
+          // answers the question" from "this note was the least bad of the
+          // ones containing that word" — and FTS contributes to the ranking
+          // with no threshold at all, so on a query like "thanks" the second
+          // is what every result is.
+          const semanticScores = new Map();
+          for (const { noteId, score } of filteredVectorResults) {
+            const best = semanticScores.get(noteId);
+            if (best == null || score > best) semanticScores.set(noteId, score);
+          }
+
           // The matched passage rides along, so callers can show *why* a note
           // matched instead of falling back to its opening paragraph — which
           // for a long meeting is rarely the part that answered the question.
@@ -1391,7 +1403,13 @@ class IPCHandlers {
               const note = noteMap.get(id);
               if (!note) return null;
               const snippet = snippets.get(id);
-              return snippet ? { ...note, matched_snippet: snippet } : note;
+              return {
+                ...note,
+                ...(snippet ? { matched_snippet: snippet } : {}),
+                // Absent rather than 0 when a note reached the results on
+                // keyword match alone: that is "unscored", not "scored zero".
+                ...(semanticScores.has(id) ? { semantic_score: semanticScores.get(id) } : {}),
+              };
             })
             .filter(Boolean);
         } catch (error) {

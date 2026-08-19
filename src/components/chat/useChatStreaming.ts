@@ -6,8 +6,15 @@ import { getSettings, selectResolvedLLMConfig } from "../../stores/settingsStore
 import { getAgentSystemPrompt } from "../../config/prompts";
 import { createToolRegistry } from "../../services/tools";
 import type { ToolRegistry } from "../../services/tools/ToolRegistry";
-import type { Message, AgentState, MessageSource, ToolCallInfo } from "./types";
+import type { Message, AgentState, ToolCallInfo } from "./types";
 import type { ContainerScope } from "../../types/chat";
+import {
+  buildRetrievalQuery,
+  filterGrounding,
+  formatGroundingContext,
+  mergeGrounding,
+  type RetrievedNote,
+} from "../../utils/chatRetrieval";
 
 // Raised from 5 now that a hit returns the passage that matched rather than
 // the note's opening paragraph — the context is both smaller per note and
@@ -24,59 +31,56 @@ function estimateModelSizeB(modelId: string): number {
   return match ? parseFloat(match[1]) : 0;
 }
 
-interface RAGResult {
-  context: string;
-  sources: MessageSource[];
-}
-
-const EMPTY_RAG: RAGResult = { context: "", sources: [] };
-
-async function buildRAGContext(userText: string, scope?: ContainerScope): Promise<RAGResult> {
-  if (!window.electronAPI?.semanticSearchNotes) return EMPTY_RAG;
+/** Retrieval for one turn, already filtered — not yet merged with earlier turns. */
+async function retrieveNotes(queryText: string, scope?: ContainerScope): Promise<RetrievedNote[]> {
+  if (!queryText || !window.electronAPI?.semanticSearchNotes) return [];
   try {
     const results = await window.electronAPI.semanticSearchNotes(
-      userText,
+      queryText,
       RAG_NOTE_LIMIT,
       scope?.spaceId ?? null,
       scope?.folderId ?? null
     );
-    if (!results || results.length === 0) return EMPTY_RAG;
+    if (!results || results.length === 0) return [];
 
     const retrieved = await Promise.all(
       results.map(
-        async (r: { id: number; title: string; score?: number; matched_snippet?: string }) => {
+        async (r: {
+          id: number;
+          title: string;
+          matched_snippet?: string;
+          semantic_score?: number;
+        }): Promise<RetrievedNote | null> => {
           // The passage that matched, when search could say which. Falling
           // back to the note's first N characters is what made long meetings
           // useless as context: the vector matched something on page 3 and the
           // model was handed page 1.
           if (r.matched_snippet?.trim()) {
-            const snippet = r.matched_snippet.trim();
             return {
-              block: `<note id="${r.id}" title="${r.title}">\n${snippet}\n</note>`,
-              source: { noteId: r.id, title: r.title, snippet },
+              noteId: r.id,
+              title: r.title,
+              snippet: r.matched_snippet.trim(),
+              semanticScore: r.semantic_score,
             };
           }
           const note = await window.electronAPI.getNote(r.id);
           if (!note) return null;
-          const body = (note.enhanced_content || note.content || note.transcript || "").slice(
-            0,
-            RAG_NOTE_SNIPPET_LENGTH
-          );
           return {
-            block: `<note id="${note.id}" title="${note.title}">\n${body}\n</note>`,
-            source: { noteId: note.id, title: note.title },
+            noteId: note.id,
+            title: note.title,
+            snippet: (note.enhanced_content || note.content || note.transcript || "").slice(
+              0,
+              RAG_NOTE_SNIPPET_LENGTH
+            ),
+            semanticScore: r.semantic_score,
           };
         }
       )
     );
 
-    const kept = retrieved.filter((entry): entry is NonNullable<typeof entry> => entry != null);
-    return {
-      context: kept.map((entry) => entry.block).join("\n\n"),
-      sources: kept.map((entry) => entry.source),
-    };
+    return filterGrounding(retrieved.filter((note): note is RetrievedNote => note != null));
   } catch {
-    return EMPTY_RAG;
+    return [];
   }
 }
 
@@ -91,7 +95,7 @@ interface UseChatStreamingOptions {
     assistantId: string,
     content: string,
     toolCalls?: ToolCallInfo[],
-    sources?: MessageSource[]
+    sources?: RetrievedNote[]
   ) => void;
 }
 
@@ -118,12 +122,29 @@ export function useChatStreaming({
   const messagesRef = useRef<Message[]>([]);
   const noteContextRef = useRef(externalNoteContext);
   noteContextRef.current = externalNoteContext;
+  // Grounding from earlier turns of this conversation. Without it, a follow-up
+  // that retrieves poorly silently drops the notes the answer had been built
+  // on, and the assistant reads as having forgotten the last two exchanges.
+  const carriedGroundingRef = useRef<RetrievedNote[]>([]);
   const searchScopeRef = useRef(searchScope);
   searchScopeRef.current = searchScope;
   const toolRegistryRef = useRef<{ key: string; registry: ToolRegistry } | null>(null);
 
   useEffect(() => {
     messagesRef.current = messages;
+  }, [messages]);
+
+  // Carried grounding belongs to one conversation. Switching to another (the
+  // whole list is replaced, so the first message's identity changes) or
+  // starting a new one must drop it, or the assistant answers about the
+  // meeting discussed in the conversation before this one.
+  const firstMessageIdRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const firstId = messages[0]?.id;
+    if (firstId !== firstMessageIdRef.current) {
+      firstMessageIdRef.current = firstId;
+      carriedGroundingRef.current = [];
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -202,8 +223,18 @@ export function useChatStreaming({
         }
       }
 
-      const rag = await buildRAGContext(userText, scope);
-      const combinedContext = [noteContextRef.current, rag.context].filter(Boolean).join("\n\n");
+      // A short message is searched together with the previous user turn: the
+      // subject of "what about the second one?" only exists in what came before.
+      const previousUserText = [...allMessages]
+        .reverse()
+        .find((m) => m.role === "user" && m.content !== userText)?.content;
+      const fresh = await retrieveNotes(buildRetrievalQuery(userText, previousUserText), scope);
+      const grounding = mergeGrounding(fresh, carriedGroundingRef.current);
+      carriedGroundingRef.current = grounding;
+
+      const combinedContext = [noteContextRef.current, formatGroundingContext(grounding)]
+        .filter(Boolean)
+        .join("\n\n");
       const systemPrompt = getAgentSystemPrompt(
         registry?.getAll().map((t) => t.name),
         combinedContext || undefined
@@ -225,7 +256,7 @@ export function useChatStreaming({
           // Attached up front, not on completion: citations render while the
           // answer streams, and a citation can only resolve against sources
           // the message already carries.
-          ...(rag.sources.length ? { sources: rag.sources } : {}),
+          ...(grounding.length ? { sources: grounding } : {}),
         },
       ]);
       setAgentState("streaming");
@@ -317,7 +348,7 @@ export function useChatStreaming({
         );
 
         const finalMsg = messagesRef.current.find((m) => m.id === assistantId);
-        onStreamComplete?.(assistantId, fullContent, finalMsg?.toolCalls, rag.sources);
+        onStreamComplete?.(assistantId, fullContent, finalMsg?.toolCalls, grounding);
       } catch (error) {
         setMessages((prev) =>
           prev.map((m) =>
