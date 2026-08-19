@@ -87,14 +87,14 @@ export function useRecentMeetings(enabled: boolean): RecentMeetingsState {
     const disposers = [
       window.electronAPI?.onNoteAdded?.(upsert),
       window.electronAPI?.onNoteUpdated?.(upsert),
-      // A delete can uncover a meeting that was pushed past the limit, and the
-      // broadcast cannot say what that is — so this one case refetches.
+      // Drop the row straight away so the list does not lag the delete, then
+      // refetch: a delete can uncover a meeting that was pushed past the limit,
+      // and the broadcast cannot say which. Unconditional because a state
+      // updater runs too late to decide from, and deletes are rare enough that
+      // one extra query is cheaper than the machinery to avoid it.
       window.electronAPI?.onNoteDeleted?.(({ id }: { id: number }) => {
-        setMeetings((current) => {
-          if (!current.some((existing) => existing.id === id)) return current;
-          reload();
-          return current.filter((existing) => existing.id !== id);
-        });
+        setMeetings((current) => current.filter((existing) => existing.id !== id));
+        reload();
       }),
     ];
     return () => {
