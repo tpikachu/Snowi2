@@ -1,3 +1,4 @@
+import { SnowiGlyph } from "./components/ui/BrandMark";
 import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import "./index.css";
@@ -37,23 +38,6 @@ const BAR_FLOOR = 0.2;
 // src/assets/logo.svg so the HUD, the icon rail and the app icon all draw the
 // same shape. Inherits currentColor, so a single class recolours it across
 // every HUD state.
-const SnowiMark = ({ size = 17, className = "" }) => (
-  <svg
-    viewBox="0 0 16 16"
-    width={size}
-    height={size}
-    fill="none"
-    className={className}
-    aria-hidden="true"
-  >
-    <path
-      d="M8 1.5v13M2.4 4.75l11.2 6.5M2.4 11.25l11.2-6.5"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-    />
-  </svg>
-);
 
 /**
  * Live mic-level meter.
@@ -594,10 +578,10 @@ export default function App() {
               ) : micState === "processing" ? (
                 <>
                   <ProcessingRing />
-                  <SnowiMark size={15} className="text-hud-accent/80" />
+                  <SnowiGlyph size={15} className="text-hud-accent/80" />
                 </>
               ) : (
-                <SnowiMark
+                <SnowiGlyph
                   size={17}
                   className={
                     micState === "hover"

@@ -148,10 +148,8 @@
   --shadow-card: 0 1px 2px oklch(0 0 0 / 0.05);
   --shadow-card-hover: 0 2px 6px -1px oklch(0 0 0 / 0.09);
   --shadow-card-hover-subtle: 0 2px 6px -2px oklch(0 0 0 / 0.08);
-  --shadow-elevated:
-    0 8px 24px -8px oklch(0 0 0 / 0.14), 0 1px 3px oklch(0 0 0 / 0.06);
-  --shadow-modal:
-    0 24px 56px -16px oklch(0 0 0 / 0.18), 0 2px 8px -2px oklch(0 0 0 / 0.08);
+  --shadow-elevated: 0 8px 24px -8px oklch(0 0 0 / 0.14), 0 1px 3px oklch(0 0 0 / 0.06);
+  --shadow-modal: 0 24px 56px -16px oklch(0 0 0 / 0.18), 0 2px 8px -2px oklch(0 0 0 / 0.08);
   /* Replaces the old "premium metallic" pair: one crisp top hairline plus a
      hint of contact shadow. Same token name in both themes, so consumers no
      longer need a dark: twin. */
@@ -232,10 +230,8 @@
   --shadow-card: 0 1px 2px oklch(0 0 0 / 0.5);
   --shadow-card-hover: 0 2px 6px -1px oklch(0 0 0 / 0.55);
   --shadow-card-hover-subtle: 0 2px 6px -2px oklch(0 0 0 / 0.5);
-  --shadow-elevated:
-    0 8px 24px -6px oklch(0 0 0 / 0.6), 0 2px 6px -2px oklch(0 0 0 / 0.45);
-  --shadow-modal:
-    0 24px 60px -16px oklch(0 0 0 / 0.7), 0 4px 12px -4px oklch(0 0 0 / 0.5);
+  --shadow-elevated: 0 8px 24px -6px oklch(0 0 0 / 0.6), 0 2px 6px -2px oklch(0 0 0 / 0.45);
+  --shadow-modal: 0 24px 60px -16px oklch(0 0 0 / 0.7), 0 4px 12px -4px oklch(0 0 0 / 0.5);
   --shadow-raised: inset 0 1px 0 oklch(1 0 0 / 0.05), 0 1px 2px oklch(0 0 0 / 0.4);
   --shadow-selected: inset 0 0 0 1px oklch(0.752 0.127 200.6 / 0.4);
 }
@@ -1229,12 +1225,7 @@ body:has(.agent-overlay-window) #root {
   background-size: 100% 100%;
 }
 
-.dark
-  .rich-text-editor-content
-  ul[data-type="taskList"]
-  li
-  > label
-  input[type="checkbox"]:checked {
+.dark .rich-text-editor-content ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
   background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='%23051213' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
 }
 

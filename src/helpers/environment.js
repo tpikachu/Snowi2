@@ -40,6 +40,10 @@ const PERSISTED_KEYS = [
   "VOICE_AGENT_KEY",
   "TRANSLATION_KEY",
   "MEETING_KEY",
+  // Records that the meeting hotkey default has been seeded once. Without it,
+  // a user who deliberately cleared the hotkey would have it handed back on
+  // every launch — an empty MEETING_KEY cannot say which of the two it means.
+  "MEETING_KEY_DEFAULTED",
   "ACTIVATION_MODE",
   "FLOATING_ICON_AUTO_HIDE",
   "PANEL_START_POSITION",
@@ -441,8 +445,16 @@ class EnvironmentManager {
 
   saveMeetingKey(key) {
     const result = this._saveKey("MEETING_KEY", key);
+    // Any explicit save — including clearing it — settles the question, so the
+    // default is never seeded over the top of the user's own choice.
+    this._saveKey("MEETING_KEY_DEFAULTED", "1");
     this.saveAllKeysToEnvFile().catch(() => {});
     return result;
+  }
+
+  /** True until the meeting hotkey has been set or cleared by anyone. */
+  meetingKeyNeedsDefault() {
+    return !this._getKey("MEETING_KEY") && !this._getKey("MEETING_KEY_DEFAULTED");
   }
 
   getActivationMode() {

@@ -3624,7 +3624,8 @@
     },
     "empty": {
       "noHotkey": "Ahora mismo no hay ningún atajo de dictado activo: usa los botones de arriba o configura uno en Ajustes."
-    }
+    },
+    "meetingHintWithHotkey": "Grabar una reunión ({{hotkey}})"
   },
   "shell": {
     "contextPane": {

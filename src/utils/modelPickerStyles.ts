@@ -53,12 +53,10 @@ export const MODEL_PICKER_COLORS: Record<ColorScheme, ModelPickerStyles> = {
     },
     buttons: {
       download: "",
-      select:
-        "border-border text-foreground hover:bg-surface-raised hover:border-border-hover",
+      select: "border-border text-foreground hover:bg-surface-raised hover:border-border-hover",
       delete:
         "text-destructive hover:text-destructive/90 hover:bg-destructive/8 border-destructive/25",
-      refresh:
-        "border-border text-foreground hover:bg-surface-raised hover:border-border-hover",
+      refresh: "border-border text-foreground hover:bg-surface-raised hover:border-border-hover",
     },
   },
 };

@@ -1,10 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ExternalLink, Pause, Play, Square } from "lucide-react";
-import {
-  capturedMsAt,
-  type MeetingPanelSnapshot,
-} from "../utils/meetingPanelSnapshot";
+import { capturedMsAt, type MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
 import type { MeetingPanelCommand } from "../types/electron";
 import { formatMmSs } from "../utils/formatDuration";
 import { cn } from "./lib/utils";
@@ -85,8 +82,7 @@ export default function MeetingPanelOverlay() {
 
   const isPaused = snapshot.isPaused;
   const isWaitingForMic =
-    !isPaused &&
-    (snapshot.micStatus === "reconnecting" || snapshot.micStatus === "unavailable");
+    !isPaused && (snapshot.micStatus === "reconnecting" || snapshot.micStatus === "unavailable");
 
   const title = truncateTitle(snapshot.title ?? t("notes.meeting.stopDialog.untitled"));
   const pauseLabel = isPaused ? t("notes.meeting.resume") : t("notes.meeting.pause");

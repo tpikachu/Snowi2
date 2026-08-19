@@ -778,8 +778,31 @@ async function startApp() {
     meetingDetectionEngine?.startManualMeeting();
   };
 
-  const savedMeetingKey = environmentManager.getMeetingKey?.() || "";
-  if (savedMeetingKey) {
+  // Starting a meeting is the app's primary action, so it gets a working
+  // accelerator on first launch instead of waiting to be found in settings.
+  // Seeded once and recorded, so clearing it deliberately is not undone on the
+  // next launch — an empty MEETING_KEY cannot say which of the two it means.
+  let savedMeetingKey = environmentManager.getMeetingKey?.() || "";
+  if (!savedMeetingKey && environmentManager.meetingKeyNeedsDefault?.()) {
+    const { DEFAULT_MEETING_HOTKEY } = require("./src/helpers/hotkeyManager");
+    const seeded = await hotkeyManager.registerSlot(
+      "meeting",
+      DEFAULT_MEETING_HOTKEY,
+      meetingHotkeyCallback
+    );
+    // Only persisted when the OS actually gave us the accelerator; recording a
+    // hotkey that never registered would show the user a binding that does
+    // nothing, and would suppress the default forever.
+    if (seeded.success) {
+      environmentManager.saveMeetingKey(DEFAULT_MEETING_HOTKEY);
+      savedMeetingKey = DEFAULT_MEETING_HOTKEY;
+    }
+    debugLogger.info(
+      "Meeting hotkey default seeded",
+      { hotkey: DEFAULT_MEETING_HOTKEY, ...seeded },
+      "meeting"
+    );
+  } else if (savedMeetingKey) {
     const result = await hotkeyManager.registerSlot(
       "meeting",
       savedMeetingKey,
@@ -791,6 +814,10 @@ async function startApp() {
       "meeting"
     );
   }
+
+  // Lets the renderer show the meeting shortcut, including the one seeded
+  // above, which was written to .env and never passed through localStorage.
+  ipcMain.handle("get-meeting-key", () => environmentManager.getMeetingKey?.() || "");
 
   ipcMain.handle("register-meeting-hotkey", async (_event, hotkey) => {
     if (hotkey) {

@@ -425,11 +425,7 @@ class IPCHandlers {
         }
 
         if (indexed > 0) {
-          debugLogger.info(
-            "Backfilled passage vectors for notes",
-            { indexed },
-            "semantic-search"
-          );
+          debugLogger.info("Backfilled passage vectors for notes", { indexed }, "semantic-search");
         }
       })().catch((error) => {
         debugLogger.debug("Note chunk backfill failed", { error: error?.message });

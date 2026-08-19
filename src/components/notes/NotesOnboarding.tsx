@@ -122,62 +122,62 @@ export default function NotesOnboarding({ onComplete }: NotesOnboardingProps) {
 
         {/* LLM Configuration */}
         <div
-            className={cn(
-              "rounded-lg border transition-colors duration-200",
-              isLLMConfigured
-                ? "border-success/20 bg-success/[0.03]"
-                : "border-foreground/8 dark:border-white/6 bg-surface-1/30 dark:bg-white/[0.02]"
-            )}
+          className={cn(
+            "rounded-lg border transition-colors duration-200",
+            isLLMConfigured
+              ? "border-success/20 bg-success/[0.03]"
+              : "border-foreground/8 dark:border-white/6 bg-surface-1/30 dark:bg-white/[0.02]"
+          )}
+        >
+          <button
+            type="button"
+            onClick={() => setLlmExpanded(!llmExpanded)}
+            aria-expanded={llmExpanded}
+            className="flex items-center justify-between w-full px-4 py-3 text-left"
           >
-            <button
-              type="button"
-              onClick={() => setLlmExpanded(!llmExpanded)}
-              aria-expanded={llmExpanded}
-              className="flex items-center justify-between w-full px-4 py-3 text-left"
-            >
-              <div className="flex items-center gap-2.5">
-                <Zap
-                  size={13}
-                  className={cn(isLLMConfigured ? "text-success/60" : "text-foreground/30")}
-                />
-                <span className="text-xs font-medium text-foreground/70">
-                  {t("notes.onboarding.llm.title")}
-                </span>
-                {isLLMConfigured && (
-                  <span className="text-xs text-success/60 font-medium">
-                    {t("notes.onboarding.llm.configured")}
-                  </span>
-                )}
-              </div>
-              <ChevronRight
-                size={12}
-                className={cn(
-                  "text-foreground/20 transition-transform duration-200",
-                  llmExpanded && "rotate-90"
-                )}
+            <div className="flex items-center gap-2.5">
+              <Zap
+                size={13}
+                className={cn(isLLMConfigured ? "text-success/60" : "text-foreground/30")}
               />
-            </button>
+              <span className="text-xs font-medium text-foreground/70">
+                {t("notes.onboarding.llm.title")}
+              </span>
+              {isLLMConfigured && (
+                <span className="text-xs text-success/60 font-medium">
+                  {t("notes.onboarding.llm.configured")}
+                </span>
+              )}
+            </div>
+            <ChevronRight
+              size={12}
+              className={cn(
+                "text-foreground/20 transition-transform duration-200",
+                llmExpanded && "rotate-90"
+              )}
+            />
+          </button>
 
-            {llmExpanded && (
-              <div className="px-4 pb-4 space-y-3" style={{ animation: "float-up 0.2s ease-out" }}>
-                <p className="text-xs text-foreground/30 leading-relaxed">
-                  {t("notes.onboarding.llm.description")}
-                </p>
+          {llmExpanded && (
+            <div className="px-4 pb-4 space-y-3" style={{ animation: "float-up 0.2s ease-out" }}>
+              <p className="text-xs text-foreground/30 leading-relaxed">
+                {t("notes.onboarding.llm.description")}
+              </p>
 
-                <ReasoningModelSelector
-                  reasoningModel={cleanupConfig.model}
-                  setReasoningModel={setCleanupModel}
-                  localReasoningProvider={cleanupConfig.provider}
-                  setLocalReasoningProvider={setCleanupProvider}
-                  onCloudProviderSelect={switchCleanupProvider}
-                  cloudReasoningBaseUrl={cleanupConfig.cloudBaseUrl ?? ""}
-                  setCloudReasoningBaseUrl={setCleanupCloudBaseUrl}
-                  customReasoningApiKey={cleanupConfig.customApiKey ?? ""}
-                  setCustomReasoningApiKey={setCleanupCustomApiKey}
-                  setReasoningMode={setCleanupMode}
-                />
-              </div>
-            )}
+              <ReasoningModelSelector
+                reasoningModel={cleanupConfig.model}
+                setReasoningModel={setCleanupModel}
+                localReasoningProvider={cleanupConfig.provider}
+                setLocalReasoningProvider={setCleanupProvider}
+                onCloudProviderSelect={switchCleanupProvider}
+                cloudReasoningBaseUrl={cleanupConfig.cloudBaseUrl ?? ""}
+                setCloudReasoningBaseUrl={setCleanupCloudBaseUrl}
+                customReasoningApiKey={cleanupConfig.customApiKey ?? ""}
+                setCustomReasoningApiKey={setCleanupCustomApiKey}
+                setReasoningMode={setCleanupMode}
+              />
+            </div>
+          )}
         </div>
 
         {/* System Audio Permission */}

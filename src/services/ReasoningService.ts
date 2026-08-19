@@ -798,9 +798,7 @@ class ReasoningService extends BaseReasoningService {
           };
         } else if (chunk.type === "tool-result") {
           const output = chunk.output as
-            | string
-            | { displayText?: unknown; error?: unknown; success?: unknown }
-            | undefined;
+            string | { displayText?: unknown; error?: unknown; success?: unknown } | undefined;
           // Tools return { success, data, displayText } (see ToolRegistry) and
           // already phrase their own summary — "Found 3 notes for X". Only a
           // string output was being read before, so every structured result

@@ -3624,7 +3624,8 @@
     },
     "empty": {
       "noHotkey": "No dictation shortcut is active right now — use the buttons above, or set one in Settings."
-    }
+    },
+    "meetingHintWithHotkey": "Record a meeting ({{hotkey}})"
   },
   "shell": {
     "contextPane": {

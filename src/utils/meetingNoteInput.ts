@@ -33,17 +33,19 @@ export function formatMeetingTranscript(
   segments: readonly FormattableSegment[],
   labels: MeetingSpeakerLabels
 ): string {
-  return segments
-    // Filtered on the segment's own text, not the rendered line — a line is
-    // never empty once a speaker label is prepended, so checking afterwards
-    // would keep every "Them:   " that streaming left behind.
-    .filter((segment) => segment.text?.trim())
-    .map((segment) => {
-      const speaker =
-        segment.speakerName?.trim() || (segment.source === "mic" ? labels.you : labels.them);
-      return `${speaker}: ${segment.text.trim()}`;
-    })
-    .join("\n");
+  return (
+    segments
+      // Filtered on the segment's own text, not the rendered line — a line is
+      // never empty once a speaker label is prepended, so checking afterwards
+      // would keep every "Them:   " that streaming left behind.
+      .filter((segment) => segment.text?.trim())
+      .map((segment) => {
+        const speaker =
+          segment.speakerName?.trim() || (segment.source === "mic" ? labels.you : labels.them);
+        return `${speaker}: ${segment.text.trim()}`;
+      })
+      .join("\n")
+  );
 }
 
 /**

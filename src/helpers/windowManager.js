@@ -748,11 +748,8 @@ class WindowManager {
       this.closeMeetingPanel();
     });
 
-    // The panel yields to the control panel rather than stacking on top of it.
-    // Driven by focus alone, never by show/hide: on macOS those are occlusion
-    // events, so the panel would flicker as other windows passed in front.
-    this.controlPanelWindow.on("focus", () => this._syncMeetingPanelVisibility());
-    this.controlPanelWindow.on("blur", () => this._syncMeetingPanelVisibility());
+    // No panel visibility listeners here on purpose — see
+    // _syncMeetingPanelVisibility for why the panel no longer tracks focus.
 
     MenuManager.setupControlPanelMenu(this.controlPanelWindow, () => this.openSettings());
 
@@ -1493,22 +1490,22 @@ class WindowManager {
   }
 
   /**
-   * The panel is for when Snowi's own window is not what the user is looking
-   * at. Showing it over the control panel would put two copies of the same
-   * controls on screen, so it steps aside whenever the control panel has focus.
+   * The panel is visible for as long as a meeting is recording. Full stop.
+   *
+   * It used to step aside whenever the control panel had focus, to avoid two
+   * copies of the same controls on screen. That coupled a recording indicator
+   * to focus, which moves for reasons that have nothing to do with intent:
+   * minimising an unrelated application hands focus to whatever is next in the
+   * z-order — often the control panel — and the panel would vanish, looking
+   * for all the world like it had been minimised too.
+   *
+   * A status object for something as consequential as an active recording has
+   * to be predictable. Redundancy while the app is in front is a much smaller
+   * cost than a window that hides itself for reasons the user cannot see.
    */
   _syncMeetingPanelVisibility() {
     const win = this.meetingPanelWindow;
     if (!win || win.isDestroyed()) return;
-
-    const controlPanel = this.controlPanelWindow;
-    const controlPanelHasFocus =
-      controlPanel && !controlPanel.isDestroyed() && controlPanel.isFocused();
-
-    if (controlPanelHasFocus) {
-      if (win.isVisible()) win.hide();
-      return;
-    }
     // showInactive: appearing must never steal focus from the meeting app.
     if (!win.isVisible()) win.showInactive();
   }

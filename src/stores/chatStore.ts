@@ -79,4 +79,3 @@ export function useActiveConversation(): ConversationItem | null {
     return state.conversations.find((c) => c.id === state.activeConversationId) ?? null;
   });
 }
-

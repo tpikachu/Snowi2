@@ -3624,7 +3624,8 @@
     },
     "empty": {
       "noHotkey": "Al momento non è attiva nessuna scorciatoia di dettatura: usa i pulsanti qui sopra oppure impostane una nelle Impostazioni."
-    }
+    },
+    "meetingHintWithHotkey": "Registra una riunione ({{hotkey}})"
   },
   "shell": {
     "contextPane": {

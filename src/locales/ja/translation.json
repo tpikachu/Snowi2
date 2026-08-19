@@ -3624,7 +3624,8 @@
     },
     "empty": {
       "noHotkey": "現在、音声入力のショートカットは設定されていません。上のボタンを使うか、設定でショートカットを登録してください。"
-    }
+    },
+    "meetingHintWithHotkey": "会議を録音 ({{hotkey}})"
   },
   "shell": {
     "contextPane": {

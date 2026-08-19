@@ -4,6 +4,7 @@ const fs = require("fs");
 const debugLogger = require("./debugLogger");
 const dockManager = require("./dockManager");
 const { i18nMain } = require("./i18nMain");
+const { DICTATION_ENABLED } = require("../config/features");
 
 class TrayManager {
   constructor() {
@@ -255,20 +256,26 @@ class TrayManager {
     const dictationVisible = this.windowManager?.isDictationPanelVisible?.() ?? false;
 
     return [
-      {
-        label: dictationVisible
-          ? i18nMain.t("tray.toggleDictation.hide")
-          : i18nMain.t("tray.toggleDictation.show"),
-        click: () => {
-          if (!this.windowManager) return;
-          if (this.windowManager.isDictationPanelVisible()) {
-            this.windowManager.hideDictationPanel();
-          } else {
-            this.windowManager.showDictationPanel({ focus: true });
-          }
-          this.updateTrayMenu();
-        },
-      },
+      // Offered only when dictation is enabled — the tray is the last place it
+      // was still reachable from while the feature is behind its flag.
+      ...(DICTATION_ENABLED
+        ? [
+            {
+              label: dictationVisible
+                ? i18nMain.t("tray.toggleDictation.hide")
+                : i18nMain.t("tray.toggleDictation.show"),
+              click: () => {
+                if (!this.windowManager) return;
+                if (this.windowManager.isDictationPanelVisible()) {
+                  this.windowManager.hideDictationPanel();
+                } else {
+                  this.windowManager.showDictationPanel({ focus: true });
+                }
+                this.updateTrayMenu();
+              },
+            },
+          ]
+        : []),
       {
         label: this.isControlPanelVisible()
           ? i18nMain.t("tray.hideControlPanel")

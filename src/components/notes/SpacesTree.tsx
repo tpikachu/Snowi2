@@ -906,140 +906,138 @@ function NoteLeaf({
           }
         }}
       >
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t("common.actions")}
-              onClick={(e) => e.stopPropagation()}
-              className={KEBAB_TRIGGER_CLASS}
-            >
-              <MoreHorizontal size={12} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" sideOffset={4} className="min-w-40">
-            {noteFilesEnabled && (
-              <>
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    window.electronAPI?.showNoteFile?.(note.id);
-                  }}
-                  className={MENU_ITEM_CLASS}
-                >
-                  <ExternalLink size={11} className="text-muted-foreground/60" />
-                  {t("notes.context.showInFileManager", { manager: fileManagerName })}
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-              </>
-            )}
-            <SearchableMoveSubmenu
-                icon={<FolderOpen size={11} className="text-muted-foreground/60" />}
-                label={multiSpace ? t("notes.spaces.moveTo") : t("notes.context.moveToFolder")}
-                itemCount={moveOptions.length}
-                search={moveSearch}
-                onSearchChange={setMoveSearch}
-                searchPlaceholder={t("notes.context.searchFolders")}
-                footer={
-                  isCreating ? (
-                    <div className="px-1">
-                      <input
-                        autoFocus
-                        value={newFolderName}
-                        onChange={(e) => setNewFolderName(e.target.value)}
-                        onKeyDown={(e) => {
-                          e.stopPropagation();
-                          if (e.key === "Enter" && newFolderName.trim()) {
-                            onCreateFolderAndMove(note.id, newFolderName.trim());
-                            setNewFolderName("");
-                            setIsCreating(false);
-                          }
-                          if (e.key === "Escape") {
-                            setIsCreating(false);
-                            setNewFolderName("");
-                          }
-                        }}
-                        placeholder={t("notes.folders.folderName")}
-                        className="input-inline w-full px-2 py-1.5 rounded-md bg-transparent text-xs text-foreground placeholder:text-foreground/20 outline-none border-none appearance-none"
-                      />
-                    </div>
-                  ) : (
-                    <DropdownMenuItem
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        setIsCreating(true);
-                      }}
-                      className={cn(MENU_ITEM_CLASS, "text-foreground/40")}
-                    >
-                      <Plus size={10} />
-                      {t("notes.context.newFolder")}
-                    </DropdownMenuItem>
-                  )
-                }
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("common.actions")}
+            onClick={(e) => e.stopPropagation()}
+            className={KEBAB_TRIGGER_CLASS}
+          >
+            <MoreHorizontal size={12} />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" sideOffset={4} className="min-w-40">
+          {noteFilesEnabled && (
+            <>
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.electronAPI?.showNoteFile?.(note.id);
+                }}
+                className={MENU_ITEM_CLASS}
               >
-                {moveSearch ? (
-                  <>
-                    {filteredOptions.map((option) =>
-                      renderOption(
-                        option,
-                        multiSpace && option.target.folderId != null
-                          ? `${spaceDisplayName(option.space, t)} / ${option.label}`
-                          : option.label
-                      )
-                    )}
-                    {filteredOptions.length === 0 && (
-                      <p className="text-xs text-foreground/20 text-center py-1.5">
-                        {t("notes.context.noResults")}
-                      </p>
-                    )}
-                  </>
-                ) : multiSpace ? (
-                  spaces.map((space) => {
-                    const spaceOptions = moveOptions.filter(
-                      (option) => option.space.id === space.id
-                    );
-                    if (spaceOptions.length === 0) return null;
-                    return (
-                      <DropdownMenuSub key={space.id}>
-                        <DropdownMenuSubTrigger className={SUB_TRIGGER_CLASS}>
-                          <SpaceMenuIcon space={space} />
-                          <span className="truncate flex-1">{spaceDisplayName(space, t)}</span>
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent
-                          sideOffset={4}
-                          className={cn(SUB_CONTENT_CLASS, "max-h-40 overflow-y-auto")}
-                        >
-                          {spaceOptions.map((option) =>
-                            renderOption(
-                              option,
-                              option.target.folderId == null
-                                ? t("notes.spaces.spaceRoot")
-                                : option.label
-                            )
-                          )}
-                        </DropdownMenuSubContent>
-                      </DropdownMenuSub>
-                    );
-                  })
-                ) : (
-                  moveOptions.map((option) => renderOption(option, option.label))
+                <ExternalLink size={11} className="text-muted-foreground/60" />
+                {t("notes.context.showInFileManager", { manager: fileManagerName })}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
+          <SearchableMoveSubmenu
+            icon={<FolderOpen size={11} className="text-muted-foreground/60" />}
+            label={multiSpace ? t("notes.spaces.moveTo") : t("notes.context.moveToFolder")}
+            itemCount={moveOptions.length}
+            search={moveSearch}
+            onSearchChange={setMoveSearch}
+            searchPlaceholder={t("notes.context.searchFolders")}
+            footer={
+              isCreating ? (
+                <div className="px-1">
+                  <input
+                    autoFocus
+                    value={newFolderName}
+                    onChange={(e) => setNewFolderName(e.target.value)}
+                    onKeyDown={(e) => {
+                      e.stopPropagation();
+                      if (e.key === "Enter" && newFolderName.trim()) {
+                        onCreateFolderAndMove(note.id, newFolderName.trim());
+                        setNewFolderName("");
+                        setIsCreating(false);
+                      }
+                      if (e.key === "Escape") {
+                        setIsCreating(false);
+                        setNewFolderName("");
+                      }
+                    }}
+                    placeholder={t("notes.folders.folderName")}
+                    className="input-inline w-full px-2 py-1.5 rounded-md bg-transparent text-xs text-foreground placeholder:text-foreground/20 outline-none border-none appearance-none"
+                  />
+                </div>
+              ) : (
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.preventDefault();
+                    setIsCreating(true);
+                  }}
+                  className={cn(MENU_ITEM_CLASS, "text-foreground/40")}
+                >
+                  <Plus size={10} />
+                  {t("notes.context.newFolder")}
+                </DropdownMenuItem>
+              )
+            }
+          >
+            {moveSearch ? (
+              <>
+                {filteredOptions.map((option) =>
+                  renderOption(
+                    option,
+                    multiSpace && option.target.folderId != null
+                      ? `${spaceDisplayName(option.space, t)} / ${option.label}`
+                      : option.label
+                  )
                 )}
-            </SearchableMoveSubmenu>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(note.id);
-              }}
-              className={cn(
-                MENU_ITEM_CLASS,
-                "text-destructive focus:text-destructive focus:bg-destructive/10"
-              )}
-            >
-              <Trash2 size={11} />
-              {t("notes.context.delete")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
+                {filteredOptions.length === 0 && (
+                  <p className="text-xs text-foreground/20 text-center py-1.5">
+                    {t("notes.context.noResults")}
+                  </p>
+                )}
+              </>
+            ) : multiSpace ? (
+              spaces.map((space) => {
+                const spaceOptions = moveOptions.filter((option) => option.space.id === space.id);
+                if (spaceOptions.length === 0) return null;
+                return (
+                  <DropdownMenuSub key={space.id}>
+                    <DropdownMenuSubTrigger className={SUB_TRIGGER_CLASS}>
+                      <SpaceMenuIcon space={space} />
+                      <span className="truncate flex-1">{spaceDisplayName(space, t)}</span>
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent
+                      sideOffset={4}
+                      className={cn(SUB_CONTENT_CLASS, "max-h-40 overflow-y-auto")}
+                    >
+                      {spaceOptions.map((option) =>
+                        renderOption(
+                          option,
+                          option.target.folderId == null
+                            ? t("notes.spaces.spaceRoot")
+                            : option.label
+                        )
+                      )}
+                    </DropdownMenuSubContent>
+                  </DropdownMenuSub>
+                );
+              })
+            ) : (
+              moveOptions.map((option) => renderOption(option, option.label))
+            )}
+          </SearchableMoveSubmenu>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(note.id);
+            }}
+            className={cn(
+              MENU_ITEM_CLASS,
+              "text-destructive focus:text-destructive focus:bg-destructive/10"
+            )}
+          >
+            <Trash2 size={11} />
+            {t("notes.context.delete")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
       </DropdownMenu>
     </div>
   );

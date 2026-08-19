@@ -33,10 +33,7 @@ export function useMeetingPanelBridge(): void {
     let lastPublished: MeetingPanelSnapshot | null = null;
 
     const publish = (force = false) => {
-      const snapshot = buildMeetingPanelSnapshot(
-        useMeetingRecordingStore.getState(),
-        Date.now()
-      );
+      const snapshot = buildMeetingPanelSnapshot(useMeetingRecordingStore.getState(), Date.now());
       if (!force && snapshotsEqual(lastPublished, snapshot)) return;
       lastPublished = snapshot;
       window.electronAPI?.meetingPanelPublish?.(snapshot);

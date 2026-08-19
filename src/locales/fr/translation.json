@@ -3624,7 +3624,8 @@
     },
     "empty": {
       "noHotkey": "Aucun raccourci de dictée n'est actif pour le moment — utilisez les boutons ci-dessus ou définissez-en un dans les Réglages."
-    }
+    },
+    "meetingHintWithHotkey": "Enregistrer une réunion ({{hotkey}})"
   },
   "shell": {
     "contextPane": {

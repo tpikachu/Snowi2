@@ -25,6 +25,14 @@ const FALLBACK_HOTKEYS = ["F8", "F9", "Control+Super"];
 // something else has already claimed this chord.
 const DEFAULT_HOTKEY = "Control+Shift+Space";
 
+// Seeded for the meeting slot on first launch. Meetings are the app's primary
+// job now that dictation is behind a flag, so this one accelerator is bound
+// out of the box rather than left for the user to discover in settings.
+// Must stay in step with getSuggestedHotkey("meeting") in src/utils/hotkeys.ts,
+// which offers the same combination in the settings UI.
+const DEFAULT_MEETING_HOTKEY =
+  process.platform === "darwin" ? "Command+Shift+M" : "Control+Shift+M";
+
 // Slots routed through GNOME native gsettings (not globalShortcut).
 // Temporary slots like "cancel" stay on globalShortcut.
 const GNOME_NATIVE_SLOTS = new Set(["agent", "meeting", "voiceAgent", "translation"]);
@@ -1380,5 +1388,6 @@ class HotkeyManager extends EventEmitter {
 module.exports = HotkeyManager;
 module.exports.isGlobeLikeHotkey = isGlobeLikeHotkey;
 module.exports.isModifierOnlyHotkey = isModifierOnlyHotkey;
+module.exports.DEFAULT_MEETING_HOTKEY = DEFAULT_MEETING_HOTKEY;
 module.exports.isRightSideModifier = isRightSideModifier;
 module.exports.isMouseButtonHotkey = isMouseButtonHotkey;

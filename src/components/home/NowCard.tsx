@@ -81,7 +81,12 @@ export default function NowCard({
             </p>
           </div>
         </div>
-        <Button variant="outline-flat" size="sm" className="h-7 shrink-0 text-xs" onClick={onOpenRecordingNote}>
+        <Button
+          variant="outline-flat"
+          size="sm"
+          className="h-7 shrink-0 text-xs"
+          onClick={onOpenRecordingNote}
+        >
           {t("home.now.openNote")}
         </Button>
       </Card>
@@ -106,9 +111,7 @@ export default function NowCard({
               isLive ? "text-success" : "text-primary"
             )}
           >
-            {isLive
-              ? t("home.now.inProgress")
-              : t("home.now.startsIn", { count: startsIn })}
+            {isLive ? t("home.now.inProgress") : t("home.now.startsIn", { count: startsIn })}
           </p>
           <p className="truncate text-sm font-medium text-foreground">
             {target.summary?.trim() || t("upcoming.untitledEvent")}

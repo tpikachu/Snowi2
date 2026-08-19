@@ -414,11 +414,7 @@ export async function startMeetingPreRoll(): Promise<boolean> {
     preRollRing = null;
     // Never surfaced to the user: a pre-roll that cannot start costs them the
     // opening of a meeting they have not yet agreed to record.
-    logger.debug(
-      "Meeting pre-roll could not start",
-      { error: (err as Error).message },
-      "meeting"
-    );
+    logger.debug("Meeting pre-roll could not start", { error: (err as Error).message }, "meeting");
     return false;
   }
 }

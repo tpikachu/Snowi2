@@ -3624,7 +3624,8 @@
     },
     "empty": {
       "noHotkey": "当前未启用听写快捷键 — 请使用上方按钮，或在设置中指定一个。"
-    }
+    },
+    "meetingHintWithHotkey": "录制会议（{{hotkey}}）"
   },
   "shell": {
     "contextPane": {

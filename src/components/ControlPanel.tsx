@@ -360,55 +360,55 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   // here — only the note the detector would otherwise have created for us.
   const handleStartMeetingCapture = useCallback(
     async (event?: CalendarEvent | null) => {
-    if (isStartingMeetingCapture) return;
-    const { isRecording, isTranscribing } = useMeetingRecordingStore.getState();
-    if (isRecording || isTranscribing) return;
-    setIsStartingMeetingCapture(true);
-    try {
-      // Recording a meeting the user picked off the calendar names the note
-      // after it, the same way the detector's own prompt does — a row called
-      // "Meeting" is unfindable a week later.
-      const result = await window.electronAPI.saveNote(
-        event?.summary?.trim() || t("capture.meetingNoteTitle"),
-        "",
-        "meeting"
-      );
-      const note = result?.success ? result.note : null;
-      if (!note) throw new Error("Meeting note could not be created");
+      if (isStartingMeetingCapture) return;
+      const { isRecording, isTranscribing } = useMeetingRecordingStore.getState();
+      if (isRecording || isTranscribing) return;
+      setIsStartingMeetingCapture(true);
+      try {
+        // Recording a meeting the user picked off the calendar names the note
+        // after it, the same way the detector's own prompt does — a row called
+        // "Meeting" is unfindable a week later.
+        const result = await window.electronAPI.saveNote(
+          event?.summary?.trim() || t("capture.meetingNoteTitle"),
+          "",
+          "meeting"
+        );
+        const note = result?.success ? result.note : null;
+        if (!note) throw new Error("Meeting note could not be created");
 
-      if (event?.id) {
-        // Best-effort: a failed link costs the calendar association, never the
-        // recording, so it must not throw into the catch below.
-        try {
-          await window.electronAPI.updateNote?.(note.id, { calendar_event_id: event.id });
-        } catch {
-          logger.warn("Could not link the meeting note to its calendar event", {}, "meeting");
+        if (event?.id) {
+          // Best-effort: a failed link costs the calendar association, never the
+          // recording, so it must not throw into the catch below.
+          try {
+            await window.electronAPI.updateNote?.(note.id, { calendar_event_id: event.id });
+          } catch {
+            logger.warn("Could not link the meeting note to its calendar event", {}, "meeting");
+          }
         }
-      }
 
-      setActiveFolderId(note.folder_id);
-      setActiveNoteId(note.id);
-      setActiveView("personal-notes");
-      setMeetingRecordingRequest({
-        noteId: note.id,
-        folderId: note.folder_id,
-        event: event ?? null,
-      });
-      initializeNotes(null, 50, note.folder_id);
-    } catch (error) {
-      logger.warn(
-        "Failed to start meeting capture from the shell",
-        { error: (error as Error).message },
-        "meeting"
-      );
-      toast({
-        title: t("capture.meetingStartFailedTitle"),
-        description: t("capture.meetingStartFailedDescription"),
-        variant: "destructive",
-      });
-    } finally {
-      setIsStartingMeetingCapture(false);
-    }
+        setActiveFolderId(note.folder_id);
+        setActiveNoteId(note.id);
+        setActiveView("personal-notes");
+        setMeetingRecordingRequest({
+          noteId: note.id,
+          folderId: note.folder_id,
+          event: event ?? null,
+        });
+        initializeNotes(null, 50, note.folder_id);
+      } catch (error) {
+        logger.warn(
+          "Failed to start meeting capture from the shell",
+          { error: (error as Error).message },
+          "meeting"
+        );
+        toast({
+          title: t("capture.meetingStartFailedTitle"),
+          description: t("capture.meetingStartFailedDescription"),
+          variant: "destructive",
+        });
+      } finally {
+        setIsStartingMeetingCapture(false);
+      }
     },
     [isStartingMeetingCapture, t, toast]
   );

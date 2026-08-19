@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "../lib/utils";
 import { Tooltip } from "../ui/tooltip";
 import { getCachedPlatform } from "../../utils/platform";
+import { SnowiGlyph } from "../ui/BrandMark";
 
 const platform = getCachedPlatform();
 const isMac = platform === "darwin";
@@ -25,27 +26,6 @@ const railButtonClass = [
 
 const railButtonIdleClass =
   "text-muted-foreground hover:bg-surface-3 hover:text-foreground active:bg-surface-raised";
-
-function BrandMark() {
-  // Mirrors src/assets/logo.svg, inlined so it can take the accent colour.
-  return (
-    <svg
-      width="17"
-      height="17"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-      className="shrink-0 text-primary"
-    >
-      <path
-        d="M8 1.5v13M2.4 4.75l11.2 6.5M2.4 11.25l11.2-6.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
 
 function RailButton({
   icon: Icon,
@@ -136,7 +116,7 @@ export default function IconRail({
       }
     >
       <div className="flex size-9 shrink-0 items-center justify-center" title="Snowi">
-        <BrandMark />
+        <SnowiGlyph className="shrink-0 text-primary" />
       </div>
 
       {onOpenSearch && (

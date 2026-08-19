@@ -14,6 +14,8 @@ import {
   useDictationCaptureState,
   useDictationHotkeyStatus,
 } from "./captureBridge";
+import { DICTATION_ENABLED } from "../../config/features";
+import { useSettingsStore } from "../../stores/settingsStore";
 
 /**
  * The shell's primary capture control.
@@ -108,6 +110,7 @@ export default function CaptureControl({
   const isMeetingRecording = useMeetingRecordingStore((s) => s.isRecording);
   const isMeetingTranscribing = useMeetingRecordingStore((s) => s.isTranscribing);
   const meetingMicStatus = useMeetingRecordingStore((s) => s.micCaptureStatus);
+  const meetingKey = useSettingsStore((s) => s.meetingKey);
   const [isStoppingMeeting, setIsStoppingMeeting] = useState(false);
   const [isTogglingDictation, setIsTogglingDictation] = useState(false);
 
@@ -207,7 +210,7 @@ export default function CaptureControl({
   }
 
   // ---- Live dictation -----------------------------------------------------
-  if (isDictationBusy) {
+  if (DICTATION_ENABLED && isDictationBusy) {
     return (
       <div
         className={cn(
@@ -257,46 +260,57 @@ export default function CaptureControl({
 
   // ---- Idle ---------------------------------------------------------------
   const hotkeyLabel = hotkey ? formatHotkeyLabel(hotkey) : "";
+  const meetingHotkeyLabel = meetingKey ? formatHotkeyLabel(meetingKey) : "";
 
   return (
     <div className="flex items-center gap-1.5" style={wrapperStyle}>
-      <Button
-        variant="default"
-        size="sm"
-        onClick={handleStartDictation}
-        disabled={isBusy || isTogglingDictation}
-        title={
-          isRegistered
-            ? t("capture.dictateHint", { hotkey: hotkeyLabel })
-            : t("capture.dictateNoHotkeyHint")
-        }
-        className="h-7 gap-1.5 px-2.5 text-xs"
-      >
-        <Mic size={13} strokeWidth={2} aria-hidden="true" />
-        {t("capture.dictate")}
-        {isRegistered && hotkeyLabel && (
-          <kbd className="ml-0.5 hidden rounded-sm bg-primary-foreground/20 px-1 py-px text-[10px] font-medium leading-[1.3] text-primary-foreground md:inline-block">
-            {hotkeyLabel}
-          </kbd>
-        )}
-      </Button>
+      {DICTATION_ENABLED && (
+        <>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handleStartDictation}
+            disabled={isBusy || isTogglingDictation}
+            title={
+              isRegistered
+                ? t("capture.dictateHint", { hotkey: hotkeyLabel })
+                : t("capture.dictateNoHotkeyHint")
+            }
+            className="h-7 gap-1.5 px-2.5 text-xs"
+          >
+            <Mic size={13} strokeWidth={2} aria-hidden="true" />
+            {t("capture.dictate")}
+            {isRegistered && hotkeyLabel && (
+              <kbd className="ml-0.5 hidden rounded-sm bg-primary-foreground/20 px-1 py-px text-[10px] font-medium leading-[1.3] text-primary-foreground md:inline-block">
+                {hotkeyLabel}
+              </kbd>
+            )}
+          </Button>
 
-      {!isResolving && !isRegistered && (
-        <span
-          title={t("capture.dictateNoHotkeyHint")}
-          className="inline-flex h-5 items-center gap-1 rounded-sm border border-warning/30 bg-warning-subtle px-1.5 text-[10px] font-medium text-foreground"
-        >
-          <AlertTriangle size={10} className="shrink-0 text-warning" aria-hidden="true" />
-          {t("capture.hotkeyMissing")}
-        </span>
+          {!isResolving && !isRegistered && (
+            <span
+              title={t("capture.dictateNoHotkeyHint")}
+              className="inline-flex h-5 items-center gap-1 rounded-sm border border-warning/30 bg-warning-subtle px-1.5 text-[10px] font-medium text-foreground"
+            >
+              <AlertTriangle size={10} className="shrink-0 text-warning" aria-hidden="true" />
+              {t("capture.hotkeyMissing")}
+            </span>
+          )}
+        </>
       )}
 
+      {/* With dictation behind its flag this is the window's primary action,
+          so it takes the solid treatment and shows its own shortcut. */}
       <Button
-        variant="outline-flat"
+        variant={DICTATION_ENABLED ? "outline-flat" : "default"}
         size="sm"
         onClick={onStartMeeting}
         disabled={isBusy}
-        title={t("capture.meetingHint")}
+        title={
+          meetingHotkeyLabel
+            ? t("capture.meetingHintWithHotkey", { hotkey: meetingHotkeyLabel })
+            : t("capture.meetingHint")
+        }
         className="h-7 gap-1.5 px-2.5 text-xs"
       >
         {isStartingMeeting ? (
@@ -305,6 +319,11 @@ export default function CaptureControl({
           <CalendarClock size={13} strokeWidth={2} aria-hidden="true" />
         )}
         {t("capture.meeting")}
+        {!DICTATION_ENABLED && meetingHotkeyLabel && (
+          <kbd className="ml-0.5 hidden rounded-sm bg-primary-foreground/20 px-1 py-px text-[10px] font-medium leading-[1.3] text-primary-foreground md:inline-block">
+            {meetingHotkeyLabel}
+          </kbd>
+        )}
       </Button>
     </div>
   );

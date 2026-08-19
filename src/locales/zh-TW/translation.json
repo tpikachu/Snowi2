@@ -3624,7 +3624,8 @@
     },
     "empty": {
       "noHotkey": "目前未啟用聽寫快速鍵 — 請使用上方按鈕，或在設定中指定一個。"
-    }
+    },
+    "meetingHintWithHotkey": "錄製會議（{{hotkey}}）"
   },
   "shell": {
     "contextPane": {

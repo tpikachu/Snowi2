@@ -102,7 +102,6 @@ function reasoningModelBelongsToProvider(providerId: string, modelId: string): b
   );
 }
 
-
 function readString(key: string, fallback: string): string {
   if (!isBrowser) return fallback;
   return localStorage.getItem(key) ?? fallback;
@@ -586,7 +585,11 @@ function repairUnusableLlmScopes() {
   const scopes: Array<{ mode: string; provider: string; model: string }> = [
     { mode: "cleanupMode", provider: "cleanupProvider", model: "cleanupModel" },
     { mode: "chatAgentMode", provider: "chatAgentProvider", model: "chatAgentModel" },
-    { mode: "noteFormattingMode", provider: "noteFormattingProvider", model: "noteFormattingModel" },
+    {
+      mode: "noteFormattingMode",
+      provider: "noteFormattingProvider",
+      model: "noteFormattingModel",
+    },
     {
       mode: "dictationAgentMode",
       provider: "dictationAgentProvider",
@@ -608,7 +611,6 @@ function repairUnusableLlmScopes() {
 }
 
 repairUnusableLlmScopes();
-
 
 export interface SettingsState
   extends
@@ -1209,7 +1211,10 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   uiLanguage: normalizeUiLanguage(isBrowser ? localStorage.getItem("uiLanguage") : null),
   // Local is the default engine; an unset flag follows the stored mode so a
   // BYOK selection that never persisted the flag keeps routing to its provider.
-  useLocalWhisper: readBoolean("useLocalWhisper", readString("transcriptionMode", "local") === "local"),
+  useLocalWhisper: readBoolean(
+    "useLocalWhisper",
+    readString("transcriptionMode", "local") === "local"
+  ),
   whisperModel: readString("whisperModel", "base"),
   localTranscriptionProvider: (readString("localTranscriptionProvider", "whisper") === "nvidia"
     ? "nvidia"
@@ -1745,15 +1750,13 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setCustomDictionary: (words: string[]) => {
     if (isBrowser) localStorage.setItem("customDictionary", JSON.stringify(words));
     set({ customDictionary: words });
-    window.electronAPI
-      ?.setDictionary(words)
-      .catch((err) => {
-        logger.warn(
-          "Failed to sync dictionary to SQLite",
-          { error: (err as Error).message },
-          "settings"
-        );
-      });
+    window.electronAPI?.setDictionary(words).catch((err) => {
+      logger.warn(
+        "Failed to sync dictionary to SQLite",
+        { error: (err as Error).message },
+        "settings"
+      );
+    });
   },
 
   updateCustomDictionary: ({ add = [], remove = [] }) => {
@@ -1804,15 +1807,13 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setSnippets: (snippets: Snippet[]) => {
     if (isBrowser) localStorage.setItem("snippets", JSON.stringify(snippets));
     set({ snippets });
-    window.electronAPI
-      ?.setSnippets?.(snippets)
-      .catch((err) => {
-        logger.warn(
-          "Failed to sync snippets to SQLite",
-          { error: (err as Error).message },
-          "settings"
-        );
-      });
+    window.electronAPI?.setSnippets?.(snippets).catch((err) => {
+      logger.warn(
+        "Failed to sync snippets to SQLite",
+        { error: (err as Error).message },
+        "settings"
+      );
+    });
   },
 
   // For broadcasts from main process — DB is already authoritative, only update UI.
@@ -2816,6 +2817,24 @@ export async function initializeSettings(): Promise<void> {
     } catch (err) {
       logger.warn(
         "Failed to sync dictation key on startup",
+        { error: (err as Error).message },
+        "settings"
+      );
+    }
+
+    // Same for the meeting hotkey. It matters more here than for dictation:
+    // main seeds a default on first launch straight into .env, so without this
+    // the UI would show no meeting shortcut while one was in fact registered.
+    try {
+      if (!useSettingsStore.getState().meetingKey) {
+        const envMeetingKey = await window.electronAPI.getMeetingKey?.();
+        if (envMeetingKey) {
+          createStringSetter("meetingKey")(envMeetingKey);
+        }
+      }
+    } catch (err) {
+      logger.warn(
+        "Failed to sync meeting key on startup",
         { error: (err as Error).message },
         "settings"
       );

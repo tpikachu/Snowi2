@@ -128,10 +128,7 @@ async function executeLocalSearch(
     // something in the middle and the agent would be shown the beginning.
     content:
       note.matched_snippet?.trim() ||
-      (note.enhanced_content || note.content || note.transcript || "").slice(
-        0,
-        MAX_CONTENT_LENGTH
-      ),
+      (note.enhanced_content || note.content || note.transcript || "").slice(0, MAX_CONTENT_LENGTH),
   }));
 
   return {
@@ -140,4 +137,3 @@ async function executeLocalSearch(
     displayText: summaryText(results.length, query, space, semantic),
   };
 }
-

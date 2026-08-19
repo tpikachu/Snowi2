@@ -1459,6 +1459,8 @@ declare global {
       ) => Promise<{ success: boolean; error?: string; action?: string; copyCommand?: string }>;
       // Dictation key persistence (file-based for reliable startup)
       getDictationKey?: () => Promise<string | null>;
+      /** The meeting hotkey as main knows it, including the seeded default. */
+      getMeetingKey?: () => Promise<string>;
       getActiveDictationKey?: () => Promise<string>;
       getEffectiveDefaultHotkey?: () => Promise<string>;
       saveDictationKey?: (key: string) => Promise<void>;
