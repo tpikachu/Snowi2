@@ -27,16 +27,31 @@ jobs:
           node-version-file: .nvmrc
       - name: Validate release inputs
         env:
+          GOOGLE_CALENDAR_CLIENT_ID: ${{ secrets.GOOGLE_CALENDAR_CLIENT_ID }}
           MICROSOFT_CALENDAR_CLIENT_ID: ${{ secrets.MICROSOFT_CALENDAR_CLIENT_ID }}
         run: |
+          set -uo pipefail
+
+          # The only hard gate. Installers built from a mismatched version claim
+          # to be a release they are not, and no later step can correct that.
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           if [ "$RELEASE_TAG" != "v$PACKAGE_VERSION" ]; then
-            echo "::error::Release tag $RELEASE_TAG does not match package version v$PACKAGE_VERSION"
+            echo "::error title=Version mismatch::Release tag $RELEASE_TAG does not match package version v$PACKAGE_VERSION"
             exit 1
           fi
-          if [ -z "$MICROSOFT_CALENDAR_CLIENT_ID" ]; then
-            echo "::error::MICROSOFT_CALENDAR_CLIENT_ID is required for release builds"
-            exit 1
+
+          # Calendar client ids are per-integration credentials, not build
+          # requirements. Without one, that provider's Connect button reports it
+          # is not configured (microsoftCalendarOAuth.js fails fast rather than
+          # opening a browser on a broken URL) and every other feature is
+          # untouched. A missing id should cost the release one integration, not
+          # the release.
+          missing=""
+          [ -n "${GOOGLE_CALENDAR_CLIENT_ID:-}" ] || missing="$missing Google"
+          [ -n "${MICROSOFT_CALENDAR_CLIENT_ID:-}" ] || missing="$missing Microsoft"
+          if [ -n "$missing" ]; then
+            echo "::warning title=Calendar integrations disabled::No OAuth client id configured for:$missing. Those providers cannot be connected in these builds."
+            echo "⚠️ Calendar integrations unavailable in this build:$missing — no OAuth client id configured. Apple Calendar (macOS) is unaffected; it uses EventKit, not OAuth." >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Install dependencies
         run: npm ci --ignore-scripts
