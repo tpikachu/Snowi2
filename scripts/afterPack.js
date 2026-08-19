@@ -7,7 +7,7 @@
 // 1. Strips non-target platform/arch binaries from onnxruntime-node
 //    (saves 150–180 MB per build).
 // 2. Wraps the Linux binary in a shell script that forces XWayland, reads
-//    user flags from ~/.config/snowi-flags.conf, and falls back to
+//    user flags from ~/.config/snowy-flags.conf, and falls back to
 //    --no-sandbox where the Chromium sandbox cannot work (AppImage/tar.gz
 //    on distros that restrict unprivileged user namespaces).
 // 3. Fails the build if required binaries (ffmpeg-static, ps-list vendor exe,

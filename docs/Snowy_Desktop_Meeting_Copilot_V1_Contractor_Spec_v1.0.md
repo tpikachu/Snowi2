@@ -1,12 +1,12 @@
-# Snowi Desktop Meeting Copilot V1
+# Snowy Desktop Meeting Copilot V1
 
 **Product, UX, Architecture, Security and Contractor Implementation Specification**  
 Version: 1.0  
 Status: Approved implementation baseline  
 Date: 5 August 2026  
-Audience: External desktop application contractor, Snowi product and engineering reviewers
+Audience: External desktop application contractor, Snowy product and engineering reviewers
 
-> This specification deliberately excludes Snowi authentication, cloud synchronization, OpenClaw integration and internal Snowi infrastructure. V1 is a self-contained local desktop product. Interfaces are designed so V2 and V3 can be added without replacing the V1 capture, intelligence or storage pipeline.
+> This specification deliberately excludes Snowy authentication, cloud synchronization, OpenClaw integration and internal Snowy infrastructure. V1 is a self-contained local desktop product. Interfaces are designed so V2 and V3 can be added without replacing the V1 capture, intelligence or storage pipeline.
 
 ## 1. Normative language
 
@@ -18,7 +18,7 @@ The terms **MUST** and **MUST NOT** are release requirements. **SHOULD** is stro
 
 V1 is a meetings-first, local-first, real-time desktop copilot. It listens only after explicit user action, transcribes microphone and system audio, understands the meeting as it progresses, privately answers questions during the meeting, and creates an encrypted local meeting record with summary, decisions, action items and structured memory objects.
 
-V1 has no Snowi account, Snowi authentication, cloud upload, bot connection or OpenClaw dependency.
+V1 has no Snowy account, Snowy authentication, cloud upload, bot connection or OpenClaw dependency.
 
 ### 2.2 Technology decision
 
@@ -37,13 +37,13 @@ The choice is conditional on the Gate 0 checks in Section 25. If the pinned Open
 
 The contractor MUST:
 
-- Fork one exact audited OpenWhispr commit into a Snowi-controlled repository.
+- Fork one exact audited OpenWhispr commit into a Snowy-controlled repository.
 - Record the source commit, release, license and copied native binaries in `UPSTREAM.md`.
 - Retain the MIT license and required third-party notices.
 - Generate an SBOM for each release.
 - Never automatically merge or rebase from upstream `main`.
 - Import upstream changes only through reviewed, testable pull requests.
-- Remove upstream branding, update URLs, cloud endpoints, subscription code and analytics before the first Snowi build.
+- Remove upstream branding, update URLs, cloud endpoints, subscription code and analytics before the first Snowy build.
 
 ## 3. Product objective
 
@@ -53,7 +53,7 @@ A user may attend 10–20 meetings per day. Important decisions, commitments and
 
 ### 3.2 V1 promise
 
-While a meeting is active, Snowi privately helps the user understand what is being discussed and answer questions about the conversation. When the meeting ends, Snowi produces useful notes and actions that remain encrypted on the user’s computer.
+While a meeting is active, Snowy privately helps the user understand what is being discussed and answer questions about the conversation. When the meeting ends, Snowy produces useful notes and actions that remain encrypted on the user’s computer.
 
 ### 3.3 Primary jobs
 
@@ -88,7 +88,7 @@ While a meeting is active, Snowi privately helps the user understand what is bei
 
 ### 4.2 Explicitly out of scope
 
-- Snowi login, account or device authentication.
+- Snowy login, account or device authentication.
 - Cloud synchronization or backup.
 - OpenClaw or Telegram integration.
 - Bot participation in Zoom, Meet or Teams.
@@ -106,7 +106,7 @@ While a meeting is active, Snowi privately helps the user understand what is bei
 ## 5. Product principles
 
 1. **Explicit capture:** recording starts only through a deliberate user action.
-2. **Visible state:** the user can always tell whether Snowi is recording, paused or processing.
+2. **Visible state:** the user can always tell whether Snowy is recording, paused or processing.
 3. **Local authority:** the local encrypted meeting artifact is the V1 source of truth.
 4. **Evidence first:** answers, decisions and memory objects link to transcript timestamps.
 5. **No silent failure:** missing system audio, revoked permission and dropped devices are shown immediately.
@@ -130,7 +130,7 @@ The contractor MUST test on physical macOS and Windows hardware. Virtual machine
 
 ```mermaid
 flowchart TD
-    A[Launch Snowi Desktop] --> B{First run?}
+    A[Launch Snowy Desktop] --> B{First run?}
     B -- Yes --> C[Privacy explanation and permissions]
     C --> D[Select transcription and AI providers]
     B -- No --> E[Meeting library]
@@ -138,7 +138,7 @@ flowchart TD
     E --> F[Start meeting]
     F --> G[Preflight: mic, system audio, language, consent]
     G --> H[Recording and live transcription]
-    H --> I[Ask Snowi during meeting]
+    H --> I[Ask Snowy during meeting]
     I --> H
     H --> J{Pause?}
     J -- Yes --> K[Capture stops; context frozen]
@@ -156,11 +156,11 @@ flowchart TD
 
 The first screen MUST explain:
 
-- Snowi records only when the user starts a meeting.
+- Snowy records only when the user starts a meeting.
 - V1 stores meeting content locally and encrypted.
 - Local transcription keeps raw audio on the device.
 - If the user selects a cloud AI provider, selected transcript context is sent directly to that provider.
-- Snowi does not receive the provider key or meeting content in V1.
+- Snowy does not receive the provider key or meeting content in V1.
 - The user is responsible for following applicable recording and participant-consent requirements.
 
 The application MUST require affirmative acknowledgement before requesting audio permissions.
@@ -604,14 +604,14 @@ The finalized meeting artifact is immutable. User edits to actions or labels are
     "transcription_model": "model-id",
     "assistant_provider": "provider-id",
     "assistant_model": "model-id",
-    "prompt_version": "snowi-meeting-1"
+    "prompt_version": "snowy-meeting-1"
   },
   "created_at": "2026-08-05T10:17:00Z",
   "content_sha256": "hex-sha256"
 }
 ```
 
-`installation_id` is a random local identifier. It is not a Snowi account or device credential. V3 may map it to an authenticated device without changing historic artifacts.
+`installation_id` is a random local identifier. It is not a Snowy account or device credential. V3 may map it to an authenticated device without changing historic artifacts.
 
 ### 18.3 Canonicalization
 
@@ -679,7 +679,7 @@ The user can:
 
 Edits MUST create an append-only revision event containing old value, new value and timestamp. V1 does not require user identity because there is only one local user context.
 
-Snowi MUST NOT automatically send, schedule or execute an action in V1.
+Snowy MUST NOT automatically send, schedule or execute an action in V1.
 
 ## 21. Local encrypted storage
 
@@ -733,7 +733,7 @@ V1 MUST NOT build a plaintext SQLite FTS index over meeting content.
 Use the OS-private application-data directory:
 
 ```text
-Snowi/
+Snowy/
   database/app.sqlite
   meetings/<meeting-id>/
     manifest.enc
@@ -793,13 +793,13 @@ V1 network requests are limited to:
 
 - User-selected approved AI provider.
 - Approved model-download hosts.
-- Snowi-controlled signed application-update endpoint, if enabled.
+- Snowy-controlled signed application-update endpoint, if enabled.
 
 V1 MUST NOT contact:
 
 - OpenWhispr Cloud.
 - OpenWhispr analytics/authentication/subscription endpoints.
-- Snowi APIs other than an optional update endpoint.
+- Snowy APIs other than an optional update endpoint.
 - Arbitrary user-entered API hosts in the first release.
 
 Custom OpenAI-compatible endpoints MAY be added after an SSRF and certificate-validation design review.
@@ -1011,7 +1011,7 @@ V2 MUST remain opt-in and must not silently change V1 meeting recording behavior
 
 ## 29. Future V3 compatibility
 
-V3 may add Snowi authentication, encrypted synchronization, OpenClaw ingestion and Telegram recall.
+V3 may add Snowy authentication, encrypted synchronization, OpenClaw ingestion and Telegram recall.
 
 V1 MUST prepare for V3 by:
 
@@ -1023,7 +1023,7 @@ V1 MUST prepare for V3 by:
 - Providing an inactive `FutureSyncAdapter` interface.
 - Separating encrypted local storage from future transport code.
 
-V1 MUST NOT implement placeholder Snowi tokens, hidden cloud calls or hard-coded bot identifiers.
+V1 MUST NOT implement placeholder Snowy tokens, hidden cloud calls or hard-coded bot identifiers.
 
 Proposed future interface only:
 
@@ -1119,10 +1119,10 @@ The contractor MUST provide a results table containing:
 - Prove 90-minute dual-source capture.
 - Confirm go/no-go.
 
-### Milestone 1 — Reduced Snowi shell and secure foundation, 1–2 weeks
+### Milestone 1 — Reduced Snowy shell and secure foundation, 1–2 weeks
 
 - Remove upstream cloud, auth, subscription, telemetry and unrelated features.
-- Apply Snowi branding and app identifiers.
+- Apply Snowy branding and app identifiers.
 - Harden Electron windows and IPC.
 - Implement secure key service and encrypted meeting store.
 - Establish CI and signed development builds.
@@ -1162,7 +1162,7 @@ Expected V1 range: approximately 9–12 weeks for one experienced contractor, de
 
 The contractor MUST deliver:
 
-- Snowi-controlled source repository with clean history.
+- Snowy-controlled source repository with clean history.
 - `UPSTREAM.md`, `THIRD_PARTY_NOTICES.md` and SBOM.
 - Reproducible macOS and Windows build instructions.
 - CI workflows with tests and security scanning.
@@ -1192,7 +1192,7 @@ V1 is complete only when:
 - No High/Critical security issue remains unmitigated.
 - Installers are signed and macOS is notarized.
 - The immutable artifact and revision contracts are documented and tested.
-- V1 works entirely without Snowi authentication or cloud availability.
+- V1 works entirely without Snowy authentication or cloud availability.
 
 ## 35. Defaults requiring Product approval before release
 
@@ -1212,4 +1212,4 @@ Implementation may start with the defaults below. Product must approve them befo
 
 ---
 
-**Implementation boundary:** The contractor owns the V1 local desktop application only. No Snowi production access, internal bot architecture, cloud credentials or OpenClaw access is required or permitted.
+**Implementation boundary:** The contractor owns the V1 local desktop application only. No Snowy production access, internal bot architecture, cloud credentials or OpenClaw access is required or permitted.

@@ -5,7 +5,7 @@ const os = require("node:os");
 const path = require("node:path");
 const Module = require("node:module");
 
-let userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-spaces-db-"));
+let userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-spaces-db-"));
 const originalLoad = Module._load;
 
 Module._load = function patchedLoad(request, parent, isMain) {
@@ -34,7 +34,7 @@ function isNativeBindingUnavailable(error) {
 }
 
 function createDb(t) {
-  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-spaces-db-"));
+  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-spaces-db-"));
   try {
     const BetterSqlite = require("better-sqlite3");
     const probe = new BetterSqlite(path.join(userDataDir, "probe.db"));
@@ -1452,7 +1452,7 @@ test("getFolderNoteCounts attributes space-root notes per space", (t) => {
 });
 
 test("folders rebuild succeeds on a legacy DB with notes referencing folders", (t) => {
-  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-spaces-db-"));
+  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-spaces-db-"));
   let legacy;
   try {
     const BetterSqlite = require("better-sqlite3");

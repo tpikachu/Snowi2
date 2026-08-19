@@ -62,7 +62,7 @@ test("a rejected automatic meeting start restores manager mode before clearing",
 
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-meeting-start-recovery-test-",
+    cachePrefix: "snowy-meeting-start-recovery-test-",
   });
 
   const { handleMeetingRecordingRequest } = await vite.ssrLoadModule(

@@ -21,14 +21,14 @@ function getSafeTempDir() {
   }
 
   const fallbackBase = process.env.ProgramData || "C:\\ProgramData";
-  const fallback = path.join(fallbackBase, "Snowi", "temp");
+  const fallback = path.join(fallbackBase, "Snowy", "temp");
 
   try {
     fs.mkdirSync(fallback, { recursive: true });
     cachedSafeTempDir = fallback;
     return fallback;
   } catch {
-    const rootFallback = path.join(process.env.SystemDrive || "C:", "Snowi", "temp");
+    const rootFallback = path.join(process.env.SystemDrive || "C:", "Snowy", "temp");
     try {
       fs.mkdirSync(rootFallback, { recursive: true });
       cachedSafeTempDir = rootFallback;

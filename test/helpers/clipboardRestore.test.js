@@ -207,7 +207,7 @@ test("pasteMacOS restores clipboard after the short macOS delay on successful fa
   const originalClipboard = { type: "text", data: "previous clipboard" };
   let restoreCall;
 
-  manager.resolveFastPasteBinary = () => "/tmp/snowi-fast-paste";
+  manager.resolveFastPasteBinary = () => "/tmp/snowy-fast-paste";
   manager._restoreClipboardAfterDelay = (original, options) => {
     restoreCall = { original, options };
     return Promise.resolve();
@@ -220,7 +220,7 @@ test("pasteMacOS restores clipboard after the short macOS delay on successful fa
   await result.restoreComplete;
 
   assert.equal(spawnCalls.length, 1);
-  assert.equal(spawnCalls[0].command, "/tmp/snowi-fast-paste");
+  assert.equal(spawnCalls[0].command, "/tmp/snowy-fast-paste");
   assert.equal(restoreCall.original, originalClipboard);
   assert.deepEqual(restoreCall.options, {
     delayMs: 450,

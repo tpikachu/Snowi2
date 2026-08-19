@@ -8,10 +8,10 @@ Enable verbose logging to diagnose issues like "no audio detected" or transcript
 
 ```bash
 # macOS
-/Applications/Snowi.app/Contents/MacOS/Snowi --log-level=debug
+/Applications/Snowy.app/Contents/MacOS/Snowy --log-level=debug
 
 # Windows
-Snowi.exe --log-level=debug
+Snowy.exe --log-level=debug
 ```
 
 ### Option 2: Environment File
@@ -19,20 +19,20 @@ Snowi.exe --log-level=debug
 Add to your `.env` file and restart:
 
 ```
-SNOWI_LOG_LEVEL=debug
+SNOWY_LOG_LEVEL=debug
 ```
 
 **Env file locations:**
 
-- macOS: `~/Library/Application Support/Snowi/.env`
-- Windows: `%APPDATA%\Snowi\.env`
-- Linux: `~/.config/Snowi/.env`
+- macOS: `~/Library/Application Support/Snowy/.env`
+- Windows: `%APPDATA%\Snowy\.env`
+- Linux: `~/.config/Snowy/.env`
 
 ## Log File Locations
 
-- **macOS**: `~/Library/Application Support/Snowi/logs/debug-*.log`
-- **Windows**: `%APPDATA%\Snowi\logs\debug-*.log`
-- **Linux**: `~/.config/Snowi/logs/debug-*.log`
+- **macOS**: `~/Library/Application Support/Snowy/logs/debug-*.log`
+- **Windows**: `%APPDATA%\Snowy\logs\debug-*.log`
+- **Linux**: `~/.config/Snowy/logs/debug-*.log`
 
 ## What Gets Logged
 
@@ -88,4 +88,4 @@ When reporting issues:
 Debug mode is off by default. To ensure it's disabled:
 
 - Remove `--log-level=debug` from command
-- Remove `SNOWI_LOG_LEVEL` from `.env`
+- Remove `SNOWY_LOG_LEVEL` from `.env`

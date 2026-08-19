@@ -16,8 +16,8 @@ function ensureDir(dir) {
 
 function getAsciiSafeCacheRoot() {
   const envOverride =
-    process.env.SNOWI_CACHE_ROOT ||
-    (process.env.XDG_CACHE_HOME ? path.join(process.env.XDG_CACHE_HOME, "snowi") : null);
+    process.env.SNOWY_CACHE_ROOT ||
+    (process.env.XDG_CACHE_HOME ? path.join(process.env.XDG_CACHE_HOME, "snowy") : null);
   if (envOverride && !pathHasProblematicChars(envOverride)) {
     try {
       return ensureDir(envOverride);
@@ -27,11 +27,11 @@ function getAsciiSafeCacheRoot() {
   }
 
   const fallbackBase = process.env.ProgramData || "C:\\ProgramData";
-  const fallback = path.join(fallbackBase, "Snowi", "cache");
+  const fallback = path.join(fallbackBase, "Snowy", "cache");
   try {
     return ensureDir(fallback);
   } catch {
-    const rootFallback = path.join(process.env.SystemDrive || "C:", "Snowi", "cache");
+    const rootFallback = path.join(process.env.SystemDrive || "C:", "Snowy", "cache");
     try {
       return ensureDir(rootFallback);
     } catch {
@@ -74,7 +74,7 @@ function migrateLegacyModelDirs(legacyRoot, safeRoot) {
 
 function getCacheRoot() {
   const homeDir = app?.getPath?.("home") || os.homedir();
-  const homeCache = path.join(homeDir, ".cache", "snowi");
+  const homeCache = path.join(homeDir, ".cache", "snowy");
 
   if (process.platform !== "win32" || !pathHasProblematicChars(homeCache)) {
     return homeCache;

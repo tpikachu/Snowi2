@@ -31,7 +31,7 @@
 **macOS:**
 
 1. Open System Settings → Privacy & Security → Microphone
-2. Ensure Snowi is listed and enabled
+2. Ensure Snowy is listed and enabled
 3. If not listed, click "Grant Access" in the app to trigger the permission prompt
 4. You can also click "Open Microphone Privacy" button in the app
 
@@ -39,7 +39,7 @@
 
 1. Open Settings → Privacy → Microphone
 2. Ensure "Allow apps to access your microphone" is ON
-3. Ensure Snowi is listed and enabled
+3. Ensure Snowy is listed and enabled
 4. You can also click "Open Privacy Settings" button in the app
 
 **Linux:**
@@ -99,10 +99,10 @@
 3. If bundled binary fails, install via package manager:
    - macOS: `brew install whisper-cpp`
    - Linux: Build from source at https://github.com/ggml-org/whisper.cpp
-4. Clear model cache: `rm -rf ~/.cache/snowi/whisper-models`
+4. Clear model cache: `rm -rf ~/.cache/snowy/whisper-models`
 5. Try cloud transcription as fallback
 
-**GPU acceleration (CUDA / Vulkan):** If the GPU-accelerated whisper-server crashes at startup (unsupported GPU, out of VRAM), Snowi automatically restarts it on CPU, retries the same request, and shows a "using CPU instead" notice — the dictation still completes. GPU acceleration can be toggled off from the GPU card in the transcription model picker.
+**GPU acceleration (CUDA / Vulkan):** If the GPU-accelerated whisper-server crashes at startup (unsupported GPU, out of VRAM), Snowy automatically restarts it on CPU, retries the same request, and shows a "using CPU instead" notice — the dictation still completes. GPU acceleration can be toggled off from the GPU card in the transcription model picker.
 
 ### Wayland Clipboard Issues (Linux)
 
@@ -117,9 +117,9 @@
    - Fedora/RHEL: `sudo dnf install wl-clipboard`
    - Arch: `sudo pacman -S wl-clipboard`
 2. Ensure a paste tool is installed (`xdotool` recommended, or `wtype` for Sway/Hyprland, or `ydotool` with daemon)
-3. Restart Snowi after installing
+3. Restart Snowy after installing
 
-Snowi tries clipboard methods in order: `wl-copy` (most reliable) → renderer `navigator.clipboard` → X11 fallback.
+Snowy tries clipboard methods in order: `wl-copy` (most reliable) → renderer `navigator.clipboard` → X11 fallback.
 
 ### Linux System Audio PipeWire Issues
 
@@ -133,8 +133,8 @@ Snowi tries clipboard methods in order: `wl-copy` (most reliable) → renderer `
    - Arch: `sudo pacman -S pipewire`
 2. Make sure the PipeWire user service is running for the current session
 3. Sign out and back in after installing or updating PipeWire packages
-4. Restart Snowi and start meeting transcription again
-5. No screen-share chooser is expected for Linux system audio; Snowi captures the default sink monitor directly through PipeWire
+4. Restart Snowy and start meeting transcription again
+5. No screen-share chooser is expected for Linux system audio; Snowy captures the default sink monitor directly through PipeWire
 
 ### Meeting Transcription Issues
 
@@ -142,14 +142,14 @@ Snowi tries clipboard methods in order: `wl-copy` (most reliable) → renderer `
 
 **macOS:**
 
-1. Grant Screen Recording permission: System Settings → Privacy & Security → Screen Recording → enable Snowi
+1. Grant Screen Recording permission: System Settings → Privacy & Security → Screen Recording → enable Snowy
 2. Restart the app after granting permission
 3. Ensure Google Calendar is connected in Integrations
 
 **Windows:**
 
 1. System audio is captured by `windows-system-audio-helper.exe` (WASAPI process loopback), which hears every app on every output device — no permission prompt is needed
-2. If the helper is missing or fails (requires Windows 10 2004+), Snowi automatically falls back to Chromium loopback, which only hears the _default_ output device — make sure your meeting app plays through the default device in that case
+2. If the helper is missing or fails (requires Windows 10 2004+), Snowy automatically falls back to Chromium loopback, which only hears the _default_ output device — make sure your meeting app plays through the default device in that case
 3. If transcription shows "Continuing with microphone only", system audio capture failed entirely; check debug logs for `windows-system-audio-helper` entries
 
 **All Platforms:**
@@ -175,36 +175,36 @@ Snowi tries clipboard methods in order: `wl-copy` (most reliable) → renderer `
 
 **No window appears (process running in Task Manager but invisible):**
 
-1. Check the system tray (click the `^` caret) for the Snowi icon
-2. Run with debug logging: `Snowi.exe --log-level=debug`
-3. Try disabling GPU acceleration: `Snowi.exe --disable-gpu`
+1. Check the system tray (click the `^` caret) for the Snowy icon
+2. Run with debug logging: `Snowy.exe --log-level=debug`
+3. Try disabling GPU acceleration: `Snowy.exe --disable-gpu`
 
 **Antivirus / Windows Defender blocking binaries:**
 
-whisper.cpp and FFmpeg may be quarantined silently. Add Snowi to exclusions: Settings → Virus & threat protection → Exclusions.
+whisper.cpp and FFmpeg may be quarantined silently. Add Snowy to exclusions: Settings → Virus & threat protection → Exclusions.
 
 **Permission errors:**
 
-Right-click Snowi → Run as administrator (or set permanently in Properties → Compatibility).
+Right-click Snowy → Run as administrator (or set permanently in Properties → Compatibility).
 
 **Firewall blocking cloud mode:**
 
-Allow Snowi through Windows Firewall when using cloud transcription providers.
+Allow Snowy through Windows Firewall when using cloud transcription providers.
 
 **Firewall prompt for sherpa-onnx (local Parakeet transcription):**
 
-Windows may ask whether to allow `sherpa-onnx-ws-win32-x64` on public and private networks the first time local Parakeet transcription starts. The bundled sherpa-onnx server only serves Snowi itself over `127.0.0.1`, but it has no loopback-only bind option, so Windows sees it listening on all interfaces. Either choice is safe — Windows never filters loopback traffic, so transcription works even if you click Cancel. All-users installs register a firewall rule that blocks outside access and suppresses the prompt entirely; per-user and portable builds may still see it once.
+Windows may ask whether to allow `sherpa-onnx-ws-win32-x64` on public and private networks the first time local Parakeet transcription starts. The bundled sherpa-onnx server only serves Snowy itself over `127.0.0.1`, but it has no loopback-only bind option, so Windows sees it listening on all interfaces. Either choice is safe — Windows never filters loopback traffic, so transcription works even if you click Cancel. All-users installs register a firewall rule that blocks outside access and suppresses the prompt entirely; per-user and portable builds may still see it once.
 
 **Complete reset (after uninstalling):**
 
 ```batch
-rd /s /q "%APPDATA%\Snowi"
-rd /s /q "%LOCALAPPDATA%\Snowi"
+rd /s /q "%APPDATA%\Snowy"
+rd /s /q "%LOCALAPPDATA%\Snowy"
 ```
 
 Then reinstall.
 
-**Logs location:** `%APPDATA%\Snowi\logs\`
+**Logs location:** `%APPDATA%\Snowy\logs\`
 
 ## Enable Debug Mode
 
@@ -216,6 +216,6 @@ For detailed diagnostics, see [DEBUG.md](DEBUG.md).
 2. Collect diagnostic output from commands above
 3. Report the problem internally to the team with:
    - OS version
-   - Snowi version
+   - Snowy version
    - Relevant log sections
    - Steps to reproduce

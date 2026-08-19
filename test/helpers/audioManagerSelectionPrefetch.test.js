@@ -49,7 +49,7 @@ function countingCapture(window) {
 
 test("a prefetched selection is reused instead of read again", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-sel-prefetch-test-",
+    cachePrefix: "snowy-sel-prefetch-test-",
     settingsKey: "__selPrefetchSettings",
   });
   const calls = countingCapture(window);
@@ -65,7 +65,7 @@ test("a prefetched selection is reused instead of read again", async (t) => {
 
 test("consuming without a prefetch falls back to reading on demand", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-sel-ondemand-test-",
+    cachePrefix: "snowy-sel-ondemand-test-",
     settingsKey: "__selOnDemandSettings",
   });
   const calls = countingCapture(window);
@@ -78,7 +78,7 @@ test("consuming without a prefetch falls back to reading on demand", async (t) =
 
 test("a prefetch is single-use", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-sel-singleuse-test-",
+    cachePrefix: "snowy-sel-singleuse-test-",
     settingsKey: "__selSingleUseSettings",
   });
   const calls = countingCapture(window);
@@ -96,7 +96,7 @@ test("a prefetch is single-use", async (t) => {
 // earlier app would otherwise be edited in place by the next command.
 test("starting a recording discards a capture left over from the previous one", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-sel-stale-test-",
+    cachePrefix: "snowy-sel-stale-test-",
     settingsKey: "__selStaleSettings",
   });
   const calls = countingCapture(window);
@@ -115,7 +115,7 @@ test("starting a recording discards a capture left over from the previous one", 
 
 test("an agent command consumes the prefetch rather than re-reading the selection", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-sel-command-test-",
+    cachePrefix: "snowy-sel-command-test-",
     settingsKey: "__selCommandSettings",
   });
   const calls = countingCapture(window);
@@ -137,7 +137,7 @@ test("an agent command consumes the prefetch rather than re-reading the selectio
 
 test("a rejected prefetch still surfaces its error to the awaiting command", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-sel-reject-test-",
+    cachePrefix: "snowy-sel-reject-test-",
     settingsKey: "__selRejectSettings",
   });
   window.electronAPI.captureSelectedText = async () => {

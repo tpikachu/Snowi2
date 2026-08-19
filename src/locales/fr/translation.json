@@ -4,7 +4,7 @@
       "sectionTitle": "Langue",
       "sectionDescription": "Configurez séparément la langue de l'interface et de la transcription",
       "uiLabel": "Langue de l'interface",
-      "uiDescription": "Choisissez la langue utilisée dans l'interface Snowi",
+      "uiDescription": "Choisissez la langue utilisée dans l'interface Snowy",
       "transcriptionLabel": "Langue de transcription",
       "transcriptionDescription": "Choisissez la langue que vous parlez pour une transcription plus précise",
       "chineseScriptLabel": "Écriture chinoise (dictée)",
@@ -39,12 +39,12 @@
     },
     "openControlPanel": "Ouvrir le panneau de contrôle",
     "hideControlPanel": "Masquer le panneau de contrôle",
-    "quit": "Quitter Snowi",
-    "tooltip": "Snowi - Dictée vocale"
+    "quit": "Quitter Snowy",
+    "tooltip": "Snowy - Dictée vocale"
   },
   "menu": {
-    "appLabel": "Snowi",
-    "quit": "Quitter Snowi",
+    "appLabel": "Snowy",
+    "quit": "Quitter Snowy",
     "speech": "Parole",
     "settings": "Réglages…",
     "help": "Aide",
@@ -63,8 +63,8 @@
       "message": "Impossible d'ouvrir le lien dans votre navigateur :\n{{url}}\n\nErreur : {{error}}"
     },
     "loadFailure": {
-      "title": "Échec du chargement de Snowi",
-      "message": "Snowi n'a pas pu charger son interface.",
+      "title": "Échec du chargement de Snowy",
+      "message": "Snowy n'a pas pu charger son interface.",
       "detail": {
         "window": "Fenêtre : {{windowName}}",
         "error": "Erreur {{errorCode}} : {{errorDescription}}",
@@ -75,17 +75,17 @@
   },
   "startup": {
     "error": {
-      "title": "Erreur de démarrage Snowi",
+      "title": "Erreur de démarrage Snowy",
       "message": "Échec du démarrage de l'application :\n\n{{error}}\n\nVeuillez signaler ce problème."
     },
     "globeHotkey": {
       "title": "Raccourci Globe indisponible",
-      "message": "Snowi n'a pas pu activer la touche Globe.",
+      "message": "Snowy n'a pas pu activer la touche Globe.",
       "details": {
         "unknown": "Erreur inconnue lors du démarrage de l'écouteur Globe.",
         "fallback": "Le raccourci Globe restera désactivé ; les raccourcis actuels continueront de fonctionner.",
         "devHint": "Exécutez `npm run compile:globe` puis reconstruisez l'application pour régénérer le binaire.",
-        "reinstallHint": "Réinstallez Snowi ou contactez le support si le problème persiste."
+        "reinstallHint": "Réinstallez Snowy ou contactez le support si le problème persiste."
       }
     }
   },
@@ -211,14 +211,14 @@
       "accessibilityTitle": "Accessibilité",
       "accessibilityDescription": "Saisit le texte final directement dans l'application où vous êtes : documents, e-mail, chat.",
       "testAndGrant": "Tester et autoriser",
-      "requiredForApp": "Nécessaire pour le bon fonctionnement de Snowi",
+      "requiredForApp": "Nécessaire pour le bon fonctionnement de Snowy",
       "microphoneRequired": "Accès microphone requis",
       "openSystemSettings": "Ouvrir les Réglages Système",
       "systemAudioTitle": "Audio Système",
       "systemAudioDescription": "Permet à l'enregistreur de réunion d'entendre vos interlocuteurs : réunions, cours, podcasts. Activable plus tard dans les Réglages.",
       "optional": "Facultatif",
       "recommended": "Recommandé",
-      "accessibilityTroubleshooting": "Dans Réglages Système → Accessibilité, désactivez le bouton de Snowi puis réactivez-le. Si Snowi n'apparaît pas du tout dans la liste, cliquez sur + et ajoutez-le depuis le dossier Applications."
+      "accessibilityTroubleshooting": "Dans Réglages Système → Accessibilité, désactivez le bouton de Snowy puis réactivez-le. Si Snowy n'apparaît pas du tout dans la liste, cliquez sur + et ajoutez-le depuis le dossier Applications."
     },
     "transcription": {
       "title": "Configuration de la transcription",
@@ -254,7 +254,7 @@
       "optionalNote": "Facultatif — vous pouvez le définir ou le modifier à tout moment dans les réglages."
     },
     "connectivity": {
-      "title": "Impossible d'atteindre Snowi Cloud depuis ce réseau",
+      "title": "Impossible d'atteindre Snowy Cloud depuis ce réseau",
       "body": "{{cause}} Vous pouvez basculer sur le moteur local, ou continuer et réessayer plus tard.",
       "useLocal": "Utiliser le moteur local",
       "continue": "Continuer quand même"
@@ -295,13 +295,13 @@
     "meeting": {
       "title": "Notes de réunion",
       "description": "Capturez et résumez vos réunions",
-      "autoDetect": "Snowi détecte automatiquement quand vous êtes en réunion et vous propose de démarrer des notes — rien n'est enregistré sans vous.",
+      "autoDetect": "Snowy détecte automatiquement quand vous êtes en réunion et vous propose de démarrer des notes — rien n'est enregistré sans vous.",
       "hotkeyLabel": "Raccourci réunion",
       "hotkeyHint": "Facultatif — appuyez dessus pendant une réunion pour démarrer une note instantanément."
     },
     "finish": {
       "title": "Tout est prêt",
-      "cloudDescription": "Vous êtes sur Snowi Cloud : rapide, précis, zéro conservation des données et 2 000 mots gratuits par semaine. Vous préférez tout garder sur votre appareil ? Passez au traitement local dans les Réglages.",
+      "cloudDescription": "Vous êtes sur Snowy Cloud : rapide, précis, zéro conservation des données et 2 000 mots gratuits par semaine. Vous préférez tout garder sur votre appareil ? Passez au traitement local dans les Réglages.",
       "localDescription": "Vous êtes configuré avec le traitement local ou votre propre clé. Ajustez le traitement de votre audio à tout moment dans les Réglages.",
       "cleanupNote": "Le nettoyage de texte par IA utilise des réglages par défaut raisonnables. Vous pouvez l'ajuster dans les Réglages.",
       "openSettings": "Ouvrir les Réglages",
@@ -324,7 +324,7 @@
   "streaming": {
     "errors": {
       "cloudUnreachable": {
-        "title": "Impossible d'atteindre Snowi Cloud",
+        "title": "Impossible d'atteindre Snowy Cloud",
         "generic": "La requête réseau a échoué. Vérifiez votre connexion.",
         "dnsBlocked": "Le DNS ne résout pas le domaine de votre fournisseur d'IA — un bloqueur de publicités ou un filtre le bloque peut-être.",
         "refused": "La connexion a été refusée — probablement un pare-feu ou un VPN.",
@@ -337,7 +337,7 @@
   "controlPanel": {
     "updateRequiredByOrg": {
       "title": "Mise à jour requise",
-      "description": "Votre organisation exige Snowi {{version}} ou une version plus récente. Veuillez mettre à jour l'application."
+      "description": "Votre organisation exige Snowy {{version}} ou une version plus récente. Veuillez mettre à jour l'application."
     },
     "update": {
       "readyTitle": "Mise à jour prête à installer",
@@ -345,7 +345,7 @@
       "problemTitle": "Problème pendant la mise à jour",
       "problemDescription": "Nous n'avons pas pu terminer la mise à jour. Réessayez plus tard.",
       "installTitle": "Installer la mise à jour",
-      "installDescription": "Snowi va redémarrer pour appliquer la mise à jour. Le travail en cours sera sauvegardé.",
+      "installDescription": "Snowy va redémarrer pour appliquer la mise à jour. Le travail en cours sera sauvegardé.",
       "couldNotInstallTitle": "Impossible d'installer la mise à jour",
       "couldNotInstallDescription": "Une erreur est survenue. Veuillez réessayer.",
       "couldNotDownloadTitle": "Impossible de télécharger la mise à jour",
@@ -360,7 +360,7 @@
     },
     "accessibilityMissing": {
       "title": "Autorisations d'accessibilité nécessaires",
-      "description": "Nous avons détecté que Snowi a besoin des autorisations d'accessibilité pour fonctionner correctement. Veuillez les activer ci-dessous."
+      "description": "Nous avons détecté que Snowy a besoin des autorisations d'accessibilité pour fonctionner correctement. Veuillez les activer ci-dessous."
     },
     "billing": {
       "pastDueTitle": "Nous n'avons pas pu traiter votre paiement",
@@ -426,8 +426,8 @@
       "retryTranslationMode": "Mode Traduction"
     },
     "cloudMigration": {
-      "title": "Bienvenue sur Snowi Cloud",
-      "description": "Nous avons basculé la transcription vers Snowi Cloud pour des résultats plus rapides et plus précis. Vos anciens réglages sont conservés : vous pouvez revenir en arrière à tout moment dans Paramètres.",
+      "title": "Bienvenue sur Snowy Cloud",
+      "description": "Nous avons basculé la transcription vers Snowy Cloud pour des résultats plus rapides et plus précis. Vos anciens réglages sont conservés : vous pouvez revenir en arrière à tout moment dans Paramètres.",
       "viewSettings": "Voir les paramètres"
     },
     "aiCta": {
@@ -610,7 +610,7 @@
         "description": "Une partie de l'enregistrement n'a pas pu être transcrite."
       },
       "errorDescriptions": {
-        "sessionExpired": "Votre session Snowi Cloud est indisponible. Reconnectez-vous depuis Paramètres.",
+        "sessionExpired": "Votre session Snowy Cloud est indisponible. Reconnectez-vous depuis Paramètres.",
         "offline": "Vous êtes hors ligne. La transcription cloud nécessite une connexion Internet.",
         "dailyLimitReached": "Vous avez atteint votre limite de transcription du jour. Réessayez demain ou améliorez votre forfait.",
         "providerRateLimited": "Votre fournisseur de transcription a limité la requête. Patientez un instant et réessayez.",
@@ -629,8 +629,8 @@
         "notAppliedTitle": "Modification de la sélection non appliquée",
         "changed": "Le texte sélectionné ou l’application cible a changé pendant le traitement. Rien n’a été remplacé.",
         "expired": "La modification a expiré. Sélectionnez de nouveau le texte et réessayez.",
-        "pasteFailed": "Snowi a généré la modification, mais n’a pas pu remplacer le texte sélectionné.",
-        "unavailable": "Snowi n’a pas pu lire la sélection en toute sécurité. Vérifiez les autorisations d’accessibilité ou d’automatisation.",
+        "pasteFailed": "Snowy a généré la modification, mais n’a pas pu remplacer le texte sélectionné.",
+        "unavailable": "Snowy n’a pas pu lire la sélection en toute sécurité. Vérifiez les autorisations d’accessibilité ou d’automatisation.",
         "tooLarge": "La sélection est trop grande. Sélectionnez au maximum 6 000 caractères.",
         "reasoningFailed": "L’IA n’a pas pu terminer la modification. Le texte d’origine n’a pas été modifié."
       },
@@ -728,7 +728,7 @@
       "micErrors": {
         "accessFailed": "L'accès au microphone a échoué. Veuillez réessayer.",
         "noMicrophones": "Aucun micro détecté. Connectez ou sélectionnez un micro dans {{settingsPath}}.",
-        "permissionDenied": "Autorisation refusée. Ouvrez {{privacyPath}} et autorisez Snowi.",
+        "permissionDenied": "Autorisation refusée. Ouvrez {{privacyPath}} et autorisez Snowy.",
         "couldNotStart": "Impossible de démarrer le micro sélectionné. Choisissez une entrée dans {{settingsPath}} puis relancez le test.",
         "noActiveInput": "Aucune entrée audio active trouvée. Choisissez un micro dans {{settingsPath}}.",
         "unknown": "Accès au micro échoué : {{error}}. Choisissez un autre appareil et réessayez.",
@@ -757,8 +757,8 @@
         "accessibilityNeeded": "Accordez les permissions d'accessibilité dans les paramètres système pour activer le collage automatique.",
         "windowsReady": "Windows ne demande pas de permissions spéciales pour le collage automatique. Tout est prêt !",
         "linuxReadyWithMethod": "Le collage automatique est disponible via {{method}}. Tout est prêt !",
-        "waylandClipboardMode": "Le collage automatique n'est pas disponible dans cette session Wayland. Snowi copiera le texte dans le presse-papiers et vous pourrez coller avec Ctrl+V.",
-        "optionalPasteTool": "Pour le collage automatique, installez {{tool}} :\n\n{{installCmd}}{{waylandNote}}\n\nSans cela, vous pouvez quand même utiliser Snowi : le texte sera copié dans le presse-papiers et vous pourrez coller avec Ctrl+V."
+        "waylandClipboardMode": "Le collage automatique n'est pas disponible dans cette session Wayland. Snowy copiera le texte dans le presse-papiers et vous pourrez coller avec Ctrl+V.",
+        "optionalPasteTool": "Pour le collage automatique, installez {{tool}} :\n\n{{installCmd}}{{waylandNote}}\n\nSans cela, vous pouvez quand même utiliser Snowy : le texte sera copié dans le presse-papiers et vous pourrez coller avec Ctrl+V."
       },
       "alerts": {
         "accessibilityNeeded": "Permissions d'accessibilité requises ! Veuillez les accorder dans les paramètres système."
@@ -771,7 +771,7 @@
         "defaultPasteTool": "xdotool",
         "xdotoolXwayland": "xdotool (apps XWayland)"
       },
-      "accessibilityTestText": "Test d'accessibilité Snowi",
+      "accessibilityTestText": "Test d'accessibilité Snowy",
       "warning": {
         "messages": {
           "macos": "Vérifiez les réglages Son pour choisir votre périphérique d'entrée",
@@ -841,7 +841,7 @@
       "emailRequired": "Saisissez votre e-mail professionnel pour utiliser le SSO.",
       "failed": "Échec de l’authentification unique. Veuillez réessayer.",
       "companySignInTitle": "Utiliser la connexion de votre entreprise",
-      "requiredDescription": "{{domain}} exige le SSO pour Snowi.",
+      "requiredDescription": "{{domain}} exige le SSO pour Snowy.",
       "availableDescription": "Votre compte {{domain}} est prêt pour le SSO de l'entreprise.",
       "useEmailInstead": "Utiliser plutôt l'e-mail et le mot de passe"
     },
@@ -850,10 +850,10 @@
       "continueWithApple": "Continuer avec Apple",
       "continueWithGoogle": "Continuer avec Google",
       "continueWithMicrosoft": "Continuer avec Microsoft",
-      "protocolUnavailable": "Connexion par navigateur indisponible — réenregistrez le protocole snowi:// dans les paramètres Applications par défaut du système."
+      "protocolUnavailable": "Connexion par navigateur indisponible — réenregistrez le protocole snowy:// dans les paramètres Applications par défaut du système."
     },
     "welcomeSubtitle": "Dictez n'importe où en utilisant votre voix",
-    "welcomeTitle": "Bienvenue sur Snowi",
+    "welcomeTitle": "Bienvenue sur Snowy",
     "sessionExpired": "Session expirée. Veuillez relancer le processus d'inscription."
   },
   "calendar": {
@@ -893,7 +893,7 @@
     "signInDescription": "Créez un compte ou connectez-vous pour enregistrer et transcrire vos réunions.",
     "connectCalendar": "Connectez votre calendrier",
     "connectCalendarDescription": "Associez votre Google Calendar pour voir vos prochaines réunions et enregistrer des notes automatiquement.",
-    "notABot": "Snowi enregistre via l'audio de votre système — il ne rejoint jamais vos réunions en tant que bot.",
+    "notABot": "Snowy enregistre via l'audio de votre système — il ne rejoint jamais vos réunions en tant que bot.",
     "connectCalendarButton": "Connecter le calendrier"
   },
   "cleanupPrompt": "Correction",
@@ -965,7 +965,7 @@
   },
   "apiKeysSection": {
     "title": "Clés API",
-    "description": "Créez des clés pour accéder à l'API Snowi de manière programmatique.",
+    "description": "Créez des clés pour accéder à l'API Snowy de manière programmatique.",
     "docsLink": "Docs de l'API",
     "empty": "Aucune clé API pour le moment",
     "createButton": "Créer une clé API",
@@ -1166,10 +1166,10 @@
     "recheckChecking": "Vérification...",
     "title": "Collage automatique",
     "usingMethodPrefix": "Utilisation de",
-    "waylandClipboardDescription": "Le collage automatique n'est pas disponible dans cette session Wayland. Snowi copiera le texte dans le presse-papiers et vous pourrez coller manuellement avec Ctrl+V.",
+    "waylandClipboardDescription": "Le collage automatique n'est pas disponible dans cette session Wayland. Snowy copiera le texte dans le presse-papiers et vous pourrez coller manuellement avec Ctrl+V.",
     "waylandClipboardTitle": "Mode presse-papiers sur Wayland",
     "windowsReady": "Windows prend en charge le collage automatique nativement. Aucune configuration requise !",
-    "withoutToolPrefix": "Sans cet outil, Snowi copiera le texte dans le presse-papiers. Vous pourrez ensuite coller manuellement avec Ctrl+V.",
+    "withoutToolPrefix": "Sans cet outil, Snowy copiera le texte dans le presse-papiers. Vous pourrez ensuite coller manuellement avec Ctrl+V.",
     "xwaylandAppsOnly": "le collage automatique fonctionne uniquement pour les apps XWayland"
   },
   "promptStudio": {
@@ -1219,7 +1219,7 @@
       "none": "Aucun",
       "outputLabel": "Sortie",
       "processing": "Traitement...",
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "providerLabel": "Fournisseur",
       "run": "Lancer le test",
       "customEndpoint": "Endpoint personnalisé",
@@ -1574,7 +1574,7 @@
           "price": "$0",
           "period": "pour toujours",
           "features": [
-            "## Snowi Cloud",
+            "## Snowy Cloud",
             "2 000 mots/semaine de transcription",
             "5 heures d'enregistrements de réunions/mois",
             "## Toujours gratuit",
@@ -1692,7 +1692,7 @@
         "button": "Supprimer mon compte",
         "deleting": "Suppression...",
         "title": "Supprimer votre compte ?",
-        "description": "Cela supprimera définitivement votre compte Snowi, toutes les notes synchronisées dans le cloud et toutes les données locales, y compris les transcriptions, les enregistrements audio, les modèles téléchargés, les connexions de calendrier et les paramètres. Cette action est irréversible.",
+        "description": "Cela supprimera définitivement votre compte Snowy, toutes les notes synchronisées dans le cloud et toutes les données locales, y compris les transcriptions, les enregistrements audio, les modèles téléchargés, les connexions de calendrier et les paramètres. Cette action est irréversible.",
         "confirmText": "Tout supprimer",
         "successTitle": "Compte supprimé",
         "successDescription": "Votre compte et toutes les données ont été supprimés. L'application va maintenant se recharger.",
@@ -1766,7 +1766,7 @@
       "enableTextCleanup": "Activer la correction de texte",
       "enableTextCleanupDescription": "L'IA supprime les mots de remplissage, corrige la grammaire et la ponctuation",
       "modes": {
-        "openwhispr": "Snowi Cloud",
+        "openwhispr": "Snowy Cloud",
         "providers": "Fournisseurs cloud",
         "local": "Local",
         "selfHosted": "Auto-hébergé",
@@ -1777,13 +1777,13 @@
         "selfHostedDesc": "Votre serveur sur votre réseau.",
         "enterpriseDesc": "Utilisez le compte cloud de votre organisation (AWS, Azure, GCP)."
       },
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "openwhisprCloudDescription": "Résultats fiables. Aucune configuration requise.",
       "title": "Amélioration du texte par IA",
       "toasts": {
         "switchedCloud": {
-          "description": "L'amélioration de texte utilisera le service cloud Snowi.",
-          "title": "Basculé vers Snowi Cloud"
+          "description": "L'amélioration de texte utilisera le service cloud Snowy.",
+          "title": "Basculé vers Snowy Cloud"
         },
         "switchedCustom": {
           "description": "Configurez votre propre fournisseur et clé API.",
@@ -1871,7 +1871,7 @@
       "appearance": {
         "auto": "Auto",
         "dark": "Sombre",
-        "description": "Contrôlez l'apparence de Snowi",
+        "description": "Contrôlez l'apparence de Snowy",
         "light": "Clair",
         "theme": "Thème",
         "themeDescription": "Choisissez clair, sombre ou suivre le système",
@@ -1899,8 +1899,8 @@
         "linuxPttSetupDescription": "Votre utilisateur a besoin d'accéder aux périphériques de saisie clavier.",
         "linuxPttSetupNote": "Après avoir exécuté la commande, déconnectez-vous et reconnectez-vous.",
         "hyprlandConfigWriteWarningTitle": "Les raccourcis Hyprland ne seront pas conservés",
-        "hyprlandConfigWriteWarningDescription": "Snowi ne peut pas écrire dans {{path}} ; les raccourcis ne survivront donc pas à un rechargement de la configuration Hyprland. Vérifiez que le fichier existe et qu'il est accessible en écriture.",
-        "hyprlandUnbindDescription": "Sous Hyprland, Snowi réserve le raccourci sélectionné. Tout raccourci Hyprland existant utilisant la même combinaison de touches sera supprimé quand Snowi enregistrera son raccourci."
+        "hyprlandConfigWriteWarningDescription": "Snowy ne peut pas écrire dans {{path}} ; les raccourcis ne survivront donc pas à un rechargement de la configuration Hyprland. Vérifiez que le fichier existe et qu'il est accessible en écriture.",
+        "hyprlandUnbindDescription": "Sous Hyprland, Snowy réserve le raccourci sélectionné. Tout raccourci Hyprland existant utilisant la même combinaison de touches sera supprimé quand Snowy enregistrera son raccourci."
       },
       "meetingHotkey": {
         "title": "Raccourci mode réunion",
@@ -1926,7 +1926,7 @@
       },
       "notifications": {
         "title": "Notifications",
-        "description": "Choisissez les notifications que Snowi peut afficher",
+        "description": "Choisissez les notifications que Snowy peut afficher",
         "disableAll": "Désactiver toutes les notifications",
         "disableAllDescription": "Tout couper sauf les messages d'erreur",
         "meetingDetection": "Détection de réunion",
@@ -1947,14 +1947,14 @@
       },
       "startup": {
         "launchAtLogin": "Lancer au démarrage",
-        "launchAtLoginDescription": "Lancer Snowi en arrière-plan à l'ouverture de session",
+        "launchAtLoginDescription": "Lancer Snowy en arrière-plan à l'ouverture de session",
         "title": "Démarrage",
-        "description": "Contrôlez le comportement de Snowi au lancement",
+        "description": "Contrôlez le comportement de Snowy au lancement",
         "startMinimized": "Démarrer réduit",
         "startMinimizedDescription": "Lancer sans afficher la fenêtre du panneau de contrôle",
         "needsApproval": {
           "title": "Autorisation requise dans Réglages Système",
-          "description": "macOS a enregistré Snowi comme élément d'ouverture, mais attend que vous l'autorisiez dans Éléments d'ouverture.",
+          "description": "macOS a enregistré Snowy comme élément d'ouverture, mais attend que vous l'autorisiez dans Éléments d'ouverture.",
           "action": "Ouvrir Éléments d'ouverture"
         }
       },
@@ -2000,7 +2000,7 @@
           "group": {
             "step1Title": "Ajouter votre utilisateur au groupe input",
             "step2Title": "Se déconnecter et se reconnecter",
-            "step2Desc": "Les modifications de groupe ne prennent effet qu'après une nouvelle session. Déconnectez-vous de votre bureau, reconnectez-vous et rouvrez Snowi."
+            "step2Desc": "Les modifications de groupe ne prennent effet qu'après une nouvelle session. Déconnectez-vous de votre bureau, reconnectez-vous et rouvrez Snowy."
           },
           "service": {
             "step1Title": "Créer le répertoire du service",
@@ -2024,7 +2024,7 @@
           "manualTitle": "Ajoutez ceci à votre configuration",
           "manualDesc": "Configurez-le vous-même, puis reconstruisez.",
           "flakeTitle": "Vous installez via notre flake ?",
-          "flakeDesc": "Si vous installez Snowi depuis le flake, programs.snowi.enable active ydotool, le module uinput et les appartenances aux groupes pour vous.",
+          "flakeDesc": "Si vous installez Snowy depuis le flake, programs.snowy.enable active ydotool, le module uinput et les appartenances aux groupes pour vous.",
           "rebuildNote": "Exécutez sudo nixos-rebuild switch, puis déconnectez-vous et reconnectez-vous pour que le changement de groupe et la règle /dev/uinput prennent effet. Remplacez <you> par votre nom d'utilisateur."
         }
       },
@@ -2057,7 +2057,7 @@
           },
           "installUpdate": {
             "confirmText": "Installer et redémarrer",
-            "description": "Snowi va redémarrer pour appliquer la mise à jour.",
+            "description": "Snowy va redémarrer pour appliquer la mise à jour.",
             "title": "Installer la mise à jour"
           },
           "noUpdates": {
@@ -2092,13 +2092,13 @@
     "permissions": {
       "accessibilityDescription": "Requis pour que le collage automatique fonctionne après la transcription",
       "accessibilityTitle": "Accessibilité",
-      "description": "Testez et gérez les permissions système requises pour le bon fonctionnement de Snowi",
+      "description": "Testez et gérez les permissions système requises pour le bon fonctionnement de Snowy",
       "microphoneDescription": "Capture votre voix pour la dictée et la transcription",
       "microphoneTitle": "Microphone",
       "resetAccessibility": {
-        "description": "Cela supprimera Snowi des permissions d'accessibilité. Vous devrez accorder l'accès à nouveau dans Paramètres système > Confidentialité et sécurité > Accessibilité.",
+        "description": "Cela supprimera Snowy des permissions d'accessibilité. Vous devrez accorder l'accès à nouveau dans Paramètres système > Confidentialité et sécurité > Accessibilité.",
         "label": "Réinitialiser les permissions d'accessibilité",
-        "rowDescription": "Corrigez les problèmes après une réinstallation ou une recompilation en supprimant puis en rajoutant Snowi dans les paramètres système",
+        "rowDescription": "Corrigez les problèmes après une réinstallation ou une recompilation en supprimant puis en rajoutant Snowy dans les paramètres système",
         "title": "Réinitialiser les permissions d'accessibilité"
       },
       "optional": "Facultatif",
@@ -2120,7 +2120,7 @@
       "description": "Contrôlez quelles données quittent votre appareil. Tout est désactivé par défaut.",
       "title": "Confidentialité",
       "usageAnalytics": "Analyse d'utilisation",
-      "usageAnalyticsDescription": "Aidez-nous à améliorer Snowi en partageant des métriques de performance anonymes. Nous n'envoyons jamais le contenu de vos transcriptions — uniquement des données de performance et d'erreurs.",
+      "usageAnalyticsDescription": "Aidez-nous à améliorer Snowy en partageant des métriques de performance anonymes. Nous n'envoyons jamais le contenu de vos transcriptions — uniquement des données de performance et d'erreurs.",
       "audioRetention": "Conservation de l'audio",
       "audioRetentionDescription": "Stocke les enregistrements audio localement pour la retranscription et le téléchargement. Les fichiers sont automatiquement supprimés après la période de conservation.",
       "audioRetentionDisabled": "Désactivé",
@@ -2176,9 +2176,9 @@
     "transcription": {
       "customSetup": "Configuration personnalisée",
       "customSetupDescription": "Utilisez votre propre fournisseur et clé API.",
-      "description": "Choisissez comment Snowi transcrit votre voix",
+      "description": "Choisissez comment Snowy transcrit votre voix",
       "modes": {
-        "openwhispr": "Snowi Cloud",
+        "openwhispr": "Snowy Cloud",
         "providers": "Fournisseurs cloud",
         "local": "Local",
         "selfHosted": "Auto-hébergé",
@@ -2187,13 +2187,13 @@
         "localDesc": "Modèles sur l'appareil. 100 % privé.",
         "selfHostedDesc": "Votre serveur sur votre réseau."
       },
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "openwhisprCloudDescription": "Résultats fiables. Aucune configuration requise.",
       "title": "Reconnaissance vocale",
       "toasts": {
         "switchedCloud": {
-          "description": "La transcription utilisera le service cloud Snowi.",
-          "title": "Basculé vers Snowi Cloud"
+          "description": "La transcription utilisera le service cloud Snowy.",
+          "title": "Basculé vers Snowy Cloud"
         },
         "switchedCustom": {
           "description": "Configurez votre propre fournisseur et clé API.",
@@ -2281,7 +2281,7 @@
       "apiKeyOptional": "Clé API (facultative)"
     },
     "hotkeys": {
-      "description": "Ils fonctionnent dans n'importe quelle application, que Snowi soit au premier plan ou non. Seule la dictée est attribuée par défaut.",
+      "description": "Ils fonctionnent dans n'importe quelle application, que Snowy soit au premier plan ou non. Seule la dictée est attribuée par défaut.",
       "slots": {
         "chatAgent": "Agent de discussion",
         "dictation": "Dictée",
@@ -2486,7 +2486,7 @@
     },
     "join": {
       "title": "Rejoignez votre équipe",
-      "domainTitle": "Votre équipe est déjà sur Snowi",
+      "domainTitle": "Votre équipe est déjà sur Snowy",
       "description": "Ces espaces de travail comptent quelqu'un de votre domaine e-mail.",
       "invitedDescription": "Vous avez été invité à un espace de travail.",
       "invitedBy": "Invité par {{inviter}} en tant que {{role}}",
@@ -2605,7 +2605,7 @@
     },
     "tryAgain": "Réessayer",
     "card": {
-      "brand": "Snowi",
+      "brand": "Snowy",
       "signalId": "Signal ID",
       "audioSignature": "Votre signature audio",
       "stop": "Arrêter",
@@ -2732,7 +2732,7 @@
     },
     "structureIntro": {
       "title": "Où se trouvent vos notes",
-      "description": "Snowi sépare les idées privées du travail partagé afin que les bonnes personnes voient les bonnes notes.",
+      "description": "Snowy sépare les idées privées du travail partagé afin que les bonnes personnes voient les bonnes notes.",
       "personal": {
         "title": "Espace personnel",
         "description": "Vous seul pouvez voir les dossiers et les notes qui s'y trouvent."
@@ -2830,7 +2830,7 @@
       "newFolder": "Nouveau dossier",
       "folderName": "Nom du dossier",
       "create": "Créer",
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "custom": "Personnalisé",
       "selectFolder": "Sélectionner un dossier",
       "transcriptionFailed": "Échec de la transcription",
@@ -2840,17 +2840,17 @@
       "noProviderDescription": "Ajoutez une clé API ou téléchargez un modèle local pour commencer à transcrire.",
       "noProviderAction": "Ouvrir les paramètres de transcription",
       "fileTooLarge": "Ce fichier dépasse la limite de 500 MB.",
-      "paidPlanRequired": "La transcription cloud pour les fichiers de plus de 25 Mo nécessite un abonnement payant. Les fichiers volumineux sont traités avec Snowi Cloud pour des résultats fiables et de haute qualité.",
+      "paidPlanRequired": "La transcription cloud pour les fichiers de plus de 25 Mo nécessite un abonnement payant. Les fichiers volumineux sont traités avec Snowy Cloud pour des résultats fiables et de haute qualité.",
       "largeFileNote": "Les fichiers volumineux sont découpés et transcrits en parallèle.",
       "chunkProgress": "Transcription de la partie {{completed}} sur {{total}}...",
       "byokTooLarge": "Les clés API tierces ne prennent en charge que les fichiers jusqu'à 25 Mo.",
-      "byokTooLargeDetail": "Pour les fichiers de plus de 25 Mo, Snowi Cloud gère le découpage, le traitement parallèle et le réassemblage — pour des résultats fiables sans dépendre des limites des fournisseurs tiers.",
-      "byokTooLargeNeedsAccount": "Créez un compte et passez à un abonnement payant pour transcrire des fichiers plus volumineux avec Snowi Cloud.",
-      "byokTooLargeNeedsUpgrade": "Passez à un abonnement payant pour transcrire des fichiers plus volumineux avec Snowi Cloud.",
-      "switchToCloudForLargeFiles": "Passez à Snowi Cloud pour transcrire ce fichier.",
+      "byokTooLargeDetail": "Pour les fichiers de plus de 25 Mo, Snowy Cloud gère le découpage, le traitement parallèle et le réassemblage — pour des résultats fiables sans dépendre des limites des fournisseurs tiers.",
+      "byokTooLargeNeedsAccount": "Créez un compte et passez à un abonnement payant pour transcrire des fichiers plus volumineux avec Snowy Cloud.",
+      "byokTooLargeNeedsUpgrade": "Passez à un abonnement payant pour transcrire des fichiers plus volumineux avec Snowy Cloud.",
+      "switchToCloudForLargeFiles": "Passez à Snowy Cloud pour transcrire ce fichier.",
       "createAccount": "Créer un compte",
       "upgrade": "Mettre à niveau",
-      "switchToCloud": "Snowi Cloud",
+      "switchToCloud": "Snowy Cloud",
       "orDivider": "ou",
       "urlPlaceholder": "Collez une URL YouTube ou audio",
       "urlDownloading": "Téléchargement de l'audio...",
@@ -3095,7 +3095,7 @@
     "clearTitle": "Vider le dictionnaire ?",
     "clearDescription": "Cela supprimera tous les mots de votre dictionnaire personnalisé. Cette action est irréversible.",
     "addWord": "Ajouter un mot",
-    "addPlaceholder": "Ajoutez des mots séparés par des virgules — Snowi, Supabase, John Snow, ARR",
+    "addPlaceholder": "Ajoutez des mots séparés par des virgules — Snowy, Supabase, John Snow, ARR",
     "removeWord": "Supprimer {{word}}",
     "clearAll": "Tout effacer",
     "add": "Ajouter",
@@ -3126,7 +3126,7 @@
       "duplicate": "Un snippet avec ce déclencheur existe déjà",
       "emptyTitle": "Ce que vous ne devriez pas avoir à dire",
       "emptyTitleAccent": "deux fois",
-      "emptyDescription": "Prononcez un mot déclencheur et Snowi le remplace par ce que vous avez enregistré : URL, intros, signatures, prompts.",
+      "emptyDescription": "Prononcez un mot déclencheur et Snowy le remplace par ce que vous avez enregistré : URL, intros, signatures, prompts.",
       "new": "Nouveau snippet",
       "examples": {
         "linkedinTrigger": "Mon LinkedIn",
@@ -3153,7 +3153,7 @@
     "submitBug": "Signaler un bug"
   },
   "postMigration": {
-    "title": "Bon retour sur Snowi",
+    "title": "Bon retour sur Snowy",
     "description": "Vos notes et vos paramètres ont été conservés depuis la version précédente. macOS considère toutefois cette installation comme une nouvelle app, il faudra donc accorder à nouveau quelques permissions.",
     "done": "Terminé",
     "remindLater": "Me le rappeler plus tard"
@@ -3195,7 +3195,7 @@
       "undo": "Annuler",
       "accessibilityMissing": {
         "title": "Autorisations d'accessibilité requises",
-        "description": "Snowi a besoin des autorisations d'accessibilité pour détecter votre raccourci et coller du texte. Veuillez les activer dans le Panneau de configuration."
+        "description": "Snowy a besoin des autorisations d'accessibilité pour détecter votre raccourci et coller du texte. Veuillez les activer dans le Panneau de configuration."
       },
       "gpuFallback": {
         "title": "Accélération GPU indisponible",
@@ -3240,11 +3240,11 @@
       "visionModelDescription": "Envoie les commandes incluant une capture vers un autre modèle capable de vision.",
       "permissionTitle": "Enregistrement de l'écran",
       "permissionDescription": "macOS exige l'autorisation d'enregistrement de l'écran pour capturer votre écran.",
-      "relaunchHint": "L'enregistrement d'écran a été autorisé pendant que Snowi était en cours d'exécution. Quittez et rouvrez Snowi pour commencer à capturer des captures d'écran."
+      "relaunchHint": "L'enregistrement d'écran a été autorisé pendant que Snowy était en cours d'exécution. Quittez et rouvrez Snowy pour commencer à capturer des captures d'écran."
     },
     "modes": {
-      "openwhispr": "Snowi Cloud",
-      "openwhisprDesc": "Utilisez l'agent géré par Snowi, sans clé API.",
+      "openwhispr": "Snowy Cloud",
+      "openwhisprDesc": "Utilisez l'agent géré par Snowy, sans clé API.",
       "providers": "Utilisez votre propre clé API",
       "providersDesc": "Connectez-vous à OpenAI, Anthropic, Gemini ou Groq avec votre propre clé API.",
       "local": "Local",
@@ -3269,7 +3269,7 @@
       "systemPromptDescription": "Instructions personnalisées pour l'agent",
       "systemPromptPlaceholder": "Entrez un prompt système personnalisé...",
       "modes": {
-        "openwhispr": "Snowi Cloud",
+        "openwhispr": "Snowy Cloud",
         "providers": "Fournisseurs Cloud",
         "local": "Local",
         "selfHosted": "Auto-hébergé",
@@ -3280,7 +3280,7 @@
         "selfHostedDesc": "Votre propre serveur sur votre réseau.",
         "enterpriseDesc": "Utilisez le compte cloud de votre organisation (AWS, Azure, GCP)."
       },
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "openwhisprCloudDescription": "Résultats fiables. Aucune configuration requise.",
       "customSetup": "Configuration personnalisée (BYOK)",
       "customSetupDescription": "Utiliser vos propres clés API et choisir votre modèle préféré"
@@ -3354,7 +3354,7 @@
       "disconnectConfirm": "Déconnecter {{email}} ?",
       "disconnectDescription": "Les notes de réunion ne seront plus enregistrées depuis ce calendrier.",
       "systemAudioRequired": "Autorisation Audio Système requise",
-      "systemAudioDescription": "Pour transcrire les réunions, Snowi a besoin de l'autorisation Audio Système pour capturer l'audio des autres participants. Nous n'enregistrons jamais votre écran. Vous serez dirigé vers les Réglages Système pour l'activer.",
+      "systemAudioDescription": "Pour transcrire les réunions, Snowy a besoin de l'autorisation Audio Système pour capturer l'audio des autres participants. Nous n'enregistrons jamais votre écran. Vous serez dirigé vers les Réglages Système pour l'activer.",
       "openSettings": "Ouvrir les Réglages Système",
       "connectFailed": "Échec de la connexion",
       "connectFailedDescription": "Une erreur s'est produite lors de la connexion à Google Calendar. Veuillez réessayer."
@@ -3384,10 +3384,10 @@
       "disconnectConfirm": "Déconnecter le Calendrier Apple ?",
       "disconnectDescription": "Les notes de réunion ne seront plus enregistrées depuis votre Calendrier Apple.",
       "permissionDenied": "Accès au calendrier requis",
-      "permissionDeniedDescription": "Snowi a besoin d'accéder au calendrier pour détecter les réunions. Activez Snowi dans Réglages Système, sous Confidentialité et sécurité → Calendriers.",
+      "permissionDeniedDescription": "Snowy a besoin d'accéder au calendrier pour détecter les réunions. Activez Snowy dans Réglages Système, sous Confidentialité et sécurité → Calendriers.",
       "openSettings": "Ouvrir les Réglages Système",
       "connectFailed": "Échec de la connexion",
-      "connectFailedDescription": "Une erreur s'est produite lors de la connexion à Calendar.app. Redémarrez Snowi et réessayez."
+      "connectFailedDescription": "Une erreur s'est produite lors de la connexion à Calendar.app. Redémarrez Snowy et réessayez."
     },
     "sections": {
       "calendar": "Calendrier",
@@ -3406,13 +3406,13 @@
     "mcp": {
       "title": "Apportez vos notes à vos outils d'IA",
       "description": "Discutez, recherchez et travaillez avec vos notes dans Claude, ChatGPT et Cursor.",
-      "step1": "Dans votre outil d'IA, ajoutez Snowi MCP avec l'URL publique",
+      "step1": "Dans votre outil d'IA, ajoutez Snowy MCP avec l'URL publique",
       "step2": "Créez une clé API ci-dessus avec les permissions dont vous avez besoin.",
       "step3": "Collez la clé comme en-tête Authorization pour vous connecter.",
       "learnMore": "En savoir plus",
       "viewPlans": "Voir les forfaits",
       "copyUrl": "Copier l'URL MCP",
-      "proRequired": "Passez à un plan payant pour connecter Snowi à Claude, ChatGPT et Cursor.",
+      "proRequired": "Passez à un plan payant pour connecter Snowy à Claude, ChatGPT et Cursor.",
       "copied": "Copié"
     },
     "cli": {
@@ -3426,7 +3426,7 @@
       "local": {
         "label": "Local",
         "freeBadge": "Gratuit",
-        "description": "Lisez vos notes locales directement. Aucun compte ni clé API — fonctionne tant que Snowi est ouvert."
+        "description": "Lisez vos notes locales directement. Aucun compte ni clé API — fonctionne tant que Snowy est ouvert."
       },
       "cloud": {
         "label": "Cloud",
@@ -3446,8 +3446,8 @@
       "upgrade": "Passer au supérieur"
     },
     "notABot": {
-      "title": "Snowi est un enregistreur de réunions, pas un bot",
-      "description": "Snowi capture l'audio directement depuis votre système — il ne rejoint jamais vos réunions en tant que participant. Connectez simplement votre calendrier et prenez vos notes normalement."
+      "title": "Snowy est un enregistreur de réunions, pas un bot",
+      "description": "Snowy capture l'audio directement depuis votre système — il ne rejoint jamais vos réunions en tant que participant. Connectez simplement votre calendrier et prenez vos notes normalement."
     }
   },
   "notesView": {
@@ -3496,7 +3496,7 @@
         "invitationActions": "Actions de l'invitation",
         "resendSent": "Invitation envoyée",
         "resendThrottled": "Invitation envoyée récemment. Réessayez dans une minute.",
-        "syncPrompt": "Le partage conserve une copie de cette note dans votre cloud Snowi. Vous seul pouvez la voir tant que vous n'avez pas choisi avec qui la partager.",
+        "syncPrompt": "Le partage conserve une copie de cette note dans votre cloud Snowy. Vous seul pouvez la voir tant que vous n'avez pas choisi avec qui la partager.",
         "syncAndShare": "Synchroniser la note",
         "visibility": {
           "label": "Visibilité",
@@ -3542,13 +3542,13 @@
     }
   },
   "updateNotification": {
-    "title": "Mise à jour Snowi disponible",
+    "title": "Mise à jour Snowy disponible",
     "body": "La version {{version}} est prête à télécharger",
     "cta": "Mettre à jour"
   },
   "permissionsGate": {
     "title": "Autorisations requises",
-    "description": "Snowi a besoin de quelques autorisations pour fonctionner sur cet ordinateur.",
+    "description": "Snowy a besoin de quelques autorisations pour fonctionner sur cet ordinateur.",
     "continue": "Continuer"
   },
   "embeddedChat": {

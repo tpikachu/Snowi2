@@ -79,7 +79,7 @@ const rejectFetch = (message) => () => {
 
 test("a failed cloud transcription falls back to local whisper when allowed", async (t) => {
   const { window, setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-cloud-fallback-test-",
+    cachePrefix: "snowy-cloud-fallback-test-",
     settingsKey: "__cloudFallbackSettings",
   });
 
@@ -117,7 +117,7 @@ test("a failed cloud transcription falls back to local whisper when allowed", as
 
 test("unmanaged custom transcription fails closed instead of defaulting to OpenAI", async (t) => {
   const { vite, setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-custom-endpoint-guard-test-",
+    cachePrefix: "snowy-custom-endpoint-guard-test-",
     settingsKey: "__customGuardSettings",
   });
   const { API_ENDPOINTS } = await vite.ssrLoadModule("/config/constants.ts");
@@ -207,7 +207,7 @@ test("unmanaged custom transcription fails closed instead of defaulting to OpenA
 
 test("self-hosted mode is never hijacked by a leftover proxied provider", async (t) => {
   const { window, setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-selfhosted-hijack-test-",
+    cachePrefix: "snowy-selfhosted-hijack-test-",
     settingsKey: "__hijackSettings",
   });
 
@@ -254,7 +254,7 @@ test("self-hosted mode is never hijacked by a leftover proxied provider", async 
 // and copies their base URL across.
 test("self-hosted Azure endpoints keep their deployment URL", async (t) => {
   const { setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-selfhosted-azure-test-",
+    cachePrefix: "snowy-selfhosted-azure-test-",
     settingsKey: "__selfHostedAzureSettings",
   });
   const fetched = captureFetch(t, okJson({ text: "azure text" }));
@@ -300,7 +300,7 @@ test("self-hosted Azure endpoints keep their deployment URL", async (t) => {
 
 test("corti without a preload bridge throws instead of falling through to OpenAI", async (t) => {
   const { window, setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-corti-preload-test-",
+    cachePrefix: "snowy-corti-preload-test-",
     settingsKey: "__cortiPreloadSettings",
   });
   delete window.electronAPI.proxyCortiTranscription;
@@ -326,7 +326,7 @@ test("corti without a preload bridge throws instead of falling through to OpenAI
 
 test("proxied providers dispatch through the registry", async (t) => {
   const { window, setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-proxy-registry-test-",
+    cachePrefix: "snowy-proxy-registry-test-",
     settingsKey: "__proxyRegistrySettings",
   });
   const fetched = captureFetch(
@@ -427,7 +427,7 @@ test("proxied providers dispatch through the registry", async (t) => {
 
 test("config-error code survives a failed local fallback", async (t) => {
   const { window, setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "snowi-fallback-wrap-test-",
+    cachePrefix: "snowy-fallback-wrap-test-",
     settingsKey: "__fallbackWrapSettings",
   });
   window.electronAPI.transcribeLocalWhisper = async () => {

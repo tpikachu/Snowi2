@@ -23,7 +23,7 @@ const baseOptions = {
   byokProviders,
   cortiEnvironment: "us",
   cortiTenant: "tenant",
-  keyterms: ["Snowi"],
+  keyterms: ["Snowy"],
 };
 
 test("providers mode routes Tinfoil through its realtime client", async () => {
@@ -116,7 +116,7 @@ test("Corti keeps the meeting-specific connection settings", async () => {
       language: "en",
       environment: "us",
       tenant: "tenant",
-      keyterms: ["Snowi"],
+      keyterms: ["Snowy"],
     }
   );
 });

@@ -31,7 +31,7 @@ function fakeSecureStorage({ available = true } = {}) {
 }
 
 function harness(options) {
-  const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-store-"));
+  const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-store-"));
   const keyService = createMeetingKeyService({
     baseDir,
     secureStorage: fakeSecureStorage(options),

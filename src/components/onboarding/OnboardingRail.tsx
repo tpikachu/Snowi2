@@ -2,7 +2,7 @@ import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import { Check, LucideIcon } from "lucide-react";
 import { cn } from "../lib/utils";
-import { SnowiMark } from "./SnowiMark";
+import { SnowyMark } from "./SnowyMark";
 
 export interface RailStep {
   id: string;
@@ -56,8 +56,8 @@ export default function OnboardingRail({
       />
 
       <div className="relative flex items-center gap-2.5 px-5 pt-6 pb-7">
-        <SnowiMark className="h-7 w-7 rounded-[7px] shadow-(--shadow-card)" />
-        <span className="text-sm font-semibold tracking-tight text-foreground">Snowi</span>
+        <SnowyMark className="h-7 w-7 rounded-[7px] shadow-(--shadow-card)" />
+        <span className="text-sm font-semibold tracking-tight text-foreground">Snowy</span>
       </div>
 
       <nav

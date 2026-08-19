@@ -8,7 +8,7 @@ const cp = require("child_process");
 const { buildLinuxWrapperScript } = require("../../scripts/lib/linux-launcher.js");
 
 const isLinux = process.platform === "linux";
-const BINARY_NAME = "snowi";
+const BINARY_NAME = "snowy";
 
 function setupLauncher() {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "linux-launcher-test-"));

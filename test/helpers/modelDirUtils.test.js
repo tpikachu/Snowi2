@@ -33,7 +33,7 @@ describe("modelDirUtils ASCII-safe cache (#1399)", () => {
   beforeEach(() => {
     tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ow-cache-test-"));
     process.env = { ...originalEnv };
-    delete process.env.SNOWI_CACHE_ROOT;
+    delete process.env.SNOWY_CACHE_ROOT;
     delete process.env.XDG_CACHE_HOME;
   });
 
@@ -48,16 +48,16 @@ describe("modelDirUtils ASCII-safe cache (#1399)", () => {
 
   it("pathHasProblematicChars flags non-ASCII and spaces", () => {
     const { pathHasProblematicChars } = loadFresh(path.join(tempRoot, "ascii-user"));
-    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Anton\\.cache\\snowi"), false);
-    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Антон\\.cache\\snowi"), true);
-    assert.strictEqual(pathHasProblematicChars("C:\\Users\\詩涵\\.cache\\snowi"), true);
-    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Stan Shih\\.cache\\snowi"), true);
+    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Anton\\.cache\\snowy"), false);
+    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Антон\\.cache\\snowy"), true);
+    assert.strictEqual(pathHasProblematicChars("C:\\Users\\詩涵\\.cache\\snowy"), true);
+    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Stan Shih\\.cache\\snowy"), true);
   });
 
-  it("honors SNOWI_CACHE_ROOT when ASCII-safe", () => {
+  it("honors SNOWY_CACHE_ROOT when ASCII-safe", () => {
     Object.defineProperty(process, "platform", { value: "win32" });
     const override = path.join(tempRoot, "ascii-cache");
-    process.env.SNOWI_CACHE_ROOT = override;
+    process.env.SNOWY_CACHE_ROOT = override;
     const { getCacheRoot } = loadFresh(path.join(tempRoot, "使用者", "詩涵"));
     assert.strictEqual(getCacheRoot(), override);
     assert.ok(fs.existsSync(override));
@@ -72,7 +72,7 @@ describe("modelDirUtils ASCII-safe cache (#1399)", () => {
       path.join(tempRoot, "使用者", "詩涵")
     );
     const root = getCacheRoot();
-    assert.strictEqual(root, path.join(programData, "Snowi", "cache"));
+    assert.strictEqual(root, path.join(programData, "Snowy", "cache"));
     assert.ok(fs.existsSync(root));
     assert.strictEqual(
       getModelsDirForService("whisper"),
@@ -84,7 +84,7 @@ describe("modelDirUtils ASCII-safe cache (#1399)", () => {
     Object.defineProperty(process, "platform", { value: "win32" });
     const home = path.join(tempRoot, "Users", "stan");
     const { getCacheRoot } = loadFresh(home);
-    assert.strictEqual(getCacheRoot(), path.join(home, ".cache", "snowi"));
+    assert.strictEqual(getCacheRoot(), path.join(home, ".cache", "snowy"));
   });
 
   it("migrates legacy model dirs into the safe root and leaves home-based dirs alone", () => {
@@ -93,7 +93,7 @@ describe("modelDirUtils ASCII-safe cache (#1399)", () => {
     process.env.ProgramData = programData;
 
     const home = path.join(tempRoot, "使用者", "詩涵");
-    const legacyRoot = path.join(home, ".cache", "snowi");
+    const legacyRoot = path.join(home, ".cache", "snowy");
     fs.mkdirSync(path.join(legacyRoot, "whisper-models"), { recursive: true });
     fs.writeFileSync(path.join(legacyRoot, "whisper-models", "ggml-base.bin"), "model");
     fs.mkdirSync(path.join(legacyRoot, "models"), { recursive: true });
@@ -104,7 +104,7 @@ describe("modelDirUtils ASCII-safe cache (#1399)", () => {
     const { getCacheRoot } = loadFresh(home);
     const root = getCacheRoot();
 
-    assert.strictEqual(root, path.join(programData, "Snowi", "cache"));
+    assert.strictEqual(root, path.join(programData, "Snowy", "cache"));
     assert.strictEqual(
       fs.readFileSync(path.join(root, "whisper-models", "ggml-base.bin"), "utf8"),
       "model"
@@ -123,11 +123,11 @@ describe("modelDirUtils ASCII-safe cache (#1399)", () => {
     process.env.ProgramData = programData;
 
     const home = path.join(tempRoot, "使用者", "詩涵");
-    const legacyDir = path.join(home, ".cache", "snowi", "whisper-models");
+    const legacyDir = path.join(home, ".cache", "snowy", "whisper-models");
     fs.mkdirSync(legacyDir, { recursive: true });
     fs.writeFileSync(path.join(legacyDir, "ggml-base.bin"), "old");
 
-    const newDir = path.join(programData, "Snowi", "cache", "whisper-models");
+    const newDir = path.join(programData, "Snowy", "cache", "whisper-models");
     fs.mkdirSync(newDir, { recursive: true });
     fs.writeFileSync(path.join(newDir, "ggml-base.bin"), "new");
 

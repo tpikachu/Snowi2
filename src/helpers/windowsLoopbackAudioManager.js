@@ -13,7 +13,7 @@ const BINARY_NAME = "windows-system-audio-helper.exe";
 // Captures system audio on Windows via a native WASAPI process-loopback
 // helper. Unlike Chromium's display-media loopback (which only hears the
 // default render device), process loopback hears every application on every
-// output device and excludes Snowi's own audio.
+// output device and excludes Snowy's own audio.
 class WindowsLoopbackAudioManager {
   constructor() {
     this.process = null;

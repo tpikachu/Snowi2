@@ -20,7 +20,7 @@ test("cloud dictation carries to note recording and upload", async (t) => {
       cloudTranscriptionProvider: "openai",
       cloudTranscriptionModel: "whisper-1",
     },
-    "snowi-scope-inherit-cloud-"
+    "snowy-scope-inherit-cloud-"
   );
 
   const state = useSettingsStore.getState();
@@ -37,7 +37,7 @@ test("local dictation carries too — inheritance is not a cloud special case", 
   const { useSettingsStore } = await loadStore(
     t,
     { meetingFollowsTranscription: "false", useLocalWhisper: "true", transcriptionMode: "local" },
-    "snowi-scope-inherit-local-"
+    "snowy-scope-inherit-local-"
   );
 
   const state = useSettingsStore.getState();
@@ -58,7 +58,7 @@ test("an explicit meeting choice outranks the dictation lane", async (t) => {
       meetingUseLocalWhisper: "true",
       meetingTranscriptionMode: "local",
     },
-    "snowi-scope-inherit-explicit-"
+    "snowy-scope-inherit-explicit-"
   );
 
   const state = useSettingsStore.getState();
@@ -77,7 +77,7 @@ test("a stored mode alone still decides the lane for its scope", async (t) => {
       // Written by the Settings tab without the boolean beside it.
       meetingTranscriptionMode: "providers",
     },
-    "snowi-scope-inherit-mode-only-"
+    "snowy-scope-inherit-mode-only-"
   );
 
   assert.equal(useSettingsStore.getState().meetingUseLocalWhisper, false);
@@ -99,7 +99,7 @@ test("a stale dictation mode does not hand a scope a contradictory one", async (
       cloudTranscriptionProvider: "openai",
       cloudTranscriptionMode: "byok",
     },
-    "snowi-scope-inherit-stale-"
+    "snowy-scope-inherit-stale-"
   );
 
   const state = useSettingsStore.getState();
@@ -118,7 +118,7 @@ test("a self-hosted dictation setup is inherited as self-hosted", async (t) => {
       cloudTranscriptionProvider: "custom",
       cloudTranscriptionMode: "byok",
     },
-    "snowi-scope-inherit-selfhosted-"
+    "snowy-scope-inherit-selfhosted-"
   );
 
   // Agrees with the lane, so it is kept rather than flattened to "providers".
@@ -129,7 +129,7 @@ test("mirroring pushes the dictation routing onto both derived scopes", async (t
   const { useSettingsStore } = await loadStore(
     t,
     { meetingFollowsTranscription: "false", useLocalWhisper: "true", transcriptionMode: "local" },
-    "snowi-scope-mirror-"
+    "snowy-scope-mirror-"
   );
 
   const s = useSettingsStore.getState();

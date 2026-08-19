@@ -23,7 +23,7 @@ const parseDevServerPort = (rawPort) => {
 export default defineConfig(({ mode }) => {
   const envDir = path.resolve(__dirname, "..");
   const env = loadEnv(mode, envDir, "");
-  const rawPort = env.VITE_DEV_SERVER_PORT || env.SNOWI_DEV_SERVER_PORT;
+  const rawPort = env.VITE_DEV_SERVER_PORT || env.SNOWY_DEV_SERVER_PORT;
   const devServerPort = parseDevServerPort(rawPort);
 
   return {

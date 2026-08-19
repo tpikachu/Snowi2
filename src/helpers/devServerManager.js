@@ -1,7 +1,7 @@
 const DEFAULT_DEV_SERVER_PORT = 5183;
 const parseDevServerPort = () => {
   const raw =
-    process.env.SNOWI_DEV_SERVER_PORT ||
+    process.env.SNOWY_DEV_SERVER_PORT ||
     process.env.VITE_DEV_SERVER_PORT ||
     String(DEFAULT_DEV_SERVER_PORT);
   const parsed = Number(raw);

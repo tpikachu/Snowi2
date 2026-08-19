@@ -8,7 +8,7 @@ import { getTranscriptionProviders, modelRegistry } from "../../models/ModelRegi
 import { useSettingsStore } from "../../stores/settingsStore";
 import { buildCortiOnboardingPayloads } from "../../helpers/reasoningRouting";
 import StepShell, { StepSection } from "./StepShell";
-import { SnowiMark } from "./SnowiMark";
+import { SnowyMark } from "./SnowyMark";
 import { USE_CASE_IDS } from "./useCases";
 
 interface FinishStepProps {
@@ -166,7 +166,7 @@ export default function FinishStep({
             aria-hidden="true"
             className="absolute inset-0 rounded-2xl bg-primary/15 blur-md dark:bg-primary/20"
           />
-          <SnowiMark className="relative h-11 w-11 rounded-[10px] shadow-(--shadow-elevated)" />
+          <SnowyMark className="relative h-11 w-11 rounded-[10px] shadow-(--shadow-elevated)" />
         </span>
       }
       title={t("onboarding.finish.title")}

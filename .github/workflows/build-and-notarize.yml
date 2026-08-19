@@ -405,7 +405,7 @@ jobs:
 
       - name: Verify packaged macOS native binaries
         run: |
-          APP_PATH=$(ls -d dist/mac*/Snowi.app | head -n1)
+          APP_PATH=$(ls -d dist/mac*/Snowy.app | head -n1)
           for bin in macos-audio-tap macos-globe-listener macos-fast-paste macos-mic-listener macos-text-monitor macos-media-remote; do
             test -x "$APP_PATH/Contents/Resources/bin/$bin" || { echo "Missing in bundle: $bin"; exit 1; }
           done
@@ -418,7 +418,7 @@ jobs:
             echo "macOS ${{ matrix.arch }}: signed with Developer ID." >> "$GITHUB_STEP_SUMMARY"
           else
             echo "macOS ${{ matrix.arch }}: **unsigned** — no Developer ID certificate is configured." >> "$GITHUB_STEP_SUMMARY"
-            echo "First launch needs right-click → Open, or \`xattr -dr com.apple.quarantine /Applications/Snowi.app\`." >> "$GITHUB_STEP_SUMMARY"
+            echo "First launch needs right-click → Open, or \`xattr -dr com.apple.quarantine /Applications/Snowy.app\`." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Upload Artifacts

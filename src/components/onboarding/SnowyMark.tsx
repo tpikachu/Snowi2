@@ -1,5 +1,5 @@
 /**
- * The Snowi brand mark, inlined so it can be tinted, sized and animated like
+ * The Snowy brand mark, inlined so it can be tinted, sized and animated like
  * any other element. Geometry is transcribed from src/assets/icon.svg — the
  * 824/1024 tile of that file maps onto this 32-unit viewBox, so the glyph,
  * the two orbit rings and every stroke keep their original proportions.
@@ -12,9 +12,9 @@ interface MarkProps {
 }
 
 /** Full lockup tile: teal rounded square, orbit rings, white snowflake. */
-export function SnowiMark({ className = "", gradientId = "snowi-mark-field" }: MarkProps) {
+export function SnowyMark({ className = "", gradientId = "snowy-mark-field" }: MarkProps) {
   return (
-    <svg viewBox="0 0 32 32" className={className} role="img" aria-label="Snowi">
+    <svg viewBox="0 0 32 32" className={className} role="img" aria-label="Snowy">
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#02c6cf" />
@@ -54,7 +54,7 @@ export function SnowiMark({ className = "", gradientId = "snowi-mark-field" }: M
 }
 
 /** Bare six-spoke snowflake in currentColor (src/assets/logo.svg). */
-export function SnowiGlyph({ className = "" }: { className?: string }) {
+export function SnowyGlyph({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 16 16" fill="none" className={className} aria-hidden="true">
       <path

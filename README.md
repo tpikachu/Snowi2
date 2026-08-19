@@ -1,8 +1,8 @@
-# Snowi
+# Snowy
 
 **A meeting copilot that runs on your own machine.**
 
-Snowi listens to your meetings, transcribes them locally, and turns them into notes you can search and ask questions about. Nothing leaves your computer unless you point it at a cloud model yourself.
+Snowy listens to your meetings, transcribes them locally, and turns them into notes you can search and ask questions about. Nothing leaves your computer unless you point it at a cloud model yourself.
 
 macOS · Windows · Linux
 
@@ -24,9 +24,9 @@ macOS · Windows · Linux
 
 ## Privacy
 
-Snowi is local-first by construction, not by policy:
+Snowy is local-first by construction, not by policy:
 
-- **No account.** There is no sign-up, no login, and no server that belongs to Snowi.
+- **No account.** There is no sign-up, no login, and no server that belongs to Snowy.
 - **No telemetry.** Nothing is reported anywhere, including crashes.
 - **No auto-update feed.** The app does not phone home to check for versions.
 - **Local by default.** Transcription, embeddings and vector search all run on your machine. Cloud models are opt-in and use your own API keys.
@@ -42,17 +42,17 @@ Download the build for your platform from the releases page.
 
 ### Unsigned builds
 
-Snowi is not yet code signed. The binaries are built in CI straight from the tagged commit, but your OS has no certificate to check them against, so it will warn you on first launch.
+Snowy is not yet code signed. The binaries are built in CI straight from the tagged commit, but your OS has no certificate to check them against, so it will warn you on first launch.
 
 **macOS** — right-click the app and choose **Open**, then confirm. Or clear the quarantine flag:
 
 ```bash
-xattr -dr com.apple.quarantine /Applications/Snowi.app
+xattr -dr com.apple.quarantine /Applications/Snowy.app
 ```
 
 **Windows** — SmartScreen shows "Windows protected your PC". Choose **More info → Run anyway**.
 
-**Linux** — mark the AppImage executable: `chmod +x Snowi-*.AppImage`.
+**Linux** — mark the AppImage executable: `chmod +x Snowy-*.AppImage`.
 
 Signing and notarization are wired into the release workflow and switch on as soon as certificates are configured; until then builds are produced unsigned rather than not at all.
 
@@ -76,7 +76,7 @@ Sidecar binaries and models (whisper.cpp, sherpa-onnx, Qdrant, embeddings) downl
 | `npm run reset:dev`    | Clears dev data so the next launch starts from onboarding          |
 | `npm run pack`         | Unsigned local build                                               |
 
-Dev runs against an isolated user-data directory (`Snowi-development`), so an installed copy of Snowi is never touched.
+Dev runs against an isolated user-data directory (`Snowy-development`), so an installed copy of Snowy is never touched.
 
 ### Contributing
 
@@ -99,4 +99,4 @@ Electron 41 · React 19 · TypeScript · Tailwind CSS v4 · better-sqlite3 · wh
 
 ## License
 
-[MIT](LICENSE). Snowi builds on work from the OpenWhispr project, also MIT licensed; that copyright is retained in [LICENSE](LICENSE) and provenance is recorded in [UPSTREAM.md](UPSTREAM.md).
+[MIT](LICENSE). Snowy builds on work from the OpenWhispr project, also MIT licensed; that copyright is retained in [LICENSE](LICENSE) and provenance is recorded in [UPSTREAM.md](UPSTREAM.md).

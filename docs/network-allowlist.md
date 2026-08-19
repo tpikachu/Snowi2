@@ -1,6 +1,6 @@
 # Network Allowlist
 
-Outbound hosts the Snowi desktop app can contact. For firewall, proxy, and
+Outbound hosts the Snowy desktop app can contact. For firewall, proxy, and
 DNS filter configuration.
 
 All connections are client-initiated over TLS. No inbound ports. There is

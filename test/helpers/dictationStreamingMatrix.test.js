@@ -86,13 +86,13 @@ test("options: openai-realtime sends provider explicitly and no preview (#1624)"
     providerName: "openai-realtime",
     settings: settingsWith({}),
     language: "en",
-    keyterms: ["Snowi"],
+    keyterms: ["Snowy"],
   });
   assert.deepEqual(options, {
     provider: "openai-realtime",
     sampleRate: 16000,
     language: "en",
-    keyterms: ["Snowi"],
+    keyterms: ["Snowy"],
     model: "gpt-4o-mini-transcribe",
     mode: "byok",
     environment: undefined,

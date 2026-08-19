@@ -14,7 +14,7 @@ test("rewrites markers into links numbered by first appearance", async () => {
 
   assert.equal(
     content,
-    "Revenue was up [1](snowi-note:7). Costs held [2](snowi-note:12). Revenue again [1](snowi-note:7)."
+    "Revenue was up [1](snowy-note:7). Costs held [2](snowy-note:12). Revenue again [1](snowy-note:7)."
   );
   // Repeat citations reuse their number rather than climbing.
   assert.deepEqual(citedIds, [7, 12]);
@@ -26,7 +26,7 @@ test("drops citations naming a note that was never retrieved", async () => {
   // would open an unrelated note that happens to hold that id.
   const { content, citedIds } = renderCitations("Claimed [[note:999]] and real [[note:3]].", [3]);
 
-  assert.equal(content, "Claimed  and real [1](snowi-note:3).");
+  assert.equal(content, "Claimed  and real [1](snowy-note:3).");
   assert.deepEqual(citedIds, [3]);
 });
 
@@ -72,14 +72,14 @@ test("streaming holds back a half-arrived marker", async () => {
 test("streaming leaves completed markers alone", async () => {
   const { renderStreamingCitations } = await load();
   const { content } = renderStreamingCitations("Revenue rose [[note:12]] and", [12]);
-  assert.equal(content, "Revenue rose [1](snowi-note:12) and");
+  assert.equal(content, "Revenue rose [1](snowy-note:12) and");
 });
 
 test("parseNoteLink accepts only the app's own scheme", async () => {
   const { parseNoteLink } = await load();
-  assert.equal(parseNoteLink("snowi-note:42"), 42);
+  assert.equal(parseNoteLink("snowy-note:42"), 42);
   assert.equal(parseNoteLink("https://example.com"), null);
-  assert.equal(parseNoteLink("snowi-note:abc"), null);
-  assert.equal(parseNoteLink("snowi-note:0"), null);
+  assert.equal(parseNoteLink("snowy-note:abc"), null);
+  assert.equal(parseNoteLink("snowy-note:0"), null);
   assert.equal(parseNoteLink(undefined), null);
 });

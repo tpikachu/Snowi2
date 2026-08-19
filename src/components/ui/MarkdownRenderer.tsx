@@ -6,7 +6,7 @@ interface MarkdownRendererProps {
   content: string;
   className?: string;
   /**
-   * Opens a note the content links to (`snowi-note:<id>`). Without it those
+   * Opens a note the content links to (`snowy-note:<id>`). Without it those
    * links render as plain text rather than as a dead external link — the
    * scheme means nothing to a browser.
    */

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Local shim that bridges Snowi's Self-Hosted transcription to
+"""Local shim that bridges Snowy's Self-Hosted transcription to
 StepFun's StepAudio 2.5 ASR API.
 
-Snowi POSTs OpenAI-style multipart/form-data and expects JSON {"text": ...}.
+Snowy POSTs OpenAI-style multipart/form-data and expects JSON {"text": ...}.
 StepAudio wants raw PCM (base64) over an SSE endpoint. This shim transcodes the
 recording, calls StepAudio, parses the SSE stream, and hands the transcript back.
 
@@ -10,7 +10,7 @@ Ported from @ErogosZhou's original StepAudio shim:
 https://gist.github.com/ErogosZhou/4eb2c4bab1059b404fb652df7bfe24ac
 
 Run it: export STEP_API_KEY=...  then  python3 stepaudio_shim.py
-Then in Snowi: Settings -> Transcription -> Self-Hosted,
+Then in Snowy: Settings -> Transcription -> Self-Hosted,
 Server URL http://localhost:8765. See README.md for the full contract.
 """
 
@@ -126,7 +126,7 @@ def parse_sse_transcript(raw: bytes) -> str:
 
 def transcribe(audio_path: str, model: str, language: str | None, prompt: str | None) -> str:
     """Send the raw PCM to StepAudio 2.5 and return the transcript.
-    `model`/`language` from Snowi are available but StepAudio is pinned to
+    `model`/`language` from Snowy are available but StepAudio is pinned to
     its own model + language here; wire them through if you want."""
     with open(audio_path, "rb") as f:
         pcm = f.read()
@@ -172,7 +172,7 @@ def transcribe(audio_path: str, model: str, language: str | None, prompt: str | 
 
 
 class ShimHandler(BaseHTTPRequestHandler):
-    """Handles the single POST endpoint Snowi calls."""
+    """Handles the single POST endpoint Snowy calls."""
 
     def _send_json(self, status: int, payload: dict) -> None:
         body = json.dumps(payload).encode("utf-8")
@@ -246,7 +246,7 @@ def main() -> None:
     server = ThreadingHTTPServer(("127.0.0.1", PORT), ShimHandler)
     server.daemon_threads = True  # let Ctrl+C exit even with a request in flight
     print(f"StepAudio shim listening on http://localhost:{PORT}")
-    print("Point Snowi at it: Settings -> Transcription -> Self-Hosted")
+    print("Point Snowy at it: Settings -> Transcription -> Self-Hosted")
     print(f"  Server URL: http://localhost:{PORT}")
     print("Press Ctrl+C to stop.")
     try:

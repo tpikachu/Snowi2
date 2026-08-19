@@ -8,7 +8,7 @@
 ; scoped inbound BLOCK rule suppresses the prompt and closes the port to the
 ; network; loopback is never filtered, so transcription is unaffected.
 ; netsh needs elevation — per-user installs skip this silently.
-!define SHERPA_FIREWALL_RULE "Snowi Local Transcription Server (sherpa-onnx)"
+!define SHERPA_FIREWALL_RULE "Snowy Local Transcription Server (sherpa-onnx)"
 
 ; Electron writes the launch-at-login entry itself, so nothing in the generated
 ; uninstaller knows to remove it, and Windows keeps listing a startup item that
@@ -38,11 +38,11 @@
     !insertmacro DeleteAutoStartEntry "com.snowball.money.staging"
     !insertmacro DeleteAutoStartEntry "com.snowball.money.development"
     nsExec::ExecToLog 'netsh advfirewall firewall delete rule name="${SHERPA_FIREWALL_RULE}"'
-    StrCpy $0 "$PROFILE\.cache\snowi\models"
+    StrCpy $0 "$PROFILE\.cache\snowy\models"
     IfFileExists "$0\*.*" 0 +3
       RMDir /r "$0"
-      DetailPrint "Removed Snowi cached models"
-    StrCpy $1 "$PROFILE\.cache\snowi"
+      DetailPrint "Removed Snowy cached models"
+    StrCpy $1 "$PROFILE\.cache\snowy"
     RMDir "$1"
   ${endIf}
 !macroend

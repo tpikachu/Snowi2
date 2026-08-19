@@ -13,7 +13,7 @@ test("per-provider reasoning model memory", async (t) => {
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-reasoning-model-memory-test-",
+    cachePrefix: "snowy-reasoning-model-memory-test-",
   });
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
   const state = () => useSettingsStore.getState();
@@ -79,7 +79,7 @@ test("corrupt persisted reasoning model memory hydrates as empty, not a crash", 
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-reasoning-model-memory-corrupt-test-",
+    cachePrefix: "snowy-reasoning-model-memory-corrupt-test-",
   });
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
   assert.deepEqual(useSettingsStore.getState().reasoningModelByProvider, {});
@@ -98,7 +98,7 @@ test("retired cloud model selections are repointed to the provider default", asy
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-retired-cloud-model-test-",
+    cachePrefix: "snowy-retired-cloud-model-test-",
   });
   const { useSettingsStore, reconcileRetiredCloudModelSelections } = await vite.ssrLoadModule(
     "/stores/settingsStore.ts"

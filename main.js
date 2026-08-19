@@ -41,9 +41,9 @@ try {
 
 const VALID_CHANNELS = new Set(["development", "staging", "production"]);
 const DEFAULT_OAUTH_PROTOCOL_BY_CHANNEL = {
-  development: "snowi-dev",
-  staging: "snowi-staging",
-  production: "snowi",
+  development: "snowy-dev",
+  staging: "snowy-staging",
+  production: "snowy",
 };
 const BASE_WINDOWS_APP_ID = "com.snowball.money";
 
@@ -64,7 +64,7 @@ function inferDefaultChannel() {
 }
 
 function resolveAppChannel() {
-  const rawChannel = (process.env.SNOWI_CHANNEL || process.env.VITE_SNOWI_CHANNEL || "")
+  const rawChannel = (process.env.SNOWY_CHANNEL || process.env.VITE_SNOWY_CHANNEL || "")
     .trim()
     .toLowerCase();
 
@@ -76,14 +76,14 @@ function resolveAppChannel() {
 }
 
 const APP_CHANNEL = resolveAppChannel();
-process.env.SNOWI_CHANNEL = APP_CHANNEL;
+process.env.SNOWY_CHANNEL = APP_CHANNEL;
 
 function configureChannelUserDataPath() {
   if (APP_CHANNEL === "production") {
     return;
   }
 
-  const isolatedPath = path.join(app.getPath("appData"), `Snowi-${APP_CHANNEL}`);
+  const isolatedPath = path.join(app.getPath("appData"), `Snowy-${APP_CHANNEL}`);
   app.setPath("userData", isolatedPath);
 }
 
@@ -115,7 +115,7 @@ if (process.platform === "linux" && process.env.XDG_SESSION_TYPE === "wayland") 
 // Set desktop filename so Wayland compositors can match windows to the .desktop entry.
 // This allows XDG portals (e.g. PipeWire) to persist permissions across sessions.
 if (process.platform === "linux") {
-  app.setDesktopName("snowi.desktop");
+  app.setDesktopName("snowy.desktop");
 }
 
 // Group all windows under single taskbar entry on Windows
@@ -126,7 +126,7 @@ if (process.platform === "win32") {
 }
 
 function getOAuthProtocol() {
-  const fromEnv = (process.env.VITE_SNOWI_PROTOCOL || process.env.SNOWI_PROTOCOL || "")
+  const fromEnv = (process.env.VITE_SNOWY_PROTOCOL || process.env.SNOWY_PROTOCOL || "")
     .trim()
     .toLowerCase();
 
@@ -174,7 +174,7 @@ function restoreHtmlHandlerIfChanged(original) {
   }
 }
 
-// True source of truth for whether snowi:// resolves on Linux — the same
+// True source of truth for whether snowy:// resolves on Linux — the same
 // MIME database xdg-open consults. Returns true for deb/rpm/flatpak/AUR installs
 // (scheme registered via the packaged .desktop MimeType) and false for AppImage/
 // tar.gz runs where it genuinely isn't registered, so we never enable a dead-end
@@ -197,7 +197,7 @@ function isOAuthSchemeRegistered() {
 // Register custom protocol for OAuth callbacks.
 // In development, always include the app path argument so macOS/Windows/Linux
 // can launch the project app instead of opening bare Electron.
-function registerSnowiProtocol() {
+function registerSnowyProtocol() {
   const protocol = OAUTH_PROTOCOL;
   const htmlHandler = process.platform === "linux" ? getDefaultHtmlHandler() : null;
 
@@ -220,7 +220,7 @@ function registerSnowiProtocol() {
 // fall back to probing the system MIME database for an actual handler. This keeps
 // OAuth enabled where the callback can resolve (deb/rpm/flatpak/AUR) and correctly
 // gated where it can't (AppImage/tar.gz with no scheme registration).
-const protocolRegistered = registerSnowiProtocol() || isOAuthSchemeRegistered();
+const protocolRegistered = registerSnowyProtocol() || isOAuthSchemeRegistered();
 if (!protocolRegistered) {
   console.warn(`[Auth] Failed to register ${OAUTH_PROTOCOL}:// protocol handler`);
 }
@@ -234,8 +234,8 @@ if (!gotSingleInstanceLock) {
 const isLiveWindow = (window) => window && !window.isDestroyed();
 
 // Ensure macOS menus use the proper casing for the app name
-if (process.platform === "darwin" && app.getName() !== "Snowi") {
-  app.setName("Snowi");
+if (process.platform === "darwin" && app.getName() !== "Snowy") {
+  app.setName("Snowy");
 }
 
 // Add global error handling for uncaught exceptions

@@ -417,7 +417,7 @@ class HotkeyManager extends EventEmitter {
   }
 
   // Which mouse buttons the macOS listener must swallow for these slots, and
-  // whether Snowi owns Globe — if it does, macOS's own standalone Globe
+  // whether Snowy owns Globe — if it does, macOS's own standalone Globe
   // action has to stand down.
   getMacNativeListenerConfig(slotNames) {
     const mouseButtons = new Set();

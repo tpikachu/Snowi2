@@ -3,7 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ============================================================================
-   Snowi design tokens
+   Snowy design tokens
    ----------------------------------------------------------------------------
    Dark-first "pro tool" system. One accent: brand teal #02c6cf
    (oklch 0.752 0.127 200.6). Neutrals are a cool charcoal ramp at hue 230 with
@@ -1264,7 +1264,7 @@ body:has(.agent-overlay-window) #root {
 }
 
 /* ============================================================================
-   Snowi component language — "machined instrument"                       (v2)
+   Snowy component language — "machined instrument"                       (v2)
    ----------------------------------------------------------------------------
    Everything below is ADDITIVE. It introduces the vocabulary the shared
    primitives in src/components/ui speak, so the component layer never invents
@@ -1444,7 +1444,7 @@ body:has(.agent-overlay-window) #root {
   }
 
   /* ---- Keycaps ------------------------------------------------------------
-     Snowi is driven by a global hotkey, so a key is a first-class object in
+     Snowy is driven by a global hotkey, so a key is a first-class object in
      this UI and gets a real cap: recessed plate, machined corner, hard bottom
      edge. Lives in the components layer so a utility class on any individual
      <kbd> still wins. */

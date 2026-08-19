@@ -77,7 +77,7 @@ test("connection identity includes every provider-specific option", async () => 
     mode: "byok",
     environment: "us",
     tenant: "tenant-a",
-    keyterms: ["Snowi"],
+    keyterms: ["Snowy"],
   };
 
   assert.equal(getMeetingConnectionKey(options), getMeetingConnectionKey({ ...options }));

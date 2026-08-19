@@ -10,7 +10,7 @@ const load = () => import("../../src/helpers/linuxAutostart.js");
 // would leak a bogus value into every later test in this file.
 const MANAGED_ENV = ["XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_DATA_DIRS", "APPIMAGE", "NODE_ENV"];
 
-const ICON_THEME_SUBPATH = path.join("icons", "hicolor", "256x256", "apps", "snowi.png");
+const ICON_THEME_SUBPATH = path.join("icons", "hicolor", "256x256", "apps", "snowy.png");
 
 function setEnv(name, value) {
   if (value === undefined) delete process.env[name];
@@ -19,7 +19,7 @@ function setEnv(name, value) {
 
 function withTmpXdgDirs(fn) {
   return async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-autostart-test-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-autostart-test-"));
     const saved = Object.fromEntries(MANAGED_ENV.map((name) => [name, process.env[name]]));
     MANAGED_ENV.forEach((name) => setEnv(name, undefined));
     process.env.XDG_CONFIG_HOME = path.join(root, "config");
@@ -54,8 +54,8 @@ test(
   withTmpXdgDirs(async () => {
     const { resolveExecutablePath } = await load();
 
-    process.env.APPIMAGE = "/home/user/Applications/Snowi.AppImage";
-    assert.equal(resolveExecutablePath(), "/home/user/Applications/Snowi.AppImage");
+    process.env.APPIMAGE = "/home/user/Applications/Snowy.AppImage";
+    assert.equal(resolveExecutablePath(), "/home/user/Applications/Snowy.AppImage");
   })
 );
 
@@ -78,9 +78,9 @@ test(
 
     const installDir = path.join(root, "opt");
     fs.mkdirSync(installDir, { recursive: true });
-    fs.writeFileSync(path.join(installDir, "snowi"), "#!/bin/bash\n");
-    withExecPath(path.join(installDir, "snowi-app"), () => {
-      assert.equal(resolveExecutablePath(), path.join(installDir, "snowi"));
+    fs.writeFileSync(path.join(installDir, "snowy"), "#!/bin/bash\n");
+    withExecPath(path.join(installDir, "snowy-app"), () => {
+      assert.equal(resolveExecutablePath(), path.join(installDir, "snowy"));
     });
   })
 );
@@ -90,7 +90,7 @@ test(
   withTmpXdgDirs(async (root) => {
     const { resolveExecutablePath } = await load();
 
-    const orphan = path.join(root, "opt", "snowi-app");
+    const orphan = path.join(root, "opt", "snowy-app");
     fs.mkdirSync(path.dirname(orphan), { recursive: true });
     withExecPath(orphan, () => {
       assert.equal(resolveExecutablePath(), orphan);
@@ -103,9 +103,9 @@ test(
   withTmpXdgDirs(async () => {
     const { buildDesktopFileContents } = await load();
 
-    const contents = buildDesktopFileContents("/a/b/Snowi.AppImage", "snowi");
-    assert.match(contents, /^Exec="\/a\/b\/Snowi\.AppImage" --hidden$/m);
-    assert.match(contents, /^Icon=snowi$/m);
+    const contents = buildDesktopFileContents("/a/b/Snowy.AppImage", "snowy");
+    assert.match(contents, /^Exec="\/a\/b\/Snowy\.AppImage" --hidden$/m);
+    assert.match(contents, /^Icon=snowy$/m);
     assert.match(contents, /^X-GNOME-Autostart-enabled=true$/m);
   })
 );
@@ -117,7 +117,7 @@ test(
   withTmpXdgDirs(async () => {
     const { setAutostartEnabled, syncAutostartEntry, getDesktopFilePath } = await load();
 
-    process.env.APPIMAGE = "/apps/Snowi.AppImage";
+    process.env.APPIMAGE = "/apps/Snowy.AppImage";
     setAutostartEnabled(true);
     assert.match(fs.readFileSync(getDesktopFilePath(), "utf8"), /^Exec=.* --hidden$/m);
 
@@ -132,10 +132,10 @@ test(
   withTmpXdgDirs(async () => {
     const { syncAutostartEntry, getDesktopFilePath } = await load();
 
-    process.env.APPIMAGE = "/apps/Snowi.AppImage";
+    process.env.APPIMAGE = "/apps/Snowy.AppImage";
     writeEntry(
       getDesktopFilePath(),
-      '[Desktop Entry]\nType=Application\nExec="/apps/Snowi.AppImage"\n'
+      '[Desktop Entry]\nType=Application\nExec="/apps/Snowy.AppImage"\n'
     );
 
     assert.equal(syncAutostartEntry(), true);
@@ -148,7 +148,7 @@ test(
   withTmpXdgDirs(async () => {
     const { buildDesktopFileContents } = await load();
 
-    const contents = buildDesktopFileContents("/a/b/Snowi.AppImage", null);
+    const contents = buildDesktopFileContents("/a/b/Snowy.AppImage", null);
     assert.doesNotMatch(contents, /^Icon=/m);
   })
 );
@@ -160,10 +160,10 @@ test(
   withTmpXdgDirs(async () => {
     const { buildDesktopFileContents } = await load();
 
-    const contents = buildDesktopFileContents('/home/o"neill/$HOME/`app`\\v/Snowi', null);
+    const contents = buildDesktopFileContents('/home/o"neill/$HOME/`app`\\v/Snowy', null);
     assert.match(
       contents,
-      /^Exec="\/home\/o\\"neill\/\\\$HOME\/\\`app\\`\\\\\\\\v\/Snowi" --hidden$/m
+      /^Exec="\/home\/o\\"neill\/\\\$HOME\/\\`app\\`\\\\\\\\v\/Snowy" --hidden$/m
     );
   })
 );
@@ -176,7 +176,7 @@ test(
     writeEntry(path.join(root, "system-data", ICON_THEME_SUBPATH), "pretend png");
 
     setAutostartEnabled(true);
-    assert.match(fs.readFileSync(getDesktopFilePath(), "utf8"), /^Icon=snowi$/m);
+    assert.match(fs.readFileSync(getDesktopFilePath(), "utf8"), /^Icon=snowy$/m);
     assert.ok(!fs.existsSync(path.join(root, "data", ICON_THEME_SUBPATH)));
   })
 );
@@ -230,7 +230,7 @@ test(
 
     writeEntry(
       getDesktopFilePath(),
-      "[Desktop Entry]\nType=Application\nName=Snowi\nX-GNOME-Autostart-enabled=false\n"
+      "[Desktop Entry]\nType=Application\nName=Snowy\nX-GNOME-Autostart-enabled=false\n"
     );
     assert.equal(isAutostartEnabled(), false);
   })
@@ -243,7 +243,7 @@ test(
 
     writeEntry(
       getDesktopFilePath(),
-      "[Desktop Entry]\nType=Application\nName=Snowi\nHidden=TRUE\n"
+      "[Desktop Entry]\nType=Application\nName=Snowy\nHidden=TRUE\n"
     );
     assert.equal(isAutostartEnabled(), false);
   })
@@ -280,14 +280,14 @@ test(
   withTmpXdgDirs(async () => {
     const { setAutostartEnabled, syncAutostartEntry, getDesktopFilePath } = await load();
 
-    process.env.APPIMAGE = "/old/path/Snowi.AppImage";
+    process.env.APPIMAGE = "/old/path/Snowy.AppImage";
     setAutostartEnabled(true);
 
-    process.env.APPIMAGE = "/new/path/Snowi-1.9.0.AppImage";
+    process.env.APPIMAGE = "/new/path/Snowy-1.9.0.AppImage";
     assert.equal(syncAutostartEntry(), true);
 
     const contents = fs.readFileSync(getDesktopFilePath(), "utf8");
-    assert.match(contents, /^Exec="\/new\/path\/Snowi-1\.9\.0\.AppImage" --hidden$/m);
+    assert.match(contents, /^Exec="\/new\/path\/Snowy-1\.9\.0\.AppImage" --hidden$/m);
   })
 );
 
@@ -296,7 +296,7 @@ test(
   withTmpXdgDirs(async () => {
     const { setAutostartEnabled, syncAutostartEntry, getDesktopFilePath } = await load();
 
-    process.env.APPIMAGE = "/path/Snowi.AppImage";
+    process.env.APPIMAGE = "/path/Snowy.AppImage";
     setAutostartEnabled(true);
     const before = fs.statSync(getDesktopFilePath()).mtimeMs;
 
@@ -310,10 +310,10 @@ test(
   withTmpXdgDirs(async () => {
     const { syncAutostartEntry, isAutostartEnabled, getDesktopFilePath } = await load();
 
-    process.env.APPIMAGE = "/new/path/Snowi.AppImage";
+    process.env.APPIMAGE = "/new/path/Snowy.AppImage";
     writeEntry(
       getDesktopFilePath(),
-      '[Desktop Entry]\nType=Application\nExec="/old/path/Snowi.AppImage"\nX-GNOME-Autostart-enabled=false\n'
+      '[Desktop Entry]\nType=Application\nExec="/old/path/Snowy.AppImage"\nX-GNOME-Autostart-enabled=false\n'
     );
 
     assert.equal(syncAutostartEntry(), false);
@@ -337,7 +337,7 @@ test(
   withTmpXdgDirs(async () => {
     const { setAutostartEnabled, syncAutostartEntry, getDesktopFilePath } = await load();
 
-    process.env.APPIMAGE = "/installed/Snowi.AppImage";
+    process.env.APPIMAGE = "/installed/Snowy.AppImage";
     setAutostartEnabled(true);
 
     process.env.NODE_ENV = "development";
@@ -345,6 +345,6 @@ test(
     assert.equal(syncAutostartEntry(), false);
 
     const contents = fs.readFileSync(getDesktopFilePath(), "utf8");
-    assert.match(contents, /^Exec="\/installed\/Snowi\.AppImage" --hidden$/m);
+    assert.match(contents, /^Exec="\/installed\/Snowy\.AppImage" --hidden$/m);
   })
 );

@@ -25,7 +25,7 @@ test("merges independent WebM recorder segments into one decodable timeline", as
     return;
   }
 
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-merge-test-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-merge-test-"));
   try {
     const segments = [];
     for (let index = 0; index < 2; index += 1) {

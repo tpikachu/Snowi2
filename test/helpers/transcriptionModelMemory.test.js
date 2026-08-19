@@ -13,7 +13,7 @@ test("per-provider transcription model memory", async (t) => {
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-model-memory-test-",
+    cachePrefix: "snowy-model-memory-test-",
   });
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
   const state = () => useSettingsStore.getState();
@@ -122,7 +122,7 @@ test("corrupt persisted model memory hydrates as empty, not a crash", async (t) 
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-model-memory-corrupt-test-",
+    cachePrefix: "snowy-model-memory-corrupt-test-",
   });
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
   assert.deepEqual(useSettingsStore.getState().transcriptionModelByProvider, {});

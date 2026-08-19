@@ -11,7 +11,7 @@
  */
 
 /** The scheme `MarkdownRenderer` recognises as "a note in this app". */
-export const NOTE_LINK_SCHEME = "snowi-note:";
+export const NOTE_LINK_SCHEME = "snowy-note:";
 
 // Deliberately strict: digits only, no whitespace. A loose pattern would eat
 // ordinary double-bracket text a user's note might legitimately contain.
@@ -32,7 +32,7 @@ export interface RenderedCitations {
 }
 
 /**
- * Rewrites `[[note:id]]` markers into `[n](snowi-note:id)` links, numbered by
+ * Rewrites `[[note:id]]` markers into `[n](snowy-note:id)` links, numbered by
  * first appearance.
  *
  * `knownIds` is what was actually retrieved this turn. A model that cites a

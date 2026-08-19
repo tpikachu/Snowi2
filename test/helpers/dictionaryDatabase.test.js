@@ -5,7 +5,7 @@ const os = require("node:os");
 const path = require("node:path");
 const Module = require("node:module");
 
-let userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-dict-db-"));
+let userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-dict-db-"));
 const originalLoad = Module._load;
 
 Module._load = function patchedLoad(request, parent, isMain) {
@@ -34,7 +34,7 @@ function isNativeBindingUnavailable(error) {
 }
 
 function createDb(t) {
-  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-dict-db-"));
+  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-dict-db-"));
   try {
     const BetterSqlite = require("better-sqlite3");
     const probe = new BetterSqlite(path.join(userDataDir, "probe.db"));
@@ -63,12 +63,12 @@ test("setDictionary replaces the full dictionary (why a stale cache wipe was des
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Alice", "Bob"]);
-  assert.deepEqual(db.getDictionary(), ["Snowi", "Alice", "Bob"]);
+  db.setDictionary(["Snowy", "Alice", "Bob"]);
+  assert.deepEqual(db.getDictionary(), ["Snowy", "Alice", "Bob"]);
 
   // Writing only the cached subset is exactly what startup used to do.
-  db.setDictionary(["Snowi"]);
-  assert.deepEqual(db.getDictionary(), ["Snowi"]);
+  db.setDictionary(["Snowy"]);
+  assert.deepEqual(db.getDictionary(), ["Snowy"]);
 });
 
 test("startup reconcile preserves DB words that a stale renderer cache omitted (#1295)", async (t) => {
@@ -76,15 +76,15 @@ test("startup reconcile preserves DB words that a stale renderer cache omitted (
   if (!db) return;
   const { chooseDictionaryStartupAction } = await loadStartup();
 
-  db.setDictionary(["Snowi", "Alice", "Bob", "Imported Term"]);
-  const staleCache = ["Snowi"];
+  db.setDictionary(["Snowy", "Alice", "Bob", "Imported Term"]);
+  const staleCache = ["Snowy"];
   const decision = chooseDictionaryStartupAction(db.getDictionary(), staleCache);
   assert.equal(decision.action, "pull-db-to-local");
 
   // After adopting the DB snapshot, rewriting that same list (agent name already
   // present) must not delete the words the stale cache lacked.
   db.setDictionary(decision.words);
-  assert.deepEqual(db.getDictionary(), ["Snowi", "Alice", "Bob", "Imported Term"]);
+  assert.deepEqual(db.getDictionary(), ["Snowy", "Alice", "Bob", "Imported Term"]);
 });
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -95,7 +95,7 @@ test("rows inserted outside the app get a client_dict_id from the schema", (t) =
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi"]);
+  db.setDictionary(["Snowy"]);
   db.db.prepare("INSERT INTO custom_dictionary (word) VALUES (?)").run("Contact Name");
 
   const row = db.db
@@ -140,7 +140,7 @@ test("cloud pull upserts remotes without deleting local-only pending rows", (t) 
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Alice"]);
+  db.setDictionary(["Snowy", "Alice"]);
   const alice = db.getPendingDictionary().find((row) => row.word === "Alice");
 
   db.upsertDictionaryFromCloud({
@@ -152,7 +152,7 @@ test("cloud pull upserts remotes without deleting local-only pending rows", (t) 
     updated_at: "2026-07-22T10:00:00.000Z",
   });
 
-  assert.deepEqual(db.getDictionary().sort(), ["Alice", "Carol", "Snowi"].sort());
+  assert.deepEqual(db.getDictionary().sort(), ["Alice", "Carol", "Snowy"].sort());
   const aliceAfter = db.db.prepare("SELECT * FROM custom_dictionary WHERE id = ?").get(alice.id);
   assert.equal(aliceAfter.sync_status, "pending");
   assert.equal(aliceAfter.cloud_id, null);
@@ -162,7 +162,7 @@ test("repeated cloud upsert does not duplicate words", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi"]);
+  db.setDictionary(["Snowy"]);
   const payload = {
     id: "cloud-1",
     client_dict_id: "client-1",
@@ -182,28 +182,28 @@ test("repeated cloud upsert does not duplicate words", (t) => {
     .prepare("SELECT COUNT(*) AS count FROM custom_dictionary WHERE lower(word) = 'delta'")
     .get();
   assert.equal(deltas.count, 1);
-  assert.deepEqual(db.getDictionary().sort(), ["Delta", "Snowi"].sort());
+  assert.deepEqual(db.getDictionary().sort(), ["Delta", "Snowy"].sort());
 });
 
-test("default Snowi row is neither removed nor duplicated by cloud upsert", (t) => {
+test("default Snowy row is neither removed nor duplicated by cloud upsert", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Alice"]);
+  db.setDictionary(["Snowy", "Alice"]);
   db.upsertDictionaryFromCloud({
     id: "cloud-ow",
     client_dict_id: "client-ow",
-    word: "Snowi",
+    word: "Snowy",
     source: "manual",
     created_at: "2026-07-22T10:00:00.000Z",
     updated_at: "2026-07-22T12:00:00.000Z",
   });
 
-  const snowiRows = db.db
-    .prepare("SELECT * FROM custom_dictionary WHERE lower(word) = 'snowi'")
+  const snowyRows = db.db
+    .prepare("SELECT * FROM custom_dictionary WHERE lower(word) = 'snowy'")
     .all();
-  assert.equal(snowiRows.length, 1);
-  assert.equal(snowiRows[0].cloud_id, "cloud-ow");
+  assert.equal(snowyRows.length, 1);
+  assert.equal(snowyRows[0].cloud_id, "cloud-ow");
   assert.ok(db.getDictionary().includes("Alice"));
 });
 
@@ -211,13 +211,13 @@ test("intentional removal tombstones synced rows and hard-deletes unsynced ones"
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Temp", "Synced"]);
+  db.setDictionary(["Snowy", "Temp", "Synced"]);
   const pending = db.getPendingDictionary();
   const synced = pending.find((row) => row.word === "Synced");
   db.markDictionaryEntrySynced(synced.id, "cloud-synced");
 
-  db.setDictionary(["Snowi"]);
-  assert.deepEqual(db.getDictionary(), ["Snowi"]);
+  db.setDictionary(["Snowy"]);
+  assert.deepEqual(db.getDictionary(), ["Snowy"]);
 
   const tempGone = db.db.prepare("SELECT * FROM custom_dictionary WHERE word = 'Temp'").get();
   assert.equal(tempGone, undefined);
@@ -238,35 +238,35 @@ test("adding words leaves every other row untouched", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Alice", "Bob"]);
+  db.setDictionary(["Snowy", "Alice", "Bob"]);
   const result = db.applyDictionaryChanges({ add: ["Carol"] });
 
   assert.equal(result.added, 1);
-  assert.deepEqual(db.getDictionary(), ["Snowi", "Alice", "Bob", "Carol"]);
+  assert.deepEqual(db.getDictionary(), ["Snowy", "Alice", "Bob", "Carol"]);
 });
 
 test("a caller holding a stale one-word view cannot delete anything (#1295)", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Alice", "Bob", "Imported Term"]);
+  db.setDictionary(["Snowy", "Alice", "Bob", "Imported Term"]);
   // The exact call startup used to make, but expressed as a delta.
-  db.applyDictionaryChanges({ add: ["Snowi"] });
+  db.applyDictionaryChanges({ add: ["Snowy"] });
 
-  assert.deepEqual(db.getDictionary(), ["Snowi", "Alice", "Bob", "Imported Term"]);
+  assert.deepEqual(db.getDictionary(), ["Snowy", "Alice", "Bob", "Imported Term"]);
 });
 
 test("removing words hard-deletes unsynced rows and tombstones synced ones", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Temp", "Synced"]);
+  db.setDictionary(["Snowy", "Temp", "Synced"]);
   const synced = db.getPendingDictionary().find((row) => row.word === "Synced");
   db.markDictionaryEntrySynced(synced.id, "cloud-synced");
 
   const result = db.applyDictionaryChanges({ remove: ["Temp", "Synced"] });
   assert.equal(result.removed, 2);
-  assert.deepEqual(db.getDictionary(), ["Snowi"]);
+  assert.deepEqual(db.getDictionary(), ["Snowy"]);
 
   assert.equal(db.db.prepare("SELECT * FROM custom_dictionary WHERE word = 'Temp'").get(), undefined);
   const tombstone = db.db.prepare("SELECT * FROM custom_dictionary WHERE word = 'Synced'").get();
@@ -279,7 +279,7 @@ test("adding a tombstoned word restores it instead of duplicating", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Synced"]);
+  db.setDictionary(["Snowy", "Synced"]);
   const synced = db.getPendingDictionary().find((row) => row.word === "Synced");
   db.markDictionaryEntrySynced(synced.id, "cloud-synced");
   db.applyDictionaryChanges({ remove: ["Synced"] });
@@ -314,17 +314,17 @@ test("an edit is a remove plus an add in one transaction", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Kubernets", "Alice"]);
+  db.setDictionary(["Snowy", "Kubernets", "Alice"]);
   db.applyDictionaryChanges({ add: ["Kubernetes"], remove: ["Kubernets"] });
 
-  assert.deepEqual(db.getDictionary(), ["Snowi", "Alice", "Kubernetes"]);
+  assert.deepEqual(db.getDictionary(), ["Snowy", "Alice", "Kubernetes"]);
 });
 
 test("a word on both sides is kept, not deleted", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Alice"]);
+  db.setDictionary(["Snowy", "Alice"]);
   const result = db.applyDictionaryChanges({ add: ["Alice"], remove: ["Alice"] });
 
   assert.equal(result.removed, 0);
@@ -356,7 +356,7 @@ test("counts report words that changed, not words requested", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Alice"]);
+  db.setDictionary(["Snowy", "Alice"]);
 
   // Already present, so nothing was actually added.
   assert.equal(db.applyDictionaryChanges({ add: ["Alice"] }).added, 0);
@@ -372,7 +372,7 @@ test("an empty delta touches nothing", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Alice"]);
+  db.setDictionary(["Snowy", "Alice"]);
   const synced = db.getPendingDictionary().find((row) => row.word === "Alice");
   db.markDictionaryEntrySynced(synced.id, "cloud-alice");
 
@@ -382,24 +382,24 @@ test("an empty delta touches nothing", (t) => {
   // Still synced: an empty delta must not mark rows pending again.
   const after = db.db.prepare("SELECT * FROM custom_dictionary WHERE word = 'Alice'").get();
   assert.equal(after.sync_status, "synced");
-  assert.deepEqual(db.getDictionary(), ["Snowi", "Alice"]);
+  assert.deepEqual(db.getDictionary(), ["Snowy", "Alice"]);
 });
 
 test("removing a word that isn't there is a no-op", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi"]);
+  db.setDictionary(["Snowy"]);
   const result = db.applyDictionaryChanges({ remove: ["Nonexistent"] });
   assert.equal(result.removed, 0);
-  assert.deepEqual(db.getDictionary(), ["Snowi"]);
+  assert.deepEqual(db.getDictionary(), ["Snowy"]);
 });
 
 test("case-variant adds do not create duplicate rows", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  db.setDictionary(["Snowi", "Alice"]);
+  db.setDictionary(["Snowy", "Alice"]);
   db.applyDictionaryChanges({ add: ["alice", "ALICE"] });
 
   const rows = db.db

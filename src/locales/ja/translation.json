@@ -4,7 +4,7 @@
       "sectionTitle": "言語",
       "sectionDescription": "インターフェースと文字起こしの言語を個別に設定",
       "uiLabel": "インターフェース言語",
-      "uiDescription": "Snowi のインターフェースで使用する言語を選択",
+      "uiDescription": "Snowy のインターフェースで使用する言語を選択",
       "transcriptionLabel": "文字起こし言語",
       "transcriptionDescription": "より正確な文字起こしのために話す言語を選択",
       "chineseScriptLabel": "中国語の字体（ディクテーション）",
@@ -39,12 +39,12 @@
     },
     "openControlPanel": "コントロールパネルを開く",
     "hideControlPanel": "コントロールパネルを非表示",
-    "quit": "Snowi を終了",
-    "tooltip": "Snowi - 音声ディクテーション"
+    "quit": "Snowy を終了",
+    "tooltip": "Snowy - 音声ディクテーション"
   },
   "menu": {
-    "appLabel": "Snowi",
-    "quit": "Snowi を終了",
+    "appLabel": "Snowy",
+    "quit": "Snowy を終了",
     "speech": "スピーチ",
     "settings": "設定...",
     "help": "ヘルプ",
@@ -63,8 +63,8 @@
       "message": "ブラウザでリンクを開けませんでした:\n{{url}}\n\nエラー: {{error}}"
     },
     "loadFailure": {
-      "title": "Snowi の読み込みに失敗しました",
-      "message": "Snowi の UI を読み込めませんでした。",
+      "title": "Snowy の読み込みに失敗しました",
+      "message": "Snowy の UI を読み込めませんでした。",
       "detail": {
         "window": "ウィンドウ: {{windowName}}",
         "error": "エラー {{errorCode}}: {{errorDescription}}",
@@ -75,17 +75,17 @@
   },
   "startup": {
     "error": {
-      "title": "Snowi 起動エラー",
+      "title": "Snowy 起動エラー",
       "message": "アプリケーションの起動に失敗しました:\n\n{{error}}\n\nこの問題を報告してください。"
     },
     "globeHotkey": {
       "title": "Globe ホットキーが使用できません",
-      "message": "Snowi は Globe キーのホットキーを有効にできませんでした。",
+      "message": "Snowy は Globe キーのホットキーを有効にできませんでした。",
       "details": {
         "unknown": "Globe リスナーの起動中に不明なエラーが発生しました。",
         "fallback": "Globe キーのショートカットは無効のままになります。既存のキーボードショートカットは引き続き使用できます。",
         "devHint": "`npm run compile:globe` を実行し、アプリを再ビルドしてリスナーバイナリを再生成してください。",
-        "reinstallHint": "Snowi を再インストールするか、問題が解決しない場合はサポートにお問い合わせください。"
+        "reinstallHint": "Snowy を再インストールするか、問題が解決しない場合はサポートにお問い合わせください。"
       }
     }
   },
@@ -211,14 +211,14 @@
       "accessibilityTitle": "アクセシビリティ",
       "accessibilityDescription": "完成したテキストを、今使っているアプリ（ドキュメント、メール、チャット）に直接入力します。",
       "testAndGrant": "テストして許可",
-      "requiredForApp": "Snowi の動作に必要です",
+      "requiredForApp": "Snowy の動作に必要です",
       "microphoneRequired": "マイクへのアクセスが必要です",
       "openSystemSettings": "システム設定を開く",
       "systemAudioTitle": "システムオーディオ",
       "systemAudioDescription": "会議レコーダーが通話の相手側の音声（会議、講義、ポッドキャストなど）を聴けるようにします。後から設定で有効にできます。",
       "optional": "任意",
       "recommended": "推奨",
-      "accessibilityTroubleshooting": "システム設定 → アクセシビリティで、Snowiのスイッチをオフにしてから再度オンにしてください。Snowiがリストに表示されていない場合は、+ をクリックしてアプリケーションフォルダから追加してください。"
+      "accessibilityTroubleshooting": "システム設定 → アクセシビリティで、Snowyのスイッチをオフにしてから再度オンにしてください。Snowyがリストに表示されていない場合は、+ をクリックしてアプリケーションフォルダから追加してください。"
     },
     "transcription": {
       "title": "文字起こし設定",
@@ -254,7 +254,7 @@
       "optionalNote": "任意です。設定からいつでも追加・変更できます。"
     },
     "connectivity": {
-      "title": "このネットワークから Snowi Cloud に接続できません",
+      "title": "このネットワークから Snowy Cloud に接続できません",
       "body": "{{cause}} ローカルエンジンに切り替えるか、続行して後でもう一度お試しください。",
       "useLocal": "ローカルエンジンを使う",
       "continue": "そのまま続行"
@@ -295,13 +295,13 @@
     "meeting": {
       "title": "会議メモ",
       "description": "会議を記録して要約します",
-      "autoDetect": "Snowi は会議中であることを自動的に検出し、メモの開始を提案します。あなたの操作なしに録音されることはありません。",
+      "autoDetect": "Snowy は会議中であることを自動的に検出し、メモの開始を提案します。あなたの操作なしに録音されることはありません。",
       "hotkeyLabel": "会議ホットキー",
       "hotkeyHint": "任意 — 会議中に押すとすぐにメモを開始できます。"
     },
     "finish": {
       "title": "準備完了",
-      "cloudDescription": "Snowi Cloud をご利用中です — 高速・高精度、データ保持なし、毎週 2,000 ワード無料。すべてを端末内で処理したい場合は、設定からローカル処理に切り替えられます。",
+      "cloudDescription": "Snowy Cloud をご利用中です — 高速・高精度、データ保持なし、毎週 2,000 ワード無料。すべてを端末内で処理したい場合は、設定からローカル処理に切り替えられます。",
       "localDescription": "ローカル処理またはご自身の API キーで設定済みです。音声の処理方法はいつでも設定から変更できます。",
       "cleanupNote": "AI によるテキスト整形は適切な初期設定で動作します。設定からいつでも調整できます。",
       "openSettings": "設定を開く",
@@ -324,7 +324,7 @@
   "streaming": {
     "errors": {
       "cloudUnreachable": {
-        "title": "Snowi Cloud に接続できません",
+        "title": "Snowy Cloud に接続できません",
         "generic": "ネットワーク要求に失敗しました。接続を確認してください。",
         "dnsBlocked": "DNS が AI プロバイダーのドメインを解決できません — 広告ブロッカーやフィルターに遮断されている可能性があります。",
         "refused": "接続が拒否されました — ファイアウォールまたは VPN の可能性があります。",
@@ -337,7 +337,7 @@
   "controlPanel": {
     "updateRequiredByOrg": {
       "title": "アップデートが必要です",
-      "description": "組織では Snowi {{version}} 以降が必要です。アプリを更新してください。"
+      "description": "組織では Snowy {{version}} 以降が必要です。アプリを更新してください。"
     },
     "update": {
       "readyTitle": "アップデートの準備完了",
@@ -345,7 +345,7 @@
       "problemTitle": "アップデートで問題が発生しました",
       "problemDescription": "アップデートを完了できませんでした。後でもう一度お試しください。",
       "installTitle": "アップデートをインストール",
-      "installDescription": "Snowi はアップデートを適用するために再起動します。作業中のデータは保存されます。",
+      "installDescription": "Snowy はアップデートを適用するために再起動します。作業中のデータは保存されます。",
       "couldNotInstallTitle": "アップデートをインストールできませんでした",
       "couldNotInstallDescription": "問題が発生しました。もう一度お試しください。",
       "couldNotDownloadTitle": "アップデートをダウンロードできませんでした",
@@ -360,7 +360,7 @@
     },
     "accessibilityMissing": {
       "title": "アクセシビリティの許可が必要です",
-      "description": "Snowi が正しく動作するにはアクセシビリティの許可が必要です。以下で有効にしてください。"
+      "description": "Snowy が正しく動作するにはアクセシビリティの許可が必要です。以下で有効にしてください。"
     },
     "billing": {
       "pastDueTitle": "お支払いを処理できませんでした",
@@ -426,8 +426,8 @@
       "retryTranslationMode": "翻訳モード"
     },
     "cloudMigration": {
-      "title": "Snowi Cloud へようこそ",
-      "description": "より高速で正確な文字起こしのために Snowi Cloud に切り替えました。以前の設定は保存されています。設定からいつでも戻せます。",
+      "title": "Snowy Cloud へようこそ",
+      "description": "より高速で正確な文字起こしのために Snowy Cloud に切り替えました。以前の設定は保存されています。設定からいつでも戻せます。",
       "viewSettings": "設定を表示"
     },
     "aiCta": {
@@ -610,7 +610,7 @@
         "description": "録音の一部を文字起こしできませんでした。"
       },
       "errorDescriptions": {
-        "sessionExpired": "Snowi Cloud のセッションが利用できません。「設定」から再度サインインしてください。",
+        "sessionExpired": "Snowy Cloud のセッションが利用できません。「設定」から再度サインインしてください。",
         "offline": "オフラインです。クラウド文字起こしにはインターネット接続が必要です。",
         "dailyLimitReached": "本日の文字起こし上限に達しました。明日もう一度お試しいただくか、プランをアップグレードしてください。",
         "providerRateLimited": "文字起こしプロバイダーがリクエストを制限しました。しばらく待ってからもう一度お試しください。",
@@ -629,8 +629,8 @@
         "notAppliedTitle": "選択範囲の編集を適用できませんでした",
         "changed": "処理中に選択したテキストまたは対象アプリが変更されました。置換は行われていません。",
         "expired": "選択範囲の編集が期限切れになりました。テキストを選択し直して再試行してください。",
-        "pasteFailed": "Snowi は編集を生成しましたが、選択したテキストを置換できませんでした。",
-        "unavailable": "Snowi は選択したテキストを安全に読み取れませんでした。アクセシビリティまたは入力自動化の権限を確認してください。",
+        "pasteFailed": "Snowy は編集を生成しましたが、選択したテキストを置換できませんでした。",
+        "unavailable": "Snowy は選択したテキストを安全に読み取れませんでした。アクセシビリティまたは入力自動化の権限を確認してください。",
         "tooLarge": "選択範囲が大きすぎます。6,000文字以内を選択してください。",
         "reasoningFailed": "AI は選択範囲の編集を完了できませんでした。元のテキストは変更されていません。"
       },
@@ -728,7 +728,7 @@
       "micErrors": {
         "accessFailed": "マイクへのアクセスに失敗しました。もう一度お試しください。",
         "noMicrophones": "マイクが検出されませんでした。{{settingsPath}} でマイクを接続または選択してください。",
-        "permissionDenied": "権限が拒否されました。{{privacyPath}} を開いて Snowi を許可してください。",
+        "permissionDenied": "権限が拒否されました。{{privacyPath}} を開いて Snowy を許可してください。",
         "couldNotStart": "選択したマイクを開始できませんでした。{{settingsPath}} で入力デバイスを選択してから、テストを再実行してください。",
         "noActiveInput": "アクティブな音声入力が見つかりませんでした。{{settingsPath}} でマイクを選択してください。",
         "unknown": "マイクへのアクセスに失敗しました: {{error}}。別の入力デバイスを選択してもう一度お試しください。",
@@ -757,8 +757,8 @@
         "accessibilityNeeded": "テキストの自動貼り付けを有効にするには、システム設定でアクセシビリティの権限を許可してください。",
         "windowsReady": "Windows では自動貼り付けに特別な権限は必要ありません。準備完了です！",
         "linuxReadyWithMethod": "{{method}} を使用した自動貼り付けが利用可能です。準備完了です！",
-        "waylandClipboardMode": "この Wayland セッションでは自動貼り付けが利用できません。Snowi はテキストをクリップボードにコピーしますので、Ctrl+V で貼り付けてください。",
-        "optionalPasteTool": "自動貼り付けには {{tool}} をインストールしてください:\n\n{{installCmd}}{{waylandNote}}\n\nインストールしなくても Snowi は使用できます。テキストがクリップボードにコピーされるので、Ctrl+V で貼り付けてください。"
+        "waylandClipboardMode": "この Wayland セッションでは自動貼り付けが利用できません。Snowy はテキストをクリップボードにコピーしますので、Ctrl+V で貼り付けてください。",
+        "optionalPasteTool": "自動貼り付けには {{tool}} をインストールしてください:\n\n{{installCmd}}{{waylandNote}}\n\nインストールしなくても Snowy は使用できます。テキストがクリップボードにコピーされるので、Ctrl+V で貼り付けてください。"
       },
       "alerts": {
         "accessibilityNeeded": "アクセシビリティの権限が必要です！システム設定で許可してください。"
@@ -771,7 +771,7 @@
         "defaultPasteTool": "xdotool",
         "xdotoolXwayland": "xdotool（XWayland アプリ）"
       },
-      "accessibilityTestText": "Snowi アクセシビリティテスト",
+      "accessibilityTestText": "Snowy アクセシビリティテスト",
       "warning": {
         "messages": {
           "macos": "サウンド設定で入力デバイスを確認してください",
@@ -842,7 +842,7 @@
       "emailRequired": "SSO を使用するには勤務先のメールアドレスを入力してください。",
       "failed": "シングルサインオンに失敗しました。もう一度お試しください。",
       "companySignInTitle": "会社のサインインを使用",
-      "requiredDescription": "{{domain}} では Snowi に SSO が必須です。",
+      "requiredDescription": "{{domain}} では Snowy に SSO が必須です。",
       "availableDescription": "{{domain}} のアカウントは会社の SSO に対応しています。",
       "useEmailInstead": "メールアドレスとパスワードを使用"
     },
@@ -851,10 +851,10 @@
       "continueWithApple": "Apple で続ける",
       "continueWithGoogle": "Google で続ける",
       "continueWithMicrosoft": "Microsoft で続ける",
-      "protocolUnavailable": "ブラウザでのサインインを利用できません — システムの「既定のアプリ」設定で snowi:// プロトコルを再登録してください。"
+      "protocolUnavailable": "ブラウザでのサインインを利用できません — システムの「既定のアプリ」設定で snowy:// プロトコルを再登録してください。"
     },
     "welcomeSubtitle": "音声でどこでもディクテーション",
-    "welcomeTitle": "Snowi へようこそ"
+    "welcomeTitle": "Snowy へようこそ"
   },
   "cleanupPrompt": "クリーンアップ",
   "developerSection": {
@@ -1078,10 +1078,10 @@
     "recheckChecking": "確認中...",
     "title": "自動貼り付け",
     "usingMethodPrefix": "使用中:",
-    "waylandClipboardDescription": "この Wayland セッションでは自動貼り付けが利用できません。Snowi はテキストをクリップボードにコピーしますので、Ctrl+V で手動で貼り付けてください。",
+    "waylandClipboardDescription": "この Wayland セッションでは自動貼り付けが利用できません。Snowy はテキストをクリップボードにコピーしますので、Ctrl+V で手動で貼り付けてください。",
     "waylandClipboardTitle": "Wayland でのクリップボードモード",
     "windowsReady": "Windows は自動貼り付けに標準対応しています。設定は不要です！",
-    "withoutToolPrefix": "このツールがない場合、Snowi はテキストをクリップボードにコピーします。Ctrl+V で手動で貼り付けてください。",
+    "withoutToolPrefix": "このツールがない場合、Snowy はテキストをクリップボードにコピーします。Ctrl+V で手動で貼り付けてください。",
     "xwaylandAppsOnly": "自動貼り付けは XWayland アプリのみで動作します"
   },
   "promptStudio": {
@@ -1131,7 +1131,7 @@
       "none": "なし",
       "outputLabel": "出力",
       "processing": "処理中...",
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "providerLabel": "プロバイダー",
       "run": "テスト実行",
       "customEndpoint": "カスタムエンドポイント",
@@ -1291,7 +1291,7 @@
           "price": "$0",
           "period": "永久",
           "features": [
-            "## Snowi Cloud",
+            "## Snowy Cloud",
             "週2,000ワードの文字起こし",
             "月5時間の会議録音",
             "## 永久無料",
@@ -1409,7 +1409,7 @@
         "button": "アカウントを削除",
         "deleting": "削除中...",
         "title": "アカウントを削除しますか？",
-        "description": "Snowi アカウント、すべてのクラウド同期ノート、すべてのローカルデータ（文字起こし、音声録音、ダウンロード済みモデル、カレンダー接続、設定を含む）が完全に削除されます。この操作は元に戻せません。",
+        "description": "Snowy アカウント、すべてのクラウド同期ノート、すべてのローカルデータ（文字起こし、音声録音、ダウンロード済みモデル、カレンダー接続、設定を含む）が完全に削除されます。この操作は元に戻せません。",
         "confirmText": "すべて削除",
         "successTitle": "アカウントが削除されました",
         "successDescription": "アカウントとすべてのデータが削除されました。アプリが再読み込みされます。",
@@ -1483,7 +1483,7 @@
       "enableTextCleanup": "テキスト補正を有効にする",
       "enableTextCleanupDescription": "AI がフィラーワードを除去し、文法と句読点を整える",
       "modes": {
-        "openwhispr": "Snowi Cloud",
+        "openwhispr": "Snowy Cloud",
         "providers": "クラウドプロバイダー",
         "local": "ローカル",
         "selfHosted": "セルフホスト",
@@ -1494,13 +1494,13 @@
         "enterprise": "エンタープライズ",
         "enterpriseDesc": "組織のクラウドアカウントを使用 (AWS, Azure, GCP)。"
       },
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "openwhisprCloudDescription": "信頼できる精度。設定不要。",
       "title": "AI テキスト補正",
       "toasts": {
         "switchedCloud": {
-          "description": "テキスト補正に Snowi のクラウドサービスを使用します。",
-          "title": "Snowi Cloud に切り替えました"
+          "description": "テキスト補正に Snowy のクラウドサービスを使用します。",
+          "title": "Snowy Cloud に切り替えました"
         },
         "switchedCustom": {
           "description": "独自のプロバイダーと API キーを設定してください。",
@@ -1588,7 +1588,7 @@
       "appearance": {
         "auto": "自動",
         "dark": "ダーク",
-        "description": "Snowi の外観を設定",
+        "description": "Snowy の外観を設定",
         "light": "ライト",
         "theme": "テーマ",
         "themeDescription": "ライト、ダーク、またはシステムに合わせる",
@@ -1616,8 +1616,8 @@
         "linuxPttSetupDescription": "キーボード入力デバイスへのアクセス権が必要です。",
         "linuxPttSetupNote": "コマンド実行後、ログアウトして再度ログインしてください。",
         "hyprlandConfigWriteWarningTitle": "Hyprland のキーバインドは永続化されません",
-        "hyprlandConfigWriteWarningDescription": "Snowi は {{path}} に書き込めないため、Hyprland の設定を再読み込みするとキーバインドは維持されません。ファイルが存在し、書き込み可能であることを確認してください。",
-        "hyprlandUnbindDescription": "Hyprland では、Snowi が選択したショートカットを使用します。同じキーの組み合わせを使う既存の Hyprland バインドは、Snowi がショートカットを登録すると解除されます。"
+        "hyprlandConfigWriteWarningDescription": "Snowy は {{path}} に書き込めないため、Hyprland の設定を再読み込みするとキーバインドは維持されません。ファイルが存在し、書き込み可能であることを確認してください。",
+        "hyprlandUnbindDescription": "Hyprland では、Snowy が選択したショートカットを使用します。同じキーの組み合わせを使う既存の Hyprland バインドは、Snowy がショートカットを登録すると解除されます。"
       },
       "meetingHotkey": {
         "title": "ミーティングモードホットキー",
@@ -1643,7 +1643,7 @@
       },
       "notifications": {
         "title": "通知",
-        "description": "Snowi が表示できる通知を設定します",
+        "description": "Snowy が表示できる通知を設定します",
         "disableAll": "すべての通知を無効にする",
         "disableAllDescription": "エラーメッセージ以外をすべて消音にする",
         "meetingDetection": "会議の検出",
@@ -1664,14 +1664,14 @@
       },
       "startup": {
         "launchAtLogin": "ログイン時に起動",
-        "launchAtLoginDescription": "ログイン時に Snowi をバックグラウンドで起動します",
+        "launchAtLoginDescription": "ログイン時に Snowy をバックグラウンドで起動します",
         "title": "起動設定",
-        "description": "Snowi の起動時の動作を制御",
+        "description": "Snowy の起動時の動作を制御",
         "startMinimized": "最小化で起動",
         "startMinimizedDescription": "コントロールパネルウィンドウを表示せずに起動",
         "needsApproval": {
           "title": "システム設定での許可が必要です",
-          "description": "macOS は Snowi をログイン項目として登録しましたが、「ログイン項目」での許可を待っています。",
+          "description": "macOS は Snowy をログイン項目として登録しましたが、「ログイン項目」での許可を待っています。",
           "action": "ログイン項目を開く"
         }
       },
@@ -1717,7 +1717,7 @@
           "group": {
             "step1Title": "ユーザーを input グループに追加",
             "step2Title": "ログアウトして再ログイン",
-            "step2Desc": "グループの変更は新しいセッションでのみ有効になります。デスクトップからログアウトし、再ログインしてから Snowi を開き直してください。"
+            "step2Desc": "グループの変更は新しいセッションでのみ有効になります。デスクトップからログアウトし、再ログインしてから Snowy を開き直してください。"
           },
           "service": {
             "step1Title": "サービスディレクトリを作成",
@@ -1741,7 +1741,7 @@
           "manualTitle": "設定に以下を追加してください",
           "manualDesc": "ご自身で設定してからリビルドしてください。",
           "flakeTitle": "flakeからインストールする場合",
-          "flakeDesc": "flakeからSnowiをインストールする場合、programs.snowi.enableを有効にするとydotool、uinputモジュール、グループのメンバーシップが自動で設定されます。",
+          "flakeDesc": "flakeからSnowyをインストールする場合、programs.snowy.enableを有効にするとydotool、uinputモジュール、グループのメンバーシップが自動で設定されます。",
           "rebuildNote": "sudo nixos-rebuild switchを実行し、グループの変更と/dev/uinputのルールを反映させるためにログアウト後に再ログインしてください。<you>はあなたのユーザー名に置き換えてください。"
         }
       },
@@ -1774,7 +1774,7 @@
           },
           "installUpdate": {
             "confirmText": "インストールして再起動",
-            "description": "Snowi はアップデートを適用するために再起動します。",
+            "description": "Snowy はアップデートを適用するために再起動します。",
             "title": "アップデートをインストール"
           },
           "noUpdates": {
@@ -1809,13 +1809,13 @@
     "permissions": {
       "accessibilityDescription": "文字起こし後の自動貼り付けに必要",
       "accessibilityTitle": "アクセシビリティ",
-      "description": "Snowi の正常動作に必要なシステム権限をテスト・管理",
+      "description": "Snowy の正常動作に必要なシステム権限をテスト・管理",
       "microphoneDescription": "ディクテーションと文字起こしのためにあなたの声を録音します",
       "microphoneTitle": "マイク",
       "resetAccessibility": {
-        "description": "Snowi をアクセシビリティの権限から削除します。システム設定 > プライバシーとセキュリティ > アクセシビリティ で再度許可する必要があります。",
+        "description": "Snowy をアクセシビリティの権限から削除します。システム設定 > プライバシーとセキュリティ > アクセシビリティ で再度許可する必要があります。",
         "label": "アクセシビリティの権限をリセット",
-        "rowDescription": "アプリの再インストールや再ビルド後の問題を修正するために、システム設定で Snowi を削除してから再追加",
+        "rowDescription": "アプリの再インストールや再ビルド後の問題を修正するために、システム設定で Snowy を削除してから再追加",
         "title": "アクセシビリティの権限をリセット"
       },
       "optional": "任意",
@@ -1837,7 +1837,7 @@
       "description": "デバイスからのデータ送信を管理します。初期設定ではすべてオフです。",
       "title": "プライバシー",
       "usageAnalytics": "使用状況の分析",
-      "usageAnalyticsDescription": "匿名のパフォーマンスデータを共有して Snowi の改善にご協力ください。文字起こしの内容は送信されません。タイミングとエラーデータのみです。",
+      "usageAnalyticsDescription": "匿名のパフォーマンスデータを共有して Snowy の改善にご協力ください。文字起こしの内容は送信されません。タイミングとエラーデータのみです。",
       "dataRetention": "データ保持",
       "dataRetentionDescription": "文字起こしと音声を履歴にローカル保存します。無効にすると、文字起こしは貼り付けられますが保存されません。",
       "transcriptRetention": "文字起こしの保持",
@@ -1893,9 +1893,9 @@
     "transcription": {
       "customSetup": "カスタム設定",
       "customSetupDescription": "独自のプロバイダーと API キーを使用。",
-      "description": "Snowi の音声文字起こし方法を選択",
+      "description": "Snowy の音声文字起こし方法を選択",
       "modes": {
-        "openwhispr": "Snowi Cloud",
+        "openwhispr": "Snowy Cloud",
         "providers": "クラウドプロバイダー",
         "local": "ローカル",
         "selfHosted": "セルフホスト",
@@ -1904,13 +1904,13 @@
         "localDesc": "端末上のモデル。完全プライベート。",
         "selfHostedDesc": "自前サーバーをネットワーク上に。"
       },
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "openwhisprCloudDescription": "信頼できる精度。設定不要。",
       "title": "音声テキスト変換",
       "toasts": {
         "switchedCloud": {
-          "description": "文字起こしに Snowi のクラウドサービスを使用します。",
-          "title": "Snowi Cloud に切り替えました"
+          "description": "文字起こしに Snowy のクラウドサービスを使用します。",
+          "title": "Snowy Cloud に切り替えました"
         },
         "switchedCustom": {
           "description": "独自のプロバイダーと API キーを設定してください。",
@@ -2193,7 +2193,7 @@
       }
     },
     "hotkeys": {
-      "description": "Snowi がフォーカスされていなくても、どのアプリでも動作します。既定で割り当てられているのはディクテーションのみです。",
+      "description": "Snowy がフォーカスされていなくても、どのアプリでも動作します。既定で割り当てられているのはディクテーションのみです。",
       "slots": {
         "chatAgent": "チャットエージェント",
         "dictation": "ディクテーション",
@@ -2453,7 +2453,7 @@
     },
     "structureIntro": {
       "title": "ノートの保存場所",
-      "description": "Snowi は個人的な考えと共同作業を分け、適切な人だけがノートを見られるようにします。",
+      "description": "Snowy は個人的な考えと共同作業を分け、適切な人だけがノートを見られるようにします。",
       "personal": {
         "title": "個人スペース",
         "description": "ここのフォルダーとノートは自分だけが見ることができます。"
@@ -2608,7 +2608,7 @@
       "newFolder": "新しいフォルダ",
       "folderName": "フォルダ名",
       "create": "作成",
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "custom": "カスタム",
       "selectFolder": "フォルダを選択",
       "transcriptionFailed": "文字起こしに失敗しました",
@@ -2620,15 +2620,15 @@
       "fileTooLarge": "このファイルは 500 MB の制限を超えています。",
       "largeFileNote": "大容量ファイルは分割され、並列で文字起こしされます。",
       "chunkProgress": "パート {{completed}} / {{total}} を文字起こし中...",
-      "paidPlanRequired": "25 MB を超えるファイルのクラウド文字起こしには有料プランが必要です。大容量ファイルは Snowi Cloud で信頼性の高い高品質な結果を得られます。",
+      "paidPlanRequired": "25 MB を超えるファイルのクラウド文字起こしには有料プランが必要です。大容量ファイルは Snowy Cloud で信頼性の高い高品質な結果を得られます。",
       "byokTooLarge": "サードパーティの API キーは 25 MB までのファイルのみ対応しています。",
-      "byokTooLargeDetail": "25 MB を超えるファイルは、Snowi Cloud が分割・並列処理・結合を行います。サードパーティの制限に依存せず、信頼性の高い結果が得られます。",
-      "byokTooLargeNeedsAccount": "アカウントを作成し、有料プランにアップグレードすると、Snowi Cloud でより大きなファイルを文字起こしできます。",
-      "byokTooLargeNeedsUpgrade": "有料プランにアップグレードすると、Snowi Cloud でより大きなファイルを文字起こしできます。",
-      "switchToCloudForLargeFiles": "このファイルを文字起こしするには Snowi Cloud に切り替えてください。",
+      "byokTooLargeDetail": "25 MB を超えるファイルは、Snowy Cloud が分割・並列処理・結合を行います。サードパーティの制限に依存せず、信頼性の高い結果が得られます。",
+      "byokTooLargeNeedsAccount": "アカウントを作成し、有料プランにアップグレードすると、Snowy Cloud でより大きなファイルを文字起こしできます。",
+      "byokTooLargeNeedsUpgrade": "有料プランにアップグレードすると、Snowy Cloud でより大きなファイルを文字起こしできます。",
+      "switchToCloudForLargeFiles": "このファイルを文字起こしするには Snowy Cloud に切り替えてください。",
       "createAccount": "アカウント作成",
       "upgrade": "アップグレード",
-      "switchToCloud": "Snowi Cloud",
+      "switchToCloud": "Snowy Cloud",
       "orDivider": "または",
       "urlPlaceholder": "YouTubeまたは音声URLを貼り付け",
       "urlDownloading": "音声をダウンロード中...",
@@ -2818,7 +2818,7 @@
     "clearAll": "すべてクリア",
     "clearTitle": "辞書をクリアしますか？",
     "clearDescription": "カスタム辞書のすべての単語が削除されます。この操作は元に戻せません。",
-    "addPlaceholder": "カンマ区切りで単語を追加 — Snowi、Supabase、ARR など",
+    "addPlaceholder": "カンマ区切りで単語を追加 — Snowy、Supabase、ARR など",
     "add": "追加",
     "importWords": "単語をインポート",
     "importPlaceholder": "カンマまたは改行区切りの単語を貼り付け...",
@@ -2847,7 +2847,7 @@
       "duplicate": "このトリガーのスニペットは既に存在します",
       "emptyTitle": "同じことを言うのは",
       "emptyTitleAccent": "一度だけ",
-      "emptyDescription": "トリガーワードを話すと、Snowiが保存した内容に置き換えます。URL、自己紹介、署名、プロンプトなど。",
+      "emptyDescription": "トリガーワードを話すと、Snowyが保存した内容に置き換えます。URL、自己紹介、署名、プロンプトなど。",
       "new": "新規スニペット",
       "examples": {
         "linkedinTrigger": "私のLinkedIn",
@@ -2932,7 +2932,7 @@
     },
     "tryAgain": "再試行",
     "card": {
-      "brand": "Snowi",
+      "brand": "Snowy",
       "signalId": "Signal ID",
       "audioSignature": "あなたの音声シグネチャー",
       "stop": "停止",
@@ -2988,7 +2988,7 @@
     "submitBug": "バグを報告"
   },
   "postMigration": {
-    "title": "Snowi へおかえりなさい",
+    "title": "Snowy へおかえりなさい",
     "description": "ノートと設定は以前のバージョンから引き継がれています。ただし macOS はこれを新しいアプリとして扱うため、いくつかの権限を改めて付与していただく必要があります。",
     "done": "完了",
     "remindLater": "後で通知"
@@ -3030,7 +3030,7 @@
       "undo": "元に戻す",
       "accessibilityMissing": {
         "title": "アクセシビリティの許可が必要です",
-        "description": "Snowi がホットキーの検出とテキストの貼り付けを行うには、アクセシビリティの許可が必要です。コントロールパネルで有効にしてください。"
+        "description": "Snowy がホットキーの検出とテキストの貼り付けを行うには、アクセシビリティの許可が必要です。コントロールパネルで有効にしてください。"
       },
       "gpuFallback": {
         "title": "GPU アクセラレーションを利用できません",
@@ -3075,11 +3075,11 @@
       "visionModelDescription": "スクリーンショット付きのコマンドを、画像対応の別モデルに振り分けます。",
       "permissionTitle": "画面収録",
       "permissionDescription": "画面をキャプチャするには macOS の画面収録の許可が必要です。",
-      "relaunchHint": "画面収録の許可は Snowi の実行中に付与されました。スクリーンショットのキャプチャを開始するには、Snowi を終了して再度開いてください。"
+      "relaunchHint": "画面収録の許可は Snowy の実行中に付与されました。スクリーンショットのキャプチャを開始するには、Snowy を終了して再度開いてください。"
     },
     "modes": {
-      "openwhispr": "Snowi Cloud",
-      "openwhisprDesc": "Snowi が管理するエージェントを使用。API キーは不要です。",
+      "openwhispr": "Snowy Cloud",
+      "openwhisprDesc": "Snowy が管理するエージェントを使用。API キーは不要です。",
       "providers": "自分の API キーを使用",
       "providersDesc": "自分の API キーで OpenAI、Anthropic、Gemini、Groq に接続します。",
       "local": "ローカル",
@@ -3104,7 +3104,7 @@
       "systemPromptDescription": "エージェントへのカスタム指示",
       "systemPromptPlaceholder": "カスタムシステムプロンプトを入力...",
       "modes": {
-        "openwhispr": "Snowi Cloud",
+        "openwhispr": "Snowy Cloud",
         "providers": "クラウドプロバイダー",
         "local": "ローカル",
         "selfHosted": "セルフホスト",
@@ -3115,7 +3115,7 @@
         "enterprise": "エンタープライズ",
         "enterpriseDesc": "組織のクラウドアカウントを使用 (AWS, Azure, GCP)。"
       },
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "openwhisprCloudDescription": "信頼できる精度。設定不要。",
       "customSetup": "カスタム設定 (BYOK)",
       "customSetupDescription": "自分のAPIキーを使用してお好みのモデルを選択する"
@@ -3189,7 +3189,7 @@
       "disconnectConfirm": "{{email}} を切断しますか？",
       "disconnectDescription": "このカレンダーからの会議メモは記録されなくなります。",
       "systemAudioRequired": "システムオーディオの権限が必要です",
-      "systemAudioDescription": "会議を文字起こしするには、Snowi に他の参加者の音声を録音するためのシステムオーディオの権限が必要です。画面を録画することはありません。システム設定に移動して有効にします。",
+      "systemAudioDescription": "会議を文字起こしするには、Snowy に他の参加者の音声を録音するためのシステムオーディオの権限が必要です。画面を録画することはありません。システム設定に移動して有効にします。",
       "openSettings": "システム設定を開く",
       "connectFailed": "接続に失敗しました",
       "connectFailedDescription": "Google Calendar への接続中にエラーが発生しました。もう一度お試しください。"
@@ -3219,10 +3219,10 @@
       "disconnectConfirm": "Apple カレンダーを切断しますか？",
       "disconnectDescription": "Apple カレンダーからの会議メモは記録されなくなります。",
       "permissionDenied": "カレンダーへのアクセスが必要です",
-      "permissionDeniedDescription": "会議を検出するには、Snowi にカレンダーへのアクセスが必要です。システム設定の「プライバシーとセキュリティ」→「カレンダー」で Snowi を有効にしてください。",
+      "permissionDeniedDescription": "会議を検出するには、Snowy にカレンダーへのアクセスが必要です。システム設定の「プライバシーとセキュリティ」→「カレンダー」で Snowy を有効にしてください。",
       "openSettings": "システム設定を開く",
       "connectFailed": "接続に失敗しました",
-      "connectFailedDescription": "Calendar.app への接続中にエラーが発生しました。Snowi を再起動してもう一度お試しください。"
+      "connectFailedDescription": "Calendar.app への接続中にエラーが発生しました。Snowy を再起動してもう一度お試しください。"
     },
     "sections": {
       "calendar": "カレンダー",
@@ -3241,13 +3241,13 @@
     "mcp": {
       "title": "メモをAIツールに持ち込みましょう",
       "description": "Claude、ChatGPT、Cursor内でメモを使ってチャット、検索、作業ができます。",
-      "step1": "AIツールで、公開URLを使用してSnowi MCPを追加します",
+      "step1": "AIツールで、公開URLを使用してSnowy MCPを追加します",
       "step2": "上のセクションで必要なスコープを持つAPIキーを作成します。",
       "step3": "キーを Authorization ヘッダーとして貼り付けて接続します。",
       "learnMore": "詳細",
       "viewPlans": "プランを表示",
       "copyUrl": "MCP URLをコピー",
-      "proRequired": "Snowi を Claude、ChatGPT、Cursor に接続するには、有料プランへのアップグレードが必要です。",
+      "proRequired": "Snowy を Claude、ChatGPT、Cursor に接続するには、有料プランへのアップグレードが必要です。",
       "copied": "コピーしました"
     },
     "cli": {
@@ -3261,7 +3261,7 @@
       "local": {
         "label": "ローカル",
         "freeBadge": "無料",
-        "description": "ローカルのメモに直接アクセスできます。ログインや API キーは不要 — Snowi の起動中に利用できます。"
+        "description": "ローカルのメモに直接アクセスできます。ログインや API キーは不要 — Snowy の起動中に利用できます。"
       },
       "cloud": {
         "label": "クラウド",
@@ -3281,8 +3281,8 @@
       "upgrade": "アップグレード"
     },
     "notABot": {
-      "title": "Snowi はミーティング録音ツールであり、ボットではありません",
-      "description": "Snowi はシステムから直接オーディオをキャプチャします — 参加者としてミーティングに参加することはありません。カレンダーを接続して、通常通りノートを取るだけです。"
+      "title": "Snowy はミーティング録音ツールであり、ボットではありません",
+      "description": "Snowy はシステムから直接オーディオをキャプチャします — 参加者としてミーティングに参加することはありません。カレンダーを接続して、通常通りノートを取るだけです。"
     }
   },
   "calendar": {
@@ -3322,7 +3322,7 @@
     "signInDescription": "アカウントを作成またはログインして、会議を録音・文字起こしできます。",
     "connectCalendar": "カレンダーを接続",
     "connectCalendarDescription": "Google カレンダーを連携して、今後のミーティングを確認し、自動的にノートを記録します。",
-    "notABot": "Snowi はシステムオーディオで録音します — ボットとしてミーティングに参加することはありません。",
+    "notABot": "Snowy はシステムオーディオで録音します — ボットとしてミーティングに参加することはありません。",
     "connectCalendarButton": "カレンダーを接続"
   },
   "notesView": {
@@ -3371,7 +3371,7 @@
         "invitationActions": "招待の操作",
         "resendSent": "招待を送信しました",
         "resendThrottled": "招待を送信したばかりです。1分ほど待ってからお試しください。",
-        "syncPrompt": "共有すると、このノートのコピーが Snowi クラウドに保存されます。共有相手を選ぶまでは、あなた以外は閲覧できません。",
+        "syncPrompt": "共有すると、このノートのコピーが Snowy クラウドに保存されます。共有相手を選ぶまでは、あなた以外は閲覧できません。",
         "syncAndShare": "ノートを同期",
         "visibility": {
           "label": "公開範囲",
@@ -3417,13 +3417,13 @@
     }
   },
   "updateNotification": {
-    "title": "Snowi のアップデートあり",
+    "title": "Snowy のアップデートあり",
     "body": "バージョン {{version}} がダウンロード可能です",
     "cta": "今すぐ更新"
   },
   "permissionsGate": {
     "title": "権限が必要です",
-    "description": "Snowi がこのコンピュータで動作するために、いくつかの権限が必要です。",
+    "description": "Snowy がこのコンピュータで動作するために、いくつかの権限が必要です。",
     "continue": "続行"
   },
   "apiKeysSection": {
@@ -3546,7 +3546,7 @@
     },
     "join": {
       "title": "チームに参加",
-      "domainTitle": "あなたのチームはすでに Snowi にいます",
+      "domainTitle": "あなたのチームはすでに Snowy にいます",
       "description": "これらのワークスペースに、あなたと同じメールドメインのメンバーがいます。",
       "invitedDescription": "ワークスペースに招待されています。",
       "invitedBy": "{{inviter}} が {{role}} として招待しました",

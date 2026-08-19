@@ -4,7 +4,7 @@
       "sectionTitle": "語言",
       "sectionDescription": "分別設定介面語言和轉錄語言",
       "uiLabel": "介面語言",
-      "uiDescription": "選擇 Snowi 介面使用的語言",
+      "uiDescription": "選擇 Snowy 介面使用的語言",
       "transcriptionLabel": "轉錄語言",
       "transcriptionDescription": "選擇你說話的語言，以提高轉錄準確度",
       "chineseScriptLabel": "中文書寫（語音輸入）",
@@ -39,12 +39,12 @@
     },
     "openControlPanel": "開啟控制面板",
     "hideControlPanel": "隱藏控制面板",
-    "quit": "結束 Snowi",
-    "tooltip": "Snowi - 語音輸入"
+    "quit": "結束 Snowy",
+    "tooltip": "Snowy - 語音輸入"
   },
   "menu": {
-    "appLabel": "Snowi",
-    "quit": "結束 Snowi",
+    "appLabel": "Snowy",
+    "quit": "結束 Snowy",
     "speech": "語音",
     "settings": "設定...",
     "help": "說明",
@@ -63,8 +63,8 @@
       "message": "無法在瀏覽器中開啟連結：\n{{url}}\n\n錯誤：{{error}}"
     },
     "loadFailure": {
-      "title": "Snowi 載入失敗",
-      "message": "Snowi 無法載入介面。",
+      "title": "Snowy 載入失敗",
+      "message": "Snowy 無法載入介面。",
       "detail": {
         "window": "視窗：{{windowName}}",
         "error": "錯誤 {{errorCode}}：{{errorDescription}}",
@@ -75,17 +75,17 @@
   },
   "startup": {
     "error": {
-      "title": "Snowi 啟動錯誤",
+      "title": "Snowy 啟動錯誤",
       "message": "應用程式啟動失敗：\n\n{{error}}\n\n請回報此問題。"
     },
     "globeHotkey": {
       "title": "Globe 快捷鍵無法使用",
-      "message": "Snowi 無法啟用 Globe 鍵快捷鍵。",
+      "message": "Snowy 無法啟用 Globe 鍵快捷鍵。",
       "details": {
         "unknown": "啟動 Globe 監聽程式時發生未知錯誤。",
         "fallback": "Globe 鍵快捷鍵將維持停用狀態；現有的鍵盤快捷鍵仍可正常使用。",
         "devHint": "執行 `npm run compile:globe` 並重新建置應用程式以重新產生監聽程式。",
-        "reinstallHint": "請嘗試重新安裝 Snowi，或聯絡客服。"
+        "reinstallHint": "請嘗試重新安裝 Snowy，或聯絡客服。"
       }
     }
   },
@@ -211,14 +211,14 @@
       "accessibilityTitle": "輔助使用",
       "accessibilityDescription": "將完成的文字直接輸入到你正在使用的應用程式 — 文件、郵件、聊天。",
       "testAndGrant": "測試並授權",
-      "requiredForApp": "Snowi 運作所需",
+      "requiredForApp": "Snowy 運作所需",
       "microphoneRequired": "需要麥克風存取權限",
       "openSystemSettings": "打開系統設定",
       "systemAudioTitle": "系統音訊",
       "systemAudioDescription": "讓會議錄音機聽到通話另一方的聲音 — 會議、講座、Podcast。你可以稍後在「設定」中開啟。",
       "optional": "可選",
       "recommended": "建議",
-      "accessibilityTroubleshooting": "在系統設定 → 輔助使用中，將 Snowi 的開關關閉再重新開啟。如果清單中根本沒有 Snowi，請點按 + 並從「應用程式」資料夾加入。"
+      "accessibilityTroubleshooting": "在系統設定 → 輔助使用中，將 Snowy 的開關關閉再重新開啟。如果清單中根本沒有 Snowy，請點按 + 並從「應用程式」資料夾加入。"
     },
     "transcription": {
       "title": "轉錄設定",
@@ -254,7 +254,7 @@
       "optionalNote": "選用——你可以隨時在設定中新增或修改。"
     },
     "connectivity": {
-      "title": "無法從此網路連線到 Snowi Cloud",
+      "title": "無法從此網路連線到 Snowy Cloud",
       "body": "{{cause}} 你可以切換到本機引擎，或繼續並稍後再試。",
       "useLocal": "使用本機引擎",
       "continue": "仍然繼續"
@@ -295,13 +295,13 @@
     "meeting": {
       "title": "會議筆記",
       "description": "擷取並總結你的會議",
-      "autoDetect": "Snowi 會自動偵測你是否正在開會，並提議開始記錄 — 未經你確認不會錄製任何內容。",
+      "autoDetect": "Snowy 會自動偵測你是否正在開會，並提議開始記錄 — 未經你確認不會錄製任何內容。",
       "hotkeyLabel": "會議快捷鍵",
       "hotkeyHint": "選填 — 在任何會議中按下即可立即開始記錄。"
     },
     "finish": {
       "title": "一切就緒",
-      "cloudDescription": "你正在使用 Snowi Cloud — 快速、準確、零資料保留，每週免費 2,000 字。希望一切都在裝置上？可在「設定」中切換到本機處理。",
+      "cloudDescription": "你正在使用 Snowy Cloud — 快速、準確、零資料保留，每週免費 2,000 字。希望一切都在裝置上？可在「設定」中切換到本機處理。",
       "localDescription": "你已設定本機處理或自備金鑰。可隨時在「設定」中調整音訊處理方式。",
       "cleanupNote": "AI 文字清理使用合理的預設值，可隨時在「設定」中調整。",
       "openSettings": "開啟設定",
@@ -324,7 +324,7 @@
   "streaming": {
     "errors": {
       "cloudUnreachable": {
-        "title": "無法連線到 Snowi Cloud",
+        "title": "無法連線到 Snowy Cloud",
         "generic": "網路請求失敗，請檢查你的連線。",
         "dnsBlocked": "DNS 無法解析 AI 服務商的網域 — 廣告封鎖器或過濾器可能阻擋了它。",
         "refused": "連線被拒絕 — 可能是防火牆或 VPN。",
@@ -337,7 +337,7 @@
   "controlPanel": {
     "updateRequiredByOrg": {
       "title": "需要更新",
-      "description": "您的組織要求使用 Snowi {{version}} 或更新版本。請更新應用程式。"
+      "description": "您的組織要求使用 Snowy {{version}} 或更新版本。請更新應用程式。"
     },
     "update": {
       "readyTitle": "更新已準備就緒",
@@ -345,7 +345,7 @@
       "problemTitle": "更新遇到問題",
       "problemDescription": "無法完成更新。請稍後再試。",
       "installTitle": "安裝更新",
-      "installDescription": "Snowi 將重新啟動以套用更新。進行中的工作會自動儲存。",
+      "installDescription": "Snowy 將重新啟動以套用更新。進行中的工作會自動儲存。",
       "couldNotInstallTitle": "無法安裝更新",
       "couldNotInstallDescription": "發生錯誤，請再試一次。",
       "couldNotDownloadTitle": "無法下載更新",
@@ -360,7 +360,7 @@
     },
     "accessibilityMissing": {
       "title": "需要輔助使用權限",
-      "description": "我們偵測到 Snowi 需要輔助使用權限才能正常運作。請在下方啟用。"
+      "description": "我們偵測到 Snowy 需要輔助使用權限才能正常運作。請在下方啟用。"
     },
     "billing": {
       "pastDueTitle": "我們無法處理你的付款",
@@ -426,8 +426,8 @@
       "retryTranslationMode": "翻譯模式"
     },
     "cloudMigration": {
-      "title": "歡迎使用 Snowi Cloud",
-      "description": "我們已將轉錄切換至 Snowi Cloud，提供更快、更準確的結果。你之前的設定已儲存，隨時可在設定中切換回來。",
+      "title": "歡迎使用 Snowy Cloud",
+      "description": "我們已將轉錄切換至 Snowy Cloud，提供更快、更準確的結果。你之前的設定已儲存，隨時可在設定中切換回來。",
       "viewSettings": "查看設定"
     },
     "aiCta": {
@@ -610,7 +610,7 @@
         "description": "部分錄音內容無法轉錄。"
       },
       "errorDescriptions": {
-        "sessionExpired": "Snowi Cloud 工作階段無法使用。請至「設定」重新登入。",
+        "sessionExpired": "Snowy Cloud 工作階段無法使用。請至「設定」重新登入。",
         "offline": "你目前離線。雲端轉錄需要網際網路連線。",
         "dailyLimitReached": "已達今日的轉錄上限。請明天再試或升級你的方案。",
         "providerRateLimited": "你的轉錄服務商限制了請求頻率。請稍候再試。",
@@ -629,8 +629,8 @@
         "notAppliedTitle": "未套用選取文字編輯",
         "changed": "處理期間，選取的文字或目標應用程式已變更。未取代任何內容。",
         "expired": "選取文字編輯已逾時。請重新選取文字後再試。",
-        "pasteFailed": "Snowi 已產生編輯結果，但無法取代選取的文字。",
-        "unavailable": "Snowi 無法安全讀取選取的文字。請檢查輔助使用或輸入自動化權限。",
+        "pasteFailed": "Snowy 已產生編輯結果，但無法取代選取的文字。",
+        "unavailable": "Snowy 無法安全讀取選取的文字。請檢查輔助使用或輸入自動化權限。",
         "tooLarge": "選取內容過長。請選取不超過 6,000 個字元。",
         "reasoningFailed": "AI 無法完成選取文字編輯。原始文字未被變更。"
       },
@@ -728,7 +728,7 @@
       "micErrors": {
         "accessFailed": "麥克風存取失敗。請再試一次。",
         "noMicrophones": "未偵測到麥克風。請在 {{settingsPath}} 中連接或選擇麥克風。",
-        "permissionDenied": "權限被拒絕。請開啟 {{privacyPath}} 並允許 Snowi。",
+        "permissionDenied": "權限被拒絕。請開啟 {{privacyPath}} 並允許 Snowy。",
         "couldNotStart": "無法啟動所選的麥克風。請在 {{settingsPath}} 中選擇輸入裝置後重新測試。",
         "noActiveInput": "找不到有效的音訊輸入。請在 {{settingsPath}} 中選擇麥克風。",
         "unknown": "麥克風存取失敗：{{error}}。請選擇其他輸入裝置後再試。",
@@ -757,8 +757,8 @@
         "accessibilityNeeded": "請在系統設定中授予輔助使用權限，以啟用自動貼上功能。",
         "windowsReady": "Windows 不需要特殊權限即可自動貼上。一切就緒！",
         "linuxReadyWithMethod": "已使用 {{method}} 啟用自動貼上。一切就緒！",
-        "waylandClipboardMode": "此 Wayland 工作階段不支援自動貼上。Snowi 會將文字複製到剪貼簿，你可以使用 Ctrl+V 貼上。",
-        "optionalPasteTool": "如需自動貼上，請安裝 {{tool}}：\n\n{{installCmd}}{{waylandNote}}\n\n沒有安裝也可以使用 Snowi，文字會複製到剪貼簿，你可以使用 Ctrl+V 貼上。"
+        "waylandClipboardMode": "此 Wayland 工作階段不支援自動貼上。Snowy 會將文字複製到剪貼簿，你可以使用 Ctrl+V 貼上。",
+        "optionalPasteTool": "如需自動貼上，請安裝 {{tool}}：\n\n{{installCmd}}{{waylandNote}}\n\n沒有安裝也可以使用 Snowy，文字會複製到剪貼簿，你可以使用 Ctrl+V 貼上。"
       },
       "alerts": {
         "accessibilityNeeded": "需要輔助使用權限！請在系統設定中授權。"
@@ -771,7 +771,7 @@
         "defaultPasteTool": "xdotool",
         "xdotoolXwayland": "xdotool（XWayland 應用程式）"
       },
-      "accessibilityTestText": "Snowi 輔助使用測試",
+      "accessibilityTestText": "Snowy 輔助使用測試",
       "warning": {
         "messages": {
           "macos": "請檢查聲音設定以選擇輸入裝置",
@@ -841,7 +841,7 @@
       "emailRequired": "輸入您的工作電子郵件以使用 SSO。",
       "failed": "單一登入失敗，請再試一次。",
       "companySignInTitle": "使用公司登入",
-      "requiredDescription": "{{domain}} 要求透過 SSO 登入 Snowi。",
+      "requiredDescription": "{{domain}} 要求透過 SSO 登入 Snowy。",
       "availableDescription": "您的 {{domain}} 帳戶已可使用公司 SSO。",
       "useEmailInstead": "改用電子郵件和密碼"
     },
@@ -850,10 +850,10 @@
       "continueWithApple": "使用 Apple 繼續",
       "continueWithGoogle": "使用 Google 繼續",
       "continueWithMicrosoft": "使用 Microsoft 繼續",
-      "protocolUnavailable": "無法透過瀏覽器登入 — 請在系統的「預設應用程式」設定中重新註冊 snowi:// 協定。"
+      "protocolUnavailable": "無法透過瀏覽器登入 — 請在系統的「預設應用程式」設定中重新註冊 snowy:// 協定。"
     },
     "welcomeSubtitle": "隨時隨地用語音輸入文字",
-    "welcomeTitle": "歡迎使用 Snowi",
+    "welcomeTitle": "歡迎使用 Snowy",
     "sessionExpired": "工作階段已過期，請重新登入。"
   },
   "cleanupPrompt": "文字整理",
@@ -1078,10 +1078,10 @@
     "recheckChecking": "檢查中...",
     "title": "自動貼上",
     "usingMethodPrefix": "使用",
-    "waylandClipboardDescription": "此 Wayland 工作階段不支援自動貼上。Snowi 會將文字複製到剪貼簿，你可以使用 Ctrl+V 手動貼上。",
+    "waylandClipboardDescription": "此 Wayland 工作階段不支援自動貼上。Snowy 會將文字複製到剪貼簿，你可以使用 Ctrl+V 手動貼上。",
     "waylandClipboardTitle": "Wayland 剪貼簿模式",
     "windowsReady": "Windows 內建支援自動貼上。不需要額外設定！",
-    "withoutToolPrefix": "若未安裝此工具，Snowi 會將文字複製到剪貼簿。你可以使用 Ctrl+V 手動貼上。",
+    "withoutToolPrefix": "若未安裝此工具，Snowy 會將文字複製到剪貼簿。你可以使用 Ctrl+V 手動貼上。",
     "xwaylandAppsOnly": "自動貼上僅適用於 XWayland 應用程式"
   },
   "promptStudio": {
@@ -1131,7 +1131,7 @@
       "none": "無",
       "outputLabel": "輸出",
       "processing": "處理中...",
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "providerLabel": "供應商",
       "run": "執行測試",
       "customEndpoint": "自訂端點",
@@ -1311,7 +1311,7 @@
           "price": "$0",
           "period": "永久",
           "features": [
-            "## Snowi Cloud",
+            "## Snowy Cloud",
             "每週 2,000 字轉錄",
             "每月 5 小時會議錄製",
             "## 永久免費",
@@ -1409,7 +1409,7 @@
         "button": "刪除我的帳戶",
         "deleting": "正在刪除...",
         "title": "刪除您的帳戶？",
-        "description": "這將永久刪除您的 Snowi 帳戶、所有雲端同步筆記和所有本地資料，包括轉錄、音訊錄製、下載的模型、行事曆連線和設定。此操作無法復原。",
+        "description": "這將永久刪除您的 Snowy 帳戶、所有雲端同步筆記和所有本地資料，包括轉錄、音訊錄製、下載的模型、行事曆連線和設定。此操作無法復原。",
         "confirmText": "刪除所有內容",
         "successTitle": "帳戶已刪除",
         "successDescription": "您的帳戶和所有資料已被刪除。應用程式將立即重新載入。",
@@ -1483,7 +1483,7 @@
       "enableTextCleanup": "啟用文字整理",
       "enableTextCleanupDescription": "AI 移除語助詞，修正文法和標點",
       "modes": {
-        "openwhispr": "Snowi Cloud",
+        "openwhispr": "Snowy Cloud",
         "providers": "雲端供應商",
         "local": "本機",
         "selfHosted": "自架主機",
@@ -1494,13 +1494,13 @@
         "enterprise": "企業級",
         "enterpriseDesc": "使用你組織的雲端帳號（AWS、Azure、GCP）。"
       },
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "openwhisprCloudDescription": "準確可靠，無需設定。",
       "title": "AI 文字增強",
       "toasts": {
         "switchedCloud": {
-          "description": "文字增強將使用 Snowi 雲端服務。",
-          "title": "已切換至 Snowi Cloud"
+          "description": "文字增強將使用 Snowy 雲端服務。",
+          "title": "已切換至 Snowy Cloud"
         },
         "switchedCustom": {
           "description": "設定你自己的供應商和 API Key。",
@@ -1588,7 +1588,7 @@
       "appearance": {
         "auto": "自動",
         "dark": "深色",
-        "description": "控制 Snowi 的外觀",
+        "description": "控制 Snowy 的外觀",
         "light": "淺色",
         "theme": "主題",
         "themeDescription": "選擇淺色、深色或跟隨系統",
@@ -1616,8 +1616,8 @@
         "linuxPttSetupDescription": "您的使用者需要存取鍵盤輸入裝置的權限。",
         "linuxPttSetupNote": "執行指令後，請登出並重新登入。",
         "hyprlandConfigWriteWarningTitle": "Hyprland 按鍵綁定不會保留",
-        "hyprlandConfigWriteWarningDescription": "Snowi 無法寫入 {{path}}，因此重新載入 Hyprland 設定後按鍵綁定不會保留。請確認該檔案存在且可寫入。",
-        "hyprlandUnbindDescription": "在 Hyprland 上，Snowi 會佔用所選快捷鍵。當 Snowi 註冊該快捷鍵時，任何使用相同按鍵組合的既有 Hyprland 綁定都會被解除。"
+        "hyprlandConfigWriteWarningDescription": "Snowy 無法寫入 {{path}}，因此重新載入 Hyprland 設定後按鍵綁定不會保留。請確認該檔案存在且可寫入。",
+        "hyprlandUnbindDescription": "在 Hyprland 上，Snowy 會佔用所選快捷鍵。當 Snowy 註冊該快捷鍵時，任何使用相同按鍵組合的既有 Hyprland 綁定都會被解除。"
       },
       "meetingHotkey": {
         "title": "會議模式快捷鍵",
@@ -1643,7 +1643,7 @@
       },
       "notifications": {
         "title": "通知",
-        "description": "設定 Snowi 可以顯示哪些通知",
+        "description": "設定 Snowy 可以顯示哪些通知",
         "disableAll": "停用所有通知",
         "disableAllDescription": "靜音除錯誤訊息外的所有內容",
         "meetingDetection": "會議偵測",
@@ -1664,14 +1664,14 @@
       },
       "startup": {
         "launchAtLogin": "登入時啟動",
-        "launchAtLoginDescription": "登入時在背景啟動 Snowi",
+        "launchAtLoginDescription": "登入時在背景啟動 Snowy",
         "title": "啟動",
-        "description": "控制 Snowi 啟動時的行為",
+        "description": "控制 Snowy 啟動時的行為",
         "startMinimized": "啟動時最小化",
         "startMinimizedDescription": "啟動時不顯示控制面板視窗",
         "needsApproval": {
           "title": "需要在系統設定中允許",
-          "description": "macOS 已將 Snowi 註冊為登入項目，但仍在等待你在「登入項目」中允許它。",
+          "description": "macOS 已將 Snowy 註冊為登入項目，但仍在等待你在「登入項目」中允許它。",
           "action": "開啟登入項目"
         }
       },
@@ -1717,7 +1717,7 @@
           "group": {
             "step1Title": "將你的使用者新增至 input 群組",
             "step2Title": "登出並重新登入",
-            "step2Desc": "群組變更僅在新工作階段後生效。從桌面登出，重新登入，然後重新開啟 Snowi。"
+            "step2Desc": "群組變更僅在新工作階段後生效。從桌面登出，重新登入，然後重新開啟 Snowy。"
           },
           "service": {
             "step1Title": "建立服務目錄",
@@ -1741,7 +1741,7 @@
           "manualTitle": "將以下內容加入你的設定",
           "manualDesc": "自行設定後重新建置。",
           "flakeTitle": "透過我們的 flake 安裝？",
-          "flakeDesc": "若你從 flake 安裝 Snowi，programs.snowi.enable 會自動啟用 ydotool、uinput 模組及所需的群組成員資格。",
+          "flakeDesc": "若你從 flake 安裝 Snowy，programs.snowy.enable 會自動啟用 ydotool、uinput 模組及所需的群組成員資格。",
           "rebuildNote": "執行 sudo nixos-rebuild switch，然後登出並重新登入，使群組變更與 /dev/uinput 規則生效。將 <you> 替換為你的使用者名稱。"
         }
       },
@@ -1774,7 +1774,7 @@
           },
           "installUpdate": {
             "confirmText": "安裝並重新啟動",
-            "description": "Snowi 將重新啟動以套用更新。",
+            "description": "Snowy 將重新啟動以套用更新。",
             "title": "安裝更新"
           },
           "noUpdates": {
@@ -1809,13 +1809,13 @@
     "permissions": {
       "accessibilityDescription": "轉錄後自動貼上文字所需的權限",
       "accessibilityTitle": "輔助使用",
-      "description": "測試和管理 Snowi 正常運作所需的系統權限",
+      "description": "測試和管理 Snowy 正常運作所需的系統權限",
       "microphoneDescription": "錄製您的聲音用於聽寫和轉錄",
       "microphoneTitle": "麥克風",
       "resetAccessibility": {
-        "description": "這將從輔助使用權限中移除 Snowi。你需要在「系統設定 > 隱私權與安全性 > 輔助使用」中重新授權。",
+        "description": "這將從輔助使用權限中移除 Snowy。你需要在「系統設定 > 隱私權與安全性 > 輔助使用」中重新授權。",
         "label": "重設輔助使用權限",
-        "rowDescription": "重新安裝或重新建置應用程式後，透過在系統設定中移除並重新加入 Snowi 來修復問題",
+        "rowDescription": "重新安裝或重新建置應用程式後，透過在系統設定中移除並重新加入 Snowy 來修復問題",
         "title": "重設輔助使用權限"
       },
       "optional": "可選",
@@ -1837,7 +1837,7 @@
       "description": "控制哪些資料會離開你的裝置。預設全部關閉。",
       "title": "隱私權",
       "usageAnalytics": "使用分析",
-      "usageAnalyticsDescription": "分享匿名的效能指標，協助我們改善 Snowi。我們絕不會傳送轉錄內容——只有計時和錯誤資料。",
+      "usageAnalyticsDescription": "分享匿名的效能指標，協助我們改善 Snowy。我們絕不會傳送轉錄內容——只有計時和錯誤資料。",
       "dataRetention": "資料保留",
       "dataRetentionDescription": "將轉錄和音訊本地儲存至歷史記錄。停用後，轉錄內容會被貼上但不會被儲存。",
       "transcriptRetention": "轉錄保留",
@@ -1893,9 +1893,9 @@
     "transcription": {
       "customSetup": "自訂設定",
       "customSetupDescription": "使用你自己的供應商和 API Key。",
-      "description": "選擇 Snowi 轉錄語音的方式",
+      "description": "選擇 Snowy 轉錄語音的方式",
       "modes": {
-        "openwhispr": "Snowi Cloud",
+        "openwhispr": "Snowy Cloud",
         "providers": "雲端供應商",
         "local": "本機",
         "selfHosted": "自架主機",
@@ -1904,13 +1904,13 @@
         "localDesc": "裝置端模型，完全私密。",
         "selfHostedDesc": "你的伺服器，在你的網路上。"
       },
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "openwhisprCloudDescription": "準確可靠，無需設定。",
       "title": "語音轉文字",
       "toasts": {
         "switchedCloud": {
-          "description": "轉錄將使用 Snowi 雲端服務。",
-          "title": "已切換至 Snowi Cloud"
+          "description": "轉錄將使用 Snowy 雲端服務。",
+          "title": "已切換至 Snowy Cloud"
         },
         "switchedCustom": {
           "description": "設定你自己的供應商和 API Key。",
@@ -2193,7 +2193,7 @@
       }
     },
     "hotkeys": {
-      "description": "無論 Snowi 是否在焦點中，這些快速鍵在任何應用程式中都有效。預設僅綁定聽寫。",
+      "description": "無論 Snowy 是否在焦點中，這些快速鍵在任何應用程式中都有效。預設僅綁定聽寫。",
       "slots": {
         "chatAgent": "聊天代理",
         "dictation": "聽寫",
@@ -2393,7 +2393,7 @@
     },
     "tryAgain": "重試",
     "card": {
-      "brand": "Snowi",
+      "brand": "Snowy",
       "signalId": "Signal ID",
       "audioSignature": "您的音訊簽名",
       "stop": "停止",
@@ -2525,7 +2525,7 @@
     },
     "structureIntro": {
       "title": "筆記存放在哪裡",
-      "description": "Snowi 將個人想法與協作內容分開，讓合適的人看到合適的筆記。",
+      "description": "Snowy 將個人想法與協作內容分開，讓合適的人看到合適的筆記。",
       "personal": {
         "title": "個人空間",
         "description": "只有你能看到這裡的資料夾和筆記。"
@@ -2623,7 +2623,7 @@
       "newFolder": "新增資料夾",
       "folderName": "資料夾名稱",
       "create": "建立",
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "custom": "自訂",
       "selectFolder": "選擇資料夾",
       "transcriptionFailed": "轉錄失敗",
@@ -2635,15 +2635,15 @@
       "fileTooLarge": "此檔案超過 500 MB 的大小限制。",
       "largeFileNote": "大型檔案將被分割並平行轉錄。",
       "chunkProgress": "正在轉錄第 {{completed}} 部分，共 {{total}} 部分...",
-      "paidPlanRequired": "超過 25 MB 的檔案需要付費方案才能使用雲端轉錄。大型檔案透過 Snowi Cloud 處理，確保可靠、高品質的結果。",
+      "paidPlanRequired": "超過 25 MB 的檔案需要付費方案才能使用雲端轉錄。大型檔案透過 Snowy Cloud 處理，確保可靠、高品質的結果。",
       "byokTooLarge": "第三方 API 金鑰僅支援 25 MB 以內的檔案。",
-      "byokTooLargeDetail": "超過 25 MB 的檔案由 Snowi Cloud 負責分割、平行處理和重組——無需依賴第三方服務限制，即可獲得可靠的結果。",
-      "byokTooLargeNeedsAccount": "建立帳戶並升級至付費方案，即可使用 Snowi Cloud 轉錄更大的檔案。",
-      "byokTooLargeNeedsUpgrade": "升級至付費方案，即可使用 Snowi Cloud 轉錄更大的檔案。",
-      "switchToCloudForLargeFiles": "切換到 Snowi Cloud 來轉錄此檔案。",
+      "byokTooLargeDetail": "超過 25 MB 的檔案由 Snowy Cloud 負責分割、平行處理和重組——無需依賴第三方服務限制，即可獲得可靠的結果。",
+      "byokTooLargeNeedsAccount": "建立帳戶並升級至付費方案，即可使用 Snowy Cloud 轉錄更大的檔案。",
+      "byokTooLargeNeedsUpgrade": "升級至付費方案，即可使用 Snowy Cloud 轉錄更大的檔案。",
+      "switchToCloudForLargeFiles": "切換到 Snowy Cloud 來轉錄此檔案。",
       "createAccount": "建立帳戶",
       "upgrade": "升級",
-      "switchToCloud": "Snowi Cloud",
+      "switchToCloud": "Snowy Cloud",
       "orDivider": "或",
       "urlPlaceholder": "貼上 YouTube 或音訊 URL",
       "urlDownloading": "正在下載音訊...",
@@ -2890,7 +2890,7 @@
     "clearAll": "全部清除",
     "clearTitle": "清空字典？",
     "clearDescription": "這將移除自訂字典中的所有詞彙。此操作無法復原。",
-    "addPlaceholder": "用逗號分隔新增多個詞——Snowi、Supabase、ARR",
+    "addPlaceholder": "用逗號分隔新增多個詞——Snowy、Supabase、ARR",
     "add": "新增",
     "importWords": "匯入詞語",
     "importPlaceholder": "貼上以逗號或換行分隔的詞語...",
@@ -2919,7 +2919,7 @@
       "duplicate": "已存在使用此觸發詞的片段",
       "emptyTitle": "同樣的話，只說",
       "emptyTitleAccent": "一遍",
-      "emptyDescription": "說出觸發詞，Snowi 會把它替換為你儲存的內容：連結、開場白、簽名、提示詞。",
+      "emptyDescription": "說出觸發詞，Snowy 會把它替換為你儲存的內容：連結、開場白、簽名、提示詞。",
       "new": "建立片段",
       "examples": {
         "linkedinTrigger": "我的 LinkedIn",
@@ -2988,7 +2988,7 @@
     "submitBug": "提交 Bug"
   },
   "postMigration": {
-    "title": "歡迎回到 Snowi",
+    "title": "歡迎回到 Snowy",
     "description": "您的筆記與設定已從先前版本保留下來。不過 macOS 會將此視為一款全新的應用程式，因此需要您重新授予部分權限。",
     "done": "完成",
     "remindLater": "稍後提醒我"
@@ -3030,7 +3030,7 @@
       "undo": "復原",
       "accessibilityMissing": {
         "title": "需要輔助使用權限",
-        "description": "Snowi 需要輔助使用權限來偵測快捷鍵和貼上文字。請在控制面板中啟用。"
+        "description": "Snowy 需要輔助使用權限來偵測快捷鍵和貼上文字。請在控制面板中啟用。"
       },
       "gpuFallback": {
         "title": "GPU 加速無法使用",
@@ -3075,11 +3075,11 @@
       "visionModelDescription": "將附有截圖的指令改由另一個支援影像的模型處理。",
       "permissionTitle": "螢幕錄製",
       "permissionDescription": "macOS 需要螢幕錄製權限才能擷取螢幕。",
-      "relaunchHint": "螢幕錄製權限是在 Snowi 執行期間授予的。請結束並重新開啟 Snowi 以開始擷取螢幕截圖。"
+      "relaunchHint": "螢幕錄製權限是在 Snowy 執行期間授予的。請結束並重新開啟 Snowy 以開始擷取螢幕截圖。"
     },
     "modes": {
-      "openwhispr": "Snowi Cloud",
-      "openwhisprDesc": "使用 Snowi 託管的代理，無需 API Key。",
+      "openwhispr": "Snowy Cloud",
+      "openwhisprDesc": "使用 Snowy 託管的代理，無需 API Key。",
       "providers": "使用你自己的 API Key",
       "providersDesc": "用你自己的 API Key 連接 OpenAI、Anthropic、Gemini 或 Groq。",
       "local": "本機",
@@ -3104,7 +3104,7 @@
       "systemPromptDescription": "助手的自訂指令",
       "systemPromptPlaceholder": "輸入自訂系統提示詞...",
       "modes": {
-        "openwhispr": "Snowi Cloud",
+        "openwhispr": "Snowy Cloud",
         "providers": "雲端供應商",
         "local": "本機",
         "selfHosted": "自架主機",
@@ -3115,7 +3115,7 @@
         "enterprise": "企業級",
         "enterpriseDesc": "使用你組織的雲端帳號（AWS、Azure、GCP）。"
       },
-      "openwhisprCloud": "Snowi Cloud",
+      "openwhisprCloud": "Snowy Cloud",
       "openwhisprCloudDescription": "準確可靠，無需設定。",
       "customSetup": "自訂配置 (BYOK)",
       "customSetupDescription": "使用自己的 API 金鑰並選擇偏好的模型"
@@ -3189,7 +3189,7 @@
       "disconnectConfirm": "中斷 {{email}} 的連接？",
       "disconnectDescription": "將不再從此日曆記錄會議筆記。",
       "systemAudioRequired": "需要系統音訊權限",
-      "systemAudioDescription": "要轉錄會議，Snowi 需要系統音訊權限來錄製其他參與者的音訊。我們絕不會錄製您的螢幕。您將被引導至系統設定以啟用此權限。",
+      "systemAudioDescription": "要轉錄會議，Snowy 需要系統音訊權限來錄製其他參與者的音訊。我們絕不會錄製您的螢幕。您將被引導至系統設定以啟用此權限。",
       "openSettings": "打開系統設定",
       "connectFailed": "連線失敗",
       "connectFailedDescription": "連線 Google Calendar 時發生錯誤。請再試一次。"
@@ -3219,10 +3219,10 @@
       "disconnectConfirm": "中斷 Apple 日曆的連接？",
       "disconnectDescription": "將不再從 Apple 日曆記錄會議筆記。",
       "permissionDenied": "需要日曆存取權限",
-      "permissionDeniedDescription": "Snowi 需要日曆存取權限來偵測會議。請在系統設定的「隱私權與安全性」→「日曆」中啟用 Snowi。",
+      "permissionDeniedDescription": "Snowy 需要日曆存取權限來偵測會議。請在系統設定的「隱私權與安全性」→「日曆」中啟用 Snowy。",
       "openSettings": "打開系統設定",
       "connectFailed": "連線失敗",
-      "connectFailedDescription": "連線 Calendar.app 時發生錯誤。請重新啟動 Snowi 後再試一次。"
+      "connectFailedDescription": "連線 Calendar.app 時發生錯誤。請重新啟動 Snowy 後再試一次。"
     },
     "sections": {
       "calendar": "行事曆",
@@ -3241,13 +3241,13 @@
     "mcp": {
       "title": "將筆記帶到你的 AI 工具中",
       "description": "在 Claude、ChatGPT 和 Cursor 中與你的筆記一起聊天、搜尋和工作。",
-      "step1": "在你的 AI 工具中，使用公開 URL 新增 Snowi MCP",
+      "step1": "在你的 AI 工具中，使用公開 URL 新增 Snowy MCP",
       "step2": "在上方建立具有所需權限的 API 金鑰。",
       "step3": "將金鑰貼上為 Authorization 標頭以連線。",
       "learnMore": "瞭解更多",
       "viewPlans": "查看方案",
       "copyUrl": "複製 MCP URL",
-      "proRequired": "升級到付費方案，以將 Snowi 連接到 Claude、ChatGPT 和 Cursor。",
+      "proRequired": "升級到付費方案，以將 Snowy 連接到 Claude、ChatGPT 和 Cursor。",
       "copied": "已複製"
     },
     "cli": {
@@ -3261,7 +3261,7 @@
       "local": {
         "label": "本機",
         "freeBadge": "免費",
-        "description": "直接讀取你的本機筆記。無需登入或 API 金鑰 — Snowi 執行時即可使用。"
+        "description": "直接讀取你的本機筆記。無需登入或 API 金鑰 — Snowy 執行時即可使用。"
       },
       "cloud": {
         "label": "雲端",
@@ -3281,8 +3281,8 @@
       "upgrade": "升級"
     },
     "notABot": {
-      "title": "Snowi 是會議錄製工具，不是機器人",
-      "description": "Snowi 直接從您的系統擷取音訊 — 它不會以參與者身分加入您的會議。只需連接日曆，正常記錄筆記即可。"
+      "title": "Snowy 是會議錄製工具，不是機器人",
+      "description": "Snowy 直接從您的系統擷取音訊 — 它不會以參與者身分加入您的會議。只需連接日曆，正常記錄筆記即可。"
     }
   },
   "calendar": {
@@ -3322,7 +3322,7 @@
     "signInDescription": "建立帳戶或登入以錄製和轉錄會議。",
     "connectCalendar": "連接您的日曆",
     "connectCalendarDescription": "關聯 Google 日曆以查看即將到來的會議並自動記錄筆記。",
-    "notABot": "Snowi 透過系統音訊錄製 — 它不會以機器人身分加入您的會議。",
+    "notABot": "Snowy 透過系統音訊錄製 — 它不會以機器人身分加入您的會議。",
     "connectCalendarButton": "連接日曆"
   },
   "notesView": {
@@ -3371,7 +3371,7 @@
         "invitationActions": "邀請操作",
         "resendSent": "邀請已傳送",
         "resendThrottled": "邀請剛剛已傳送，請一分鐘後再試。",
-        "syncPrompt": "分享後，這則筆記會在你的 Snowi 雲端保留一份副本。在你選擇分享對象之前，只有你能看到它。",
+        "syncPrompt": "分享後，這則筆記會在你的 Snowy 雲端保留一份副本。在你選擇分享對象之前，只有你能看到它。",
         "syncAndShare": "同步筆記",
         "visibility": {
           "label": "可見性",
@@ -3417,18 +3417,18 @@
     }
   },
   "updateNotification": {
-    "title": "Snowi 有可用更新",
+    "title": "Snowy 有可用更新",
     "body": "版本 {{version}} 已可下載",
     "cta": "立即更新"
   },
   "permissionsGate": {
     "title": "需要權限",
-    "description": "Snowi 需要一些權限才能在此電腦上正常運作。",
+    "description": "Snowy 需要一些權限才能在此電腦上正常運作。",
     "continue": "繼續"
   },
   "apiKeysSection": {
     "title": "API 金鑰",
-    "description": "建立金鑰以程式化方式存取 Snowi API。",
+    "description": "建立金鑰以程式化方式存取 Snowy API。",
     "docsLink": "API 文件",
     "empty": "尚無 API 金鑰",
     "createButton": "建立 API 金鑰",
@@ -3546,7 +3546,7 @@
     },
     "join": {
       "title": "加入你的團隊",
-      "domainTitle": "你的團隊已在 Snowi",
+      "domainTitle": "你的團隊已在 Snowy",
       "description": "這些工作區中有與你相同電子郵件網域的成員。",
       "invitedDescription": "有人邀請你加入一個工作區。",
       "invitedBy": "{{inviter}} 邀請你擔任{{role}}",

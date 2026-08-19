@@ -1,5 +1,5 @@
 #!/bin/bash
-# Post-remove script for Snowi (deb)
+# Post-remove script for Snowy (deb)
 # Best-effort: must never fail package removal, and must never run on upgrade.
 
 set -uo pipefail
@@ -27,12 +27,12 @@ if [ -z "$REAL_HOME" ]; then
   exit 0
 fi
 
-CACHE_DIR="$REAL_HOME/.cache/snowi"
+CACHE_DIR="$REAL_HOME/.cache/snowy"
 MODELS_DIR="$CACHE_DIR/models"
 
 if [ -d "$MODELS_DIR" ]; then
   rm -rf "$MODELS_DIR" 2>/dev/null || true
-  echo "Removed Snowi cached models"
+  echo "Removed Snowy cached models"
 fi
 
 if [ -d "$CACHE_DIR" ]; then

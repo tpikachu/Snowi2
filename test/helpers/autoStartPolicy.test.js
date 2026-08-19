@@ -120,11 +120,11 @@ test("migration is Windows-only", () => {
 test("Windows and Linux detect a login launch from the flag on argv", () => {
   for (const platform of ["win32", "linux"]) {
     assert.equal(
-      wasLaunchedHidden({ platform, argv: ["Snowi.exe", HIDDEN_LAUNCH_FLAG] }),
+      wasLaunchedHidden({ platform, argv: ["Snowy.exe", HIDDEN_LAUNCH_FLAG] }),
       true,
       platform
     );
-    assert.equal(wasLaunchedHidden({ platform, argv: ["Snowi.exe"] }), false, platform);
+    assert.equal(wasLaunchedHidden({ platform, argv: ["Snowy.exe"] }), false, platform);
   }
 });
 
@@ -134,7 +134,7 @@ test("macOS detects a login launch from wasOpenedAtLogin, not from argv", () => 
   assert.equal(
     wasLaunchedHidden({
       platform: "darwin",
-      argv: ["Snowi"],
+      argv: ["Snowy"],
       loginItemSettings: { wasOpenedAtLogin: true },
     }),
     true
@@ -142,7 +142,7 @@ test("macOS detects a login launch from wasOpenedAtLogin, not from argv", () => 
   assert.equal(
     wasLaunchedHidden({
       platform: "darwin",
-      argv: ["Snowi", HIDDEN_LAUNCH_FLAG],
+      argv: ["Snowy", HIDDEN_LAUNCH_FLAG],
       loginItemSettings: { wasOpenedAtLogin: false },
     }),
     false

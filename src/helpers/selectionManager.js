@@ -500,7 +500,7 @@ class SelectionManager {
   async _captureViaClipboard(sendCopy, expectedTarget) {
     const original = this.clipboardManager._saveClipboard();
     const beforeWrite = this.clipboardManager._readClipboardTextAll();
-    const sentinel = `__SNOWI_SELECTION_${crypto.randomUUID()}__`;
+    const sentinel = `__SNOWY_SELECTION_${crypto.randomUUID()}__`;
     this.clipboardManager._writeClipboardTextAll(sentinel);
     // A clipboard side the sentinel write didn't reach (KDE desyncs X11 from
     // Wayland) still holds pre-copy content; snapshot it so stale text can't

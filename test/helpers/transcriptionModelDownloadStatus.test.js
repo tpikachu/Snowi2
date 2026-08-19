@@ -58,7 +58,7 @@ test("Parakeet rejects a duplicate download without replacing the active request
 });
 
 test("listWhisperModels surfaces active download state", async (t) => {
-  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "snowi-whisper-status-"));
+  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "snowy-whisper-status-"));
   t.after(() => fs.rm(modelsDir, { recursive: true, force: true }));
 
   const manager = new WhisperManager();
@@ -77,7 +77,7 @@ test("listWhisperModels surfaces active download state", async (t) => {
 });
 
 test("Whisper rejects a duplicate download without replacing the active request", async (t) => {
-  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "snowi-whisper-guard-"));
+  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "snowy-whisper-guard-"));
   t.after(() => fs.rm(modelsDir, { recursive: true, force: true }));
 
   const manager = new WhisperManager();
@@ -94,7 +94,7 @@ test("Whisper rejects a duplicate download without replacing the active request"
 });
 
 test("Whisper emits a complete event after validating the downloaded model", async (t) => {
-  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "snowi-whisper-complete-"));
+  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "snowy-whisper-complete-"));
   t.after(() => fs.rm(modelsDir, { recursive: true, force: true }));
 
   const originalLoad = Module._load;

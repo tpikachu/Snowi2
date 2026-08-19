@@ -76,7 +76,7 @@ function installUploadElectronAPI(window, { diarizedDurationSeconds }) {
 test("a diarized file upload persists the diarization metadata", async (t) => {
   const { window } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-upload-diarization-file-test-",
+    cachePrefix: "snowy-upload-diarization-file-test-",
     mockModules: gateMocks,
   });
   // The renderer never knows a picked file's duration up front; the diarizer's
@@ -108,7 +108,7 @@ test("a diarized file upload persists the diarization metadata", async (t) => {
 test("a diarized URL ingest persists the diarization metadata", async (t) => {
   const { window } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-upload-diarization-url-test-",
+    cachePrefix: "snowy-upload-diarization-url-test-",
     mockModules: gateMocks,
   });
   // The download's known duration beats the diarizer's measurement.
@@ -147,7 +147,7 @@ test("a diarized URL ingest persists the diarization metadata", async (t) => {
 test("an upload without diarization leaves the note columns untouched", async (t) => {
   const { window } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-upload-diarization-off-test-",
+    cachePrefix: "snowy-upload-diarization-off-test-",
     mockModules: gateMocks,
   });
   const calls = installUploadElectronAPI(window, { diarizedDurationSeconds: 4359.87 });

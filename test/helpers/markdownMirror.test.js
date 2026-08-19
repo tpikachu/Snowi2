@@ -22,7 +22,7 @@ try {
 }
 
 test("a note title ending in transcript keeps both mirrored files", (t) => {
-  const basePath = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-markdown-mirror-"));
+  const basePath = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-markdown-mirror-"));
   t.after(() => fs.rmSync(basePath, { recursive: true, force: true }));
 
   const note = {
@@ -49,7 +49,7 @@ test("a note title ending in transcript keeps both mirrored files", (t) => {
 });
 
 test("renaming a mirrored note cleans up both stale files and reveals the note", (t) => {
-  const basePath = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-markdown-mirror-"));
+  const basePath = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-markdown-mirror-"));
   t.after(() => fs.rmSync(basePath, { recursive: true, force: true }));
 
   const note = {
@@ -82,7 +82,7 @@ test("renaming a mirrored note cleans up both stale files and reveals the note",
 });
 
 test("a note file re-saved with a BOM or CRLF is still recognised as its note", (t) => {
-  const basePath = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-markdown-mirror-"));
+  const basePath = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-markdown-mirror-"));
   t.after(() => fs.rmSync(basePath, { recursive: true, force: true }));
 
   const note = {

@@ -35,7 +35,7 @@ function loadModelManager() {
     // modelManagerBridge requires modelDirUtils lazily (inside getModelsDir),
     // after this mock is uninstalled — load it now so its electron binding is
     // the stub and modelsDir resolves inside the per-test temp home instead of
-    // the real ~/.cache/snowi (where deleteModel would touch real files).
+    // the real ~/.cache/snowy (where deleteModel would touch real files).
     require("../../src/helpers/modelDirUtils.js");
     return require("../../src/helpers/modelManagerBridge.js").default;
   } finally {
@@ -75,7 +75,7 @@ test("getDraftDownloadUrl mirrors the main URL shape", () => {
 });
 
 test("resolveDraftPath returns the path only when a valid drafter file exists", async () => {
-  await withHome("snowi-draft-resolve-", async () => {
+  await withHome("snowy-draft-resolve-", async () => {
     const mm = loadModelManager();
     mm.ensureInitialized();
     await fs.mkdir(mm.modelsDir, { recursive: true });
@@ -100,7 +100,7 @@ test("resolveDraftPath returns the path only when a valid drafter file exists", 
 });
 
 test("deleteModel removes the drafter alongside the main file, ignoring a missing drafter", async () => {
-  await withHome("snowi-draft-delete-", async () => {
+  await withHome("snowy-draft-delete-", async () => {
     const mm = loadModelManager();
     mm.ensureInitialized();
     await fs.mkdir(mm.modelsDir, { recursive: true });

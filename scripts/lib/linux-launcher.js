@@ -4,7 +4,7 @@ function buildLinuxWrapperScript(binaryName) {
   }
 
   return `#!/bin/bash
-# Snowi launcher
+# Snowy launcher
 # User flags: ~/.config/${binaryName}-flags.conf (one per line, # = comment)
 
 HERE="$(dirname "$(readlink -f "\${BASH_SOURCE[0]}")")"

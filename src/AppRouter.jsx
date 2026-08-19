@@ -7,7 +7,7 @@ import TranscriptionPreviewOverlay from "./components/TranscriptionPreviewOverla
 import UpdateNotificationOverlay from "./components/UpdateNotificationOverlay.tsx";
 import { useTheme } from "./hooks/useTheme";
 import { isControlPanelWindow } from "./utils/windowContext.ts";
-import { SnowiAppIcon } from "./components/ui/BrandMark.tsx";
+import { SnowyAppIcon } from "./components/ui/BrandMark.tsx";
 
 const ControlPanel = React.lazy(() => import("./components/ControlPanel.tsx"));
 const OnboardingFlow = React.lazy(() => import("./components/OnboardingFlow.tsx"));
@@ -117,7 +117,7 @@ function LoadingFallback({ message }) {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="flex flex-col items-center gap-4 animate-[scale-in_300ms_ease-out]">
-        <SnowiAppIcon className="w-12 h-12 drop-shadow-[0_2px_10px_rgba(2,198,207,0.25)]" />
+        <SnowyAppIcon className="w-12 h-12 drop-shadow-[0_2px_10px_rgba(2,198,207,0.25)]" />
         <div className="w-7 h-7 rounded-full border-[2.5px] border-transparent border-t-primary animate-[spinner-rotate_0.8s_cubic-bezier(0.4,0,0.2,1)_infinite] motion-reduce:animate-none motion-reduce:border-t-muted-foreground motion-reduce:opacity-50" />
         {fallbackMessage && (
           <p className="text-[13px] font-medium text-muted-foreground dark:text-foreground/60 tracking-[-0.01em]">

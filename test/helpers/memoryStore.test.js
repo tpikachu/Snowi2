@@ -33,7 +33,7 @@ function setup(t) {
   const database = createDb(t);
   if (!database) return null;
 
-  const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-memory-"));
+  const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-memory-"));
   t.after(() => fs.rmSync(baseDir, { recursive: true, force: true }));
 
   const keyService = createMeetingKeyService({ baseDir, secureStorage: fakeSecureStorage() });

@@ -258,7 +258,7 @@ class WhisperManager {
       }
     }
 
-    debugLogger.info("Snowi dependency check", status);
+    debugLogger.info("Snowy dependency check", status);
 
     // Log a summary for easy scanning
     const serverStatus = status.whisperServer.available

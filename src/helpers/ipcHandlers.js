@@ -185,7 +185,7 @@ function resolveAllowedAudioPath(filePath) {
 }
 
 function buildMultipartBody(fileBuffer, fileName, contentType, fields = {}) {
-  const boundary = `----Snowi${Date.now()}`;
+  const boundary = `----Snowy${Date.now()}`;
   const parts = [];
 
   parts.push(
@@ -267,7 +267,7 @@ class IPCHandlers {
     this.windowsLoopbackAudioManager = managers.windowsLoopbackAudioManager;
     this.meetingAecManager = managers.meetingAecManager;
     this.oauthProtocolRegistered = managers.oauthProtocolRegistered === true;
-    this.oauthProtocol = managers.oauthProtocol || "snowi";
+    this.oauthProtocol = managers.oauthProtocol || "snowy";
     this.sessionId = crypto.randomUUID();
     // webContents id -> its release listener, for renderers holding the mic open.
     this._micHoldSenders = new Map();
@@ -2295,7 +2295,7 @@ class IPCHandlers {
         const resolved = path.resolve(filePath);
         const basename = path.basename(resolved);
         if (!basename.startsWith("ow-url-") && !basename.startsWith("ow-diarize-")) {
-          return { success: false, error: "Not a Snowi temp file" };
+          return { success: false, error: "Not a Snowy temp file" };
         }
         const real = fs.realpathSync(resolved);
         let tempDir = getSafeTempDir();
@@ -2304,7 +2304,7 @@ class IPCHandlers {
         } catch {}
         const rel = path.relative(tempDir, real);
         if (rel.startsWith("..") || path.isAbsolute(rel)) {
-          return { success: false, error: "Not a Snowi temp file" };
+          return { success: false, error: "Not a Snowy temp file" };
         }
         fs.unlinkSync(real);
         return { success: true };
@@ -7580,24 +7580,24 @@ class IPCHandlers {
 
         // Parse lines
         const lines = envContent.split("\n");
-        const logLevelIndex = lines.findIndex((line) => line.trim().startsWith("SNOWI_LOG_LEVEL="));
+        const logLevelIndex = lines.findIndex((line) => line.trim().startsWith("SNOWY_LOG_LEVEL="));
 
         if (enabled) {
           // Set to debug
           if (logLevelIndex !== -1) {
-            lines[logLevelIndex] = "SNOWI_LOG_LEVEL=debug";
+            lines[logLevelIndex] = "SNOWY_LOG_LEVEL=debug";
           } else {
             // Add new line
             if (lines.length > 0 && lines[lines.length - 1] !== "") {
               lines.push("");
             }
             lines.push("# Debug logging setting");
-            lines.push("SNOWI_LOG_LEVEL=debug");
+            lines.push("SNOWY_LOG_LEVEL=debug");
           }
         } else {
           // Remove or set to info
           if (logLevelIndex !== -1) {
-            lines[logLevelIndex] = "SNOWI_LOG_LEVEL=info";
+            lines[logLevelIndex] = "SNOWY_LOG_LEVEL=info";
           }
         }
 
@@ -7605,7 +7605,7 @@ class IPCHandlers {
         fs.writeFileSync(envPath, lines.join("\n"), "utf8");
 
         // Update environment variable
-        process.env.SNOWI_LOG_LEVEL = enabled ? "debug" : "info";
+        process.env.SNOWY_LOG_LEVEL = enabled ? "debug" : "info";
 
         // Refresh logger state
         debugLogger.refreshLogLevel();

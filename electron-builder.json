@@ -1,10 +1,10 @@
 {
   "appId": "com.snowball.money",
   "afterPack": "scripts/afterPack.js",
-  "productName": "Snowi",
+  "productName": "Snowy",
   "protocols": {
-    "name": "Snowi Protocol",
-    "schemes": ["snowi"]
+    "name": "Snowy Protocol",
+    "schemes": ["snowy"]
   },
   "directories": {
     "output": "dist"
@@ -165,12 +165,12 @@
     ],
     "extendInfo": {
       "LSUIElement": false,
-      "CFBundleIconName": "snowi",
-      "NSMicrophoneUsageDescription": "Snowi uses the microphone to capture your voice for transcription.",
-      "NSAudioCaptureUsageDescription": "Snowi uses system audio to capture other participants' audio from calls and meetings.",
-      "NSAccessibilityUsageDescription": "Snowi needs accessibility permissions to paste transcribed text into other applications.",
-      "NSCalendarsUsageDescription": "Snowi reads your calendar to detect upcoming meetings and link meeting notes to events.",
-      "NSCalendarsFullAccessUsageDescription": "Snowi reads your calendar to detect upcoming meetings and link meeting notes to events."
+      "CFBundleIconName": "snowy",
+      "NSMicrophoneUsageDescription": "Snowy uses the microphone to capture your voice for transcription.",
+      "NSAudioCaptureUsageDescription": "Snowy uses system audio to capture other participants' audio from calls and meetings.",
+      "NSAccessibilityUsageDescription": "Snowy needs accessibility permissions to paste transcribed text into other applications.",
+      "NSCalendarsUsageDescription": "Snowy reads your calendar to detect upcoming meetings and link meeting notes to events.",
+      "NSCalendarsFullAccessUsageDescription": "Snowy reads your calendar to detect upcoming meetings and link meeting notes to events."
     }
   },
   "win": {
@@ -258,7 +258,7 @@
     "include": "resources/nsis/installer.nsh"
   },
   "dmg": {
-    "title": "Snowi",
+    "title": "Snowy",
     "icon": "src/assets/icon.icns",
     "window": {
       "width": 540,

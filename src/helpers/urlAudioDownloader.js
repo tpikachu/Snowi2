@@ -26,13 +26,13 @@ const MAX_DOWNLOAD_BYTES = 500 * 1024 * 1024;
 const MAX_REDIRECTS = 3;
 // Reject absurdly long videos before downloading.
 const MAX_DURATION_SECONDS = 6 * 60 * 60;
-const USER_AGENT = "Snowi/1.0";
+const USER_AGENT = "Snowy/1.0";
 
 // Writable yt-dlp cache, seeded from the read-only bundle so the binary can
 // self-update (the bundled copy is read-only / inside the signed bundle).
-// SNOWI_YTDLP_CACHE_DIR overrides the location (relocate it, or isolate it in tests).
+// SNOWY_YTDLP_CACHE_DIR overrides the location (relocate it, or isolate it in tests).
 const YT_DLP_CACHE_DIR =
-  process.env.SNOWI_YTDLP_CACHE_DIR || path.join(os.homedir(), ".cache", "snowi", "yt-dlp");
+  process.env.SNOWY_YTDLP_CACHE_DIR || path.join(os.homedir(), ".cache", "snowy", "yt-dlp");
 const YT_DLP_UPDATE_THROTTLE_MS = 24 * 60 * 60 * 1000;
 // Bound the self-update so a stalled GitHub request can never hang a download
 // or wedge the single-flight flag. Overridable via options.timeoutMs for tests.

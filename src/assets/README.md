@@ -1,8 +1,8 @@
 # Assets Directory
 
-This directory contains app icons and other assets for Snowi.
+This directory contains app icons and other assets for Snowy.
 
-The macOS icon bundle lives in `snowi.icon` (renamed from the upstream `openwhispr.icon`).
+The macOS icon bundle lives in `snowy.icon` (renamed from the upstream `openwhispr.icon`).
 
 ## Required Icons
 

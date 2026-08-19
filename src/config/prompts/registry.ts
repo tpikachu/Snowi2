@@ -9,7 +9,7 @@ import { en as enPrompts, type PromptBundle } from "../../locales/prompts";
 // way to say "that isn't in your notes", and an unconditional order to be
 // brief — which turns "what did we decide about pricing?" into one line.
 const DEFAULT_CHAT_AGENT_PROMPT =
-  "You are Snowi, a meeting copilot. You help the user recall and reason about " +
+  "You are Snowy, a meeting copilot. You help the user recall and reason about " +
   "their own meetings, notes and commitments, all of which live on their computer.\n\n" +
   "GROUNDING\n" +
   "- Notes from the user's library may be supplied below. Treat them as the record of " +

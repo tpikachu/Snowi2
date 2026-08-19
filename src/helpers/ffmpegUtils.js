@@ -118,7 +118,7 @@ function convertToWav(inputPath, outputPath, options = {}) {
     if (!ffmpegPath) {
       reject(
         new Error(
-          "FFmpeg not found - the bundled FFmpeg is missing from this install and no system FFmpeg was found on PATH; reinstalling Snowi should fix this"
+          "FFmpeg not found - the bundled FFmpeg is missing from this install and no system FFmpeg was found on PATH; reinstalling Snowy should fix this"
         )
       );
       return;
@@ -386,7 +386,7 @@ async function mergeAudioSegments(segments) {
   const ffmpegPath = getFFmpegPath();
   if (!ffmpegPath) throw new Error("FFmpeg not found - required for audio segment recovery");
 
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-audio-merge-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-audio-merge-"));
   const outputPath = path.join(tempDir, "merged.webm");
   try {
     const inputPaths = segments.map((segment, index) => {

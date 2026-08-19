@@ -40,7 +40,7 @@ export default class ErrorBoundary extends React.Component<ErrorBoundaryProps, E
   private buildReport(): string {
     const { error, componentStack } = this.state;
     return [
-      `Snowi renderer crash — ${window.location.hash || window.location.pathname}`,
+      `Snowy renderer crash — ${window.location.hash || window.location.pathname}`,
       "",
       error?.stack || error?.message || String(error),
       "",

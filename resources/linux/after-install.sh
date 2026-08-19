@@ -1,5 +1,5 @@
 #!/bin/bash
-# Post-install script for Snowi (deb/rpm)
+# Post-install script for Snowy (deb/rpm)
 # Sets up chrome-sandbox permissions and ydotool daemon prerequisites.
 # Best-effort: nothing here may fail the package install.
 
@@ -7,10 +7,10 @@ set -uo pipefail
 
 # 0. Set SUID bit on chrome-sandbox (required by Electron for Linux sandboxing)
 #    Find it wherever dpkg placed the package files, rather than hardcoding /opt/...
-CHROME_SANDBOX=$(dpkg -L snowi 2>/dev/null | grep chrome-sandbox || echo "")
+CHROME_SANDBOX=$(dpkg -L snowy 2>/dev/null | grep chrome-sandbox || echo "")
 if [ -z "$CHROME_SANDBOX" ]; then
   # Fallback: conventional electron-builder install path
-  CHROME_SANDBOX="/opt/Snowi/chrome-sandbox"
+  CHROME_SANDBOX="/opt/Snowy/chrome-sandbox"
 fi
 if [ -f "$CHROME_SANDBOX" ]; then
   chown root:root "$CHROME_SANDBOX" 2>/dev/null || true

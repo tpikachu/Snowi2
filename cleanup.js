@@ -18,8 +18,8 @@ dirsToClean.forEach((dir) => {
 // Clean development database
 console.log("🗄️ Cleaning development database...");
 try {
-  // Mirror the app's userData resolution: base dir is "Snowi", and non-production
-  // channels are isolated into "Snowi-{channel}" (development runs use "Snowi-development").
+  // Mirror the app's userData resolution: base dir is "Snowy", and non-production
+  // channels are isolated into "Snowy-{channel}" (development runs use "Snowy-development").
   const appDataRoot =
     process.platform === "darwin"
       ? path.join(os.homedir(), "Library", "Application Support")
@@ -27,7 +27,7 @@ try {
         ? process.env.APPDATA || os.homedir()
         : path.join(os.homedir(), ".config");
 
-  const userDataDirs = ["Snowi", "Snowi-development"].map((dir) => path.join(appDataRoot, dir));
+  const userDataDirs = ["Snowy", "Snowy-development"].map((dir) => path.join(appDataRoot, dir));
 
   let cleanedAny = false;
   for (const userDataPath of userDataDirs) {

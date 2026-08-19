@@ -29,7 +29,7 @@ const VOCATIVE_CUES = new Set(["hey", "hi", "hello", "ok", "okay", "yo", "please
 
 // The name only counts as addressing the agent when it starts the dictation,
 // follows a greeting cue ("hey Jarvis"), or opens a new sentence. A mere
-// mention elsewhere ("I showed Snowi to a friend") is dictated content,
+// mention elsewhere ("I showed Snowy to a friend") is dictated content,
 // not a command.
 function isAddressedAt(index: number, words: string[], rawWords: string[]): boolean {
   if (index === 0) return true;

@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 test("detects verbatim echo of dictionary prompt", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("Snowi, Parakeet, Alcahest", "Snowi, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("Snowy, Parakeet, Alcahest", "Snowy, Parakeet, Alcahest"),
     true
   );
 });
@@ -12,7 +12,7 @@ test("detects verbatim echo of dictionary prompt", async () => {
 test("detects echo when Whisper adds trailing period", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("Snowi, Parakeet, Alcahest.", "Snowi, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("Snowy, Parakeet, Alcahest.", "Snowy, Parakeet, Alcahest"),
     true
   );
 });
@@ -20,7 +20,7 @@ test("detects echo when Whisper adds trailing period", async () => {
 test("detects echo with different capitalization", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("snowi, parakeet, alcahest", "Snowi, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("snowy, parakeet, alcahest", "Snowy, Parakeet, Alcahest"),
     true
   );
 });
@@ -28,7 +28,7 @@ test("detects echo with different capitalization", async () => {
 test("detects echo when Whisper strips commas", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("Snowi Parakeet Alcahest", "Snowi, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("Snowy Parakeet Alcahest", "Snowy, Parakeet, Alcahest"),
     true
   );
 });
@@ -36,7 +36,7 @@ test("detects echo when Whisper strips commas", async () => {
 test("detects echo with extra whitespace", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("Snowi,  Parakeet,  Alcahest", "Snowi, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("Snowy,  Parakeet,  Alcahest", "Snowy, Parakeet, Alcahest"),
     true
   );
 });
@@ -45,8 +45,8 @@ test("does not flag legitimate speech containing dictionary words", async () => 
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
     matchesDictionaryPrompt(
-      "I just installed Snowi and it works great",
-      "Snowi, Parakeet, Alcahest"
+      "I just installed Snowy and it works great",
+      "Snowy, Parakeet, Alcahest"
     ),
     false
   );
@@ -55,7 +55,7 @@ test("does not flag legitimate speech containing dictionary words", async () => 
 test("does not flag speech that partially overlaps with dictionary", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("Snowi, Parakeet", "Snowi, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("Snowy, Parakeet", "Snowy, Parakeet, Alcahest"),
     false
   );
 });
@@ -67,7 +67,7 @@ test("returns false when dictionary prompt is null", async () => {
 
 test("returns false when text is null", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
-  assert.equal(matchesDictionaryPrompt(null, "Snowi"), false);
+  assert.equal(matchesDictionaryPrompt(null, "Snowy"), false);
 });
 
 test("returns false when both inputs are empty strings", async () => {
@@ -77,8 +77,8 @@ test("returns false when both inputs are empty strings", async () => {
 
 test("handles single-word dictionary", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
-  assert.equal(matchesDictionaryPrompt("Snowi", "Snowi"), true);
-  assert.equal(matchesDictionaryPrompt("Snowi is great", "Snowi"), false);
+  assert.equal(matchesDictionaryPrompt("Snowy", "Snowy"), true);
+  assert.equal(matchesDictionaryPrompt("Snowy is great", "Snowy"), false);
 });
 
 test("handles unicode dictionary words with accents", async () => {
@@ -94,8 +94,8 @@ test("handles CJK dictionary words", async () => {
 
 test("detects repeated echo where Whisper loops the dictionary", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
-  const dict = "Snowi, Parakeet, Alcahest";
-  const repeated = "Snowi, Parakeet, Alcahest, Snowi, Parakeet, Alcahest";
+  const dict = "Snowy, Parakeet, Alcahest";
+  const repeated = "Snowy, Parakeet, Alcahest, Snowy, Parakeet, Alcahest";
   assert.equal(matchesDictionaryPrompt(repeated, dict), true);
 });
 
@@ -111,7 +111,7 @@ test("does not flag completely unrelated text", async () => {
   assert.equal(
     matchesDictionaryPrompt(
       "The quick brown fox jumps over the lazy dog",
-      "Snowi, Parakeet, Alcahest"
+      "Snowy, Parakeet, Alcahest"
     ),
     false
   );
@@ -121,6 +121,6 @@ test("returns false when text or prompt normalizes to empty string (punctuation 
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(matchesDictionaryPrompt("...", "..."), false);
   assert.equal(matchesDictionaryPrompt("!!!", ",,,"), false);
-  assert.equal(matchesDictionaryPrompt("???", "Snowi, Parakeet"), false);
-  assert.equal(matchesDictionaryPrompt("Snowi, Parakeet", "!!!"), false);
+  assert.equal(matchesDictionaryPrompt("???", "Snowy, Parakeet"), false);
+  assert.equal(matchesDictionaryPrompt("Snowy, Parakeet", "!!!"), false);
 });

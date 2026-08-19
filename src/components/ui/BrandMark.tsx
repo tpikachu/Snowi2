@@ -1,5 +1,5 @@
 /**
- * The Snowi mark, in one place.
+ * The Snowy mark, in one place.
  *
  * The geometry is the six-spoke snowflake from `src/assets/logo.svg`, and the
  * tile is the teal field from `src/assets/icon.svg`. Both were previously
@@ -14,7 +14,7 @@
 /** Path data shared by both marks — the snowflake on a 16x16 grid. */
 const SNOWFLAKE_PATH = "M8 1.5v13M2.4 4.75l11.2 6.5M2.4 11.25l11.2-6.5";
 
-interface SnowiGlyphProps {
+interface SnowyGlyphProps {
   size?: number;
   className?: string;
   /** Announce it; leave unset for decoration beside a visible name. */
@@ -25,7 +25,7 @@ interface SnowiGlyphProps {
  * The bare snowflake in `currentColor` — for rails, buttons and anywhere the
  * mark should take the surrounding text colour.
  */
-export function SnowiGlyph({ size = 17, className, title }: SnowiGlyphProps) {
+export function SnowyGlyph({ size = 17, className, title }: SnowyGlyphProps) {
   return (
     <svg
       viewBox="0 0 16 16"
@@ -42,7 +42,7 @@ export function SnowiGlyph({ size = 17, className, title }: SnowiGlyphProps) {
   );
 }
 
-interface SnowiAppIconProps {
+interface SnowyAppIconProps {
   className?: string;
   title?: string;
 }
@@ -52,16 +52,16 @@ interface SnowiAppIconProps {
  * the dock, tray and installer. Used where the mark stands in for the
  * application itself rather than for a piece of its UI.
  */
-export function SnowiAppIcon({ className, title = "Snowi" }: SnowiAppIconProps) {
+export function SnowyAppIcon({ className, title = "Snowy" }: SnowyAppIconProps) {
   return (
     <svg viewBox="0 0 1024 1024" className={className} role="img" aria-label={title}>
       <defs>
-        <linearGradient id="snowi-field" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id="snowy-field" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#02c6cf" />
           <stop offset="1" stopColor="#009aa1" />
         </linearGradient>
       </defs>
-      <rect x="100" y="100" width="824" height="824" rx="185" ry="185" fill="url(#snowi-field)" />
+      <rect x="100" y="100" width="824" height="824" rx="185" ry="185" fill="url(#snowy-field)" />
       {/* The faint rings from the packaged icon — they read as depth at large
           sizes and disappear cleanly at small ones. */}
       <circle

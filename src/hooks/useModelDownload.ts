@@ -116,8 +116,8 @@ export function useModelDownload({
 
   useEffect(() => {
     const handleModelsCleared = () => onModelsClearedRef.current?.();
-    window.addEventListener("snowi-models-cleared", handleModelsCleared);
-    return () => window.removeEventListener("snowi-models-cleared", handleModelsCleared);
+    window.addEventListener("snowy-models-cleared", handleModelsCleared);
+    return () => window.removeEventListener("snowy-models-cleared", handleModelsCleared);
   }, []);
 
   const hydrateActiveDownload = useCallback(

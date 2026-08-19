@@ -39,7 +39,7 @@ const DatabaseManager = require("../../../src/helpers/database.js");
 // A real DatabaseManager over a private tmpdir. Returns null when the caller
 // must bail because skipOrFail marked the test skipped.
 function createDb(t) {
-  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-sync-harness-"));
+  const userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-sync-harness-"));
   setUserDataDir(userDataDir);
 
   // Probe first: a binding failure here is the loader's, not schema setup's.

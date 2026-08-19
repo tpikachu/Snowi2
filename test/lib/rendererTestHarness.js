@@ -39,7 +39,7 @@ function installBrowserGlobals(t, { initialStorage = {}, window: windowProps = {
 // source served in its place.
 async function createRendererServer(
   t,
-  { cachePrefix = "snowi-renderer-test-", mockModules = {} } = {}
+  { cachePrefix = "snowy-renderer-test-", mockModules = {} } = {}
 ) {
   const { createServer } = await import("vite");
   const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), cachePrefix));

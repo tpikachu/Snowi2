@@ -2146,7 +2146,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       temperature: config?.temperature ?? 0.2,
       requireCompleteOutput: true,
     };
-    const completionMarker = `__SNOWI_SELECTION_COMPLETE_${crypto.randomUUID()}__`;
+    const completionMarker = `__SNOWY_SELECTION_COMPLETE_${crypto.randomUUID()}__`;
     selectionConfig.systemPrompt = buildSelectionEditSystemPrompt(
       config?.systemPrompt,
       completionMarker

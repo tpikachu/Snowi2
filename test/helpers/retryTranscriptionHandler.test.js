@@ -272,7 +272,7 @@ const fsNode = require("node:fs");
 const osNode = require("node:os");
 const pathNode = require("node:path");
 
-const uploadTempFile = pathNode.join(osNode.tmpdir(), "snowi-upload-handler-test.webm");
+const uploadTempFile = pathNode.join(osNode.tmpdir(), "snowy-upload-handler-test.webm");
 
 const invokeUpload = (payload) => {
   const uploadHandler = handlers.get("transcribe-audio-file-byok");

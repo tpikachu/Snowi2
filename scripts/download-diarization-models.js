@@ -27,7 +27,7 @@ function getModelDir() {
     return path.resolve(process.env.DIARIZATION_MODEL_DIR);
   }
 
-  return path.join(os.homedir(), ".cache", "snowi", "diarization-models");
+  return path.join(os.homedir(), ".cache", "snowy", "diarization-models");
 }
 
 function extractTarBz2(archivePath, destDir) {

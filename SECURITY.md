@@ -1,6 +1,6 @@
 # Security Policy
 
-Snowi is a private, internally distributed application. Security issues are
+Snowy is a private, internally distributed application. Security issues are
 handled internally: report them directly to the Snowball team rather than in
 any public tracker, and do not disclose details outside the team.
 

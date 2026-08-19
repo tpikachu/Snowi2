@@ -7,7 +7,7 @@ const { downloadFile, parseArgs } = require("./lib/download-utils");
 const forBuild = process.argv.includes("--for-build");
 const MODEL_DIR = forBuild
   ? path.join(__dirname, "..", "resources", "bin", "all-MiniLM-L6-v2")
-  : path.join(os.homedir(), ".cache", "snowi", "embedding-models", "all-MiniLM-L6-v2");
+  : path.join(os.homedir(), ".cache", "snowy", "embedding-models", "all-MiniLM-L6-v2");
 
 const FILES = [
   {

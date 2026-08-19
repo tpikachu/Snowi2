@@ -71,7 +71,7 @@ const DialogContent = React.forwardRef<
           "gap-3.5 p-(--dlg-pad) rounded-overlay duration-[140ms]",
           "bg-popover border border-border text-popover-foreground shadow-(--shadow-modal)",
           // A teal hairline caps the panel — the one piece of accent a modal
-          // gets, and the tell that this is a Snowi surface and not a browser
+          // gets, and the tell that this is a Snowy surface and not a browser
           // dialog. Inset from the corners so it never overshoots the radius.
           "before:pointer-events-none before:absolute before:left-2 before:right-2 before:top-0 before:h-px before:bg-primary/45 before:content-['']",
           // No zoom. A modal that scales up reads as a notification; this one

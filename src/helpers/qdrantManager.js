@@ -21,7 +21,7 @@ const HEALTH_CHECK_TIMEOUT_MS = 2000;
 const STORAGE_DIR = path.join(
   os.homedir(),
   ".cache",
-  "snowi",
+  "snowy",
   process.env.NODE_ENV === "development" ? "qdrant-data-dev" : "qdrant-data"
 );
 

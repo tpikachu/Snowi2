@@ -96,7 +96,7 @@ const QT_KEYS = {
   pause: 0x01000008,
 };
 
-const COMPONENT_NAME = "snowi";
+const COMPONENT_NAME = "snowy";
 
 class KDEShortcutManager {
   constructor() {
@@ -213,7 +213,7 @@ class KDEShortcutManager {
     // Map friendly names back to slot names
     const friendlyToSlot = {};
     for (const slotName of this.registeredSlots) {
-      friendlyToSlot[`Snowi ${slotName}`] = slotName;
+      friendlyToSlot[`Snowy ${slotName}`] = slotName;
     }
     const slotName = friendlyToSlot[name];
     return slotName ? this.callbacks.get(slotName) : null;
@@ -247,7 +247,7 @@ class KDEShortcutManager {
     }
 
     // actionId: [componentUnique, actionUnique, componentFriendly, actionFriendly]
-    const actionId = [COMPONENT_NAME, slotName, "Snowi", `Snowi ${slotName}`];
+    const actionId = [COMPONENT_NAME, slotName, "Snowy", `Snowy ${slotName}`];
 
     try {
       // Pre-registration conflict check via low-level D-Bus call
@@ -371,7 +371,7 @@ class KDEShortcutManager {
   async unregisterKeybinding(slotName = "dictation") {
     if (!this.kglobalaccel) return;
 
-    const actionId = [COMPONENT_NAME, slotName, "Snowi", `Snowi ${slotName}`];
+    const actionId = [COMPONENT_NAME, slotName, "Snowy", `Snowy ${slotName}`];
 
     try {
       await new Promise((resolve, reject) => {
@@ -394,7 +394,7 @@ class KDEShortcutManager {
     // clean up stale registrations from dead processes anyway.
     const promises = [];
     for (const slotName of this.registeredSlots) {
-      const actionId = [COMPONENT_NAME, slotName, "Snowi", `Snowi ${slotName}`];
+      const actionId = [COMPONENT_NAME, slotName, "Snowy", `Snowy ${slotName}`];
       try {
         promises.push(
           new Promise((resolve, reject) => {

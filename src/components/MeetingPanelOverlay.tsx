@@ -8,7 +8,7 @@ import { cn } from "./lib/utils";
 
 /**
  * The meeting panel: a floating status bar that stays with the user while they
- * are in the meeting rather than in Snowi.
+ * are in the meeting rather than in Snowy.
  *
  * It is a view, not a controller — the capture graph lives in the control
  * panel's renderer, so this window renders published snapshots and sends

@@ -1,8 +1,8 @@
 # Upstream provenance
 
-This repository is a Snowi-controlled fork of the OpenWhispr desktop
-application, per the Snowi Desktop Meeting Copilot V1 contractor
-specification (docs/Snowi_Desktop_Meeting_Copilot_V1_Contractor_Spec_v1.0.md,
+This repository is a Snowy-controlled fork of the OpenWhispr desktop
+application, per the Snowy Desktop Meeting Copilot V1 contractor
+specification (docs/Snowy_Desktop_Meeting_Copilot_V1_Contractor_Spec_v1.0.md,
 section 2.3).
 
 ## Source
@@ -56,7 +56,7 @@ Windows helper binary.
 ## Approved V1 scope decisions (product owner, 2026-08-17)
 
 1. **Dictation:** KEPT in full (decision revised 2026-08-18, superseding
-   the earlier removal decision). Snowi ships as dictation + meeting
+   the earlier removal decision). Snowy ships as dictation + meeting
    copilot. This is a documented scope addition relative to the spec's
    meetings-only V1 (§4.1); dictation is fully local/BYOK and adds no
    network egress beyond the approved allowlist.

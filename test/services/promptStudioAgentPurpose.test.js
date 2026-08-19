@@ -22,7 +22,7 @@ test("Prompt Studio labels dictation-agent runs with requiresAgent", async (t) =
   globalThis.__promptStudioReasoningCalls = calls;
 
   const { createServer } = await import("vite");
-  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-prompt-studio-test-"));
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-prompt-studio-test-"));
   const vite = await createServer({
     root: path.resolve(__dirname, "../../src"),
     cacheDir,

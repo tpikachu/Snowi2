@@ -134,7 +134,7 @@ class TextEditMonitor extends EventEmitter {
    * macOS: capture the active app's PID via NSWorkspace before the overlay steals focus.
    * Must be called at hotkey press time, BEFORE showDictationPanel()/mainWindow.show().
    * NSWorkspace.frontmostApplication correctly identifies the key window owner,
-   * ignoring panel-type windows like the Snowi overlay.
+   * ignoring panel-type windows like the Snowy overlay.
    *
    * Resolves with the captured PID (or null). At most one lookup runs at a
    * time: concurrent calls share the in-flight lookup, so an older lookup can

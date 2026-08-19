@@ -13,7 +13,7 @@ class LocalEmbeddings {
   }
 
   _resolveModelDir() {
-    const cacheDir = path.join(os.homedir(), ".cache", "snowi", "embedding-models", MODEL_SUBDIR);
+    const cacheDir = path.join(os.homedir(), ".cache", "snowy", "embedding-models", MODEL_SUBDIR);
 
     if (process.resourcesPath) {
       const bundled = path.join(process.resourcesPath, "bin", MODEL_SUBDIR);

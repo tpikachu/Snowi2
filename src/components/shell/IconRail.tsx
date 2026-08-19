@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { cn } from "../lib/utils";
 import { Tooltip } from "../ui/tooltip";
 import { getCachedPlatform } from "../../utils/platform";
-import { SnowiGlyph } from "../ui/BrandMark";
+import { SnowyGlyph } from "../ui/BrandMark";
 
 const platform = getCachedPlatform();
 const isMac = platform === "darwin";
@@ -115,8 +115,8 @@ export default function IconRail({
         } as React.CSSProperties
       }
     >
-      <div className="flex size-9 shrink-0 items-center justify-center" title="Snowi">
-        <SnowiGlyph className="shrink-0 text-primary" />
+      <div className="flex size-9 shrink-0 items-center justify-center" title="Snowy">
+        <SnowyGlyph className="shrink-0 text-primary" />
       </div>
 
       {onOpenSearch && (

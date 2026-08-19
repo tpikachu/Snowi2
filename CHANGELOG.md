@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Snowi are documented here.
+All notable changes to Snowy are documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -8,7 +8,7 @@ versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [0.1.0-rc1] — 2026-08-19
 
 First release candidate. Everything below is new, because this is the first
-build carrying the Snowi name.
+build carrying the Snowy name.
 
 **This is a release candidate, not a finished 1.0.** It is meant for people
 willing to hit rough edges and say so. See _Known limitations_ before installing.
@@ -74,7 +74,7 @@ willing to hit rough edges and say so. See _Known limitations_ before installing
 - **No emergency stop, and no confirmation when quitting mid-recording.**
 - **Action items are extracted but have no dedicated view yet** — they are in the
   database and reachable by chat, not on a screen of their own.
-- Dictation is present in the codebase but disabled: Snowi is a meeting copilot
+- Dictation is present in the codebase but disabled: Snowy is a meeting copilot
   in this release.
 
 [0.1.0-rc1]: https://github.com/tpikachu/Snowi2/releases/tag/v0.1.0-rc1

@@ -3,9 +3,9 @@
  * Resets the data `npm run dev` writes, so the next launch behaves like a fresh
  * install: no notes, no settings, no onboarding flag, no stored keys.
  *
- * Dev runs against an isolated userData directory (`Snowi-<channel>`, see
+ * Dev runs against an isolated userData directory (`Snowy-<channel>`, see
  * `configureChannelUserDataPath` in main.js), which is what makes this safe —
- * a packaged Snowi keeps its own `Snowi` directory and is never touched. The
+ * a packaged Snowy keeps its own `Snowy` directory and is never touched. The
  * script refuses to run against that directory even if asked.
  *
  * Two things have to go together or search breaks: the SQLite database in
@@ -117,16 +117,16 @@ async function main() {
 
   if (args.channel.toLowerCase() === "production" || !args.channel) {
     console.error(
-      "Refusing to reset the production channel — that is the data of an installed Snowi,\n" +
+      "Refusing to reset the production channel — that is the data of an installed Snowy,\n" +
         "not of `npm run dev`. Uninstall the app or clear it by hand if that is really what you want."
     );
     process.exit(1);
   }
 
   // Must match `configureChannelUserDataPath()` in main.js.
-  const userData = path.join(appDataDir(), `Snowi-${args.channel}`);
+  const userData = path.join(appDataDir(), `Snowy-${args.channel}`);
   // Must match STORAGE_DIR in src/helpers/qdrantManager.js.
-  const qdrantData = path.join(os.homedir(), ".cache", "snowi", "qdrant-data-dev");
+  const qdrantData = path.join(os.homedir(), ".cache", "snowy", "qdrant-data-dev");
 
   const targets = [
     { label: `userData (${args.channel})`, dir: userData },

@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { SnowiAppIcon } from "./ui/BrandMark";
+import { SnowyAppIcon } from "./ui/BrandMark";
 
 interface MeetingNotificationCardProps {
   title: string;
@@ -61,7 +61,7 @@ export function MeetingNotificationCard({
 
       <div className="flex items-center gap-2.5">
         <div className="shrink-0 bg-primary/10 rounded-md p-1">
-          <SnowiAppIcon className="w-4.5 h-4.5" />
+          <SnowyAppIcon className="w-4.5 h-4.5" />
         </div>
 
         <div className="flex-1 min-w-0">

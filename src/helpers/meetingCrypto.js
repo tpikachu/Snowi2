@@ -123,7 +123,7 @@ function open({ key, envelope, aad }) {
     throw new MeetingCryptoError("envelope is truncated");
   }
   if (!envelope.subarray(0, MAGIC.length).equals(MAGIC)) {
-    throw new MeetingCryptoError("not a Snowi envelope");
+    throw new MeetingCryptoError("not a Snowy envelope");
   }
 
   const version = envelope[MAGIC.length];

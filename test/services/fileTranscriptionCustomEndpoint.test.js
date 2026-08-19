@@ -20,7 +20,7 @@ function customConfig(baseUrl) {
 test("file transcription enforces Custom endpoint security before IPC", async (t) => {
   const { window } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-file-custom-endpoint-test-",
+    cachePrefix: "snowy-file-custom-endpoint-test-",
     mockModules: {
       "/lib/auth": "export const withSessionRefresh = (fn) => fn();",
     },
@@ -89,7 +89,7 @@ test("file transcription enforces Custom endpoint security before IPC", async (t
 test("self-hosted file transcription bypasses stale Custom endpoint validation", async (t) => {
   const { window } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-file-self-hosted-endpoint-test-",
+    cachePrefix: "snowy-file-self-hosted-endpoint-test-",
     mockModules: {
       "/lib/auth": "export const withSessionRefresh = (fn) => fn();",
     },

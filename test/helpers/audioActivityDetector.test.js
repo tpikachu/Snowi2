@@ -381,7 +381,7 @@ test("win32: an unrelated app's mic session ending does not hide an ongoing dism
 });
 
 // #1392: the helper is given a single --exclude-pid for the main process, but
-// dictation opens the mic from Chromium's audio service, so Snowi's own
+// dictation opens the mic from Chromium's audio service, so Snowy's own
 // capture is reported back to us under a child PID and read as a meeting.
 test("win32: a mic session from one of our own child processes is ignored", async () => {
   const AUDIO_SERVICE_PID = 4242;

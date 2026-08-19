@@ -180,7 +180,7 @@ export function isCompoundHotkey(hotkey: string): boolean {
  * - Windows/Linux: Control+Super (Ctrl+Win / Ctrl+Super)
  */
 /**
- * Snowi's default dictation hotkey. Keep in sync with `DEFAULT_HOTKEY` in
+ * Snowy's default dictation hotkey. Keep in sync with `DEFAULT_HOTKEY` in
  * src/helpers/hotkeyManager.js — the main process owns registration, this is
  * only what the UI shows before it has heard back.
  */
@@ -200,7 +200,7 @@ const SUGGESTED_SLOT_KEYS: Record<OptionalHotkeySlot, string> = {
 };
 
 /**
- * What Snowi offers for a slot the user has not bound yet.
+ * What Snowy offers for a slot the user has not bound yet.
  *
  * Only ever a suggestion: registering four extra global accelerators on first
  * launch would silently take them away from whatever already owned them, so

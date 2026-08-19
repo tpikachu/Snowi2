@@ -5,10 +5,10 @@
   <key>CFBundleIdentifier</key>
   <string>com.snowball.money.calendar-listener</string>
   <key>CFBundleName</key>
-  <string>Snowi Calendar Listener</string>
+  <string>Snowy Calendar Listener</string>
   <key>NSCalendarsUsageDescription</key>
-  <string>Snowi reads your calendar to detect upcoming meetings and link meeting notes to events.</string>
+  <string>Snowy reads your calendar to detect upcoming meetings and link meeting notes to events.</string>
   <key>NSCalendarsFullAccessUsageDescription</key>
-  <string>Snowi reads your calendar to detect upcoming meetings and link meeting notes to events.</string>
+  <string>Snowy reads your calendar to detect upcoming meetings and link meeting notes to events.</string>
 </dict>
 </plist>

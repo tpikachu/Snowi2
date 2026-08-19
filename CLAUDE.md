@@ -1,10 +1,10 @@
-# Snowi Technical Reference for AI Assistants
+# Snowy Technical Reference for AI Assistants
 
-This document provides comprehensive technical details about the Snowi project architecture for AI assistants working on the codebase.
+This document provides comprehensive technical details about the Snowy project architecture for AI assistants working on the codebase.
 
 ## Project Overview
 
-Snowi is an Electron-based desktop dictation application that uses whisper.cpp for speech-to-text transcription. It supports both local (privacy-focused) and cloud (OpenAI API) processing modes.
+Snowy is an Electron-based desktop dictation application that uses whisper.cpp for speech-to-text transcription. It supports both local (privacy-focused) and cloud (OpenAI API) processing modes.
 
 ## Architecture Overview
 
@@ -49,7 +49,7 @@ Snowi is an Electron-based desktop dictation application that uses whisper.cpp f
 
 - **windows-key-listener.c**: C source for Windows low-level keyboard hook (Push-to-Talk)
 - **windows-mic-listener.c**: C source for WASAPI mic session monitor (event-driven mic detection)
-- **windows-system-audio-helper.c**: C source for WASAPI process-loopback system audio capture (meeting transcription). Excludes Snowi's own process tree, so it hears every app on every output device. Requires Windows 10 2004+; falls back to Chromium display-media loopback when unavailable. Outputs 24 kHz mono s16le PCM on stdout, line-delimited JSON events on stderr (same protocol as linux-system-audio-helper)
+- **windows-system-audio-helper.c**: C source for WASAPI process-loopback system audio capture (meeting transcription). Excludes Snowy's own process tree, so it hears every app on every output device. Requires Windows 10 2004+; falls back to Chromium display-media loopback when unavailable. Outputs 24 kHz mono s16le PCM on stdout, line-delimited JSON events on stderr (same protocol as linux-system-audio-helper)
 - **macos-mic-listener.swift**: Swift source for CoreAudio mic property listener (event-driven mic detection)
 - **globe-listener.swift**: Swift source for macOS Globe/Fn key detection
 - **bin/**: Directory for compiled native binaries (whisper-cpp, nircmd, key/mic listeners)
@@ -109,7 +109,7 @@ Snowi is an Electron-based desktop dictation application that uses whisper.cpp f
   - On Windows, read the state from `executableWillLaunchAtLogin`, never from `openAtLogin`: `openAtLogin` only compares the `Run` value against the current executable and args and ignores the `StartupApproved` key that Task Manager and Settings write when a user disables a startup app
   - Reads and writes must pass identical `args`, or `openAtLogin` always reports false
 - **linuxAutostart.js**: Launch-at-login on Linux via an XDG autostart entry
-  - `app.setLoginItemSettings()` is a no-op on Linux, so the entry is written directly to `$XDG_CONFIG_HOME/autostart/snowi.desktop`, matching the executable name electron-builder packages under
+  - `app.setLoginItemSettings()` is a no-op on Linux, so the entry is written directly to `$XDG_CONFIG_HOME/autostart/snowy.desktop`, matching the executable name electron-builder packages under
   - `Exec` resolves from `$APPIMAGE` first: `process.execPath` is the ephemeral AppImage FUSE mount
   - `isAutostartEnabled()` honors `X-GNOME-Autostart-enabled=false` and `Hidden=true`, which GNOME Tweaks and KDE's autostart editor write in place instead of deleting the file
   - `Exec` carries `--hidden` (see `autoStartPolicy.js`), and `syncAutostartEntry()` compares against the full value including that flag — comparing against the bare path would make every launch look stale
@@ -194,7 +194,7 @@ Snowi is an Electron-based desktop dictation application that uses whisper.cpp f
   - Bundled binaries in `resources/bin/whisper-cpp-{platform}-{arch}`
   - Falls back to system installation (`brew install whisper-cpp`)
   - GGML model downloads from HuggingFace
-  - Models stored in `~/.cache/snowi/whisper-models/`
+  - Models stored in `~/.cache/snowy/whisper-models/`
 
 ### NVIDIA Parakeet Integration (via sherpa-onnx)
 
@@ -202,7 +202,7 @@ Snowi is an Electron-based desktop dictation application that uses whisper.cpp f
   - Uses sherpa-onnx runtime for cross-platform ONNX inference
   - Bundled binaries in `resources/bin/sherpa-onnx-{platform}-{arch}`
   - INT8 quantized models for efficient CPU inference
-  - Models stored in `~/.cache/snowi/parakeet-models/`
+  - Models stored in `~/.cache/snowy/parakeet-models/`
   - Server pre-warming on startup when `LOCAL_TRANSCRIPTION_PROVIDER=nvidia` is set
   - Provider preference persisted to `.env` via `saveAllKeysToEnvFile()` on server start/stop
 
@@ -245,9 +245,9 @@ Always-on offline semantic search that finds notes by meaning, not just keywords
 
 **Storage**:
 
-- Qdrant data: `~/.cache/snowi/qdrant-data/` (`qdrant-data-dev/` in development)
+- Qdrant data: `~/.cache/snowy/qdrant-data/` (`qdrant-data-dev/` in development)
 - Qdrant binary: `resources/bin/qdrant-{platform}-{arch}` (bundled — downloaded during `prebuild` / `predev:main`)
-- Embedding model: `~/.cache/snowi/embedding-models/all-MiniLM-L6-v2/` (auto-downloaded on first launch)
+- Embedding model: `~/.cache/snowy/embedding-models/all-MiniLM-L6-v2/` (auto-downloaded on first launch)
 
 **Dependencies**: `@qdrant/js-client-rest`, `onnxruntime-node`
 
@@ -297,7 +297,7 @@ FFmpeg is bundled with the app and doesn't require system installation:
 
 ### 3. Local Whisper Models (GGML format)
 
-Models stored in `~/.cache/snowi/whisper-models/`:
+Models stored in `~/.cache/snowy/whisper-models/`:
 
 - tiny: ~75MB (fastest, lowest quality)
 - base: ~142MB (recommended balance)
@@ -458,7 +458,7 @@ The app can open OS-level settings for microphone permissions, sound input selec
 
 ### 11. Debug Mode
 
-Enable with `--log-level=debug` or `SNOWI_LOG_LEVEL=debug` (can be set in `.env`):
+Enable with `--log-level=debug` or `SNOWY_LOG_LEVEL=debug` (can be set in `.env`):
 
 - Logs saved to platform-specific app data directory
 - Comprehensive logging of audio pipeline
@@ -520,7 +520,7 @@ Improve transcription accuracy for specific words, names, or technical terms:
 
 ### 14. GNOME Wayland Global Hotkeys
 
-On GNOME Wayland, Electron's `globalShortcut` API doesn't work due to Wayland's security model. Snowi uses native GNOME shortcuts:
+On GNOME Wayland, Electron's `globalShortcut` API doesn't work due to Wayland's security model. Snowy uses native GNOME shortcuts:
 
 **Architecture**:
 
@@ -534,7 +534,7 @@ On GNOME Wayland, Electron's `globalShortcut` API doesn't work due to Wayland's 
 
 - D-Bus service: `com.snowball.money`
 - D-Bus path: `/com/snowball/money`
-- gsettings path: `/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowi/`
+- gsettings path: `/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowy/`
 
 **IPC Integration**:
 
@@ -550,7 +550,7 @@ On GNOME Wayland, Electron's `globalShortcut` API doesn't work due to Wayland's 
 
 ### 15. Hyprland Wayland Global Hotkeys
 
-On Hyprland (wlroots Wayland compositor), Electron's `globalShortcut` API and the `GlobalShortcutsPortal` feature don't work reliably. Snowi uses native Hyprland keybindings:
+On Hyprland (wlroots Wayland compositor), Electron's `globalShortcut` API and the `GlobalShortcutsPortal` feature don't work reliably. Snowy uses native Hyprland keybindings:
 
 **Architecture**:
 
@@ -695,7 +695,7 @@ const { t } = useTranslation();
 1. Every new UI string must have a translation key in `en/translation.json` and all other language files
 2. Use `useTranslation()` hook in components and hooks
 3. Keep `{{variable}}` interpolation syntax for dynamic values
-4. Do NOT translate: brand names (Snowi), technical terms (Markdown, Signal ID), format names (MP3, WAV), AI system prompts
+4. Do NOT translate: brand names (Snowy), technical terms (Markdown, Signal ID), format names (MP3, WAV), AI system prompts
 5. Group keys by feature area (e.g., `notes.editor.*`, `referral.toasts.*`)
 
 ### Adding New Features
@@ -773,7 +773,7 @@ const { t } = useTranslation();
 
 7. **Local Semantic Search Not Working**:
    - Qdrant binary should be in `resources/bin/qdrant-{platform}-{arch}` (auto-downloaded during `predev`/`prebuild`)
-   - Embedding model should be in `~/.cache/snowi/embedding-models/all-MiniLM-L6-v2/model.onnx` (auto-downloaded on first app launch)
+   - Embedding model should be in `~/.cache/snowy/embedding-models/all-MiniLM-L6-v2/model.onnx` (auto-downloaded on first app launch)
    - Run `npm run download:qdrant` and `npm run download:embedding-model` manually if missing
    - Check debug logs for "qdrant" entries (port, health check, errors)
    - If Qdrant fails to start, search still works via FTS5 keyword fallback
@@ -817,7 +817,7 @@ const { t } = useTranslation();
 - No standardized URL scheme for system settings (user must open manually)
 - Privacy settings button hidden in UI (not applicable on Linux)
 - Recommend `pavucontrol` for audio device management
-- **Launch at login**: XDG autostart entry at `~/.config/autostart/snowi.desktop` (see `linuxAutostart.js`), since Electron's `setLoginItemSettings()` does nothing on Linux
+- **Launch at login**: XDG autostart entry at `~/.config/autostart/snowy.desktop` (see `linuxAutostart.js`), since Electron's `setLoginItemSettings()` does nothing on Linux
   - Disabling it from GNOME Tweaks or KDE's autostart editor is reflected in the Settings toggle
   - "Start minimized" is handled app-side by the `startMinimized` setting, not by the desktop entry
 - **Clipboard paste tools** (at least one required for auto-paste):

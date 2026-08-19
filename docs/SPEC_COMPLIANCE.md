@@ -1,7 +1,7 @@
 # V1 spec compliance tracker
 
 Living status of this fork against
-`Snowi_Desktop_Meeting_Copilot_V1_Contractor_Spec_v1.0.md`. Update it in the
+`Snowy_Desktop_Meeting_Copilot_V1_Contractor_Spec_v1.0.md`. Update it in the
 same commit that changes status — it doubles as the §33 "known limitations and
 unresolved-risk register".
 

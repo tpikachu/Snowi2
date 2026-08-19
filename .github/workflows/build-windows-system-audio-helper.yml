@@ -77,7 +77,7 @@ jobs:
 
             Captures system audio via WASAPI process loopback (exclude mode),
             hearing every application on every output device while excluding
-            Snowi's own audio. Requires Windows 10 2004 or later; older
+            Snowy's own audio. Requires Windows 10 2004 or later; older
             systems automatically fall back to Chromium display-media loopback.
           files: windows-system-audio-helper-win32-x64.zip
           make_latest: false

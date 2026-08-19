@@ -22,7 +22,7 @@ function fetchJson(url, redirectCount = 0) {
     }
 
     const headers = {
-      "User-Agent": "Snowi-Downloader",
+      "User-Agent": "Snowy-Downloader",
       Accept: "application/vnd.github+json",
     };
 

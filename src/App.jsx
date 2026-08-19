@@ -1,4 +1,4 @@
-import { SnowiGlyph } from "./components/ui/BrandMark";
+import { SnowyGlyph } from "./components/ui/BrandMark";
 import React, { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import "./index.css";
@@ -34,7 +34,7 @@ const BAR_WEIGHTS = [0.58, 0.84, 1, 0.84, 0.58];
 const METER_HEIGHT_PX = 14;
 const BAR_FLOOR = 0.2;
 
-// Snowi's mark: the six-spoke snowflake, geometry copied verbatim from
+// Snowy's mark: the six-spoke snowflake, geometry copied verbatim from
 // src/assets/logo.svg so the HUD, the icon rail and the app icon all draw the
 // same shape. Inherits currentColor, so a single class recolours it across
 // every HUD state.
@@ -578,10 +578,10 @@ export default function App() {
               ) : micState === "processing" ? (
                 <>
                   <ProcessingRing />
-                  <SnowiGlyph size={15} className="text-hud-accent/80" />
+                  <SnowyGlyph size={15} className="text-hud-accent/80" />
                 </>
               ) : (
-                <SnowiGlyph
+                <SnowyGlyph
                   size={17}
                   className={
                     micState === "hover"

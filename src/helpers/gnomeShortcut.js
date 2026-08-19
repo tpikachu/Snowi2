@@ -8,24 +8,24 @@ const DBUS_INTERFACE = "com.snowball.money";
 // Per-slot gsettings paths and display names
 const SLOT_CONFIG = {
   dictation: {
-    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowi/",
-    name: "Snowi Toggle",
+    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowy/",
+    name: "Snowy Toggle",
   },
   agent: {
-    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowi-agent/",
-    name: "Snowi Agent",
+    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowy-agent/",
+    name: "Snowy Agent",
   },
   meeting: {
-    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowi-meeting/",
-    name: "Snowi Meeting",
+    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowy-meeting/",
+    name: "Snowy Meeting",
   },
   voiceAgent: {
-    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowi-voice-agent/",
-    name: "Snowi Voice Agent",
+    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowy-voice-agent/",
+    name: "Snowy Voice Agent",
   },
   translation: {
-    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowi-translation/",
-    name: "Snowi Translation",
+    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/snowy-translation/",
+    name: "Snowy Translation",
   },
 };
 

@@ -649,8 +649,8 @@ export default function SettingsPage({
   const [isRemovingModels, setIsRemovingModels] = useState(false);
   const [cachePathHint, setCachePathHint] = useState(
     typeof navigator !== "undefined" && /Windows/i.test(navigator.userAgent)
-      ? "%USERPROFILE%\\.cache\\snowi"
-      : "~/.cache/snowi"
+      ? "%USERPROFILE%\\.cache\\snowy"
+      : "~/.cache/snowy"
   );
   useEffect(() => {
     window.electronAPI
@@ -1099,7 +1099,7 @@ export default function SettingsPage({
           } else {
             // Every local model is gone, so no local selection can still resolve.
             clearMissingLocalModelSelections(() => false);
-            window.dispatchEvent(new Event("snowi-models-cleared"));
+            window.dispatchEvent(new Event("snowy-models-cleared"));
             showAlertDialog({
               title: t("settingsPage.developer.removeModels.successTitle"),
               description: t("settingsPage.developer.removeModels.successDescription"),
@@ -1899,7 +1899,7 @@ export default function SettingsPage({
                           }),
                           desc: t("settingsPage.general.waylandPaste.guide.group.step2Desc", {
                             defaultValue:
-                              "Group changes only take effect after a new login session. Log out of your desktop and log back in, then reopen Snowi.",
+                              "Group changes only take effect after a new login session. Log out of your desktop and log back in, then reopen Snowy.",
                           }),
                         },
                       ],

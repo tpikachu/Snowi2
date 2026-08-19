@@ -5,7 +5,7 @@ const os = require("node:os");
 const path = require("node:path");
 const Module = require("node:module");
 
-let userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-translation-db-"));
+let userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-translation-db-"));
 const originalLoad = Module._load;
 
 Module._load = function patchedLoad(request, parent, isMain) {
@@ -27,7 +27,7 @@ const DatabaseManager = require("../../src/helpers/database.js");
 const { skipOrFail } = require("./harness/db.js");
 
 function createDb(t) {
-  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowi-translation-db-"));
+  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-translation-db-"));
   try {
     const BetterSqlite = require("better-sqlite3");
     const probe = new BetterSqlite(path.join(userDataDir, "probe.db"));

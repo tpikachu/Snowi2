@@ -48,7 +48,7 @@ async function transcribeAudio({
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       encounter: {
-        identifier: `snowi-${crypto.randomUUID()}`,
+        identifier: `snowy-${crypto.randomUUID()}`,
         status: "completed",
         type: "consultation",
       },

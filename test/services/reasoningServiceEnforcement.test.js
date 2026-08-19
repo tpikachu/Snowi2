@@ -12,7 +12,7 @@ const CUSTOM_ENDPOINT_INVALID = enTranslations.reasoning.custom.endpointInvalid;
 test("ReasoningService entry points enforce endpoint and dispatch guards", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-reasoning-enforcement-test-",
+    cachePrefix: "snowy-reasoning-enforcement-test-",
   });
 
   const reasoningService = (await vite.ssrLoadModule("/services/ReasoningService.ts")).default;

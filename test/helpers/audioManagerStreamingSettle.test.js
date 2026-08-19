@@ -11,7 +11,7 @@ const TIMER_SLACK_MS = 50;
 async function loadManager(t) {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "snowi-settle-test-",
+    cachePrefix: "snowy-settle-test-",
     mockModules: {
       "/utils/logger":
         "export default { debug() {}, info() {}, warn() {}, error() {}, logReasoning() {} };",
