@@ -88,6 +88,9 @@ const DictionaryView = React.lazy(() => import("./DictionaryView"));
 const UploadAudioView = React.lazy(() => import("./notes/UploadAudioView"));
 const ChatView = React.lazy(() => import("./chat/ChatView"));
 const CommandSearch = React.lazy(() => import("./CommandSearch"));
+// Lazy like the rest, so a packaged build — where the rail never offers it —
+// never loads the chunk at all.
+const DbExplorer = React.lazy(() => import("./dev/DbExplorer"));
 
 interface ControlPanelProps {
   /** Open the settings modal at this section on mount (e.g. after onboarding). */
@@ -807,6 +810,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     "personal-notes": t("sidebar.notes"),
     upload: t("sidebar.upload"),
     dictionary: t("sidebar.dictionary"),
+    database: "Database",
   };
 
   const contextPaneTitles: Partial<Record<ControlPanelView, string>> = {
@@ -1085,6 +1089,13 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   <DictionaryView />
                 </Suspense>
               )}
+              {activeView === "database" && (
+                <Suspense fallback={null}>
+                  <div className="mx-auto w-full max-w-5xl p-4">
+                    <DbExplorer />
+                  </div>
+                </Suspense>
+              )}
               {activeView === "upload" && (
                 <Suspense fallback={null}>
                   <UploadAudioView
@@ -1105,7 +1116,14 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         </div>
       </ContextPaneSlotContext.Provider>
       <BackgroundActionToastListener />
-      <TourOverlay onNavigate={(view) => setActiveView(view)} />
+      <TourOverlay
+        onNavigate={(view) => setActiveView(view)}
+        onOpenSettings={(section, panel) => {
+          setSettingsSection(section);
+          setSettingsPanel(panel);
+          setShowSettings(true);
+        }}
+      />
     </div>
   );
 }

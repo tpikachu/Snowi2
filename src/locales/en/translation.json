@@ -3736,12 +3736,22 @@
         "body": "Your recent meetings, what is coming up, and how much you have been recording over the last month.",
         "title": "Home"
       },
+      "models": {
+        "title": "Pick a model",
+        "body": "Transcription runs on this machine. Writing up a meeting and answering in chat need a language model, and none is chosen yet — until one is, notes stay raw transcripts.",
+        "bodyReady": "Note write-ups and chat are pointed at a model. Change provider, or set up transcription, from here.",
+        "action": "Choose a model"
+      },
       "notes": {
         "body": "Every recording becomes a note with a transcript, a summary, and the decisions and action items it produced.",
         "title": "Notes"
       },
+      "search": {
+        "title": "Find anything",
+        "body": "Search every note, meeting and conversation by name — or by what was said in it."
+      },
       "settings": {
-        "body": "Choose where transcription runs, connect a calendar, and pick the models Snowy uses. You can replay this tour from here.",
+        "body": "Connect a calendar, choose where transcription runs, and set your hotkeys. You can replay this tour from here.",
         "title": "Settings"
       }
     }

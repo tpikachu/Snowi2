@@ -4,6 +4,8 @@ import { Button } from "../ui/button";
 import { TOUR_STEPS } from "../../config/tourSteps";
 import { useTourStore, nextStep, previousStep, endTour, goToStep } from "../../stores/tourStore";
 import { placePopover, highlightRect, isAnchorVisible, type Rect } from "../../utils/tourPlacement";
+import { isModelSetupComplete, showsTourAction, tourStepBodyKey } from "../../utils/tourSetup";
+import { useSettingsStore, selectResolvedLLMConfig } from "../../stores/settingsStore";
 
 /**
  * The spotlight tour.
@@ -26,14 +28,26 @@ function readRect(element: Element): Rect {
 
 export default function TourOverlay({
   onNavigate,
+  onOpenSettings,
 }: {
   /** Switches the shell to the view a step lives on, before it is shown. */
   onNavigate?: (view: NonNullable<(typeof TOUR_STEPS)[number]["view"]>) => void;
+  /** Deep-links into settings for a step's call-to-action. */
+  onOpenSettings?: (section: string, panel?: string) => void;
 }) {
   const { t } = useTranslation();
   const isActive = useTourStore((s) => s.isActive);
   const stepIndex = useTourStore((s) => s.stepIndex);
   const step = TOUR_STEPS[stepIndex] ?? null;
+
+  // Whether a model is chosen at all decides which half of the setup step the
+  // user reads, and whether it offers a button.
+  const setupComplete = useSettingsStore((s) =>
+    isModelSetupComplete({
+      noteFormattingModel: selectResolvedLLMConfig(s, "noteFormatting").model,
+      chatModel: selectResolvedLLMConfig(s, "chatIntelligence").model,
+    })
+  );
 
   const popoverRef = useRef<HTMLDivElement | null>(null);
   const [anchorRect, setAnchorRect] = useState<Rect | null>(null);
@@ -177,7 +191,26 @@ export default function TourOverlay({
         style={{ top: placed.top, left: placed.left, width: POPOVER_WIDTH }}
       >
         <h2 className="text-sm font-semibold text-foreground">{t(step.titleKey)}</h2>
-        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{t(step.bodyKey)}</p>
+        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+          {t(tourStepBodyKey(step, setupComplete))}
+        </p>
+
+        {step.action && showsTourAction(step, setupComplete) && (
+          // Ends the tour rather than leaving it running behind the settings
+          // surface: the overlay would spotlight a rail button the modal has
+          // just covered.
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3 h-7 w-full text-xs"
+            onClick={() => {
+              endTour();
+              onOpenSettings?.(step.action!.settingsSection, step.action!.settingsPanel);
+            }}
+          >
+            {t(step.action.labelKey)}
+          </Button>
+        )}
 
         <div className="mt-4 flex items-center gap-2">
           <div className="flex flex-1 items-center gap-1.5" aria-hidden="true">

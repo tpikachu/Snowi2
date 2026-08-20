@@ -3736,12 +3736,22 @@
         "body": "Vos reunions recentes, ce qui arrive, et le volume enregistre au cours du dernier mois.",
         "title": "Accueil"
       },
+      "models": {
+        "title": "Choisissez un modèle",
+        "body": "La transcription s'exécute sur cette machine. Rédiger une réunion et répondre dans le chat nécessitent un modèle de langage, et aucun n'est encore choisi : d'ici là, les notes resteront de simples transcriptions.",
+        "bodyReady": "La rédaction des notes et le chat pointent vers un modèle. Changez de fournisseur, ou configurez la transcription, ici.",
+        "action": "Choisir un modèle"
+      },
       "notes": {
         "body": "Chaque enregistrement devient une note avec transcription, resume, decisions et actions a mener.",
         "title": "Notes"
       },
+      "search": {
+        "title": "Trouvez n'importe quoi",
+        "body": "Cherchez dans toutes les notes, réunions et conversations par leur nom, ou par ce qui y a été dit."
+      },
       "settings": {
-        "body": "Choisissez ou s'execute la transcription, connectez un agenda et selectionnez les modeles utilises. Vous pouvez rejouer cette visite d'ici.",
+        "body": "Connectez un agenda, choisissez où s'exécute la transcription et définissez vos raccourcis. Vous pouvez rejouer cette visite d'ici.",
         "title": "Reglages"
       }
     }

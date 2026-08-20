@@ -3736,12 +3736,22 @@
         "body": "Tus reuniones recientes, lo que viene y cuanto has grabado durante el ultimo mes.",
         "title": "Inicio"
       },
+      "models": {
+        "title": "Elige un modelo",
+        "body": "La transcripción se ejecuta en este equipo. Redactar una reunión y responder en el chat necesitan un modelo de lenguaje, y aún no has elegido ninguno: hasta entonces, las notas seguirán siendo transcripciones sin procesar.",
+        "bodyReady": "Las redacciones de notas y el chat ya apuntan a un modelo. Cambia de proveedor, o configura la transcripción, desde aquí.",
+        "action": "Elegir un modelo"
+      },
       "notes": {
         "body": "Cada grabacion se convierte en una nota con transcripcion, resumen y las decisiones y tareas que produjo.",
         "title": "Notas"
       },
+      "search": {
+        "title": "Encuentra lo que sea",
+        "body": "Busca en todas las notas, reuniones y conversaciones por su nombre, o por lo que se dijo en ellas."
+      },
       "settings": {
-        "body": "Elige donde se ejecuta la transcripcion, conecta un calendario y selecciona los modelos que usa Snowy. Puedes repetir este tour desde aqui.",
+        "body": "Conecta un calendario, elige dónde se ejecuta la transcripción y configura tus atajos. Puedes repetir esta guía desde aquí.",
         "title": "Ajustes"
       }
     }

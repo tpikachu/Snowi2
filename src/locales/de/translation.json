@@ -3736,12 +3736,22 @@
         "body": "Ihre letzten Meetings, was ansteht und wie viel Sie im letzten Monat aufgezeichnet haben.",
         "title": "Start"
       },
+      "models": {
+        "title": "Modell auswählen",
+        "body": "Die Transkription läuft auf diesem Gerät. Für die Ausarbeitung eines Meetings und für Antworten im Chat wird ein Sprachmodell benötigt, und bisher ist keines ausgewählt – bis dahin bleiben Notizen reine Transkripte.",
+        "bodyReady": "Notizausarbeitung und Chat verweisen auf ein Modell. Anbieter wechseln oder Transkription einrichten – hier.",
+        "action": "Modell auswählen"
+      },
       "notes": {
         "body": "Jede Aufnahme wird zu einer Notiz mit Transkript, Zusammenfassung sowie den Entscheidungen und Aufgaben daraus.",
         "title": "Notizen"
       },
+      "search": {
+        "title": "Alles finden",
+        "body": "Durchsuche alle Notizen, Meetings und Unterhaltungen nach Namen – oder nach dem, was darin gesagt wurde."
+      },
       "settings": {
-        "body": "Legen Sie fest, wo die Transkription laeuft, verbinden Sie einen Kalender und waehlen Sie die Modelle. Diese Tour laesst sich hier wiederholen.",
+        "body": "Kalender verbinden, festlegen wo die Transkription läuft, und Tastenkürzel einrichten. Diese Tour lässt sich von hier aus erneut starten.",
         "title": "Einstellungen"
       }
     }

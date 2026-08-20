@@ -3736,12 +3736,22 @@
         "body": "Suas reunioes recentes, o que vem a seguir e quanto voce gravou no ultimo mes.",
         "title": "Inicio"
       },
+      "models": {
+        "title": "Escolha um modelo",
+        "body": "A transcrição é executada neste computador. Redigir uma reunião e responder no chat exigem um modelo de linguagem, e ainda não há nenhum escolhido — até lá, as notas continuam sendo transcrições brutas.",
+        "bodyReady": "A redação de notas e o chat apontam para um modelo. Troque de provedor, ou configure a transcrição, por aqui.",
+        "action": "Escolher um modelo"
+      },
       "notes": {
         "body": "Cada gravacao vira uma nota com transcricao, resumo e as decisoes e tarefas que produziu.",
         "title": "Notas"
       },
+      "search": {
+        "title": "Encontre qualquer coisa",
+        "body": "Pesquise em todas as notas, reuniões e conversas pelo nome — ou pelo que foi dito nelas."
+      },
       "settings": {
-        "body": "Escolha onde a transcricao roda, conecte um calendario e selecione os modelos. Voce pode repetir este tour por aqui.",
+        "body": "Conecte um calendário, escolha onde a transcrição é executada e defina seus atalhos. Você pode repetir este tour por aqui.",
         "title": "Configuracoes"
       }
     }

@@ -1,10 +1,19 @@
 import React from "react";
-import { Home, MessageSquare, NotebookPen, BookOpen, Settings, Search } from "lucide-react";
+import {
+  Home,
+  MessageSquare,
+  NotebookPen,
+  BookOpen,
+  Database,
+  Settings,
+  Search,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "../lib/utils";
 import { Tooltip } from "../ui/tooltip";
 import { getCachedPlatform } from "../../utils/platform";
 import { SnowyGlyph } from "../ui/BrandMark";
+import { useDevDbAvailable } from "../dev/useDevDbAvailable";
 
 const platform = getCachedPlatform();
 const isMac = platform === "darwin";
@@ -16,7 +25,8 @@ const isMac = platform === "darwin";
 export const ICON_RAIL_WIDTH_PX = 48;
 const RAIL_TOP_INSET = isMac ? 38 : 4;
 
-export type ControlPanelView = "home" | "chat" | "personal-notes" | "dictionary" | "upload";
+export type ControlPanelView =
+  "home" | "chat" | "personal-notes" | "dictionary" | "upload" | "database";
 
 const railButtonClass = [
   "relative flex size-9 items-center justify-center rounded-md",
@@ -93,6 +103,7 @@ export default function IconRail({
   updateAction,
 }: IconRailProps) {
   const { t } = useTranslation();
+  const devDbAvailable = useDevDbAvailable();
 
   const navItems: {
     id: ControlPanelView;
@@ -130,7 +141,12 @@ export default function IconRail({
       </div>
 
       {onOpenSearch && (
-        <RailButton icon={Search} label={t("commandSearch.title")} onClick={onOpenSearch} />
+        <RailButton
+          icon={Search}
+          label={t("commandSearch.title")}
+          onClick={onOpenSearch}
+          tourAnchor="nav-search"
+        />
       )}
 
       <div aria-hidden="true" className="my-1 h-px w-6 shrink-0 bg-border-subtle" />
@@ -153,6 +169,17 @@ export default function IconRail({
 
       <div className="flex shrink-0 flex-col items-center gap-1 border-t border-border-subtle pt-2">
         {updateAction}
+        {/* Below the divider with Settings rather than in the nav proper: it
+            is a development tool, not a section of the product. Untranslated
+            for the same reason the view itself is — it cannot ship. */}
+        {devDbAvailable && (
+          <RailButton
+            icon={Database}
+            label="Database (dev)"
+            isActive={activeView === "database"}
+            onClick={() => onViewChange("database")}
+          />
+        )}
         <RailButton
           icon={Settings}
           label={t("sidebar.settings")}

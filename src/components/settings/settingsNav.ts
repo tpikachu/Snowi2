@@ -255,7 +255,7 @@ const ALL_SETTINGS_SECTIONS: SettingsSectionDef[] = [
  * cannot reach is a dead end, and an anchor pointing at an unrendered group
  * would leave the nav pane with a link to nothing.
  */
-const isVisibleEntry = (id: string) => DICTATION_ENABLED || !DICTATION_SETTINGS_IDS.has(id);
+export const isVisibleEntry = (id: string) => DICTATION_ENABLED || !DICTATION_SETTINGS_IDS.has(id);
 
 export const SETTINGS_SECTIONS: SettingsSectionDef[] = ALL_SETTINGS_SECTIONS.map((section) => ({
   ...section,

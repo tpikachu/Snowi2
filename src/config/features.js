@@ -25,7 +25,18 @@
  */
 export const DICTATION_ENABLED = false;
 
-/** Settings anchors, panels and search entries that only exist for dictation. */
+/**
+ * Settings anchors, panels and search entries that only exist for dictation.
+ *
+ * The second group is named for what it does rather than for dictation, which
+ * is exactly why it kept showing: every control under it drives the dictation
+ * flow and nothing else.
+ *   sound        — start/stop cues and pause-media, both read only by
+ *                  `useAudioRecording` (`dictationCues`, `pauseMediaOnDictation`)
+ *   floatingIcon — auto-hide for the dictation HUD, a window that never opens
+ *   waylandPaste — ydotool setup for auto-paste, and the only things that
+ *                  paste are the dictation and selection-edit flows
+ */
 export const DICTATION_SETTINGS_IDS = new Set([
   "dictationHotkey",
   "voiceAgentHotkey",
@@ -34,6 +45,9 @@ export const DICTATION_SETTINGS_IDS = new Set([
   "dictationCleanup",
   "dictationAgent",
   "dictationTranslation",
+  "sound",
+  "floatingIcon",
+  "waylandPaste",
 ]);
 
 /** Hotkey slots owned by dictation, in `hotkeyManager` slot naming. */

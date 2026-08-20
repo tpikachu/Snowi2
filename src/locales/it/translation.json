@@ -3736,12 +3736,22 @@
         "body": "Le riunioni recenti, cosa arriva e quanto hai registrato nell'ultimo mese.",
         "title": "Home"
       },
+      "models": {
+        "title": "Scegli un modello",
+        "body": "La trascrizione viene eseguita su questo computer. Per redigere una riunione e rispondere in chat serve un modello linguistico, e non ne è ancora stato scelto uno: fino ad allora le note resteranno trascrizioni grezze.",
+        "bodyReady": "La stesura delle note e la chat puntano a un modello. Cambia provider, o configura la trascrizione, da qui.",
+        "action": "Scegli un modello"
+      },
       "notes": {
         "body": "Ogni registrazione diventa una nota con trascrizione, riepilogo, decisioni e attivita da svolgere.",
         "title": "Note"
       },
+      "search": {
+        "title": "Trova qualsiasi cosa",
+        "body": "Cerca tra tutte le note, le riunioni e le conversazioni per nome — o per ciò che vi è stato detto."
+      },
       "settings": {
-        "body": "Scegli dove viene eseguita la trascrizione, collega un calendario e seleziona i modelli. Puoi rivedere questo tour da qui.",
+        "body": "Collega un calendario, scegli dove viene eseguita la trascrizione e imposta le scorciatoie. Puoi rivedere questo tour da qui.",
         "title": "Impostazioni"
       }
     }

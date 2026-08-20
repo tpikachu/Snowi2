@@ -68,7 +68,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import LinuxPttSetupInfo from "./ui/LinuxPttSetupInfo";
 import { Toggle } from "./ui/toggle";
 import DeveloperSection from "./DeveloperSection";
-import DbExplorerGroup from "./dev/DbExplorerGroup";
 import ChatAgentSettings from "./settings/ChatAgentSettings";
 import DictationAgentSettings from "./settings/DictationAgentSettings";
 import DictationTranslationSettings from "./settings/DictationTranslationSettings";
@@ -97,6 +96,7 @@ import SettingsGroup, {
   SettingsPanelBody,
   SettingsSectionBody,
 } from "./settings/SettingsGroup";
+import { LLM_TABS, SPEECH_TABS } from "./settings/settingsNav";
 import type { LlmTab, SettingsSectionType, SpeechTab } from "./settings/settingsNav";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { formatBytes } from "../utils/formatBytes";
@@ -520,8 +520,11 @@ function GpuDeviceSelector({
 
 export default function SettingsPage({
   activeSection = "general",
-  speechTab = "dictation",
-  llmTab = "dictationCleanup",
+  // The first *visible* tab, not a literal: "dictation" and "dictationCleanup"
+  // are both hidden, so a render without these props would open straight onto
+  // a panel the nav cannot even show a tab for.
+  speechTab = SPEECH_TABS[0],
+  llmTab = LLM_TABS[0],
   onRequestClose,
 }: SettingsPageProps) {
   const {
@@ -1129,14 +1132,19 @@ export default function SettingsPage({
       description={t("settingsPage.transcription.vad.description")}
     >
       <SettingsPanel>
-        <SettingsPanelRow>
-          <SettingsRow
-            label={t("settingsPage.transcription.vad.toggles.dictation.title")}
-            description={t("settingsPage.transcription.vad.toggles.dictation.description")}
-          >
-            <Toggle checked={dictationSileroEnabled} onChange={setDictationSileroEnabled} />
-          </SettingsRow>
-        </SettingsPanelRow>
+        {/* This group is rendered under Note Recording as well, so the
+            per-scope toggles have to be filtered individually — the group's
+            own id is not "dictation". */}
+        {DICTATION_ENABLED && (
+          <SettingsPanelRow>
+            <SettingsRow
+              label={t("settingsPage.transcription.vad.toggles.dictation.title")}
+              description={t("settingsPage.transcription.vad.toggles.dictation.description")}
+            >
+              <Toggle checked={dictationSileroEnabled} onChange={setDictationSileroEnabled} />
+            </SettingsRow>
+          </SettingsPanelRow>
+        )}
         <SettingsPanelRow>
           <SettingsRow
             label={t("settingsPage.transcription.vad.toggles.noteRecording.title")}
@@ -2842,9 +2850,6 @@ EOF`,
             >
               <DeveloperSection />
             </SettingsGroup>
-
-            {/* Renders nothing unless the app is running unpackaged. */}
-            <DbExplorerGroup />
 
             {/* Data Management */}
             <SettingsGroup

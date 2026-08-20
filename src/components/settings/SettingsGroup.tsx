@@ -1,7 +1,12 @@
 import React from "react";
 import { cn } from "../lib/utils";
 import { useSettingsSurface } from "./settingsSurfaceContext";
-import { SECTION_BY_ID, settingsGroupDomId, type SettingsSectionType } from "./settingsNav";
+import {
+  SECTION_BY_ID,
+  isVisibleEntry,
+  settingsGroupDomId,
+  type SettingsSectionType,
+} from "./settingsNav";
 
 interface SettingsGroupProps {
   /** Stable ID, also the scroll anchor the nav pane links to. */
@@ -24,6 +29,12 @@ interface SettingsGroupProps {
  *
  * `break-inside-avoid` keeps a group whole when the section flows into two
  * columns on a wide window.
+ *
+ * A group belonging to a hidden feature renders nothing, decided here rather
+ * than at each call site. The nav pane filters its anchors through the same
+ * predicate, and the two drifting apart is what leaves either a dead link or a
+ * visible block of settings for a feature that has been switched off — which
+ * is how "Sound Effects" and "Floating Icon" survived the dictation cull.
  */
 export default function SettingsGroup({
   id,
@@ -35,6 +46,8 @@ export default function SettingsGroup({
   className,
 }: SettingsGroupProps) {
   const headingId = `${settingsGroupDomId(id)}-heading`;
+
+  if (!isVisibleEntry(id)) return null;
 
   return (
     <section
