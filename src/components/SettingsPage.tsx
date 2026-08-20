@@ -68,6 +68,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import LinuxPttSetupInfo from "./ui/LinuxPttSetupInfo";
 import { Toggle } from "./ui/toggle";
 import DeveloperSection from "./DeveloperSection";
+import DbExplorerGroup from "./dev/DbExplorerGroup";
 import ChatAgentSettings from "./settings/ChatAgentSettings";
 import DictationAgentSettings from "./settings/DictationAgentSettings";
 import DictationTranslationSettings from "./settings/DictationTranslationSettings";
@@ -2841,6 +2842,9 @@ EOF`,
             >
               <DeveloperSection />
             </SettingsGroup>
+
+            {/* Renders nothing unless the app is running unpackaged. */}
+            <DbExplorerGroup />
 
             {/* Data Management */}
             <SettingsGroup

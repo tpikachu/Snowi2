@@ -952,7 +952,66 @@ class IPCHandlers {
     return { token, environment, tenant };
   }
 
+  /**
+   * The dev database explorer. Gated on `app.isPackaged` rather than NODE_ENV
+   * because `.env` is loaded into process.env at startup, so NODE_ENV is
+   * something a shipped install can be talked into setting — and this channel
+   * runs arbitrary SQL against a file holding OAuth refresh tokens.
+   *
+   * `dev-db-available` is always registered so the renderer can ask instead of
+   * guessing: `import.meta.env.DEV` is fixed at build time and is false for
+   * `npm start`, which runs an unpackaged app off a production bundle.
+   */
+  _setupDevDbHandlers() {
+    const enabled = !app.isPackaged;
+
+    ipcMain.handle("dev-db-available", () => enabled);
+    if (!enabled) return;
+
+    const { createDevDbExplorer } = require("./devDbExplorer");
+    let explorer = null;
+    const open = () => {
+      if (!explorer) {
+        explorer = createDevDbExplorer({
+          databasePath: this.databaseManager._databaseFilePath(),
+        });
+      }
+      return explorer;
+    };
+    // Reset app data deletes and recreates the file; a handle to the old inode
+    // would keep answering with the pre-reset contents.
+    this._closeDevDbExplorer = () => {
+      explorer?.close();
+      explorer = null;
+    };
+
+    const guard =
+      (fn) =>
+      (event, ...args) => {
+        try {
+          return { success: true, data: fn(open(), ...args) };
+        } catch (error) {
+          return { success: false, error: error.message };
+        }
+      };
+
+    ipcMain.handle(
+      "dev-db-list-tables",
+      guard((e) => e.listTables())
+    );
+    ipcMain.handle(
+      "dev-db-read-table",
+      guard((e, table, options) => e.readTable(table, options ?? {}))
+    );
+    ipcMain.handle(
+      "dev-db-run-query",
+      guard((e, sql, options) => e.runQuery(sql, options ?? {}))
+    );
+  }
+
   setupHandlers() {
+    this._setupDevDbHandlers();
+
     ipcMain.handle("window-minimize", () => {
       if (this.windowManager.controlPanelWindow) {
         this.windowManager.controlPanelWindow.minimize();
@@ -3132,6 +3191,9 @@ class IPCHandlers {
       // "reset complete" dialog fails with "the database connection is not
       // open" until the user quits the app.
       try {
+        // The explorer's read-only handle points at the file being unlinked;
+        // left open it would keep answering from the old inode.
+        this._closeDevDbExplorer?.();
         this.databaseManager?.reset();
       } catch (e) {
         errors.push(`DB reset: ${e.message}`);

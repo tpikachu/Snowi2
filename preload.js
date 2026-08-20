@@ -207,6 +207,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
   showNoteFile: (noteId) => ipcRenderer.invoke("show-note-file", noteId),
   showFolderInExplorer: (folderName) => ipcRenderer.invoke("show-folder-in-explorer", folderName),
 
+  // Dev database explorer. Only `available` answers in a packaged build — the
+  // rest are not registered there (see ipcHandlers._setupDevDbHandlers).
+  devDb: {
+    available: () => ipcRenderer.invoke("dev-db-available"),
+    listTables: () => ipcRenderer.invoke("dev-db-list-tables"),
+    readTable: (table, options) => ipcRenderer.invoke("dev-db-read-table", table, options),
+    runQuery: (sql, options) => ipcRenderer.invoke("dev-db-run-query", sql, options),
+  },
+
   // Action functions
   getActions: () => ipcRenderer.invoke("db-get-actions"),
   getAction: (id) => ipcRenderer.invoke("db-get-action", id),

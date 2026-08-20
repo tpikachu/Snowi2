@@ -128,6 +128,68 @@ export interface MeetingActivity {
   busiestWeekday: number | null;
 }
 
+/** One rendered SQLite value. See devDbExplorer.formatCell. */
+export type DevDbCell =
+  | { kind: "null" }
+  | { kind: "redacted"; text: string }
+  | { kind: "blob"; text: string }
+  | { kind: "text"; text: string; truncated?: boolean; full?: number };
+
+export interface DevDbColumn {
+  name: string;
+  type: string;
+  notNull: boolean;
+  primaryKey: boolean;
+  defaultValue: string | null;
+  redacted: boolean;
+}
+
+export interface DevDbTable {
+  name: string;
+  virtual: boolean;
+  /** Null when COUNT(*) failed (a corrupt fts index, say). */
+  rows: number | null;
+  columns: DevDbColumn[];
+  note: string | null;
+}
+
+/**
+ * A payload-or-error envelope. Not a discriminated union: the renderer builds
+ * with `strict: false`, so narrowing on `success` would not apply and every
+ * read of `.error` would fail to compile.
+ */
+export interface DevDbResult<T> {
+  success: boolean;
+  error?: string;
+  data?: T;
+}
+
+export interface DevDbTableList {
+  path: string;
+  schemaVersion: number;
+  tables: DevDbTable[];
+}
+
+export interface DevDbPage {
+  table: string;
+  columns: string[];
+  total: number;
+  limit: number;
+  offset: number;
+  orderBy: string | null;
+  direction: "asc" | "desc" | null;
+  note: string | null;
+  rows: DevDbCell[][];
+}
+
+export interface DevDbQueryResult {
+  columns: string[];
+  returned: number;
+  truncated: boolean;
+  limit: number;
+  rows: DevDbCell[][];
+}
+
 export interface MeetingListRow {
   id: number;
   title: string;
@@ -967,6 +1029,24 @@ declare global {
         days?: number;
         spaceId?: number | null;
       }) => Promise<MeetingActivity>;
+      /** Dev only: `available` resolves false in a packaged build, where the rest are unregistered. */
+      devDb: {
+        available: () => Promise<boolean>;
+        listTables: () => Promise<DevDbResult<DevDbTableList>>;
+        readTable: (
+          table: string,
+          options?: {
+            limit?: number;
+            offset?: number;
+            orderBy?: string;
+            direction?: "asc" | "desc";
+          }
+        ) => Promise<DevDbResult<DevDbPage>>;
+        runQuery: (
+          sql: string,
+          options?: { limit?: number }
+        ) => Promise<DevDbResult<DevDbQueryResult>>;
+      };
       getNoteSegments: (noteId: number) => Promise<MeetingSegmentRow[]>;
       getSegmentsByIds: (ids: string[]) => Promise<MeetingSegmentRow[]>;
       ingestMemory: (payload: {
