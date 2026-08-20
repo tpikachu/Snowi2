@@ -1,12 +1,22 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, Loader2, Lock, MessageSquareText, Sparkles, Users, X } from "lucide-react";
+import {
+  ArrowDown,
+  Check,
+  Loader2,
+  Lock,
+  MessageSquareText,
+  Sparkles,
+  Users,
+  X,
+} from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
 import { Toggle } from "../ui/toggle";
 import { cn } from "../lib/utils";
 import { MAX_SPEAKER_COUNT } from "../../constants/speakerDetection.json";
 import type { TranscriptSegment } from "../../stores/meetingRecordingStore";
 import type { LiveUtterance } from "../../utils/liveUtterances";
+import { windowTranscript } from "../../utils/transcriptWindow";
 import {
   isTranscriptSpeakerLocked,
   resolveSegmentSpeakerName,
@@ -73,6 +83,13 @@ const SPEAKER_BORDER_COLORS = [
 ];
 
 const STICKY_SCROLL_THRESHOLD_PX = 80;
+
+/**
+ * How many segments are rendered at once, and how many more each "show earlier"
+ * reveals. Roughly an hour of two-person conversation, so most meetings never
+ * hit it and the ones that do stay responsive.
+ */
+const SEGMENT_WINDOW = 300;
 
 const getEffectiveSpeakerKey = (
   segment: TranscriptSegment,
@@ -634,28 +651,71 @@ export function MeetingTranscriptChat({
   const scrollRef = useRef<HTMLDivElement>(null);
   const shouldStickToBottomRef = useRef(true);
   const [hintDismissed, setHintDismissed] = useState(false);
+  const [atBottom, setAtBottom] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(SEGMENT_WINDOW);
 
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
     const updateStickyScroll = () => {
-      shouldStickToBottomRef.current =
-        el.scrollHeight - el.scrollTop - el.clientHeight < STICKY_SCROLL_THRESHOLD_PX;
+      const stuck = el.scrollHeight - el.scrollTop - el.clientHeight < STICKY_SCROLL_THRESHOLD_PX;
+      shouldStickToBottomRef.current = stuck;
+      // Mirrored into state only for the Jump to live affordance; the ref is
+      // what the scroll effect reads, so this cannot make scrolling depend on
+      // a render having happened first.
+      setAtBottom((previous) => (previous === stuck ? previous : stuck));
     };
 
     updateStickyScroll();
-    el.addEventListener("scroll", updateStickyScroll);
+    el.addEventListener("scroll", updateStickyScroll, { passive: true });
     return () => el.removeEventListener("scroll", updateStickyScroll);
   }, []);
 
+  // Set just before revealing earlier messages: the distance from the bottom of
+  // the content, which prepending rows does not change (whereas scrollTop does).
+  const restoreFromBottomRef = useRef<number | null>(null);
+
   useLayoutEffect(() => {
     const el = scrollRef.current;
-    if (!el || !shouldStickToBottomRef.current) return;
+    if (!el) return;
+
+    const anchor = restoreFromBottomRef.current;
+    if (anchor !== null) {
+      // Rows were prepended. Keeping scrollTop would drop the reader wherever
+      // the newly revealed block happens to end; holding the distance from the
+      // bottom keeps the line they were reading exactly where it was.
+      restoreFromBottomRef.current = null;
+      el.scrollTop = el.scrollHeight - anchor;
+      return;
+    }
+
+    if (!shouldStickToBottomRef.current) return;
     el.scrollTop = el.scrollHeight;
-  }, [segments, liveUtterances]);
+  }, [segments, liveUtterances, visibleCount]);
 
   const live = liveUtterances ?? [];
   const hasContent = segments.length > 0 || live.length > 0;
+
+  // Only the tail is rendered; see utils/transcriptWindow.ts for why this is a
+  // window rather than the virtualizer used elsewhere in the app.
+  const {
+    firstVisibleIndex,
+    visible: visibleSegments,
+    hiddenCount,
+  } = windowTranscript(segments, visibleCount);
+
+  const showEarlier = () => {
+    const el = scrollRef.current;
+    restoreFromBottomRef.current = el ? el.scrollHeight - el.scrollTop : null;
+    setVisibleCount((count) => count + SEGMENT_WINDOW);
+  };
+
+  const jumpToLive = () => {
+    const el = scrollRef.current;
+    if (!el) return;
+    shouldStickToBottomRef.current = true;
+    el.scrollTop = el.scrollHeight;
+  };
 
   const colorByKey = useMemo(() => {
     const map = new Map<string, number>();
@@ -771,7 +831,20 @@ export function MeetingTranscriptChat({
         ref={scrollRef}
         className="h-full overflow-y-auto px-4 pt-3 pb-24 flex flex-col gap-1.5 agent-chat-scroll"
       >
-        {segments.map((segment, i) => {
+        {hiddenCount > 0 && (
+          <button
+            type="button"
+            onClick={showEarlier}
+            className="mx-auto mb-1 rounded-md border border-border-subtle bg-surface-2 px-2.5 py-1 text-[11px] text-muted-foreground transition-colors hover:bg-surface-3 hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {t("notes.transcript.showEarlier", { count: hiddenCount })}
+          </button>
+        )}
+
+        {visibleSegments.map((segment, windowIndex) => {
+          // Indexed against the full list, so the first rendered row still knows
+          // whether the segment above it — hidden or not — was the same speaker.
+          const i = firstVisibleIndex + windowIndex;
           const selfSide = isSelfSide(segment);
           const prevSegment = i > 0 ? segments[i - 1] : null;
           const sameSpeaker = prevSegment
@@ -915,6 +988,20 @@ export function MeetingTranscriptChat({
           );
         })}
       </div>
+
+      {/* Scrolling back through a live meeting silently stops the pane from
+          following the speaker. Without a way back, the transcript looks frozen
+          — so say so, and offer the ride back. */}
+      {!atBottom && hasContent && (
+        <button
+          type="button"
+          onClick={jumpToLive}
+          className="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-border-subtle bg-popover/95 px-3 py-1.5 text-[11px] font-medium text-foreground shadow-elevated backdrop-blur-xl transition-colors hover:bg-surface-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <ArrowDown size={12} />
+          {isRecording ? t("notes.transcript.jumpToLive") : t("notes.transcript.jumpToLatest")}
+        </button>
+      )}
     </div>
   );
 }

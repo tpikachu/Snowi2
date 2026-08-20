@@ -2930,6 +2930,12 @@
         "paused": "Captura en pausa",
         "systemOnly": "Solo audio del sistema"
       }
+    },
+    "transcript": {
+      "showEarlier_one": "Mostrar {{count}} mensaje anterior",
+      "showEarlier_other": "Mostrar {{count}} mensajes anteriores",
+      "jumpToLive": "Ir al directo",
+      "jumpToLatest": "Ir a lo último"
     }
   },
   "dictionary": {

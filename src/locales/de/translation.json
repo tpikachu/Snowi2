@@ -3089,6 +3089,12 @@
         "paused": "Aufnahme pausiert",
         "systemOnly": "Nur Systemaudio"
       }
+    },
+    "transcript": {
+      "showEarlier_one": "{{count}} frühere Nachricht anzeigen",
+      "showEarlier_other": "{{count}} frühere Nachrichten anzeigen",
+      "jumpToLive": "Zum Live-Verlauf",
+      "jumpToLatest": "Zum Neuesten"
     }
   },
   "dictionary": {

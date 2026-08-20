@@ -3089,6 +3089,12 @@
         "paused": "Capture en pause",
         "systemOnly": "Audio du système uniquement"
       }
+    },
+    "transcript": {
+      "showEarlier_one": "Afficher {{count}} message précédent",
+      "showEarlier_other": "Afficher {{count}} messages précédents",
+      "jumpToLive": "Aller au direct",
+      "jumpToLatest": "Aller au plus récent"
     }
   },
   "dictionary": {

@@ -2908,6 +2908,14 @@
         "paused": "Захват приостановлен",
         "systemOnly": "Только звук системы"
       }
+    },
+    "transcript": {
+      "showEarlier_one": "Показать {{count}} предыдущее сообщение",
+      "showEarlier_few": "Показать {{count}} предыдущих сообщения",
+      "showEarlier_many": "Показать {{count}} предыдущих сообщений",
+      "showEarlier_other": "Показать {{count}} предыдущих сообщений",
+      "jumpToLive": "К прямому эфиру",
+      "jumpToLatest": "К последнему"
     }
   },
   "dictionary": {

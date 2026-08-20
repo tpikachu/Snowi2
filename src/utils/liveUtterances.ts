@@ -62,10 +62,7 @@ export interface PartialEvent {
  * A provider that names its utterances gets one line per utterance; one that
  * does not gets a single line per source, which is what the two strings did.
  */
-export function utteranceKey(event: {
-  source: TranscriptSource;
-  utteranceId?: string;
-}): string {
+export function utteranceKey(event: { source: TranscriptSource; utteranceId?: string }): string {
   return event.utteranceId ? `${event.source}:${event.utteranceId}` : event.source;
 }
 
@@ -113,7 +110,12 @@ export function applyPartial(
   // Out-of-order guard. Equal sequence numbers are allowed through: a provider
   // that repeats a sequence is revising that same result, and the newer text
   // is the better one.
-  if (existing && existing.seq !== undefined && event.seq !== undefined && event.seq < existing.seq) {
+  if (
+    existing &&
+    existing.seq !== undefined &&
+    event.seq !== undefined &&
+    event.seq < existing.seq
+  ) {
     return current as LiveUtterance[];
   }
 

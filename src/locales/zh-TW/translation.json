@@ -2882,6 +2882,12 @@
         "paused": "擷取已暫停",
         "systemOnly": "僅系統音訊"
       }
+    },
+    "transcript": {
+      "showEarlier_one": "顯示 {{count}} 則較早的訊息",
+      "showEarlier_other": "顯示 {{count}} 則較早的訊息",
+      "jumpToLive": "跳至即時",
+      "jumpToLatest": "跳至最新"
     }
   },
   "dictionary": {

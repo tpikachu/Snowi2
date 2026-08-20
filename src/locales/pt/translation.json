@@ -2882,6 +2882,12 @@
         "paused": "Captura pausada",
         "systemOnly": "Apenas o áudio do sistema"
       }
+    },
+    "transcript": {
+      "showEarlier_one": "Mostrar {{count}} mensagem anterior",
+      "showEarlier_other": "Mostrar {{count}} mensagens anteriores",
+      "jumpToLive": "Ir para ao vivo",
+      "jumpToLatest": "Ir para o mais recente"
     }
   },
   "dictionary": {

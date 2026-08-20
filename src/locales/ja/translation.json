@@ -2810,6 +2810,12 @@
         "paused": "キャプチャ一時停止中",
         "systemOnly": "システム音声のみ"
       }
+    },
+    "transcript": {
+      "showEarlier_one": "以前のメッセージを{{count}}件表示",
+      "showEarlier_other": "以前のメッセージを{{count}}件表示",
+      "jumpToLive": "ライブに移動",
+      "jumpToLatest": "最新に移動"
     }
   },
   "dictionary": {

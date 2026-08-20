@@ -2882,6 +2882,12 @@
         "paused": "Acquisizione in pausa",
         "systemOnly": "Solo audio di sistema"
       }
+    },
+    "transcript": {
+      "showEarlier_one": "Mostra {{count}} messaggio precedente",
+      "showEarlier_other": "Mostra {{count}} messaggi precedenti",
+      "jumpToLive": "Vai al live",
+      "jumpToLatest": "Vai al più recente"
     }
   },
   "dictionary": {

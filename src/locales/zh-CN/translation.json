@@ -2882,6 +2882,12 @@
         "paused": "采集已暂停",
         "systemOnly": "仅系统音频"
       }
+    },
+    "transcript": {
+      "showEarlier_one": "显示 {{count}} 条更早的消息",
+      "showEarlier_other": "显示 {{count}} 条更早的消息",
+      "jumpToLive": "跳到实时",
+      "jumpToLatest": "跳到最新"
     }
   },
   "dictionary": {
