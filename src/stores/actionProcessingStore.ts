@@ -5,7 +5,7 @@ import { appendDictionarySuffix } from "../config/prompts";
 import { generateNoteTitle } from "../utils/generateTitle";
 import { buildNoteFormattingOverrides } from "../helpers/noteFormattingOverrides";
 import type { ActionItem } from "../types/electron";
-import type { SettingsRemedy } from "../config/settingsRemedies";
+import { llmRemedy, type SettingsRemedy } from "../config/settingsRemedies";
 
 export type ActionProcessingStatus = "idle" | "processing" | "success";
 
@@ -192,7 +192,11 @@ export function runBackgroundAction(
       processingFlags.set(noteId, false);
       clearNoteState(noteId);
       const message = err instanceof Error ? err.message : labels.actionFailed;
-      pushErrorEvent({ noteId, message });
+      // The guards above catch a model that was never chosen. This catches the
+      // one that was chosen but cannot run — a missing llama-server binary, a
+      // model that is not downloaded — which is equally unfixable by retrying
+      // and equally fixable in the same place.
+      pushErrorEvent({ noteId, message, remedy: llmRemedy("noteFormatting", err) ?? undefined });
     } finally {
       cancelledFlags.delete(noteId);
     }

@@ -53,6 +53,43 @@ test("uncoded main-process messages are still recognised", async (t) => {
   }
 });
 
+test("a missing local inference runtime is a configuration failure", async (t) => {
+  const { isConfigurationFailure, llmRemedy } = await load(t);
+
+  // Verbatim from modelManagerBridge.js. It reads like a broken install, but
+  // the fix is in Settings either way: pick a cloud provider, or download the
+  // local model that ships the runtime.
+  const message = "llama-server binary not found. Please ensure the app is installed correctly.";
+  assert.equal(isConfigurationFailure({ message }), true);
+  assert.equal(llmRemedy("noteFormatting", { message }), "configureNoteFormatting");
+
+  // And by code, for the paths that keep it across IPC.
+  assert.equal(isConfigurationFailure({ code: "LLAMASERVER_NOT_FOUND" }), true);
+});
+
+test("the binary pattern is anchored to a named runtime", async (t) => {
+  const { isConfigurationFailure } = await load(t);
+
+  // A bare "not found" is a whole class of runtime errors that Settings cannot
+  // fix, so the pattern names the binaries rather than matching the phrase.
+  assert.equal(isConfigurationFailure({ message: "File not found" }), false);
+  assert.equal(isConfigurationFailure({ message: "Note not found" }), false);
+  assert.equal(isConfigurationFailure({ message: "404 not found" }), false);
+  assert.equal(
+    isConfigurationFailure({ message: "whisper-server binary not found. Reinstall." }),
+    true
+  );
+});
+
+test("a reachable model that simply failed gets no button", async (t) => {
+  const { llmRemedy } = await load(t);
+
+  // A rate limit is worth retrying; sending the user to Settings would be a
+  // dead end and would imply they configured something wrong.
+  assert.equal(llmRemedy("noteFormatting", { message: "Rate limit exceeded" }), null);
+  assert.equal(llmRemedy("chatIntelligence", { message: "The model returned 503" }), null);
+});
+
 test("a runtime failure gets no button, because Settings would not help", async (t) => {
   const { isConfigurationFailure, transcriptionRemedy } = await load(t);
 

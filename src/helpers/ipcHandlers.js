@@ -4191,7 +4191,10 @@ class IPCHandlers {
         const result = await LocalReasoningService.processText(text, modelId, config);
         return { success: true, text: result };
       } catch (error) {
-        return { success: false, error: error.message };
+        // ModelError carries a code (LLAMASERVER_NOT_FOUND and friends) that an
+        // Error does not survive IPC with. Forwarding it lets the renderer
+        // classify the failure without matching on message text.
+        return { success: false, error: error.message, code: error.code };
       }
     });
 

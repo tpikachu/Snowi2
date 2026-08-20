@@ -25,7 +25,11 @@ export const localProvider: InferenceProvider = {
 
     if (!result.success) {
       logger.logReasoning("LOCAL_ERROR", { model, processingTimeMs, error: result.error });
-      throw new Error(result.error);
+      // The code rides on the thrown Error so callers can tell "the runtime is
+      // missing" from "the model refused", without reading the message.
+      const failure = new Error(result.error) as Error & { code?: string };
+      if (result.code) failure.code = result.code;
+      throw failure;
     }
 
     logger.logReasoning("LOCAL_SUCCESS", {

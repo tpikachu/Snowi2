@@ -42,6 +42,11 @@ const CONFIGURATION_CODES = new Set([
   "TRANSCRIPTION_NOT_CONFIGURED",
   "MISSING_API_KEY",
   "MODEL_NOT_DOWNLOADED",
+  // The local inference runtime is missing. It reads like a broken install,
+  // but the fix is in Settings either way: pick a cloud provider, or download
+  // the local model that ships the runtime.
+  "LLAMASERVER_NOT_FOUND",
+  "MODEL_NOT_FOUND",
 ]);
 
 /**
@@ -55,6 +60,11 @@ const CONFIGURATION_MESSAGES = [
   /\bnot downloaded\b/i,
   /\bno api key\b/i,
   /\badd (?:your|them|the) (?:key|credentials)\b/i,
+  // "llama-server binary not found. Please ensure the app is installed
+  // correctly." — thrown with a code, but the code is lost whenever the error
+  // crosses IPC as a plain message. Scoped to a named binary so this cannot
+  // match an unrelated "file not found".
+  /\b(?:llama-server|whisper-server|sherpa-onnx)\b[^.]*\bnot found\b/i,
 ];
 
 interface FailureLike {
@@ -80,6 +90,23 @@ export function transcriptionRemedy(
   failure: unknown
 ): SettingsRemedy | null {
   return isConfigurationFailure(failure) ? TRANSCRIPTION_REMEDIES[scope] : null;
+}
+
+/** Which model-backed feature an error came from, so it lands on that tab. */
+export type LlmScope = "noteFormatting" | "chatIntelligence";
+
+const LLM_REMEDIES: Record<LlmScope, SettingsRemedy> = {
+  noteFormatting: "configureNoteFormatting",
+  chatIntelligence: "configureChatIntelligence",
+};
+
+/**
+ * The remedy for a model failure, or null when the model was reachable and
+ * something else went wrong — a rate limit or a network blip is worth
+ * retrying, and a Configure button there is a dead end.
+ */
+export function llmRemedy(scope: LlmScope, failure: unknown): SettingsRemedy | null {
+  return isConfigurationFailure(failure) ? LLM_REMEDIES[scope] : null;
 }
 
 export function remedyTarget(remedy: SettingsRemedy): SettingsDeepLink {
