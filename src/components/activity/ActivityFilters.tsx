@@ -2,7 +2,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { Archive, CalendarClock, Layers, Mic, NotebookPen } from "lucide-react";
 import { cn } from "../lib/utils";
-import type { ActivityFilter, ActivityGroup } from "./useActivityFeed";
+import { ACTIVITY_FILTERS, type ActivityFilter, type ActivityGroup } from "./useActivityFeed";
+import { DICTATION_ENABLED } from "../../config/features";
 
 const paneLabelClass =
   "px-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground";
@@ -15,7 +16,7 @@ const rowClass = [
 
 const rowIdleClass = "text-muted-foreground hover:bg-surface-3 hover:text-foreground";
 
-const facets: {
+const ALL_FACETS: {
   id: ActivityFilter;
   labelKey: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
@@ -25,6 +26,10 @@ const facets: {
   { id: "meeting", labelKey: "activity.filters.meetings", icon: CalendarClock },
   { id: "note", labelKey: "activity.filters.notes", icon: NotebookPen },
 ];
+
+// Ordered by ACTIVITY_FILTERS rather than filtered against it, so the feed and
+// the chips cannot disagree about which facets exist.
+const facets = ALL_FACETS.filter((facet) => ACTIVITY_FILTERS.includes(facet.id));
 
 interface ActivityFiltersProps {
   filter: ActivityFilter;
@@ -47,7 +52,9 @@ export default function ActivityFilters({
   onJumpToGroup,
 }: ActivityFiltersProps) {
   const { t } = useTranslation();
-  const dictationsIncluded = filter === "all" || filter === "dictation";
+  // "Show discarded" reloads the transcription store, so it only ever affected
+  // dictations. With them hidden it is a toggle that changes nothing.
+  const dictationsIncluded = DICTATION_ENABLED && (filter === "all" || filter === "dictation");
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-3">

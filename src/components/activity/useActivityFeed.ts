@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { NoteItem, TranscriptionItem } from "../../types/electron";
 import { formatDateGroup, normalizeDbDate } from "../../utils/dateFormatting";
+import { DICTATION_ENABLED } from "../../config/features";
 
 /** How many notes/meetings the feed pulls. Dictations come pre-loaded by the
  *  transcription store, which caps itself at its own limit. */
@@ -9,7 +10,10 @@ const ACTIVITY_NOTE_LIMIT = 100;
 
 export type ActivityFilter = "all" | "dictation" | "meeting" | "note";
 
-export const ACTIVITY_FILTERS: ActivityFilter[] = ["all", "dictation", "meeting", "note"];
+/** The facet chips the feed offers. Dictation drops out with its feature. */
+export const ACTIVITY_FILTERS: ActivityFilter[] = (
+  ["all", "dictation", "meeting", "note"] as ActivityFilter[]
+).filter((id) => DICTATION_ENABLED || id !== "dictation");
 
 export type ActivityEntry =
   | { key: string; kind: "dictation"; at: number; dictation: TranscriptionItem }
@@ -131,12 +135,17 @@ export function useActivityFeed(
 
   const entries = useMemo<ActivityEntry[]>(() => {
     const merged: ActivityEntry[] = [
-      ...transcriptions.map((dictation): ActivityEntry => ({
-        key: `d${dictation.id}`,
-        kind: "dictation",
-        at: toMs(dictation.timestamp) || toMs(dictation.created_at),
-        dictation,
-      })),
+      // Dropped at the source rather than filtered downstream: with dictation
+      // hidden, the rows are unreachable but their counts would still be
+      // tallied, so "all" would report more entries than the feed shows.
+      ...(DICTATION_ENABLED
+        ? transcriptions.map((dictation): ActivityEntry => ({
+            key: `d${dictation.id}`,
+            kind: "dictation",
+            at: toMs(dictation.timestamp) || toMs(dictation.created_at),
+            dictation,
+          }))
+        : []),
       ...notes.map((note): ActivityEntry =>
         note.note_type === "meeting"
           ? { key: `n${note.id}`, kind: "meeting", at: noteSortKey(note), note }
