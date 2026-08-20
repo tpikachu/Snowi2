@@ -138,6 +138,7 @@ export default function SettingsModal({
               activeSection={activeSection}
               speechTab={safeSpeechTab}
               llmTab={safeLlmTab}
+              onRequestClose={() => onOpenChange(false)}
             />
           </SettingsSurface>
         </DialogPrimitive.Content>

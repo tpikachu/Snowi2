@@ -3710,5 +3710,40 @@
       "transcriptionLocal": "{{model}} — su questo dispositivo",
       "transcriptionUnset": "Non selezionato"
     }
+  },
+  "tour": {
+    "back": "Indietro",
+    "finish": "Fatto",
+    "label": "Tour del prodotto",
+    "next": "Avanti",
+    "settings": {
+      "replay": "Rivedi il tour",
+      "replayAction": "Avvia il tour",
+      "replayDescription": "Ripercorri le parti principali di Snowy.",
+      "title": "Tour guidato"
+    },
+    "skip": "Salta il tour",
+    "steps": {
+      "capture": {
+        "body": "Si parte da qui. Snowy registra il tuo microfono e l'altro lato della chiamata su tracce separate, e nessun bot entra nella riunione.",
+        "title": "Registra una riunione"
+      },
+      "chat": {
+        "body": "La chat cerca in tutte le note e negli impegni presi, e rimanda alle riunioni da cui provengono le risposte.",
+        "title": "Chiedi qualsiasi cosa"
+      },
+      "home": {
+        "body": "Le riunioni recenti, cosa arriva e quanto hai registrato nell'ultimo mese.",
+        "title": "Home"
+      },
+      "notes": {
+        "body": "Ogni registrazione diventa una nota con trascrizione, riepilogo, decisioni e attivita da svolgere.",
+        "title": "Note"
+      },
+      "settings": {
+        "body": "Scegli dove viene eseguita la trascrizione, collega un calendario e seleziona i modelli. Puoi rivedere questo tour da qui.",
+        "title": "Impostazioni"
+      }
+    }
   }
 }

@@ -101,6 +101,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { formatBytes } from "../utils/formatBytes";
 import { clearMissingLocalModelSelections, useSettingsStore } from "../stores/settingsStore";
 import { canManageSystemAudioInApp } from "../utils/systemAudioAccess";
+import { restartTour } from "../stores/tourStore";
 
 export type { SettingsSectionType };
 
@@ -109,6 +110,8 @@ interface SettingsPageProps {
   /** Active sub-surface of the panelled sections. Owned by SettingsModal. */
   speechTab?: SpeechTab;
   llmTab?: LlmTab;
+  /** Dismisses the containing modal, for actions that act on the window behind it. */
+  onRequestClose?: () => void;
 }
 
 const UI_LANGUAGE_OPTIONS: import("./ui/LanguageSelector").LanguageOption[] = [
@@ -518,6 +521,7 @@ export default function SettingsPage({
   activeSection = "general",
   speechTab = "dictation",
   llmTab = "dictationCleanup",
+  onRequestClose,
 }: SettingsPageProps) {
   const {
     confirmDialog,
@@ -1436,6 +1440,32 @@ export default function SettingsPage({
                       checked={keepTranscriptionInClipboard}
                       onChange={setKeepTranscriptionInClipboard}
                     />
+                  </SettingsRow>
+                </SettingsPanelRow>
+              </SettingsPanel>
+            </SettingsGroup>
+
+            <SettingsGroup id="tour" title={t("tour.settings.title")}>
+              <SettingsPanel>
+                <SettingsPanelRow>
+                  <SettingsRow
+                    label={t("tour.settings.replay")}
+                    description={t("tour.settings.replayDescription")}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      // Closing Settings first: the tour points at the window
+                      // behind this modal, and a spotlight under a dialog is
+                      // just a dimmed dialog.
+                      onClick={() => {
+                        onRequestClose?.();
+                        restartTour();
+                      }}
+                    >
+                      {t("tour.settings.replayAction")}
+                    </Button>
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>

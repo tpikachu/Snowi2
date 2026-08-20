@@ -306,6 +306,7 @@ export default function CaptureControl({
         size="sm"
         onClick={onStartMeeting}
         disabled={isBusy}
+        data-tour="capture"
         title={
           meetingHotkeyLabel
             ? t("capture.meetingHintWithHotkey", { hotkey: meetingHotkeyLabel })

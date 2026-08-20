@@ -33,12 +33,15 @@ function RailButton({
   onClick,
   isActive,
   children,
+  tourAnchor,
 }: {
   icon?: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
   onClick?: () => void;
   isActive?: boolean;
   children?: React.ReactNode;
+  /** Names this button as a guided-tour anchor (config/tourSteps.ts). */
+  tourAnchor?: string;
 }) {
   return (
     <div style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
@@ -48,6 +51,7 @@ function RailButton({
           onClick={onClick}
           aria-label={label}
           aria-current={isActive ? "page" : undefined}
+          data-tour={tourAnchor}
           className={cn(
             railButtonClass,
             isActive ? "bg-primary/10 dark:bg-primary/15 text-primary" : railButtonIdleClass
@@ -94,10 +98,16 @@ export default function IconRail({
     id: ControlPanelView;
     label: string;
     icon: React.ComponentType<{ size?: number; className?: string }>;
+    tourAnchor?: string;
   }[] = [
-    { id: "home", label: t("sidebar.home"), icon: Home },
-    { id: "chat", label: t("sidebar.chat"), icon: MessageSquare },
-    { id: "personal-notes", label: t("sidebar.notes"), icon: NotebookPen },
+    { id: "home", label: t("sidebar.home"), icon: Home, tourAnchor: "nav-home" },
+    { id: "chat", label: t("sidebar.chat"), icon: MessageSquare, tourAnchor: "nav-chat" },
+    {
+      id: "personal-notes",
+      label: t("sidebar.notes"),
+      icon: NotebookPen,
+      tourAnchor: "nav-notes",
+    },
     // Upload is hidden for now (product decision). The view, its route and
     // UploadAudioView stay wired up so re-enabling is a one-line change.
     // { id: "upload", label: t("sidebar.upload"), icon: Upload },
@@ -136,13 +146,19 @@ export default function IconRail({
             label={item.label}
             isActive={activeView === item.id}
             onClick={() => onViewChange(item.id)}
+            tourAnchor={item.tourAnchor}
           />
         ))}
       </nav>
 
       <div className="flex shrink-0 flex-col items-center gap-1 border-t border-border-subtle pt-2">
         {updateAction}
-        <RailButton icon={Settings} label={t("sidebar.settings")} onClick={onOpenSettings} />
+        <RailButton
+          icon={Settings}
+          label={t("sidebar.settings")}
+          onClick={onOpenSettings}
+          tourAnchor="nav-settings"
+        />
       </div>
     </aside>
   );

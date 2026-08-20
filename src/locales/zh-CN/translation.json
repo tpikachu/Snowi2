@@ -3710,5 +3710,40 @@
       "transcriptionLocal": "{{model}} — 在本机处理",
       "transcriptionUnset": "未选择"
     }
+  },
+  "tour": {
+    "back": "上一步",
+    "finish": "完成",
+    "label": "产品导览",
+    "next": "下一步",
+    "settings": {
+      "replay": "重新观看导览",
+      "replayAction": "开始导览",
+      "replayDescription": "再看一遍 Snowy 的主要功能。",
+      "title": "引导导览"
+    },
+    "skip": "跳过导览",
+    "steps": {
+      "capture": {
+        "body": "从这里开始。Snowy 会把你的麦克风和通话对方分成两条音轨录制，不会有机器人加入会议。",
+        "title": "录制会议"
+      },
+      "chat": {
+        "body": "聊天会搜索你所有的笔记和承诺，并链接回答案来源的会议。",
+        "title": "随便问"
+      },
+      "home": {
+        "body": "最近的会议、即将到来的安排，以及最近一个月的录制情况。",
+        "title": "主页"
+      },
+      "notes": {
+        "body": "每次录制都会生成一条笔记，包含转录、摘要，以及由此产生的决定和待办事项。",
+        "title": "笔记"
+      },
+      "settings": {
+        "body": "选择转录在何处运行、连接日历、挑选所用模型。你可以从这里重新观看导览。",
+        "title": "设置"
+      }
+    }
   }
 }

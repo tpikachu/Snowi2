@@ -53,6 +53,8 @@ import {
 import { executeTranslationChain, shouldRunTranslateStep } from "../helpers/translationChain";
 import { applyChineseScript, resolveChineseScriptTarget } from "../utils/chineseScript";
 import BackgroundActionToastListener from "./notes/BackgroundActionToastListener";
+import TourOverlay from "./tour/TourOverlay";
+import { startTourIfUnseen } from "../stores/tourStore";
 import type { NoteItem } from "../types/electron";
 import type { CalendarEvent } from "../types/calendar";
 import logger from "../utils/logger";
@@ -107,6 +109,14 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   const [showSearch, setShowSearch] = useState(false);
   const showDiscarded = useShowDiscarded();
   const [activeView, setActiveView] = useState<ControlPanelView>("home");
+
+  // The control panel only mounts once onboarding is done (AppRouter gates it),
+  // so this is the first moment the real interface exists to point at. No-ops
+  // for anyone who has already seen this version of the tour.
+  useEffect(() => {
+    startTourIfUnseen();
+  }, []);
+
   const { collapsed: contextPaneCollapsed, toggle: toggleContextPane } = useContextPaneCollapse();
   const { host: contextPaneHost, mountRef: contextPaneMountRef } = useContextPaneHost();
   const isMeetingMode = useIsMeetingMode();
@@ -1095,6 +1105,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         </div>
       </ContextPaneSlotContext.Provider>
       <BackgroundActionToastListener />
+      <TourOverlay onNavigate={(view) => setActiveView(view)} />
     </div>
   );
 }

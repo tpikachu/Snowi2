@@ -3710,5 +3710,40 @@
       "transcriptionLocal": "{{model}} — sur cet appareil",
       "transcriptionUnset": "Non sélectionné"
     }
+  },
+  "tour": {
+    "back": "Retour",
+    "finish": "Termine",
+    "label": "Visite du produit",
+    "next": "Suivant",
+    "settings": {
+      "replay": "Revoir la visite",
+      "replayAction": "Demarrer la visite",
+      "replayDescription": "Parcourez a nouveau les parties principales de Snowy.",
+      "title": "Visite guidee"
+    },
+    "skip": "Passer la visite",
+    "steps": {
+      "capture": {
+        "body": "Commencez ici. Snowy capture votre micro et l'autre cote de l'appel sur des pistes separees, et aucun bot ne rejoint la reunion.",
+        "title": "Enregistrer une reunion"
+      },
+      "chat": {
+        "body": "Le chat cherche dans toutes vos notes et vos engagements, et renvoie vers les reunions d'ou viennent ses reponses.",
+        "title": "Posez vos questions"
+      },
+      "home": {
+        "body": "Vos reunions recentes, ce qui arrive, et le volume enregistre au cours du dernier mois.",
+        "title": "Accueil"
+      },
+      "notes": {
+        "body": "Chaque enregistrement devient une note avec transcription, resume, decisions et actions a mener.",
+        "title": "Notes"
+      },
+      "settings": {
+        "body": "Choisissez ou s'execute la transcription, connectez un agenda et selectionnez les modeles utilises. Vous pouvez rejouer cette visite d'ici.",
+        "title": "Reglages"
+      }
+    }
   }
 }

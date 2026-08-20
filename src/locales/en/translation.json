@@ -3710,5 +3710,40 @@
       "transcriptionLocal": "{{model}} — on this device",
       "transcriptionUnset": "Not selected"
     }
+  },
+  "tour": {
+    "back": "Back",
+    "finish": "Done",
+    "label": "Product tour",
+    "next": "Next",
+    "settings": {
+      "replay": "Replay the tour",
+      "replayAction": "Start tour",
+      "replayDescription": "Walk through the main parts of Snowy again.",
+      "title": "Guided tour"
+    },
+    "skip": "Skip tour",
+    "steps": {
+      "capture": {
+        "body": "Start here. Snowy captures your microphone and the other side of the call as separate tracks, and no bot joins the meeting.",
+        "title": "Record a meeting"
+      },
+      "chat": {
+        "body": "Chat searches every note and every commitment you have recorded, and links back to the meetings its answers came from.",
+        "title": "Ask anything"
+      },
+      "home": {
+        "body": "Your recent meetings, what is coming up, and how much you have been recording over the last month.",
+        "title": "Home"
+      },
+      "notes": {
+        "body": "Every recording becomes a note with a transcript, a summary, and the decisions and action items it produced.",
+        "title": "Notes"
+      },
+      "settings": {
+        "body": "Choose where transcription runs, connect a calendar, and pick the models Snowy uses. You can replay this tour from here.",
+        "title": "Settings"
+      }
+    }
   }
 }

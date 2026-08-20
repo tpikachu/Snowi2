@@ -3710,5 +3710,40 @@
       "transcriptionLocal": "{{model}} — neste dispositivo",
       "transcriptionUnset": "Não selecionado"
     }
+  },
+  "tour": {
+    "back": "Voltar",
+    "finish": "Concluido",
+    "label": "Tour do produto",
+    "next": "Avancar",
+    "settings": {
+      "replay": "Repetir o tour",
+      "replayAction": "Iniciar tour",
+      "replayDescription": "Percorra novamente as partes principais do Snowy.",
+      "title": "Tour guiado"
+    },
+    "skip": "Pular tour",
+    "steps": {
+      "capture": {
+        "body": "Comece aqui. O Snowy capta o seu microfone e o outro lado da chamada em faixas separadas, e nenhum bot entra na reuniao.",
+        "title": "Gravar uma reuniao"
+      },
+      "chat": {
+        "body": "O chat pesquisa todas as suas notas e compromissos e liga de volta as reunioes de onde vieram as respostas.",
+        "title": "Pergunte qualquer coisa"
+      },
+      "home": {
+        "body": "Suas reunioes recentes, o que vem a seguir e quanto voce gravou no ultimo mes.",
+        "title": "Inicio"
+      },
+      "notes": {
+        "body": "Cada gravacao vira uma nota com transcricao, resumo e as decisoes e tarefas que produziu.",
+        "title": "Notas"
+      },
+      "settings": {
+        "body": "Escolha onde a transcricao roda, conecte um calendario e selecione os modelos. Voce pode repetir este tour por aqui.",
+        "title": "Configuracoes"
+      }
+    }
   }
 }

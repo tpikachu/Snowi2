@@ -3710,5 +3710,40 @@
       "transcriptionLocal": "{{model}} – auf diesem Gerät",
       "transcriptionUnset": "Nicht ausgewählt"
     }
+  },
+  "tour": {
+    "back": "Zurueck",
+    "finish": "Fertig",
+    "label": "Produkt-Tour",
+    "next": "Weiter",
+    "settings": {
+      "replay": "Tour wiederholen",
+      "replayAction": "Tour starten",
+      "replayDescription": "Gehen Sie die wichtigsten Teile von Snowy noch einmal durch.",
+      "title": "Gefuehrte Tour"
+    },
+    "skip": "Tour ueberspringen",
+    "steps": {
+      "capture": {
+        "body": "Hier geht es los. Snowy nimmt Ihr Mikrofon und die Gegenseite als getrennte Spuren auf, und kein Bot tritt dem Meeting bei.",
+        "title": "Meeting aufzeichnen"
+      },
+      "chat": {
+        "body": "Der Chat durchsucht alle Notizen und Zusagen und verlinkt auf die Meetings, aus denen die Antworten stammen.",
+        "title": "Fragen Sie alles"
+      },
+      "home": {
+        "body": "Ihre letzten Meetings, was ansteht und wie viel Sie im letzten Monat aufgezeichnet haben.",
+        "title": "Start"
+      },
+      "notes": {
+        "body": "Jede Aufnahme wird zu einer Notiz mit Transkript, Zusammenfassung sowie den Entscheidungen und Aufgaben daraus.",
+        "title": "Notizen"
+      },
+      "settings": {
+        "body": "Legen Sie fest, wo die Transkription laeuft, verbinden Sie einen Kalender und waehlen Sie die Modelle. Diese Tour laesst sich hier wiederholen.",
+        "title": "Einstellungen"
+      }
+    }
   }
 }
