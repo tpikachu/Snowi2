@@ -6,6 +6,7 @@ import { Toggle } from "../ui/toggle";
 import { cn } from "../lib/utils";
 import { MAX_SPEAKER_COUNT } from "../../constants/speakerDetection.json";
 import type { TranscriptSegment } from "../../stores/meetingRecordingStore";
+import type { LiveUtterance } from "../../utils/liveUtterances";
 import {
   isTranscriptSpeakerLocked,
   resolveSegmentSpeakerName,
@@ -584,10 +585,8 @@ export function SelectionBar({
 
 interface MeetingTranscriptChatProps {
   segments: TranscriptSegment[];
-  micPartial?: string;
-  systemPartial?: string;
-  systemPartialSpeakerId?: string | null;
-  systemPartialSpeakerName?: string | null;
+  /** Utterances still in flight, one bubble each (utils/liveUtterances.ts). */
+  liveUtterances?: LiveUtterance[];
   speakerMappings?: Record<string, string>;
   speakerProfiles?: SpeakerProfileLite[];
   participants?: Array<{ email: string; displayName: string | null }>;
@@ -613,10 +612,7 @@ interface MeetingTranscriptChatProps {
 
 export function MeetingTranscriptChat({
   segments,
-  micPartial,
-  systemPartial,
-  systemPartialSpeakerId,
-  systemPartialSpeakerName,
+  liveUtterances,
   speakerMappings,
   speakerProfiles,
   participants,
@@ -656,19 +652,10 @@ export function MeetingTranscriptChat({
     const el = scrollRef.current;
     if (!el || !shouldStickToBottomRef.current) return;
     el.scrollTop = el.scrollHeight;
-  }, [segments, micPartial, systemPartial]);
+  }, [segments, liveUtterances]);
 
-  const hasContent = segments.length > 0 || micPartial || systemPartial;
-  const systemPartialSpeakerLabel =
-    systemPartialSpeakerName ||
-    (systemPartialSpeakerId
-      ? t("notes.speaker.label", { n: getSpeakerNumber(systemPartialSpeakerId) })
-      : undefined);
-  const systemPartialSpeakerState = systemPartialSpeakerId
-    ? systemPartialSpeakerName
-      ? "confirmed"
-      : "provisional"
-    : undefined;
+  const live = liveUtterances ?? [];
+  const hasContent = segments.length > 0 || live.length > 0;
 
   const colorByKey = useMemo(() => {
     const map = new Map<string, number>();
@@ -899,26 +886,34 @@ export function MeetingTranscriptChat({
           );
         })}
 
-        {[
-          { text: micPartial, source: "mic" as const, speakerLabel: undefined },
-          {
-            text: systemPartial,
-            source: "system" as const,
-            speakerLabel: systemPartialSpeakerLabel,
-          },
-        ].map(
-          ({ text, source, speakerLabel }) =>
-            text && (
-              <PartialBubble
-                key={source}
-                text={text}
-                source={source}
-                speakerLabel={speakerLabel}
-                speakerState={source === "system" ? systemPartialSpeakerState : undefined}
-                t={t}
-              />
-            )
-        )}
+        {/* One bubble per utterance in flight. Keyed by utterance rather than by
+            source, so two people talking at once each keep their own line
+            instead of overwriting one another. */}
+        {live.map((utterance) => {
+          const speakerLabel =
+            utterance.source === "system"
+              ? (utterance.speakerName ??
+                (utterance.speakerId
+                  ? t("notes.speaker.label", { n: getSpeakerNumber(utterance.speakerId) })
+                  : undefined))
+              : undefined;
+          return (
+            <PartialBubble
+              key={utterance.key}
+              text={utterance.text}
+              source={utterance.source}
+              speakerLabel={speakerLabel}
+              speakerState={
+                utterance.source === "system" && utterance.speakerId
+                  ? utterance.speakerName
+                    ? "confirmed"
+                    : "provisional"
+                  : undefined
+              }
+              t={t}
+            />
+          );
+        })}
       </div>
     </div>
   );

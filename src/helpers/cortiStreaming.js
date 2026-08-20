@@ -31,6 +31,8 @@ class CortiStreaming {
     this.preConfigBufferSize = 0;
     this.sessionStartedAt = null;
     this.audioBytesSent = 0;
+    /** Monotonic per session, so a partial that arrives late can be recognised as late. */
+    this.transcriptResultCount = 0;
     this.currentModel = "corti-transcribe";
     this.sampleRate = SAMPLE_RATE;
     this.warmConnection = null;
@@ -348,6 +350,7 @@ class CortiStreaming {
       case "transcript": {
         const text = message.data?.text;
         if (!text) break;
+        this.transcriptResultCount += 1;
         if (message.data.isFinal) {
           const trimmed = text.trim();
           if (!trimmed) break;
@@ -359,7 +362,20 @@ class CortiStreaming {
               : Date.now();
           this.onFinalTranscript?.(this.accumulatedText, startedAt);
         } else {
-          this.onPartialTranscript?.(text);
+          // Same shape as Deepgram: `start` repeats across the interims of one
+          // utterance, so it names the utterance, and the running count orders
+          // results that arrive out of order.
+          this.onPartialTranscript?.(text, {
+            utteranceId:
+              typeof message.data.start === "number" ? `t${message.data.start}` : undefined,
+            seq: this.transcriptResultCount,
+            confidence:
+              typeof message.data.confidence === "number" ? message.data.confidence : undefined,
+            startMs:
+              this.sessionStartedAt != null && typeof message.data.start === "number"
+                ? this.sessionStartedAt + message.data.start * 1000
+                : undefined,
+          });
         }
         break;
       }

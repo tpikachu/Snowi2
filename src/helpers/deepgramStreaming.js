@@ -104,6 +104,12 @@ class DeepgramStreaming {
     this.audioBytesSent = 0;
     this.currentModel = "nova-3";
     this.resultsReceived = 0;
+    /**
+     * Monotonic across the whole streaming session, reconnects included, so a
+     * partial can be recognised as arriving late. Separate from
+     * `resultsReceived`, which resets per connection for the liveness check.
+     */
+    this.partialSeq = 0;
     this.livenessTimer = null;
     this.replayBuffer = [];
     this.replayBufferSize = 0;
@@ -565,6 +571,12 @@ class DeepgramStreaming {
     this.accumulatedText = "";
     this.finalSegments = [];
     this.audioBytesSent = 0;
+    // Deliberately NOT resetting `partialSeq` alongside this: `resultsReceived`
+    // is per-connection because the liveness check asks "has this connection
+    // produced anything yet", whereas the partial sequence has to keep rising
+    // across a reconnect. Restarting it would make the new session's first
+    // partials look older than a caption still in flight from the old one, and
+    // the renderer would reject them as out of order.
     this.resultsReceived = 0;
     this.connectionLossNotified = false;
 
@@ -722,7 +734,22 @@ class DeepgramStreaming {
               });
             }
           } else {
-            this.onPartialTranscript?.(transcript);
+            // Deepgram has no explicit utterance id, but every interim result
+            // for one utterance repeats the same `start` offset — so it names
+            // the utterance, which is what lets two overlapping speakers hold
+            // separate caption lines instead of overwriting each other.
+            const alternative = message.channel?.alternatives?.[0];
+            this.partialSeq += 1;
+            this.onPartialTranscript?.(transcript, {
+              utteranceId: typeof message.start === "number" ? `t${message.start}` : undefined,
+              seq: this.partialSeq,
+              confidence:
+                typeof alternative?.confidence === "number" ? alternative.confidence : undefined,
+              startMs:
+                this.sessionStartedAt != null && typeof message.start === "number"
+                  ? this.sessionStartedAt + message.start * 1000
+                  : undefined,
+            });
           }
           break;
         }

@@ -37,6 +37,7 @@ import {
 } from "../../stores/noteStore";
 import {
   useMeetingRecordingStore,
+  selectLiveNoteTranscript,
   startRecording as storeStartRecording,
   requestStopRecording,
   lockSpeaker,
@@ -487,9 +488,12 @@ export default function PersonalNotesView({
     runAction,
   } = useActionProcessing(activeNoteId ?? null);
 
-  // Boolean flag so actions enable during recording without re-rendering on every transcript update.
+  // Boolean flag so actions enable during recording without re-rendering on every
+  // transcript update. Reads the segment count rather than the joined string:
+  // `transcript` is only filled in at Stop now, and this flips exactly once, when
+  // the first segment lands.
   const hasLiveTranscript = useMeetingRecordingStore(
-    (s) => s.recordingNoteId === activeNote?.id && !!s.transcript
+    (s) => s.recordingNoteId === activeNote?.id && s.segments.length > 0
   );
   const activeNoteRawTranscript = activeNote?.transcript || "";
   const activeDraft = draft?.noteId === activeNote?.id ? draft : null;
@@ -699,11 +703,11 @@ export default function PersonalNotesView({
                 <ActionPicker
                   onRunAction={(action) => {
                     if (!editorNote) return;
-                    const { recordingNoteId: liveNoteId, transcript: liveTranscript } =
-                      useMeetingRecordingStore.getState();
+                    // Must come from the store's live segments: `transcript` is
+                    // only populated once Stop returns, so reading it here would
+                    // write up a meeting that is still running from nothing.
                     const rawTranscript =
-                      (liveNoteId === activeNote?.id ? liveTranscript : "") ||
-                      activeNoteRawTranscript;
+                      selectLiveNoteTranscript(activeNote?.id) || activeNoteRawTranscript;
                     const request = buildWriteUpRequest(editorNote.content, rawTranscript, {
                       you: t("notes.speaker.you"),
                       them: t("notes.speaker.them"),

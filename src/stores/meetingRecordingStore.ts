@@ -40,6 +40,13 @@ import {
 import { parseTranscriptSegments } from "../utils/parseTranscriptSegments";
 import { resolveDiarizationTarget, selectBaseSegments } from "../utils/diarizationCompletion";
 import { createSerialQueue } from "../utils/serialQueue";
+import {
+  applyPartial,
+  applySpeakerToLiveUtterances,
+  pruneStaleUtterances,
+  settleUtterance,
+  type LiveUtterance,
+} from "../utils/liveUtterances";
 
 export interface TranscriptSegment {
   id: string;
@@ -95,6 +102,12 @@ interface MeetingRecordingState {
   recordingNoteTitle: string | null;
   recordingFolderId: number | null;
   segments: TranscriptSegment[];
+  /**
+   * Main's authoritative transcript, set when Stop returns it — NOT maintained
+   * during recording. While a meeting runs, `segments` is the source of truth
+   * and the joined string comes from `selectLiveTranscript()`. Subscribing to
+   * this field expecting live text will silently read an empty string.
+   */
   transcript: string;
   /** Pause spans, in order. Kept out of `segments` so a gap can never be mistaken for speech. */
   gaps: MeetingGap[];
@@ -108,8 +121,13 @@ interface MeetingRecordingState {
   systemCaptureActive: boolean;
   /** Set after Stop, while the user decides whether to keep the meeting. */
   pendingStop: PendingStopDecision | null;
-  micPartial: string;
-  systemPartial: string;
+  /**
+   * Utterances currently in flight, keyed by utterance where the provider names
+   * one (see utils/liveUtterances.ts). Replaces the former `micPartial` /
+   * `systemPartial` strings, which could hold one caption per source and had no
+   * way to reject a partial that arrived out of order.
+   */
+  liveUtterances: LiveUtterance[];
   systemPartialSpeakerId: string | null;
   systemPartialSpeakerName: string | null;
   diarizationSessionId: string | null;
@@ -136,12 +154,45 @@ const MEETING_MIC_PRIMARY_AUDIO_CONSTRAINTS = {
 
 const SPEAKER_IDENTIFICATION_RETENTION_MS = 30_000;
 const SYSTEM_SPEAKER_CARRY_FORWARD_MS = 8_000;
+/**
+ * How long a caption may sit without an update before it is assumed orphaned.
+ * Generous on purpose: a speaker pausing mid-sentence is normal, and dropping a
+ * live caption out from under someone reads worse than holding a stale one.
+ */
+const STALE_UTTERANCE_MS = 30_000;
 
 const buildTranscriptText = (segments: TranscriptSegment[]) =>
   segments
     .map((segment) => segment.text)
     .join(" ")
     .trim();
+
+/**
+ * The transcript of a note that is recording right now, in the same serialized
+ * form the note stores — or "" when this note is not the one recording.
+ *
+ * The joined text used to be rebuilt into the store on every finalized segment,
+ * which made the cost of one segment proportional to the whole meeting: at
+ * ninety minutes each new segment re-joined tens of thousands of characters,
+ * dozens of times a minute, and woke every subscriber for a string almost none
+ * of them read. `state.transcript` is now only main's text from Stop, so
+ * anything wanting live text has to come through here.
+ *
+ * Serialized rather than plain-joined because that is what the note holds and
+ * what `parseTranscriptSegments` reads back — a plain join would silently drop
+ * the speaker labels from anything built on it.
+ */
+export function selectLiveNoteTranscript(noteId: number | null | undefined): string {
+  if (noteId == null) return "";
+  const { isRecording, recordingNoteId, segments, transcript } =
+    useMeetingRecordingStore.getState();
+  // `recordingNoteId` is never cleared at Stop, so it alone would keep claiming
+  // this note long after the meeting ended — and the live segments it returns
+  // predate diarization and any manual speaker rename. Once recording stops the
+  // note's own stored transcript is the better copy, so say nothing here.
+  if (!isRecording || recordingNoteId !== noteId) return "";
+  return segments.length > 0 ? serializeTranscriptSegments(segments) : transcript;
+}
 
 const getSpeakerNumericIndex = (speakerId?: string): number | null => {
   if (!speakerId) return null;
@@ -599,8 +650,7 @@ export const useMeetingRecordingStore = create<MeetingRecordingState>()(() => ({
   recordingStartedAt: null,
   systemCaptureActive: false,
   pendingStop: null,
-  micPartial: "",
-  systemPartial: "",
+  liveUtterances: [],
   systemPartialSpeakerId: null,
   systemPartialSpeakerName: null,
   diarizationSessionId: null,
@@ -693,9 +743,14 @@ export function syncSessionExpectedCountFromParticipants(
 
 function setSystemPartialSpeakerIdentity(speakerId: string | null, speakerName: string | null) {
   systemPartialSpeakerIdValue = speakerId;
+  // Identification often lands after an utterance's first partial, so the
+  // caption already on screen has to be relabelled rather than wait for the
+  // next one.
+  const state = useMeetingRecordingStore.getState();
   useMeetingRecordingStore.setState({
     systemPartialSpeakerId: speakerId,
     systemPartialSpeakerName: speakerName,
+    liveUtterances: applySpeakerToLiveUtterances(state.liveUtterances, speakerId, speakerName),
   });
 }
 
@@ -976,8 +1031,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
     recordingStartedAt: Date.now(),
     systemCaptureActive: false,
     pendingStop: null,
-    micPartial: "",
-    systemPartial: "",
+    liveUtterances: [],
     systemPartialSpeakerId: null,
     systemPartialSpeakerName: null,
     diarizationSessionId: null,
@@ -1118,6 +1172,12 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
         source: "mic" | "system";
         type: "partial" | "final" | "retract";
         timestamp?: number;
+        // Provider identity for this result, where the provider has one. All
+        // optional — a provider that sends none behaves exactly as before.
+        utteranceId?: string;
+        seq?: number;
+        confidence?: number;
+        startMs?: number;
       }) => {
         if (data.type === "retract") {
           const next = useMeetingRecordingStore
@@ -1131,28 +1191,48 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
                 )
             );
           segmentsRefValue = next;
-          useMeetingRecordingStore.setState({
-            segments: next,
-            transcript: buildTranscriptText(next),
-          });
+          useMeetingRecordingStore.setState({ segments: next });
           return;
         }
 
         if (data.type === "partial") {
-          if (data.source === "mic") {
-            useMeetingRecordingStore.setState({ micPartial: data.text });
-          } else {
-            useMeetingRecordingStore.setState({ systemPartial: data.text });
-            if (!systemPartialSpeakerIdValue) {
-              // Reuse the recent system speaker before minting — the partial id is
-              // cleared after every final, so always minting spawned one per utterance.
-              const carried = getRecentSystemSpeaker(Date.now());
-              setSystemPartialSpeakerIdentity(
-                carried?.speakerId ?? mintPlaceholderSpeakerId(),
-                carried?.speakerName ?? null
-              );
-            }
+          if (data.source === "system" && data.text && !systemPartialSpeakerIdValue) {
+            // Reuse the recent system speaker before minting — the partial id is
+            // cleared after every final, so always minting spawned one per utterance.
+            const carried = getRecentSystemSpeaker(Date.now());
+            setSystemPartialSpeakerIdentity(
+              carried?.speakerId ?? mintPlaceholderSpeakerId(),
+              carried?.speakerName ?? null
+            );
           }
+
+          // Drop anything that stopped updating before adding to it. One stream
+          // dying mid-utterance never sends the final that would retire its
+          // caption, so the other source's traffic sweeps it up. If *every*
+          // stream goes quiet there is nothing left to trigger this, which is
+          // why pause and the fatal-error path (which stops recording) clear
+          // the list outright rather than relying on this.
+          const stored = useMeetingRecordingStore.getState().liveUtterances;
+          const current = pruneStaleUtterances(stored, Date.now(), STALE_UTTERANCE_MS);
+          const next = applyPartial(current, {
+            text: data.text,
+            source: data.source,
+            utteranceId: data.utteranceId,
+            seq: data.seq,
+            confidence: data.confidence,
+            startMs: data.startMs,
+            ...(data.source === "system"
+              ? {
+                  speakerId: systemPartialSpeakerIdValue,
+                  speakerName: useMeetingRecordingStore.getState().systemPartialSpeakerName,
+                }
+              : {}),
+          });
+          // Compare against what the store holds, not against the pruned array:
+          // when a prune removed something and applyPartial then rejected the
+          // triggering partial as out of order, `next === current` but the
+          // store is still holding the stale caption.
+          if (next !== stored) useMeetingRecordingStore.setState({ liveUtterances: next });
           return;
         }
 
@@ -1187,11 +1267,15 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
           i === prev.length ? [...prev, seg] : [...prev.slice(0, i), seg, ...prev.slice(i)];
         segmentsRefValue = next;
 
-        const partialPatch = data.source === "mic" ? { micPartial: "" } : { systemPartial: "" };
+        // The final replaces its own in-flight caption. Providers that name
+        // their utterances retire exactly that one, so a second speaker still
+        // talking on the same source keeps their line.
         useMeetingRecordingStore.setState({
           segments: next,
-          transcript: buildTranscriptText(next),
-          ...partialPatch,
+          liveUtterances: settleUtterance(useMeetingRecordingStore.getState().liveUtterances, {
+            source: data.source,
+            utteranceId: data.utteranceId,
+          }),
         });
         if (data.source === "system" && seg.speaker) {
           rememberSystemSpeaker(
@@ -1514,6 +1598,9 @@ export async function pauseRecording(): Promise<boolean> {
     currentMicLevel: 0,
     micCaptureStatus: "inactive",
     gaps: openGap(state.gaps, Date.now()),
+    // Whatever was mid-sentence when capture stopped will never be finalized,
+    // so it would otherwise sit on screen for the length of the pause.
+    liveUtterances: [],
   }));
 
   // Stopped before the tracks so it cannot read the teardown as a device
@@ -1636,7 +1723,9 @@ export async function resumeRecording(): Promise<boolean> {
  */
 export function meetingHasContent(): boolean {
   const { segments, transcript } = useMeetingRecordingStore.getState();
-  return transcript.trim().length > 0 || segments.some((seg) => seg.text.trim().length > 0);
+  // Segments first: they are the live source of truth, and `transcript` is only
+  // populated once Stop returns main's authoritative text.
+  return segments.some((seg) => seg.text.trim().length > 0) || transcript.trim().length > 0;
 }
 
 /**
@@ -1756,8 +1845,7 @@ export async function stopRecording(): Promise<StopRecordingResult> {
   }
 
   useMeetingRecordingStore.setState({
-    micPartial: "",
-    systemPartial: "",
+    liveUtterances: [],
     systemPartialSpeakerId: null,
     systemPartialSpeakerName: null,
     currentMicLevel: 0,

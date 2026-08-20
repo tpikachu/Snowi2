@@ -5337,13 +5337,31 @@ class IPCHandlers {
         win.webContents.send(channel, data);
       };
 
-      streaming.onPartialTranscript = (text) => {
+      // `meta` carries the provider's own identity for this partial —
+      // utteranceId, seq, confidence — where the provider has one. Every field
+      // is optional: providers that send none fall back to one caption line per
+      // source, which is what this did before it carried anything.
+      streaming.onPartialTranscript = (text, meta) => {
+        const identity = meta
+          ? {
+              utteranceId: meta.utteranceId,
+              seq: meta.seq,
+              confidence: meta.confidence,
+              startMs: meta.startMs,
+            }
+          : {};
+
         if (source === "mic" && meetingEchoLeakDetector.isMicProbablyRenderBleed()) {
-          send("meeting-transcription-segment", { text: "", source, type: "partial" });
+          send("meeting-transcription-segment", {
+            text: "",
+            source,
+            type: "partial",
+            ...identity,
+          });
           return;
         }
 
-        send("meeting-transcription-segment", { text, source, type: "partial" });
+        send("meeting-transcription-segment", { text, source, type: "partial", ...identity });
       };
       streaming.onFinalTranscript = (text, timestamp) => {
         const segments = streaming.completedSegments;

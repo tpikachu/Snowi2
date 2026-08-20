@@ -105,12 +105,7 @@ function buildKnownSpeakers(
 
 type LiveMeetingTranscriptChatProps = Omit<
   ComponentProps<typeof MeetingTranscriptChat>,
-  | "segments"
-  | "micPartial"
-  | "systemPartial"
-  | "systemPartialSpeakerId"
-  | "systemPartialSpeakerName"
-  | "isRecording"
+  "segments" | "liveUtterances" | "isRecording"
 >;
 
 // Subscribes to live transcript state at this leaf so per-update re-renders
@@ -121,10 +116,7 @@ function LiveMeetingTranscriptChat({
   ...props
 }: LiveMeetingTranscriptChatProps) {
   const segments = useMeetingRecordingStore((s) => s.segments);
-  const micPartial = useMeetingRecordingStore((s) => s.micPartial);
-  const systemPartial = useMeetingRecordingStore((s) => s.systemPartial);
-  const systemPartialSpeakerId = useMeetingRecordingStore((s) => s.systemPartialSpeakerId);
-  const systemPartialSpeakerName = useMeetingRecordingStore((s) => s.systemPartialSpeakerName);
+  const liveUtterances = useMeetingRecordingStore((s) => s.liveUtterances);
 
   const knownSpeakers = useMemo(
     () => buildKnownSpeakers(speakerProfiles ?? [], segments, speakerMappings ?? {}),
@@ -136,10 +128,7 @@ function LiveMeetingTranscriptChat({
       {...props}
       isRecording
       segments={segments}
-      micPartial={micPartial}
-      systemPartial={systemPartial}
-      systemPartialSpeakerId={systemPartialSpeakerId}
-      systemPartialSpeakerName={systemPartialSpeakerName}
+      liveUtterances={liveUtterances}
       speakerMappings={speakerMappings}
       speakerProfiles={knownSpeakers}
     />
