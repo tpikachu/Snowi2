@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { AlertTriangle, CalendarClock } from "lucide-react";
 import { Button } from "../ui/button";
@@ -7,6 +7,8 @@ import UpcomingMeetings from "../UpcomingMeetings";
 import ActivityNoteRow from "../activity/ActivityNoteRow";
 import NowCard from "./NowCard";
 import MeetingActivityCard from "./MeetingActivityCard";
+import CommitmentsCard from "./CommitmentsCard";
+import NeedsWriteUpCard from "./NeedsWriteUpCard";
 import StatusPanel from "./StatusPanel";
 import { useRecentMeetings } from "../../hooks/useRecentMeetings";
 import { useUpcomingEvents } from "../../hooks/useUpcomingEvents";
@@ -43,6 +45,17 @@ export default function HomeView({
   const { events, isLoading: eventsLoading, isConnected } = useUpcomingEvents();
   const { meetings, isLoading, hasError, reload } = useRecentMeetings(true);
 
+  // The cards below hold a note id, not a note: a commitment records which
+  // meeting it came from, and the backlog query returns columns rather than
+  // whole rows. Fetched here so both open a note the same way the feed does.
+  const openNoteById = useCallback(
+    async (noteId: number) => {
+      const note = await window.electronAPI?.getNote?.(noteId);
+      if (note) onOpenNote(note);
+    },
+    [onOpenNote]
+  );
+
   // Grouped by the day the meeting happened, so the list reads as a history
   // rather than an undifferentiated stack.
   const groups = useMemo(() => {
@@ -68,6 +81,12 @@ export default function HomeView({
         />
 
         <MeetingActivityCard />
+
+        {/* Both hide themselves when empty. Order is by how much they are
+            asking of the user: commitments are a to-do list, the write-up
+            backlog is a repair job. */}
+        <CommitmentsCard onOpenNote={openNoteById} />
+        <NeedsWriteUpCard onOpenNote={openNoteById} />
 
         <div className="mt-4 flex gap-6">
           <div className="min-w-0 flex-1">

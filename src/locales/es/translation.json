@@ -3676,6 +3676,25 @@
       "thisWeek": "{{count}} esta semana",
       "title": "Actividad de reuniones"
     },
+    "commitments": {
+      "title": "Tus compromisos",
+      "overdueCount_one": "{{count}} vencido",
+      "overdueCount_other": "{{count}} vencidos",
+      "more_one": "{{count}} más pendiente",
+      "more_other": "{{count}} más pendientes",
+      "markDone": "Marcar como hecho",
+      "dismiss": "No es un compromiso",
+      "due": {
+        "none": "Sin fecha",
+        "today": "Vence hoy",
+        "tomorrow": "Vence mañana",
+        "overdue_one": "Vencido hace {{count}} día",
+        "overdue_other": "Vencido hace {{count}} días",
+        "inDays_one": "En {{count}} día",
+        "inDays_other": "En {{count}} días",
+        "on": "Vence el {{date}}"
+      }
+    },
     "now": {
       "inProgress": "Sucediendo ahora",
       "openNote": "Abrir nota",
@@ -3709,6 +3728,13 @@
       "transcriptionCloud": "{{model}}: se envía a un proveedor",
       "transcriptionLocal": "{{model}}: en este dispositivo",
       "transcriptionUnset": "Sin seleccionar"
+    },
+    "writeUp": {
+      "title": "Sin redactar",
+      "description": "Estas reuniones se grabaron pero nunca se convirtieron en notas.",
+      "action": "Redactar",
+      "more_one": "y {{count}} más",
+      "more_other": "y {{count}} más"
     }
   },
   "tour": {

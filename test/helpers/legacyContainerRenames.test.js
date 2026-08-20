@@ -136,3 +136,22 @@ test("an install that still calls it Videos does not gain a second folder", (t) 
   assert.equal(names.includes("Videos"), false, "the old one was renamed, not left beside it");
   assert.equal(names.includes("Notes"), true);
 });
+
+test("the rename runs only after folders.space_id exists", () => {
+  const fs = require("node:fs");
+  const path = require("node:path");
+  const source = fs.readFileSync(
+    path.join(__dirname, "..", "..", "src", "helpers", "database.js"),
+    "utf8"
+  );
+
+  const addsColumn = source.indexOf("ALTER TABLE folders ADD COLUMN space_id");
+  const renames = source.indexOf("this._renameLegacyContainers();");
+
+  // The duplicate guard compares folders per space. Called before the column
+  // is added, the whole statement throws "no such column: other.space_id" —
+  // and because the rename catches its own errors, it does nothing at all
+  // while looking like it ran.
+  assert.ok(addsColumn > 0, "the space_id migration is still there");
+  assert.ok(renames > addsColumn, "the rename must come after the column it reads");
+});

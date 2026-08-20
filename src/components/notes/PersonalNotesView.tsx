@@ -59,6 +59,7 @@ import {
   type PendingNoteWrite,
 } from "../../lib/noteEditorPendingSave";
 import { makeNoteContentHash, noteEnhancementSource } from "../../utils/noteContentHash";
+import { buildWriteUpRequest } from "../../helpers/noteWriteUp";
 import { MEETING_TITLE_PLACEHOLDERS } from "../../utils/meetingNoteInput";
 
 function draftFromNote(note: NoteItem): NoteEditorDraft {
@@ -703,48 +704,21 @@ export default function PersonalNotesView({
                     const rawTranscript =
                       (liveNoteId === activeNote?.id ? liveTranscript : "") ||
                       activeNoteRawTranscript;
-                    const noteContent = editorNote.content;
-                    const hasNotes = !!noteContent.trim();
-                    if (!hasNotes && !rawTranscript) return;
+                    const request = buildWriteUpRequest(editorNote.content, rawTranscript, {
+                      you: t("notes.speaker.you"),
+                      them: t("notes.speaker.them"),
+                    });
+                    if (!request) return;
 
-                    let formattedTranscript = "";
-                    let isMeetingNote = false;
-                    if (rawTranscript) {
-                      const segments = parseTranscriptSegments(rawTranscript);
-                      if (segments.length > 0) {
-                        isMeetingNote = true;
-                        formattedTranscript = segments
-                          .map(
-                            (s) =>
-                              `${s.source === "mic" ? t("notes.speaker.you") : t("notes.speaker.them")}: ${s.text}`
-                          )
-                          .join("\n");
-                      }
-                      if (!formattedTranscript) {
-                        formattedTranscript = rawTranscript;
-                      }
-                    }
-
-                    const parts = [
-                      hasNotes ? noteContent : "",
-                      formattedTranscript ? `## Meeting Transcript\n${formattedTranscript}` : "",
-                    ]
-                      .filter(Boolean)
-                      .join("\n\n");
-                    runAction(
-                      action,
-                      parts,
-                      makeNoteContentHash(noteEnhancementSource(noteContent, rawTranscript)),
-                      {
-                        modelId: effectiveModelId,
-                        isMeetingNote,
-                        allowTitleGeneration: isRegenerableNoteTitle(
-                          editorNote.title,
-                          MEETING_TITLE_PLACEHOLDERS.map((key) => t(key)),
-                          calendarEventName
-                        ),
-                      }
-                    );
+                    runAction(action, request.input, request.contentHash, {
+                      modelId: effectiveModelId,
+                      isMeetingNote: request.isMeetingNote,
+                      allowTitleGeneration: isRegenerableNoteTitle(
+                        editorNote.title,
+                        MEETING_TITLE_PLACEHOLDERS.map((key) => t(key)),
+                        calendarEventName
+                      ),
+                    });
                   }}
                   onManageActions={() => setShowActionManager(true)}
                   disabled={

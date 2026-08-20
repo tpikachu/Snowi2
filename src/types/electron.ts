@@ -225,10 +225,27 @@ export interface MemoryIngestSummary {
  * decrypted from the meeting's sealed document. `content_available` is false
  * when the key is gone — the commitment and its date are still real.
  */
+export interface MeetingNeedingWriteUp {
+  id: number;
+  title: string | null;
+  created_at: string;
+  updated_at: string;
+  recording_started_at: string | null;
+  recording_ended_at: string | null;
+}
+
+export interface MeetingsNeedingWriteUp {
+  /** The whole backlog, not just the page below. */
+  total: number;
+  meetings: MeetingNeedingWriteUp[];
+}
+
 export interface MemoryObjectRow {
   id: string;
   meeting_id: string;
   note_id: number | null;
+  /** Joined from the note, so a commitment can name the meeting it came from. */
+  note_title?: string | null;
   type: string;
   subject: string;
   status: string;
@@ -1057,6 +1074,11 @@ declare global {
       listOpenMemoryActions: (subject?: string, limit?: number) => Promise<MemoryObjectRow[]>;
       getMemoryProfile: () => Promise<string>;
       searchMemory: (options: MemorySearchOptions) => Promise<MemorySearchResult>;
+      setMemoryStatus: (
+        id: string,
+        status: "open" | "done" | "dismissed"
+      ) => Promise<{ success: boolean; error?: string }>;
+      getMeetingsNeedingWriteUp: (limit?: number) => Promise<MeetingsNeedingWriteUp>;
       updateNote: (
         id: number,
         updates: {

@@ -3706,6 +3706,25 @@
       "thisWeek": "{{count}} на этой неделе",
       "title": "Активность встреч"
     },
+    "commitments": {
+      "title": "Ваши обязательства",
+      "overdueCount_one": "{{count}} просрочено",
+      "overdueCount_other": "{{count}} просрочено",
+      "more_one": "ещё {{count}} открыто",
+      "more_other": "ещё {{count}} открыто",
+      "markDone": "Отметить выполненным",
+      "dismiss": "Это не обязательство",
+      "due": {
+        "none": "Без срока",
+        "today": "Срок сегодня",
+        "tomorrow": "Срок завтра",
+        "overdue_one": "Просрочено на {{count}} дн.",
+        "overdue_other": "Просрочено на {{count}} дн.",
+        "inDays_one": "Через {{count}} дн.",
+        "inDays_other": "Через {{count}} дн.",
+        "on": "Срок {{date}}"
+      }
+    },
     "now": {
       "inProgress": "Идёт сейчас",
       "openNote": "Открыть заметку",
@@ -3739,6 +3758,13 @@
       "transcriptionCloud": "{{model}} — отправляется провайдеру",
       "transcriptionLocal": "{{model}} — на этом устройстве",
       "transcriptionUnset": "Не выбрано"
+    },
+    "writeUp": {
+      "title": "Без конспекта",
+      "description": "Эти встречи записаны, но так и не превращены в заметки.",
+      "action": "Составить",
+      "more_one": "и ещё {{count}}",
+      "more_other": "и ещё {{count}}"
     }
   },
   "tour": {

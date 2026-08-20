@@ -1477,6 +1477,18 @@ class IPCHandlers {
       return store ? store.search(options ?? {}) : { total: 0, objects: [] };
     });
 
+    // Closing a commitment from the home card. Indexed half only — what was
+    // said stays sealed and unchanged.
+    ipcMain.handle("memory-set-status", async (event, id, status) => {
+      return this.databaseManager.setMemoryObjectStatus(id, status);
+    });
+
+    // Meetings recorded but never written up. Backs the home card that makes
+    // that silent failure visible.
+    ipcMain.handle("db-meetings-needing-writeup", async (event, limit) => {
+      return this.databaseManager.getMeetingsNeedingWriteUp(limit ?? 20);
+    });
+
     ipcMain.handle("memory-profile", async () => {
       const store = this._getMemoryStore();
       if (!store) return "";

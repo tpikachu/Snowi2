@@ -3676,6 +3676,25 @@
       "thisWeek": "{{count}} diese Woche",
       "title": "Meeting-Aktivität"
     },
+    "commitments": {
+      "title": "Deine Zusagen",
+      "overdueCount_one": "{{count}} überfällig",
+      "overdueCount_other": "{{count}} überfällig",
+      "more_one": "{{count}} weitere offen",
+      "more_other": "{{count}} weitere offen",
+      "markDone": "Als erledigt markieren",
+      "dismiss": "Keine Zusage",
+      "due": {
+        "none": "Kein Datum",
+        "today": "Heute fällig",
+        "tomorrow": "Morgen fällig",
+        "overdue_one": "{{count}} Tag überfällig",
+        "overdue_other": "{{count}} Tage überfällig",
+        "inDays_one": "In {{count}} Tag",
+        "inDays_other": "In {{count}} Tagen",
+        "on": "Fällig am {{date}}"
+      }
+    },
     "now": {
       "inProgress": "Läuft gerade",
       "openNote": "Notiz öffnen",
@@ -3709,6 +3728,13 @@
       "transcriptionCloud": "{{model}} – an einen Anbieter gesendet",
       "transcriptionLocal": "{{model}} – auf diesem Gerät",
       "transcriptionUnset": "Nicht ausgewählt"
+    },
+    "writeUp": {
+      "title": "Nicht ausgearbeitet",
+      "description": "Diese Meetings wurden aufgezeichnet, aber nie zu Notizen verarbeitet.",
+      "action": "Ausarbeiten",
+      "more_one": "und {{count}} weiteres",
+      "more_other": "und {{count}} weitere"
     }
   },
   "tour": {

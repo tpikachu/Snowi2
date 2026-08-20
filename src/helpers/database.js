@@ -6,6 +6,7 @@ const debugLogger = require("./debugLogger");
 const { buildNoteSearchQuery } = require("./noteSearch");
 const { normalizeStoredSpeakerCount } = require("./speakerCount");
 const { parseTranscriptSegments } = require("./meetingSegments");
+const { VALID_STATUSES: VALID_MEMORY_STATUSES } = require("./memoryObjects");
 const { app } = require("electron");
 
 // Cap carried over from the removed cloud backend; enforced here so one oversized
@@ -1070,8 +1071,8 @@ class DatabaseManager {
       //
       // Every rename is guarded on the *exact* old value, and folders
       // additionally on is_default: a folder the user renamed or created is
-      // never touched, and re-running this is a no-op.
-      this._renameLegacyContainers();
+      // never touched, and re-running this is a no-op. It runs further down,
+      // once folders.space_id exists — see the call site.
 
       try {
         this.db.exec("ALTER TABLE notes ADD COLUMN space_id INTEGER");
@@ -1138,6 +1139,13 @@ class DatabaseManager {
         .prepare("UPDATE folders SET space_id = ? WHERE space_id IS NULL")
         .run(privateSpace.id);
       this.db.prepare("UPDATE notes SET space_id = ? WHERE space_id IS NULL").run(privateSpace.id);
+
+      // Here, not earlier: the duplicate guard compares folders per space, so
+      // it needs folders.space_id to exist and to be populated. Run before the
+      // backfill it threw "no such column: other.space_id" on every launch
+      // against a database created after the rename shipped — caught, logged,
+      // and silently doing nothing.
+      this._renameLegacyContainers();
 
       this.db.exec("CREATE INDEX IF NOT EXISTS idx_notes_folder_id ON notes(folder_id)");
       this.db.exec("CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at)");
@@ -2821,17 +2829,93 @@ class DatabaseManager {
     try {
       return this.db
         .prepare(
-          `SELECT * FROM memory_objects
-           WHERE status = 'open'
-             AND subject = ?
-             AND type IN ('action_item', 'commitment', 'deadline')
-           ORDER BY due_at IS NULL, due_at ASC, created_at DESC
+          // Joined for two reasons. The title is what makes a commitment
+          // traceable back to the meeting that produced it, on the home card
+          // and anywhere else. And the deleted_at check applies the same rule
+          // searchMemoryObjects already states: a claim whose meeting the user
+          // deleted must stop being quoted — it was still being pinned into
+          // every chat prompt. LEFT JOIN keeps objects with no note_id.
+          `SELECT m.*, n.title AS note_title
+           FROM memory_objects m
+           LEFT JOIN notes n ON n.id = m.note_id
+           WHERE m.status = 'open'
+             AND m.subject = ?
+             AND m.type IN ('action_item', 'commitment', 'deadline')
+             AND (n.id IS NULL OR n.deleted_at IS NULL)
+           ORDER BY m.due_at IS NULL, m.due_at ASC, m.created_at DESC
            LIMIT ?`
         )
         .all(subject, limit);
     } catch (error) {
       debugLogger.error("Error reading open actions", { error: error.message }, "memory");
       return [];
+    }
+  }
+
+  /**
+   * Closes or reopens one memory object.
+   *
+   * Only the indexed half moves: the sealed document holds what was said, and
+   * marking a commitment done does not change that. `sync_status` resets so a
+   * future sync carries the new state.
+   */
+  setMemoryObjectStatus(id, status) {
+    if (!this.db) return { success: false, error: "Database not initialized" };
+    if (!VALID_MEMORY_STATUSES.has(status)) {
+      return { success: false, error: `Unknown memory status: ${status}` };
+    }
+    try {
+      const result = this.db
+        .prepare(
+          `UPDATE memory_objects
+           SET status = ?, updated_at = ?, sync_status = 'local_only'
+           WHERE id = ?`
+        )
+        .run(status, new Date().toISOString(), id);
+      if (result.changes === 0) return { success: false, error: "No such memory object" };
+      return { success: true };
+    } catch (error) {
+      debugLogger.error("Error updating memory status", { error: error.message }, "memory");
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Meetings that were recorded but never written up: a transcript exists and
+   * `enhanced_content` does not.
+   *
+   * This is a silent failure made visible. A write-up can be missing because
+   * no model was configured, because the request failed, or because the app
+   * was closed mid-generation — and in every one of those cases the recording
+   * simply sits in the library looking like any other note.
+   */
+  getMeetingsNeedingWriteUp(limit = 20) {
+    if (!this.db) return { total: 0, meetings: [] };
+    try {
+      const where = `FROM notes
+         WHERE note_type = 'meeting'
+           AND deleted_at IS NULL
+           AND transcript IS NOT NULL AND TRIM(transcript) != ''
+           AND (enhanced_content IS NULL OR TRIM(enhanced_content) = '')`;
+
+      const { total } = this.db.prepare(`SELECT COUNT(*) AS total ${where}`).get();
+      const meetings = this.db
+        .prepare(
+          `SELECT id, title, created_at, updated_at, recording_started_at, recording_ended_at
+           ${where}
+           ORDER BY created_at DESC
+           LIMIT ?`
+        )
+        .all(limit);
+
+      return { total, meetings };
+    } catch (error) {
+      debugLogger.error(
+        "Error reading meetings needing write-up",
+        { error: error.message },
+        "database"
+      );
+      return { total: 0, meetings: [] };
     }
   }
 

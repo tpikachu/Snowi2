@@ -3676,6 +3676,25 @@
       "thisWeek": "{{count}} this week",
       "title": "Meeting activity"
     },
+    "commitments": {
+      "title": "Your commitments",
+      "overdueCount_one": "{{count}} overdue",
+      "overdueCount_other": "{{count}} overdue",
+      "more_one": "{{count}} more open",
+      "more_other": "{{count}} more open",
+      "markDone": "Mark done",
+      "dismiss": "Not a commitment",
+      "due": {
+        "none": "No date",
+        "today": "Due today",
+        "tomorrow": "Due tomorrow",
+        "overdue_one": "{{count}} day overdue",
+        "overdue_other": "{{count}} days overdue",
+        "inDays_one": "In {{count}} day",
+        "inDays_other": "In {{count}} days",
+        "on": "Due {{date}}"
+      }
+    },
     "now": {
       "inProgress": "Happening now",
       "openNote": "Open note",
@@ -3709,6 +3728,13 @@
       "transcriptionCloud": "{{model}} — sent to a provider",
       "transcriptionLocal": "{{model}} — on this device",
       "transcriptionUnset": "Not selected"
+    },
+    "writeUp": {
+      "title": "Not written up",
+      "description": "These meetings were recorded but never turned into notes.",
+      "action": "Write up",
+      "more_one": "and {{count}} more",
+      "more_other": "and {{count}} more"
     }
   },
   "tour": {

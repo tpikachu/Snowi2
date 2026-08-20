@@ -3676,6 +3676,25 @@
       "thisWeek": "今週{{count}}件",
       "title": "会議のアクティビティ"
     },
+    "commitments": {
+      "title": "あなたの約束",
+      "overdueCount_one": "{{count}} 件が期限切れ",
+      "overdueCount_other": "{{count}} 件が期限切れ",
+      "more_one": "他に {{count}} 件",
+      "more_other": "他に {{count}} 件",
+      "markDone": "完了にする",
+      "dismiss": "約束ではない",
+      "due": {
+        "none": "期限なし",
+        "today": "今日が期限",
+        "tomorrow": "明日が期限",
+        "overdue_one": "{{count}} 日超過",
+        "overdue_other": "{{count}} 日超過",
+        "inDays_one": "{{count}} 日後",
+        "inDays_other": "{{count}} 日後",
+        "on": "{{date}} が期限"
+      }
+    },
     "now": {
       "inProgress": "進行中",
       "openNote": "ノートを開く",
@@ -3709,6 +3728,13 @@
       "transcriptionCloud": "{{model}} — プロバイダーに送信",
       "transcriptionLocal": "{{model}} — この端末で処理",
       "transcriptionUnset": "未選択"
+    },
+    "writeUp": {
+      "title": "未作成のノート",
+      "description": "録音されたものの、ノートにまとめられていない会議です。",
+      "action": "まとめる",
+      "more_one": "他 {{count}} 件",
+      "more_other": "他 {{count}} 件"
     }
   },
   "tour": {

@@ -3676,6 +3676,25 @@
       "thisWeek": "{{count}} cette semaine",
       "title": "Activité des réunions"
     },
+    "commitments": {
+      "title": "Vos engagements",
+      "overdueCount_one": "{{count}} en retard",
+      "overdueCount_other": "{{count}} en retard",
+      "more_one": "{{count}} autre en cours",
+      "more_other": "{{count}} autres en cours",
+      "markDone": "Marquer comme fait",
+      "dismiss": "Pas un engagement",
+      "due": {
+        "none": "Sans date",
+        "today": "Échéance aujourd'hui",
+        "tomorrow": "Échéance demain",
+        "overdue_one": "En retard de {{count}} jour",
+        "overdue_other": "En retard de {{count}} jours",
+        "inDays_one": "Dans {{count}} jour",
+        "inDays_other": "Dans {{count}} jours",
+        "on": "Échéance le {{date}}"
+      }
+    },
     "now": {
       "inProgress": "En cours",
       "openNote": "Ouvrir la note",
@@ -3709,6 +3728,13 @@
       "transcriptionCloud": "{{model}} — envoyé à un fournisseur",
       "transcriptionLocal": "{{model}} — sur cet appareil",
       "transcriptionUnset": "Non sélectionné"
+    },
+    "writeUp": {
+      "title": "Pas encore rédigées",
+      "description": "Ces réunions ont été enregistrées mais jamais transformées en notes.",
+      "action": "Rédiger",
+      "more_one": "et {{count}} autre",
+      "more_other": "et {{count}} autres"
     }
   },
   "tour": {

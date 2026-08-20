@@ -3676,6 +3676,25 @@
       "thisWeek": "本週 {{count}} 場",
       "title": "會議活動"
     },
+    "commitments": {
+      "title": "你的承諾",
+      "overdueCount_one": "{{count}} 項已逾期",
+      "overdueCount_other": "{{count}} 項已逾期",
+      "more_one": "還有 {{count}} 項未完成",
+      "more_other": "還有 {{count}} 項未完成",
+      "markDone": "標記為完成",
+      "dismiss": "這不是承諾",
+      "due": {
+        "none": "無日期",
+        "today": "今天到期",
+        "tomorrow": "明天到期",
+        "overdue_one": "逾期 {{count}} 天",
+        "overdue_other": "逾期 {{count}} 天",
+        "inDays_one": "{{count}} 天後",
+        "inDays_other": "{{count}} 天後",
+        "on": "{{date}} 到期"
+      }
+    },
     "now": {
       "inProgress": "正在進行",
       "openNote": "開啟筆記",
@@ -3709,6 +3728,13 @@
       "transcriptionCloud": "{{model}} — 傳送到服務商",
       "transcriptionLocal": "{{model}} — 在本機處理",
       "transcriptionUnset": "未選擇"
+    },
+    "writeUp": {
+      "title": "尚未整理",
+      "description": "這些會議已錄音，但從未整理成筆記。",
+      "action": "整理",
+      "more_one": "還有 {{count}} 場",
+      "more_other": "還有 {{count}} 場"
     }
   },
   "tour": {
