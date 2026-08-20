@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { removeNoteFromLists, teardownNoteContainers } from "./noteListOps";
 import { findDefaultFolder } from "../components/notes/shared";
 import type { FolderItem, NoteItem, SpaceItem } from "../types/electron";
+import { TEAM_SPACES_ENABLED } from "../config/features";
 
 export interface ActiveContext {
   spaceId: number;
@@ -200,7 +201,12 @@ function ensureIpcListeners() {
 
 export async function loadSpaces(): Promise<SpaceItem[]> {
   const gen = ++spacesLoadGeneration;
-  const items = (await window.electronAPI.getSpaces?.()) ?? [];
+  const loaded = (await window.electronAPI.getSpaces?.()) ?? [];
+  // Filtered here rather than at each of the ten branches that render a team
+  // space: with sharing off, the honest statement is that team spaces do not
+  // exist for the UI, and every downstream branch then dies naturally. Rows
+  // stay in the database untouched, so flipping the flag brings them back.
+  const items = TEAM_SPACES_ENABLED ? loaded : loaded.filter((s) => s.kind !== "team");
   // A newer load may have resolved first.
   if (gen !== spacesLoadGeneration) return items;
   useNoteStore.setState({ spaces: items });

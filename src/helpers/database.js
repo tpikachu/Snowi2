@@ -325,9 +325,11 @@ class DatabaseManager {
         const seedFolder = this.db.prepare(
           "INSERT INTO folders (name, is_default, sort_order) VALUES (?, 1, ?)"
         );
-        seedFolder.run("Personal", 0);
-        seedFolder.run("Meetings", 1);
-        seedFolder.run("Videos", 2);
+        // Meetings first: it is where nearly every note in a meeting copilot
+        // lands, and the seed order is the tree order.
+        seedFolder.run("Meetings", 0);
+        seedFolder.run("Notes", 1);
+        seedFolder.run("Uploads", 2);
       }
 
       // Backfill folder_id only when the column is first added: on later
@@ -352,17 +354,24 @@ class DatabaseManager {
         }
       }
 
-      // One-time seed (user_version 1): a pre-existing user-created "Videos"
-      // folder stays untouched (never promoted to default); URL downloads route
-      // to it by name. Guarded so a later delete/rename doesn't resurrect it as
-      // an undeletable default on the next launch.
+      // One-time seed (user_version 1): a pre-existing user-created folder for
+      // URL downloads stays untouched (never promoted to default); downloads
+      // route to it by name. Guarded so a later delete/rename doesn't resurrect
+      // it as an undeletable default on the next launch.
+      //
+      // Both names are checked because this runs before the legacy rename
+      // below. Looking only for "Uploads" would add a second folder to installs
+      // that still call it "Videos", and the rename would then refuse to merge
+      // them — leaving the user with both.
       if (this.db.pragma("user_version", { simple: true }) < 1) {
-        const videosFolder = this.db.prepare("SELECT id FROM folders WHERE name = 'Videos'").get();
-        if (!videosFolder) {
+        const uploadsFolder = this.db
+          .prepare("SELECT id FROM folders WHERE name IN ('Uploads', 'Videos')")
+          .get();
+        if (!uploadsFolder) {
           const maxOrder = this.db.prepare("SELECT MAX(sort_order) as m FROM folders").get();
           this.db
             .prepare(
-              "INSERT OR IGNORE INTO folders (name, is_default, sort_order) VALUES ('Videos', 1, ?)"
+              "INSERT OR IGNORE INTO folders (name, is_default, sort_order) VALUES ('Uploads', 1, ?)"
             )
             .run((maxOrder?.m ?? 1) + 1);
         }
@@ -1049,10 +1058,20 @@ class DatabaseManager {
       if (privateSpaceCount.count === 0) {
         this.db
           .prepare(
-            "INSERT INTO spaces (client_space_id, kind, name, sort_order, sync_status) VALUES (?, 'private', 'Personal', 0, 'synced')"
+            "INSERT INTO spaces (client_space_id, kind, name, sort_order, sync_status) VALUES (?, 'private', 'My Workspace', 0, 'synced')"
           )
           .run(randomUUID());
       }
+
+      // Names inherited from the dictation app this was forked from. The
+      // private space was "Personal" and so was a folder inside it, so the tree
+      // read "Personal > Personal"; "Videos" described where URL uploads landed
+      // rather than what they were.
+      //
+      // Every rename is guarded on the *exact* old value, and folders
+      // additionally on is_default: a folder the user renamed or created is
+      // never touched, and re-running this is a no-op.
+      this._renameLegacyContainers();
 
       try {
         this.db.exec("ALTER TABLE notes ADD COLUMN space_id INTEGER");
@@ -2061,7 +2080,7 @@ class DatabaseManager {
         spaceId = folder?.space_id ?? spaceId ?? this.getPrivateSpaceId();
       } else {
         if (spaceId == null) spaceId = this.getPrivateSpaceId();
-        const defaultFolderName = noteType === "meeting" ? "Meetings" : "Personal";
+        const defaultFolderName = noteType === "meeting" ? "Meetings" : "Notes";
         const defaultFolder = this.db
           .prepare("SELECT id FROM folders WHERE name = ? AND is_default = 1 AND space_id = ?")
           .get(defaultFolderName, spaceId);
@@ -2653,6 +2672,44 @@ class DatabaseManager {
     } catch (error) {
       debugLogger.error("Error deleting memory object", { error: error.message }, "memory");
       return { success: false };
+    }
+  }
+
+  /**
+   * Folder and space names this app inherited from the dictation build it was
+   * forked from. Exposed so the markdown mirror can move the matching
+   * directories: folder names are directory names on disk.
+   */
+  static LEGACY_FOLDER_RENAMES = [
+    { from: "Personal", to: "Notes" },
+    { from: "Videos", to: "Uploads" },
+  ];
+
+  _renameLegacyContainers() {
+    try {
+      const renameFolder = this.db.prepare(
+        // is_default guards a folder the user made themselves and happened to
+        // call "Personal"; the destination check stops a second folder taking
+        // a name that already exists in that space.
+        `UPDATE folders SET name = ?, updated_at = CURRENT_TIMESTAMP
+         WHERE name = ? AND is_default = 1
+           AND NOT EXISTS (
+             SELECT 1 FROM folders AS other
+             WHERE other.name = ? AND other.space_id IS folders.space_id
+           )`
+      );
+      for (const { from, to } of DatabaseManager.LEGACY_FOLDER_RENAMES) {
+        renameFolder.run(to, from, to);
+      }
+
+      this.db
+        .prepare(
+          "UPDATE spaces SET name = 'My Workspace' WHERE kind = 'private' AND name = 'Personal'"
+        )
+        .run();
+    } catch (error) {
+      // Cosmetic. A failure here must never stop the database from opening.
+      debugLogger.error("Could not rename legacy containers", { error: error.message }, "notes");
     }
   }
 

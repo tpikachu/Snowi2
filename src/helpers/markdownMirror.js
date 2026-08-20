@@ -14,6 +14,40 @@ class MarkdownMirror {
       debugLogger.debug("Markdown mirror initialized", { basePath }, "note-files");
     } catch (err) {
       debugLogger.error("Failed to init markdown mirror", { error: err.message }, "note-files");
+      return;
+    }
+    this._renameLegacyFolderDirs();
+  }
+
+  /**
+   * Follows the folder renames the database applies at startup.
+   *
+   * A folder name is a directory name here, so renaming "Personal" to "Notes"
+   * without this would leave every existing file in a directory nothing writes
+   * to any more, and the user would see their notes duplicated across two.
+   *
+   * Runs on init rather than from the migration because only this class knows
+   * the base path, and the mirror is off by default — most installs have no
+   * directories to move.
+   */
+  _renameLegacyFolderDirs() {
+    const DatabaseManager = require("./database");
+    for (const { from, to } of DatabaseManager.LEGACY_FOLDER_RENAMES ?? []) {
+      const oldPath = path.join(this._basePath, from);
+      const newPath = path.join(this._basePath, to);
+      try {
+        // Never merge: if both exist the user has files under each, and
+        // deciding which wins is not this function's call.
+        if (!fs.existsSync(oldPath) || fs.existsSync(newPath)) continue;
+        fs.renameSync(oldPath, newPath);
+        debugLogger.debug("Renamed mirror folder", { from, to }, "note-files");
+      } catch (err) {
+        debugLogger.error(
+          "Could not rename mirror folder",
+          { from, to, error: err.message },
+          "note-files"
+        );
+      }
     }
   }
 
@@ -43,7 +77,7 @@ class MarkdownMirror {
       `id: ${note.id}`,
       `title: ${escYaml(note.title)}`,
       `type: ${note.note_type || "personal"}`,
-      `folder: ${escYaml(folderName || "Personal")}`,
+      `folder: ${escYaml(folderName || "Notes")}`,
       `created: ${note.created_at || new Date().toISOString()}`,
       `updated: ${note.updated_at || new Date().toISOString()}`,
       "---",
@@ -54,7 +88,7 @@ class MarkdownMirror {
   writeNote(note, folderName) {
     if (!this._basePath) return;
     try {
-      const dirName = folderName || "Personal";
+      const dirName = folderName || "Notes";
       const dirPath = path.join(this._basePath, dirName);
       fs.mkdirSync(dirPath, { recursive: true });
 

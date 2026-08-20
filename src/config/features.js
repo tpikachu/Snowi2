@@ -38,3 +38,15 @@ export const DICTATION_SETTINGS_IDS = new Set([
 
 /** Hotkey slots owned by dictation, in `hotkeyManager` slot naming. */
 export const DICTATION_HOTKEY_SLOTS = new Set(["dictation", "voiceAgent", "translation"]);
+
+/**
+ * Shared team spaces.
+ *
+ * Off because nothing can create one: a `kind: 'team'` space only ever arrives
+ * through `upsertSpaceFromCloud`, and this build has no account or sync. The
+ * UI branched on it throughout — space-kind copy, the private/team explainer,
+ * team-note badges — which advertises sharing the app cannot do.
+ *
+ * The schema column, the cloud upsert path and the sync code all stay.
+ */
+export const TEAM_SPACES_ENABLED = false;

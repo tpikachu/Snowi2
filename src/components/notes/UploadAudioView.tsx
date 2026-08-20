@@ -27,7 +27,7 @@ import { Input } from "../ui/input";
 import type { FolderItem } from "../../types/electron";
 import {
   findDefaultFolder,
-  findVideosFolder,
+  findUploadsFolder,
   DOWNLOAD_ERROR_KEYS,
   transcriptionErrorKey,
   MEETINGS_FOLDER_NAME,
@@ -703,7 +703,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
         fromUrl: true,
         durationSeconds: res.durationSeconds,
       });
-      const videosFolder = findVideosFolder(folders);
+      const videosFolder = findUploadsFolder(folders);
       if (videosFolder) setSelectedFolderId(String(videosFolder.id));
       setState("selected");
     } catch (e) {
@@ -738,7 +738,7 @@ export default function UploadAudioView({ onNoteCreated, onOpenSettings }: Uploa
       batch.addUrls(valid);
       // Same default the single-URL flow applies; the selector stays editable.
       if (!batchFolderId) {
-        const videosFolder = findVideosFolder(folders);
+        const videosFolder = findUploadsFolder(folders);
         if (videosFolder) setBatchFolderId(String(videosFolder.id));
       }
       setUrlInput("");

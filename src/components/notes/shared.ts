@@ -1,18 +1,21 @@
 import { cn } from "../lib/utils";
 import type { FolderItem } from "../../types/electron";
 
-export const DEFAULT_FOLDER_NAME = "Personal";
+// These must track the seed names in database.js, and the renames it applies
+// to installs created before them (DatabaseManager.LEGACY_FOLDER_RENAMES).
+// Routing is by name, so a mismatch silently sends notes to a new folder.
+export const DEFAULT_FOLDER_NAME = "Notes";
 export const MEETINGS_FOLDER_NAME = "Meetings";
-export const VIDEOS_FOLDER_NAME = "Videos";
+export const UPLOADS_FOLDER_NAME = "Uploads";
 
 export function findDefaultFolder(folders: FolderItem[]): FolderItem | undefined {
   return folders.find((f) => f.name === DEFAULT_FOLDER_NAME && f.is_default);
 }
 
-// URL downloads route to "Videos" by name: a pre-existing user-created folder with
-// that name is used as-is (the migration never promotes or replaces it).
-export function findVideosFolder(folders: FolderItem[]): FolderItem | undefined {
-  return folders.find((f) => f.name === VIDEOS_FOLDER_NAME);
+// URL downloads route to "Uploads" by name: a pre-existing user-created folder
+// with that name is used as-is (the migration never promotes or replaces it).
+export function findUploadsFolder(folders: FolderItem[]): FolderItem | undefined {
+  return folders.find((f) => f.name === UPLOADS_FOLDER_NAME);
 }
 
 // URL-download error codes → notes.upload.* i18n keys.
