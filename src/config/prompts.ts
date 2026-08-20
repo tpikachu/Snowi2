@@ -59,31 +59,63 @@ export interface AgentPromptContext {
   focusNote?: { id: number; title: string };
 }
 
-export function getAgentSystemPrompt(context: AgentPromptContext = {}): string {
+/**
+ * The named parts of the agent system prompt, in the order they are sent.
+ *
+ * These are the units the prompt inspector reports on, and they are the same
+ * objects the prompt is joined from — not a description of it written
+ * separately. A summary assembled beside the real thing drifts from it, and a
+ * drifted summary is worse than none: it makes a wrong prompt look right.
+ */
+export type AgentPromptSectionName =
+  | "assistantRole"
+  | "userProfile"
+  | "openCommitments"
+  | "focusNote"
+  | "toolInstructions"
+  | "retrievedNotes";
+
+export interface AgentPromptSection {
+  name: AgentPromptSectionName;
+  text: string;
+}
+
+/** Sections are joined with a blank line, which is what the model receives. */
+export const AGENT_PROMPT_SECTION_SEPARATOR = "\n\n";
+
+export function getAgentPromptSections(context: AgentPromptContext = {}): AgentPromptSection[] {
   const { availableTools, noteContext, memoryProfile, openCommitments, focusNote } = context;
-  let prompt = resolvePrompt("chatAgent", { agentName: null });
+  const sections: AgentPromptSection[] = [
+    { name: "assistantRole", text: resolvePrompt("chatAgent", { agentName: null }) },
+  ];
 
   // Durable facts about the user, pinned on every message (§19). This is what
   // separates memory from search: retrieval answers "what was said about X",
   // but the assistant should not have to look up who it is talking to. Kept
   // small because every single message pays for it.
   if (memoryProfile?.trim()) {
-    prompt +=
-      "\n\nWhat you know about this user, learned from their past meetings. " +
-      "Treat it as background, not as something to recite:\n" +
-      memoryProfile.trim();
+    sections.push({
+      name: "userProfile",
+      text:
+        "What you know about this user, learned from their past meetings. " +
+        "Treat it as background, not as something to recite:\n" +
+        memoryProfile.trim(),
+    });
   }
 
   // Pinned alongside the profile, and for the same reason: an agent that has to
   // decide to go looking for commitments does not, so "anything I should know?"
   // would never surface them. Capped upstream (utils/memoryPrompt.ts).
   if (openCommitments?.trim()) {
-    prompt +=
-      "\n\nOpen commitments and deadlines from the user's meetings. " +
-      "Raise them when they bear on the question or when the user asks what is " +
-      "outstanding, and do not recite them otherwise. For anything beyond this " +
-      "list, use search_memory:\n" +
-      openCommitments.trim();
+    sections.push({
+      name: "openCommitments",
+      text:
+        "Open commitments and deadlines from the user's meetings. " +
+        "Raise them when they bear on the question or when the user asks what is " +
+        "outstanding, and do not recite them otherwise. For anything beyond this " +
+        "list, use search_memory:\n" +
+        openCommitments.trim(),
+    });
   }
 
   // "For this meeting, what was the purpose?" has no referent on its own: the
@@ -91,17 +123,23 @@ export function getAgentSystemPrompt(context: AgentPromptContext = {}): string {
   // is set only when the last turn resolved to exactly one note, so it never
   // asserts a subject the conversation did not actually settle on.
   if (focusNote) {
-    prompt +=
-      `\n\nThis conversation is currently about the note "${focusNote.title}" ` +
-      `(ID ${focusNote.id}). When the user says "this meeting", "that note", or "it" ` +
-      "without naming one, they mean this one. If their question clearly concerns a " +
-      "different note, follow the question rather than this note.";
+    sections.push({
+      name: "focusNote",
+      text:
+        `This conversation is currently about the note "${focusNote.title}" ` +
+        `(ID ${focusNote.id}). When the user says "this meeting", "that note", or "it" ` +
+        "without naming one, they mean this one. If their question clearly concerns a " +
+        "different note, follow the question rather than this note.",
+    });
   }
 
   if (availableTools && availableTools.length > 0) {
     const toolLines = availableTools.map((name) => TOOL_INSTRUCTIONS[name]).filter(Boolean);
     if (toolLines.length > 0) {
-      prompt += "\n\nYou have access to tools. " + toolLines.join(" ");
+      sections.push({
+        name: "toolInstructions",
+        text: "You have access to tools. " + toolLines.join(" "),
+      });
     }
   }
 
@@ -110,15 +148,26 @@ export function getAgentSystemPrompt(context: AgentPromptContext = {}): string {
     // rendered as a link to the note, so the id has to be the one on the tag.
     // Markers naming a note that was not supplied are dropped rather than
     // linked, which is why the instruction is explicit about not inventing one.
-    prompt +=
-      "\n\nBelow are notes from the user's library that may be relevant. " +
-      "Use them when they help answer the question, and ignore them when they do not.\n\n" +
-      "When a statement comes from one of these notes, cite it by appending " +
-      "[[note:ID]] — the ID from that note's tag — at the end of the sentence. " +
-      "Cite only notes listed below; never invent an ID. Do not add a sources " +
-      "list of your own at the end: the app renders one from your citations.\n\n" +
-      noteContext;
+    sections.push({
+      name: "retrievedNotes",
+      text:
+        "Below are notes from the user's library that may be relevant. " +
+        "Use them when they help answer the question, and ignore them when they do not.\n\n" +
+        "When a statement comes from one of these notes, cite it by appending " +
+        "[[note:ID]] — the ID from that note's tag — at the end of the sentence. " +
+        "Cite only notes listed below; never invent an ID. Do not add a sources " +
+        "list of your own at the end: the app renders one from your citations.\n\n" +
+        noteContext,
+    });
   }
 
-  return prompt;
+  return sections;
+}
+
+export function renderAgentPromptSections(sections: readonly AgentPromptSection[]): string {
+  return sections.map((section) => section.text).join(AGENT_PROMPT_SECTION_SEPARATOR);
+}
+
+export function getAgentSystemPrompt(context: AgentPromptContext = {}): string {
+  return renderAgentPromptSections(getAgentPromptSections(context));
 }

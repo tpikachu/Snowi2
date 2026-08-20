@@ -91,6 +91,7 @@ const CommandSearch = React.lazy(() => import("./CommandSearch"));
 // Lazy like the rest, so a packaged build — where the rail never offers it —
 // never loads the chunk at all.
 const DbExplorer = React.lazy(() => import("./dev/DbExplorer"));
+const PromptInspector = React.lazy(() => import("./dev/PromptInspector"));
 
 interface ControlPanelProps {
   /** Open the settings modal at this section on mount (e.g. after onboarding). */
@@ -811,6 +812,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     upload: t("sidebar.upload"),
     dictionary: t("sidebar.dictionary"),
     database: "Database",
+    "prompt-log": "Prompt log",
   };
 
   const contextPaneTitles: Partial<Record<ControlPanelView, string>> = {
@@ -1094,6 +1096,11 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   <div className="mx-auto w-full max-w-5xl p-4">
                     <DbExplorer />
                   </div>
+                </Suspense>
+              )}
+              {activeView === "prompt-log" && (
+                <Suspense fallback={null}>
+                  <PromptInspector />
                 </Suspense>
               )}
               {activeView === "upload" && (

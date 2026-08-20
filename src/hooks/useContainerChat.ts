@@ -74,6 +74,7 @@ export function useContainerChat({
     setMessages: persistence.setMessages,
     noteContext: containerContext,
     searchScope,
+    surface: "container-chat",
     onStreamComplete: (_id, content, toolCalls, sources) => {
       persistence.saveAssistantMessage(content, toolCalls, sources);
     },

@@ -5,6 +5,7 @@ import {
   NotebookPen,
   BookOpen,
   Database,
+  ScrollText,
   Settings,
   Search,
 } from "lucide-react";
@@ -14,6 +15,7 @@ import { Tooltip } from "../ui/tooltip";
 import { getCachedPlatform } from "../../utils/platform";
 import { SnowyGlyph } from "../ui/BrandMark";
 import { useDevDbAvailable } from "../dev/useDevDbAvailable";
+import { useDebugEnabled } from "../dev/useDebugEnabled";
 
 const platform = getCachedPlatform();
 const isMac = platform === "darwin";
@@ -26,7 +28,7 @@ export const ICON_RAIL_WIDTH_PX = 48;
 const RAIL_TOP_INSET = isMac ? 38 : 4;
 
 export type ControlPanelView =
-  "home" | "chat" | "personal-notes" | "dictionary" | "upload" | "database";
+  "home" | "chat" | "personal-notes" | "dictionary" | "upload" | "database" | "prompt-log";
 
 const railButtonClass = [
   "relative flex size-9 items-center justify-center rounded-md",
@@ -104,6 +106,7 @@ export default function IconRail({
 }: IconRailProps) {
   const { t } = useTranslation();
   const devDbAvailable = useDevDbAvailable();
+  const debugEnabled = useDebugEnabled();
 
   const navItems: {
     id: ControlPanelView;
@@ -178,6 +181,16 @@ export default function IconRail({
             label="Database (dev)"
             isActive={activeView === "database"}
             onClick={() => onViewChange("database")}
+          />
+        )}
+        {/* Debug logging, not dev: the people who most need to explain a bad
+            answer are running a packaged build. */}
+        {debugEnabled && (
+          <RailButton
+            icon={ScrollText}
+            label="Prompt log (debug)"
+            isActive={activeView === "prompt-log"}
+            onClick={() => onViewChange("prompt-log")}
           />
         )}
         <RailButton

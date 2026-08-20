@@ -48,6 +48,7 @@ export default function ChatView() {
   const streaming = useChatStreaming({
     messages: persistence.messages,
     setMessages: persistence.setMessages,
+    surface: "chat-view",
     onStreamComplete: (_id, content, toolCalls, sources) => {
       persistence.saveAssistantMessage(content, toolCalls, sources);
     },

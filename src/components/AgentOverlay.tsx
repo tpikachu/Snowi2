@@ -24,6 +24,7 @@ export default function AgentOverlay() {
   const streaming = useChatStreaming({
     messages,
     setMessages,
+    surface: "agent-overlay",
     onStreamComplete: (_assistantId, content, toolCalls, sources) => {
       persistence.saveAssistantMessage(content, toolCalls, sources);
     },

@@ -8,6 +8,7 @@ import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { SettingsPanel, SettingsPanelRow, SettingsRow } from "./ui/SettingsSection";
 import { useSettingsLayout } from "./ui/useSettingsLayout";
 import logger from "../utils/logger";
+import { setDebugLoggingEnabled } from "./dev/useDebugEnabled";
 
 export default function DeveloperSection() {
   const { t } = useTranslation();
@@ -54,6 +55,12 @@ export default function DeveloperSection() {
       }
 
       setDebugEnabled(newState);
+      // The renderer caches the log level on first use and never re-reads it,
+      // so without this the toggle only takes effect for renderer logs after a
+      // restart — you turn on debug, reproduce the problem, and the log has
+      // nothing in it.
+      logger.refreshLogLevel();
+      setDebugLoggingEnabled(newState);
       await loadDebugState();
 
       toast({
