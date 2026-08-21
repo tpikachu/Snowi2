@@ -19,7 +19,7 @@
 import type React from "react";
 import { DICTATION_ENABLED, DICTATION_SETTINGS_IDS } from "../../config/features";
 import {
-  BookOpen,
+  ListChecks,
   Brain,
   FileAudio,
   Keyboard,
@@ -57,12 +57,13 @@ export const SPEECH_TABS: readonly SpeechTab[] = ALL_SPEECH_TABS.filter((tab) =>
   DICTATION_ENABLED ? true : !DICTATION_SETTINGS_IDS.has(tab)
 );
 
+// Same order as the panel list below, and for the same reason.
 const ALL_LLM_TABS: readonly LlmTab[] = [
+  "noteFormatting",
+  "chatIntelligence",
   "dictationCleanup",
   "dictationAgent",
   "dictationTranslation",
-  "noteFormatting",
-  "chatIntelligence",
 ] as const;
 
 export const LLM_TABS: readonly LlmTab[] = ALL_LLM_TABS.filter((tab) =>
@@ -202,7 +203,19 @@ const ALL_SETTINGS_SECTIONS: SettingsSectionDef[] = [
     descriptionKey: "settingsModal.sections.llms.description",
     icon: Brain,
     groupKey: "settingsModal.groups.aiModels",
+    // Ordered by what this app is. Actions and Chat are two of the three
+    // things Snowy does — the third, transcription, has its own section — and
+    // the dictation trio below them is the smaller, older surface. The panel
+    // ids stay as they are: `noteFormatting` names a set of persisted settings
+    // keys and one encrypted credential file, so renaming it is a migration
+    // rather than a label change, and the label is what a user reads.
     panels: [
+      { id: "noteFormatting", labelKey: "settingsPage.llms.tabs.noteFormatting", icon: ListChecks },
+      {
+        id: "chatIntelligence",
+        labelKey: "settingsPage.llms.tabs.chatIntelligence",
+        icon: MessageSquare,
+      },
       {
         id: "dictationCleanup",
         labelKey: "settingsPage.llms.tabs.dictationCleanup",
@@ -213,12 +226,6 @@ const ALL_SETTINGS_SECTIONS: SettingsSectionDef[] = [
         id: "dictationTranslation",
         labelKey: "settingsPage.llms.tabs.dictationTranslation",
         icon: Languages,
-      },
-      { id: "noteFormatting", labelKey: "settingsPage.llms.tabs.noteFormatting", icon: BookOpen },
-      {
-        id: "chatIntelligence",
-        labelKey: "settingsPage.llms.tabs.chatIntelligence",
-        icon: MessageSquare,
       },
     ],
   },

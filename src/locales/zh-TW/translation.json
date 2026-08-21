@@ -2772,28 +2772,6 @@
       "noResults": "沒有符合的筆記",
       "noNotesAvailable": "沒有其他可用的筆記"
     },
-    "onboarding": {
-      "llm": {
-        "title": "設定 AI 模型",
-        "description": "動作使用 AI 來處理你的筆記。設定語言模型以開始使用。",
-        "configured": "AI 模型已設定"
-      },
-      "actions": {
-        "title": "AI 驅動的動作",
-        "description": "動作可以處理你的筆記——整理轉錄、摘要會議等。使用內建動作或建立你自己的。",
-        "builtInLabel": "內建",
-        "createTitle": "建立你的動作",
-        "createDescription": "使用你自己的 AI 提示詞定義自訂動作。你隨時可以在設定中編輯或新增更多。",
-        "created": "已建立！"
-      },
-      "getStarted": "開始使用",
-      "systemAudio": {
-        "title": "系統音訊",
-        "description": "在使用麥克風的同時擷取會議和其他應用程式的音訊。",
-        "grant": "授予權限",
-        "enabled": "已啟用"
-      }
-    },
     "realtimeBanner": {
       "message": "Pro 方案可使用即時轉錄",
       "upgrade": "升級"
@@ -3798,9 +3776,9 @@
           "ready": "會議會在這台電腦上錄下並轉成文字。"
         },
         "noteFormatting": {
-          "title": "整理好的會議紀錄",
-          "ready": "每場會議結束時都會有摘要、決議事項和負責人。筆記操作（如產生筆記）也使用這個模型。",
-          "missing": "會議只會被轉錄成原始文字，產生筆記等筆記操作也無法執行。設定模型後，每場會議結束時都會有摘要、決議事項和負責人。"
+          "title": "操作",
+          "ready": "每場保留的會議都會自動執行「產生筆記」：摘要、決議事項和負責人。你自訂的操作也使用同一個模型。",
+          "missing": "不會整理出任何內容。「產生筆記」和其他所有操作都需要語言模型才能執行，會議只會停留在原始轉錄。"
         },
         "chatIntelligence": {
           "title": "會議進行中就能得到答案",

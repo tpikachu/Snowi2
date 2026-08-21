@@ -2979,28 +2979,6 @@
         "configure": "Einrichten"
       }
     },
-    "onboarding": {
-      "llm": {
-        "title": "KI-Modell konfigurieren",
-        "description": "Aktionen verwenden KI, um Ihre Notizen zu transformieren. Richten Sie ein Sprachmodell ein, um loszulegen.",
-        "configured": "KI-Modell konfiguriert"
-      },
-      "actions": {
-        "title": "KI-gestützte Aktionen",
-        "description": "Aktionen transformieren Ihre Notizen – bereinigen Transkriptionen, fassen Besprechungen zusammen und mehr. Verwenden Sie integrierte Aktionen oder erstellen Sie eigene.",
-        "builtInLabel": "Integriert",
-        "createTitle": "Eigene Aktion erstellen",
-        "createDescription": "Definieren Sie eine benutzerdefinierte Aktion mit Ihrem eigenen KI-Prompt. Sie können später jederzeit weitere hinzufügen oder bearbeiten.",
-        "created": "Erstellt!"
-      },
-      "getStarted": "Loslegen",
-      "systemAudio": {
-        "title": "Systemaudio",
-        "description": "Erfassen Sie Audio aus Meetings und anderen Apps zusätzlich zu Ihrem Mikrofon.",
-        "grant": "Berechtigung erteilen",
-        "enabled": "Aktiviert"
-      }
-    },
     "realtimeBanner": {
       "message": "Echtzeit-Transkription mit Pro verfügbar",
       "upgrade": "Upgraden"
@@ -3798,9 +3776,9 @@
           "ready": "Meetings werden auf diesem Rechner aufgezeichnet und in Text umgewandelt."
         },
         "noteFormatting": {
-          "title": "Ausformulierte Meetings",
-          "ready": "Jedes Meeting endet mit Zusammenfassung, Entscheidungen und Zuständigkeiten. Notizaktionen wie Notizen erzeugen nutzen dasselbe Modell.",
-          "missing": "Meetings werden transkribiert und bleiben Rohtext, und Notizaktionen wie Notizen erzeugen können nicht laufen. Mit einem Modell endet jedes mit einer Zusammenfassung, den Entscheidungen und den Zuständigkeiten."
+          "title": "Aktionen",
+          "ready": "Notizen erzeugen läuft bei jedem behaltenen Meeting: Zusammenfassung, Entscheidungen und Zuständigkeiten. Eigene Aktionen nutzen dasselbe Modell.",
+          "missing": "Es wird nichts ausformuliert. Notizen erzeugen und alle anderen Aktionen brauchen ein Sprachmodell, also bleiben Meetings reine Transkripte."
         },
         "chatIntelligence": {
           "title": "Antworten während des Meetings",

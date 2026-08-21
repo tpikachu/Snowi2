@@ -40,6 +40,10 @@ interface Capability {
  */
 const CAPABILITIES: Capability[] = [
   { id: "transcription", icon: Mic, remedy: "configureMeetingTranscription" },
+  // Named "Actions", not "written-up meetings". The write-up is not a separate
+  // feature: it is the built-in Generate Notes action, run automatically when a
+  // meeting is kept. Calling it anything else here means the button leads to a
+  // Settings panel with a different name on it.
   { id: "noteFormatting", icon: Sparkles, remedy: "configureNoteFormatting" },
   { id: "chatIntelligence", icon: MessageSquareText, remedy: "configureChatIntelligence" },
 ];

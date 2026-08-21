@@ -62,6 +62,12 @@ listed there that are fixed are called out below.
   A configuration screen one click from a note read as something about the note.
 - The action button no longer appears on a note when no model is configured.
   There was nothing for it to run, so it could only produce a setup prompt.
+- Notes no longer open onto a setup screen. A first visit used to be taken over
+  by a model picker and an action builder before any note could be seen. Model
+  setup lives in Settings and is offered from Home; Notes shows notes.
+- Language Models leads with Actions and Chat. They are two of the three things
+  Snowy does; the dictation trio that used to sit above them is the smaller,
+  older surface.
 
 ### Fixed
 

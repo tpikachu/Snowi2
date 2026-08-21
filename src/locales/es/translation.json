@@ -2820,28 +2820,6 @@
       "noResults": "No hay notas coincidentes",
       "noNotesAvailable": "No hay otras notas disponibles"
     },
-    "onboarding": {
-      "llm": {
-        "title": "Configurar un modelo de IA",
-        "description": "Las acciones usan IA para transformar tus notas. Configura un modelo de lenguaje para comenzar.",
-        "configured": "Modelo de IA configurado"
-      },
-      "actions": {
-        "title": "Acciones impulsadas por IA",
-        "description": "Las acciones transforman tus notas: corrigen transcripciones, resumen reuniones y más. Usa acciones integradas o crea las tuyas.",
-        "builtInLabel": "Integrada",
-        "createTitle": "Crea tu propia acción",
-        "createDescription": "Define una acción personalizada con tu propio prompt de IA. Puedes editar o agregar más después en los ajustes.",
-        "created": "¡Creada!"
-      },
-      "getStarted": "Comenzar",
-      "systemAudio": {
-        "title": "Audio del sistema",
-        "description": "Captura audio de reuniones y otras aplicaciones junto con tu micrófono.",
-        "grant": "Conceder permiso",
-        "enabled": "Activado"
-      }
-    },
     "realtimeBanner": {
       "message": "Transcripción en tiempo real disponible con Pro",
       "upgrade": "Mejorar"
@@ -3798,9 +3776,9 @@
           "ready": "Las reuniones se capturan y se convierten en texto en este equipo."
         },
         "noteFormatting": {
-          "title": "Reuniones redactadas",
-          "ready": "Cada reunión termina con un resumen, las decisiones y quién debe qué. Las acciones de notas como Generar notas también usan este modelo.",
-          "missing": "Las reuniones se transcriben y se quedan en texto sin más, y las acciones de notas como Generar notas no pueden ejecutarse. Con un modelo, cada reunión termina con un resumen, las decisiones y quién debe qué."
+          "title": "Acciones",
+          "ready": "Generar notas se ejecuta en cada reunión que guardas: un resumen, las decisiones y quién debe qué. Tus propias acciones usan el mismo modelo.",
+          "missing": "No se redacta nada. Generar notas y todas las demás acciones necesitan un modelo de lenguaje para ejecutarse, así que las reuniones se quedan en transcripciones sin más."
         },
         "chatIntelligence": {
           "title": "Respuestas durante la reunión",

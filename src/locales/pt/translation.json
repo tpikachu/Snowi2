@@ -2772,28 +2772,6 @@
       "noResults": "Nenhuma nota encontrada",
       "noNotesAvailable": "Nenhuma outra nota disponível"
     },
-    "onboarding": {
-      "llm": {
-        "title": "Configure um modelo de IA",
-        "description": "As ações usam IA para transformar suas notas. Configure um modelo de linguagem para começar.",
-        "configured": "Modelo de IA configurado"
-      },
-      "actions": {
-        "title": "Ações com IA",
-        "description": "As ações transformam suas notas — limpam transcrições, resumem reuniões e muito mais. Use ações integradas ou crie as suas.",
-        "builtInLabel": "Integrada",
-        "createTitle": "Crie sua própria ação",
-        "createDescription": "Defina uma ação personalizada com seu próprio prompt de IA. Você sempre pode editar ou adicionar mais nas configurações.",
-        "created": "Criada!"
-      },
-      "getStarted": "Começar",
-      "systemAudio": {
-        "title": "Áudio do sistema",
-        "description": "Capture o áudio de reuniões e outros aplicativos junto com o microfone.",
-        "grant": "Conceder permissão",
-        "enabled": "Ativado"
-      }
-    },
     "realtimeBanner": {
       "message": "Transcrição em tempo real disponível no Pro",
       "upgrade": "Fazer upgrade"
@@ -3798,9 +3776,9 @@
           "ready": "As reuniões são capturadas e viram texto nesta máquina."
         },
         "noteFormatting": {
-          "title": "Reuniões redigidas",
-          "ready": "Cada reunião termina com um resumo, as decisões e quem ficou com o quê. Ações de nota como Gerar notas também usam este modelo.",
-          "missing": "As reuniões são transcritas e ficam só como texto bruto, e ações de nota como Gerar notas não conseguem rodar. Com um modelo, cada uma termina com um resumo, as decisões e quem ficou com o quê."
+          "title": "Ações",
+          "ready": "Gerar notas roda em toda reunião que você guarda: um resumo, as decisões e quem ficou com o quê. Suas próprias ações usam o mesmo modelo.",
+          "missing": "Nada é redigido. Gerar notas e todas as outras ações precisam de um modelo de linguagem, então as reuniões ficam só como transcrições."
         },
         "chatIntelligence": {
           "title": "Respostas durante a reunião",

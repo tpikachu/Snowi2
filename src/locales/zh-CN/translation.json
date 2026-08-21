@@ -2772,28 +2772,6 @@
       "noResults": "没有匹配的笔记",
       "noNotesAvailable": "没有其他可用笔记"
     },
-    "onboarding": {
-      "llm": {
-        "title": "配置 AI 模型",
-        "description": "操作使用 AI 来处理你的笔记。设置一个语言模型以开始使用。",
-        "configured": "AI 模型已配置"
-      },
-      "actions": {
-        "title": "AI 驱动的操作",
-        "description": "操作可以处理你的笔记——整理转录、总结会议等。使用内置操作或创建你自己的。",
-        "builtInLabel": "内置",
-        "createTitle": "创建你的操作",
-        "createDescription": "使用你自己的 AI 提示词定义自定义操作。你可以随时在设置中编辑或添加更多。",
-        "created": "已创建！"
-      },
-      "getStarted": "开始使用",
-      "systemAudio": {
-        "title": "系统音频",
-        "description": "在使用麦克风的同时捕获会议和其他应用程序的音频。",
-        "grant": "授予权限",
-        "enabled": "已启用"
-      }
-    },
     "realtimeBanner": {
       "message": "Pro 版可使用实时转录",
       "upgrade": "升级"
@@ -3798,9 +3776,9 @@
           "ready": "会议在这台机器上被录下并转成文字。"
         },
         "noteFormatting": {
-          "title": "整理好的会议纪要",
-          "ready": "每场会议结束时都会有摘要、决定事项和责任人。笔记操作（如生成笔记）也使用这个模型。",
-          "missing": "会议只会被转写成原始文字，生成笔记等笔记操作也无法运行。配置模型后，每场会议结束时都会有摘要、决定事项和责任人。"
+          "title": "操作",
+          "ready": "每场保留的会议都会自动运行「生成笔记」：摘要、决定事项和责任人。你自定义的操作也使用同一个模型。",
+          "missing": "不会整理出任何内容。「生成笔记」和其他所有操作都需要语言模型才能运行，会议只会停留在原始转写。"
         },
         "chatIntelligence": {
           "title": "会议进行中就能得到答案",

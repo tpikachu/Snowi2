@@ -2772,28 +2772,6 @@
       "noResults": "Nessuna nota corrispondente",
       "noNotesAvailable": "Nessun'altra nota disponibile"
     },
-    "onboarding": {
-      "llm": {
-        "title": "Configura un modello IA",
-        "description": "Le azioni usano l'IA per trasformare le tue note. Configura un modello linguistico per iniziare.",
-        "configured": "Modello IA configurato"
-      },
-      "actions": {
-        "title": "Azioni basate sull'IA",
-        "description": "Le azioni trasformano le tue note: correggono le trascrizioni, riassumono le riunioni e altro ancora. Usa le azioni integrate o creane di tue.",
-        "builtInLabel": "Integrata",
-        "createTitle": "Crea la tua azione",
-        "createDescription": "Definisci un'azione personalizzata con il tuo prompt IA. Puoi sempre modificarle o aggiungerne altre nelle impostazioni.",
-        "created": "Creata!"
-      },
-      "getStarted": "Inizia",
-      "systemAudio": {
-        "title": "Audio di sistema",
-        "description": "Cattura l'audio delle riunioni e di altre app insieme al microfono.",
-        "grant": "Concedi permesso",
-        "enabled": "Attivato"
-      }
-    },
     "realtimeBanner": {
       "message": "Trascrizione in tempo reale disponibile con Pro",
       "upgrade": "Passa a Pro"
@@ -3798,9 +3776,9 @@
           "ready": "Le riunioni vengono catturate e trasformate in testo su questo computer."
         },
         "noteFormatting": {
-          "title": "Riunioni verbalizzate",
-          "ready": "Ogni riunione finisce con un riassunto, le decisioni e chi deve fare cosa. Anche le azioni sulle note come Genera note usano questo modello.",
-          "missing": "Le riunioni vengono trascritte e restano testo grezzo, e le azioni sulle note come Genera note non possono partire. Con un modello, ognuna finisce con un riassunto, le decisioni e chi deve fare cosa."
+          "title": "Azioni",
+          "ready": "Genera note parte a ogni riunione che tieni: un riassunto, le decisioni e chi deve fare cosa. Le tue azioni usano lo stesso modello.",
+          "missing": "Non viene scritto niente. Genera note e tutte le altre azioni hanno bisogno di un modello linguistico, quindi le riunioni restano trascrizioni grezze."
         },
         "chatIntelligence": {
           "title": "Risposte durante la riunione",

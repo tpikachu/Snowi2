@@ -43,8 +43,6 @@ import {
   setSessionDiarizationEnabled,
   setSessionExpectedCount,
 } from "../../stores/meetingRecordingStore";
-import { useNotesOnboarding } from "../../hooks/useNotesOnboarding";
-import NotesOnboarding from "./NotesOnboarding";
 import { notesEmptyTitleKey } from "./shared";
 import { isRegenerableNoteTitle } from "../../helpers/regenerableNoteTitle";
 import { handleMeetingRecordingRequest } from "../../helpers/meetingRecordingRequest";
@@ -182,7 +180,6 @@ export default function PersonalNotesView({
   const effectiveModelId = useSettingsStore(
     (settings) => selectResolvedNoteFormatting(settings).model
   );
-  const { isComplete: isOnboardingComplete, complete: completeOnboarding } = useNotesOnboarding();
 
   const isTranscribing = useMeetingRecordingStore((s) => s.isRecording);
   const diarizationSessionId = useMeetingRecordingStore((s) => s.diarizationSessionId);
@@ -599,10 +596,6 @@ export default function PersonalNotesView({
   }, [isTranscribing]);
 
   const isActiveNoteRecording = isTranscribing && recordingNoteId === activeNote?.id;
-
-  if (!isOnboardingComplete) {
-    return <NotesOnboarding onComplete={completeOnboarding} />;
-  }
 
   return (
     <div className="flex h-full">
