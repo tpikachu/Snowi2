@@ -1,6 +1,9 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { mergeSpeakersWithText, formatSpeakerTranscript } = require("../../src/helpers/speakerMerge");
+const {
+  mergeSpeakersWithText,
+  formatSpeakerTranscript,
+} = require("../../src/helpers/speakerMerge");
 
 test("mergeSpeakersWithText assigns sentences to speakers by time proportion", () => {
   const segments = [
@@ -73,7 +76,10 @@ test("formatSpeakerTranscript formats with labels and timestamps", () => {
   ];
 
   const output = formatSpeakerTranscript(merged);
-  assert.equal(output, "[Speaker 1] 0:00 - 0:10\nHello there.\n\n[Speaker 2] 0:10 - 0:20\nHi back.");
+  assert.equal(
+    output,
+    "[Speaker 1] 0:00 - 0:10\nHello there.\n\n[Speaker 2] 0:10 - 0:20\nHi back."
+  );
 });
 
 test("mergeSpeakersWithText handles duration=0 with segments", () => {
@@ -166,7 +172,8 @@ test("zero duration with unsorted segments still maps proportionally against the
     { speaker: "spk_1", start: 25, end: 40 },
     { speaker: "spk_0", start: 10, end: 15 },
   ];
-  const text = "First sentence here. Second sentence here. Third sentence here. Fourth sentence here.";
+  const text =
+    "First sentence here. Second sentence here. Third sentence here. Fourth sentence here.";
   const merged = mergeSpeakersWithText(segments, text, 0);
   const last = merged[merged.length - 1];
   assert.equal(last.speaker, "spk_1", "tail sentences must map to the late segment");

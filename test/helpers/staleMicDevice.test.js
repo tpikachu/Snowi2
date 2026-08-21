@@ -5,10 +5,7 @@ const load = () => import("../../src/helpers/staleMicDevice.js");
 
 test("treats an OverconstrainedError on deviceId as a stale device", async () => {
   const { isStaleDeviceError } = await load();
-  assert.equal(
-    isStaleDeviceError({ name: "OverconstrainedError", constraint: "deviceId" }),
-    true
-  );
+  assert.equal(isStaleDeviceError({ name: "OverconstrainedError", constraint: "deviceId" }), true);
 });
 
 test("treats an OverconstrainedError with an empty constraint as a stale device", async () => {

@@ -11,7 +11,7 @@ import AddNotesToFolderDialog from "./AddNotesToFolderDialog";
 import { useActionProcessing } from "../../hooks/useActionProcessing";
 import type { NoteMoveTarget } from "../../hooks/useNoteDragAndDrop";
 import type { NoteItem } from "../../types/electron";
-import { useSettingsStore, selectResolvedNoteFormatting } from "../../stores/settingsStore";
+import { useSettingsStore, selectResolvedActions } from "../../stores/settingsStore";
 import { cn } from "../lib/utils";
 import logger from "../../utils/logger";
 import { parseTranscriptSegments } from "../../utils/parseTranscriptSegments";
@@ -177,9 +177,7 @@ export default function PersonalNotesView({
     [commitDraft, persistPendingWrites, takePendingSnapshots]
   );
   const { toast } = useToast();
-  const effectiveModelId = useSettingsStore(
-    (settings) => selectResolvedNoteFormatting(settings).model
-  );
+  const effectiveModelId = useSettingsStore((settings) => selectResolvedActions(settings).model);
 
   const isTranscribing = useMeetingRecordingStore((s) => s.isRecording);
   const diarizationSessionId = useMeetingRecordingStore((s) => s.diarizationSessionId);

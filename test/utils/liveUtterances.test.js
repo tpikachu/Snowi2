@@ -24,8 +24,18 @@ test("two utterances on one source no longer collapse into one line", async () =
 
   // The headline bug: two people talking at once over system audio used to
   // overwrite each other, because the source was the only key.
-  let live = applyPartial([], { text: "I think we should", source: "system", utteranceId: "u1", at: AT });
-  live = applyPartial(live, { text: "sorry, go ahead", source: "system", utteranceId: "u2", at: AT + 50 });
+  let live = applyPartial([], {
+    text: "I think we should",
+    source: "system",
+    utteranceId: "u1",
+    at: AT,
+  });
+  live = applyPartial(live, {
+    text: "sorry, go ahead",
+    source: "system",
+    utteranceId: "u2",
+    at: AT + 50,
+  });
 
   assert.equal(live.length, 2);
   assert.deepEqual(
@@ -38,7 +48,13 @@ test("a late partial cannot overwrite newer text", async () => {
   const { applyPartial } = await load();
 
   let live = applyPartial([], { text: "first", source: "mic", utteranceId: "u1", seq: 1, at: AT });
-  live = applyPartial(live, { text: "first draft", source: "mic", utteranceId: "u1", seq: 2, at: AT + 10 });
+  live = applyPartial(live, {
+    text: "first draft",
+    source: "mic",
+    utteranceId: "u1",
+    seq: 2,
+    at: AT + 10,
+  });
   // Arrives out of order — the provider does not guarantee delivery order, and
   // taking it would read as the transcript losing words.
   live = applyPartial(live, { text: "fir", source: "mic", utteranceId: "u1", seq: 1, at: AT + 20 });
@@ -138,7 +154,12 @@ test("speaker identity arriving late does not erase, and absent does not clear",
   assert.equal(live[0].speakerName, "Dana");
 
   // A later partial that simply does not carry speaker fields must not undo it.
-  live = applyPartial(live, { text: "hi there again", source: "system", utteranceId: "u1", at: AT + 20 });
+  live = applyPartial(live, {
+    text: "hi there again",
+    source: "system",
+    utteranceId: "u1",
+    at: AT + 20,
+  });
   assert.equal(live[0].speakerId, "spk-2");
   assert.equal(live[0].speakerName, "Dana");
 

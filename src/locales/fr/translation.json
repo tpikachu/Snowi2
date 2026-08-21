@@ -2173,19 +2173,10 @@
       "tabs": {
         "dictationCleanup": "Nettoyage de la dictée",
         "dictationAgent": "Voice Agent",
-        "noteFormatting": "Actions",
         "chatIntelligence": "Chat",
-        "dictationTranslation": "Traduction"
+        "dictationTranslation": "Traduction",
+        "actions": "Actions"
       }
-    },
-    "noteFormatting": {
-      "autoGenerateTitle": "Générer automatiquement les titres des notes",
-      "autoGenerateTitleDescription": "Utiliser l'IA pour générer un titre court pour les notes après la transcription ou l'amélioration",
-      "actionsTitle": "Actions",
-      "actionsDescription": "Tout ce que Snowy rédige pour vous. Générer des notes s'exécute sur chaque réunion conservée ; le reste à la demande.",
-      "actionsRowDescription": "Créez, modifiez et réordonnez les actions exécutables sur une note.",
-      "manageActions": "Gérer",
-      "modelDescription": "Toutes les actions utilisent ce modèle, y compris le compte rendu de fin de réunion."
     },
     "transcription": {
       "customSetup": "Configuration personnalisée",
@@ -2305,6 +2296,15 @@
       },
       "title": "Raccourcis",
       "useSuggested": "Utiliser {{hotkey}}"
+    },
+    "actions": {
+      "autoGenerateTitle": "Générer automatiquement les titres des notes",
+      "autoGenerateTitleDescription": "Utiliser l'IA pour générer un titre court pour les notes après la transcription ou l'amélioration",
+      "actionsTitle": "Actions",
+      "actionsDescription": "Tout ce que Snowy rédige pour vous. Générer des notes s'exécute sur chaque réunion conservée ; le reste à la demande.",
+      "actionsRowDescription": "Créez, modifiez et réordonnez les actions exécutables sur une note.",
+      "manageActions": "Gérer",
+      "modelDescription": "Toutes les actions utilisent ce modèle, y compris le compte rendu de fin de réunion."
     }
   },
   "models": {
@@ -3775,15 +3775,15 @@
           "title": "Enregistrement et transcription",
           "ready": "Les réunions sont captées et transformées en texte sur cette machine."
         },
-        "noteFormatting": {
-          "title": "Actions",
-          "ready": "Générer des notes s'exécute sur chaque réunion conservée : un résumé, les décisions et qui doit quoi. Vos propres actions utilisent le même modèle.",
-          "missing": "Rien n'est rédigé. Générer des notes et toutes les autres actions ont besoin d'un modèle de langage, donc les réunions restent de simples transcriptions."
-        },
         "chatIntelligence": {
           "title": "Des réponses pendant la réunion",
           "ready": "Le panneau suggère quoi dire et répond à partir de vos notes.",
           "missing": "Le panneau de réunion peut suggérer quoi dire et répondre à vos questions à partir de vos notes passées, sans quitter l'appel."
+        },
+        "actions": {
+          "title": "Actions",
+          "ready": "Générer des notes s'exécute sur chaque réunion conservée : un résumé, les décisions et qui doit quoi. Vos propres actions utilisent le même modèle.",
+          "missing": "Rien n'est rédigé. Générer des notes et toutes les autres actions ont besoin d'un modèle de langage, donc les réunions restent de simples transcriptions."
         }
       },
       "descriptionAllSet": "Tout est configuré. Voici ce que chaque partie utilise.",

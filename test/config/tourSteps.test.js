@@ -85,14 +85,14 @@ test("a changed tour re-runs for someone who already finished it", async () => {
 test("setup counts as done only when both model-backed features have one", async () => {
   const { isModelSetupComplete } = await loadSetup();
 
-  assert.equal(isModelSetupComplete({ noteFormattingModel: "a", chatModel: "b" }), true);
+  assert.equal(isModelSetupComplete({ actionsModel: "a", chatModel: "b" }), true);
   // A write-up model with no chat model still lands the user on a chat that
   // cannot answer — which is the confusion the step exists to prevent.
-  assert.equal(isModelSetupComplete({ noteFormattingModel: "a" }), false);
+  assert.equal(isModelSetupComplete({ actionsModel: "a" }), false);
   assert.equal(isModelSetupComplete({ chatModel: "b" }), false);
   assert.equal(isModelSetupComplete({}), false);
-  assert.equal(isModelSetupComplete({ noteFormattingModel: "  ", chatModel: "b" }), false);
-  assert.equal(isModelSetupComplete({ noteFormattingModel: null, chatModel: null }), false);
+  assert.equal(isModelSetupComplete({ actionsModel: "  ", chatModel: "b" }), false);
+  assert.equal(isModelSetupComplete({ actionsModel: null, chatModel: null }), false);
 });
 
 test("the setup step changes its copy and drops its button once configured", async () => {

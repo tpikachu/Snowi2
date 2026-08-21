@@ -54,10 +54,7 @@ test("does not flag legitimate speech containing dictionary words", async () => 
 
 test("does not flag speech that partially overlaps with dictionary", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
-  assert.equal(
-    matchesDictionaryPrompt("Snowy, Parakeet", "Snowy, Parakeet, Alcahest"),
-    false
-  );
+  assert.equal(matchesDictionaryPrompt("Snowy, Parakeet", "Snowy, Parakeet, Alcahest"), false);
 });
 
 test("returns false when dictionary prompt is null", async () => {

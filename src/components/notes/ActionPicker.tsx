@@ -14,7 +14,7 @@ import {
   getActionName,
   getActionDescription,
 } from "../../stores/actionStore";
-import { selectResolvedNoteFormatting, useSettingsStore } from "../../stores/settingsStore";
+import { selectResolvedActions, useSettingsStore } from "../../stores/settingsStore";
 import type { ActionItem } from "../../types/electron";
 
 interface ActionPickerProps {
@@ -39,7 +39,7 @@ interface ActionPickerProps {
 export default function ActionPicker({ onRunAction, disabled }: ActionPickerProps) {
   const { t } = useTranslation();
   const actions = useActions();
-  const hasModel = useSettingsStore((state) => Boolean(selectResolvedNoteFormatting(state).model));
+  const hasModel = useSettingsStore((state) => Boolean(selectResolvedActions(state).model));
   const [lastUsedId, setLastUsedId] = useState<number | null>(() => {
     const stored = localStorage.getItem("lastUsedActionId");
     return stored ? Number(stored) : null;

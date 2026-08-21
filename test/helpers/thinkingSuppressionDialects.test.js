@@ -201,7 +201,11 @@ test("deepseek hosts get the native thinking switch, never reasoning_effort (#12
   const { suppressThinking, detectEndpointDialect } = await load();
 
   const dialect = detectEndpointDialect("https://api.deepseek.com/v1");
-  assert.deepEqual(dialect, { key: "deepseek", tokenParam: "max_tokens", supportsTemperature: true });
+  assert.deepEqual(dialect, {
+    key: "deepseek",
+    tokenParam: "max_tokens",
+    supportsTemperature: true,
+  });
 
   const body = {};
   suppressThinking(body, "deepseek", "deepseek-chat");

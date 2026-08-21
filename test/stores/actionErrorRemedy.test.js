@@ -24,7 +24,7 @@ test("an unconfigured model reports a remedy, not just a complaint", async () =>
   assert.equal(event.message, LABELS.noModel);
   // The remedy is what lets the toast offer the trip to the setting. Without
   // it the user is told to configure something and left to find the page.
-  assert.equal(event.remedy, "configureNoteFormatting");
+  assert.equal(event.remedy, "configureActions");
 });
 
 test("consuming drains the queue", async () => {

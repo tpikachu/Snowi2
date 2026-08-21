@@ -18,7 +18,10 @@ const lookup = (model) =>
 
 test("every model the tiering can pick exists in the registry", () => {
   for (const [key, model] of Object.entries(MODELS)) {
-    assert.ok(lookup(model), `MODELS.${key} names "${model.name}", which the registry has no entry for`);
+    assert.ok(
+      lookup(model),
+      `MODELS.${key} names "${model.name}", which the registry has no entry for`
+    );
   }
 });
 

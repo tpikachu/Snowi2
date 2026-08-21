@@ -7,7 +7,7 @@ import { useActionProcessingStore } from "../../stores/actionProcessingStore";
 import { getGenerateNotesAction } from "../../helpers/meetingNoteGeneration";
 import { buildWriteUpRequest } from "../../helpers/noteWriteUp";
 import { runBackgroundAction } from "../../stores/actionProcessingStore";
-import { getSettings, selectResolvedNoteFormatting } from "../../stores/settingsStore";
+import { getSettings, selectResolvedActions } from "../../stores/settingsStore";
 import { isRegenerableNoteTitle } from "../../helpers/regenerableNoteTitle";
 import { MEETING_TITLE_PLACEHOLDERS } from "../../utils/meetingNoteInput";
 import { formatMeetingWindow } from "../../utils/meetingWindow";
@@ -59,7 +59,7 @@ export default function NeedsWriteUpCard({
           request.contentHash,
           action,
           {
-            modelId: selectResolvedNoteFormatting(getSettings()).model,
+            modelId: selectResolvedActions(getSettings()).model,
             isMeetingNote: request.isMeetingNote,
             allowTitleGeneration: isRegenerableNoteTitle(
               note.title ?? "",

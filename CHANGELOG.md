@@ -58,6 +58,11 @@ listed there that are fixed are called out below.
   was: writing up a meeting is not a separate feature from Generate Notes, it is
   that action run automatically. The panel leads with the actions, then names
   the model they all run on.
+- The rename goes all the way down. The `noteFormatting` inference scope, its
+  settings keys and its panel id are now `actions`, so the code stops listing a
+  single action as a peer of Chat. Existing settings are migrated on first
+  launch; the encrypted custom-endpoint key keeps its filename on disk, because
+  moving a credential is a worse trade than an inconsistent string.
 - Creating and editing actions moved out of the notes page and into that panel.
   A configuration screen one click from a note read as something about the note.
 - The action button no longer appears on a note when no model is configured.
@@ -74,9 +79,9 @@ listed there that are fixed are called out below.
 - Stopping a meeting no longer generates the write-up before you have said
   whether to keep it. Discard now means nothing happened, and no inference call
   is spent on a meeting that was thrown away.
-- Saving a meeting with no note-formatting model configured skips the write-up
-  quietly instead of interrupting the end of the call with a setup prompt. The
-  meeting still appears in Home's write-up backlog.
+- Saving a meeting with no action model configured skips the write-up quietly
+  instead of interrupting the end of the call with a setup prompt. The meeting
+  still appears in Home's write-up backlog.
 - The transcript pane no longer re-renders the whole conversation on every word,
   and no longer scrolls away from what you were reading.
 

@@ -24,7 +24,7 @@ export function buildReasoningScopePatches(settings, mode) {
   };
   return {
     dictationCleanup,
-    noteFormatting: { mode, ...routing },
+    actions: { mode, ...routing },
     dictationAgent: { mode, ...routing },
     chatIntelligence: { mode, ...routing },
     dictationTranslation: { mode, ...routing },

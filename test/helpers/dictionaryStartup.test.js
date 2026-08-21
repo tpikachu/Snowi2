@@ -5,10 +5,7 @@ const load = () => import("../../src/helpers/dictionaryStartup.js");
 
 test("startup prefers SQLite when the DB is ahead of the renderer cache (#1295)", async () => {
   const { chooseDictionaryStartupAction } = await load();
-  const decision = chooseDictionaryStartupAction(
-    ["Snowy", "Alice", "Bob"],
-    ["Snowy"]
-  );
+  const decision = chooseDictionaryStartupAction(["Snowy", "Alice", "Bob"], ["Snowy"]);
   assert.equal(decision.action, "pull-db-to-local");
   assert.deepEqual(decision.words, ["Snowy", "Alice", "Bob"]);
 });

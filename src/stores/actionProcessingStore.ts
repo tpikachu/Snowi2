@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import reasoningService from "../services/ReasoningService";
-import { getSettings, selectResolvedNoteFormatting } from "./settingsStore";
+import { getSettings, selectResolvedActions } from "./settingsStore";
 import { appendDictionarySuffix } from "../config/prompts";
 import { generateNoteTitle } from "../utils/generateTitle";
-import { buildNoteFormattingOverrides } from "../helpers/noteFormattingOverrides";
+import { buildActionsOverrides } from "../helpers/actionsOverrides";
 import type { ActionItem } from "../types/electron";
 import { llmRemedy, type SettingsRemedy } from "../config/settingsRemedies";
 
@@ -129,15 +129,15 @@ export function runBackgroundAction(
 
   const modelId = options.modelId;
   if (!modelId) {
-    pushErrorEvent({ noteId, message: labels.noModel, remedy: "configureNoteFormatting" });
+    pushErrorEvent({ noteId, message: labels.noModel, remedy: "configureActions" });
     return;
   }
 
   const settings = getSettings();
-  const noteFormatting = selectResolvedNoteFormatting(settings);
+  const actions = selectResolvedActions(settings);
   // A self-hosted config without a URL would fall through to a cloud provider.
-  if (noteFormatting.mode === "self-hosted" && !noteFormatting.remoteUrl) {
-    pushErrorEvent({ noteId, message: labels.noEndpoint, remedy: "configureNoteFormatting" });
+  if (actions.mode === "self-hosted" && !actions.remoteUrl) {
+    pushErrorEvent({ noteId, message: labels.noEndpoint, remedy: "configureActions" });
     return;
   }
 
@@ -148,7 +148,7 @@ export function runBackgroundAction(
   (async () => {
     try {
       const basePrompt = options.isMeetingNote ? MEETING_SYSTEM_PROMPT : BASE_SYSTEM_PROMPT;
-      const providerOverrides = buildNoteFormattingOverrides(noteFormatting);
+      const providerOverrides = buildActionsOverrides(actions);
       const systemPrompt = appendDictionarySuffix(
         basePrompt + action.prompt,
         options.isMeetingNote ? settings.customDictionary : undefined,
@@ -157,7 +157,7 @@ export function runBackgroundAction(
       const enhanced = await reasoningService.processText(noteContent, modelId, null, {
         systemPrompt,
         temperature: 0.3,
-        disableThinking: settings.noteFormattingDisableThinking,
+        disableThinking: settings.actionsDisableThinking,
         ...providerOverrides,
       });
 
@@ -196,7 +196,7 @@ export function runBackgroundAction(
       // one that was chosen but cannot run — a missing llama-server binary, a
       // model that is not downloaded — which is equally unfixable by retrying
       // and equally fixable in the same place.
-      pushErrorEvent({ noteId, message, remedy: llmRemedy("noteFormatting", err) ?? undefined });
+      pushErrorEvent({ noteId, message, remedy: llmRemedy("actions", err) ?? undefined });
     } finally {
       cancelledFlags.delete(noteId);
     }

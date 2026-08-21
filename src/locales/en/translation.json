@@ -2173,19 +2173,10 @@
       "tabs": {
         "dictationCleanup": "Dictation Cleanup",
         "dictationAgent": "Voice Agent",
-        "noteFormatting": "Actions",
         "chatIntelligence": "Chat",
-        "dictationTranslation": "Translation"
+        "dictationTranslation": "Translation",
+        "actions": "Actions"
       }
-    },
-    "noteFormatting": {
-      "autoGenerateTitle": "Auto-generate note titles",
-      "autoGenerateTitleDescription": "Use AI to generate a short title for notes after transcription or enhancement",
-      "actionsTitle": "Actions",
-      "actionsDescription": "Everything Snowy writes for you. Generate Notes runs on every meeting you keep; the rest run when you ask.",
-      "actionsRowDescription": "Create, edit and reorder the actions you can run on a note.",
-      "manageActions": "Manage",
-      "modelDescription": "Every action runs on this model, including the write-up at the end of a meeting."
     },
     "transcription": {
       "customSetup": "Custom Setup",
@@ -2305,6 +2296,15 @@
       },
       "title": "Shortcuts",
       "useSuggested": "Use {{hotkey}}"
+    },
+    "actions": {
+      "autoGenerateTitle": "Auto-generate note titles",
+      "autoGenerateTitleDescription": "Use AI to generate a short title for notes after transcription or enhancement",
+      "actionsTitle": "Actions",
+      "actionsDescription": "Everything Snowy writes for you. Generate Notes runs on every meeting you keep; the rest run when you ask.",
+      "actionsRowDescription": "Create, edit and reorder the actions you can run on a note.",
+      "manageActions": "Manage",
+      "modelDescription": "Every action runs on this model, including the write-up at the end of a meeting."
     }
   },
   "models": {
@@ -3775,15 +3775,15 @@
           "title": "Recording and transcription",
           "ready": "Meetings are captured and turned into text on this machine."
         },
-        "noteFormatting": {
-          "title": "Actions",
-          "ready": "Generate Notes runs on every meeting you keep — a summary, the decisions and who owes what. Your own actions run on the same model.",
-          "missing": "Nothing gets written up. Generate Notes and every other action need a language model before they can run, so meetings stay as raw transcripts."
-        },
         "chatIntelligence": {
           "title": "Answers during the meeting",
           "ready": "The meeting panel suggests what to say and answers questions from your notes.",
           "missing": "The meeting panel can suggest what to say next and answer questions from your past notes — without leaving the call."
+        },
+        "actions": {
+          "title": "Actions",
+          "ready": "Generate Notes runs on every meeting you keep — a summary, the decisions and who owes what. Your own actions run on the same model.",
+          "missing": "Nothing gets written up. Generate Notes and every other action need a language model before they can run, so meetings stay as raw transcripts."
         }
       },
       "descriptionAllSet": "Everything is set up. Here is what each part is running on.",

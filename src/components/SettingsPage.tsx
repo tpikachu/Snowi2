@@ -346,7 +346,7 @@ const CLEANUP_MODE_TOAST_KEY: Record<InferenceMode, string> = {
   enterprise: "switchedEnterprise",
 };
 
-function NoteFormattingSettings() {
+function ActionsSettings() {
   const { t } = useTranslation();
   const autoGenerateNoteTitle = useSettingsStore((s) => s.autoGenerateNoteTitle);
   const setAutoGenerateNoteTitle = useSettingsStore((s) => s.setAutoGenerateNoteTitle);
@@ -359,18 +359,18 @@ function NoteFormattingSettings() {
   return (
     <SettingsPanelBody>
       <SettingsGroup
-        id="noteFormattingActions"
-        title={t("settingsPage.noteFormatting.actionsTitle")}
-        description={t("settingsPage.noteFormatting.actionsDescription")}
+        id="actionsList"
+        title={t("settingsPage.actions.actionsTitle")}
+        description={t("settingsPage.actions.actionsDescription")}
       >
         <SettingsPanel>
           <SettingsPanelRow>
             <SettingsRow
               label={t("notes.actions.manageTitle")}
-              description={t("settingsPage.noteFormatting.actionsRowDescription")}
+              description={t("settingsPage.actions.actionsRowDescription")}
             >
               <Button variant="outline" size="sm" onClick={() => setShowActionManager(true)}>
-                {t("settingsPage.noteFormatting.manageActions")}
+                {t("settingsPage.actions.manageActions")}
               </Button>
             </SettingsRow>
           </SettingsPanelRow>
@@ -378,19 +378,19 @@ function NoteFormattingSettings() {
       </SettingsGroup>
 
       <SettingsGroup
-        id="noteFormattingModel"
+        id="actionsModel"
         title={t("common.model")}
-        description={t("settingsPage.noteFormatting.modelDescription")}
+        description={t("settingsPage.actions.modelDescription")}
       >
-        <InferenceConfigEditor scope="noteFormatting" />
+        <InferenceConfigEditor scope="actions" />
       </SettingsGroup>
 
-      <SettingsGroup id="noteFormattingOptions" title={t("settingsModal.groupTitles.options")}>
+      <SettingsGroup id="actionsOptions" title={t("settingsModal.groupTitles.options")}>
         <SettingsPanel>
           <SettingsPanelRow>
             <SettingsRow
-              label={t("settingsPage.noteFormatting.autoGenerateTitle")}
-              description={t("settingsPage.noteFormatting.autoGenerateTitleDescription")}
+              label={t("settingsPage.actions.autoGenerateTitle")}
+              description={t("settingsPage.actions.autoGenerateTitleDescription")}
             >
               <Toggle checked={autoGenerateNoteTitle} onChange={setAutoGenerateNoteTitle} />
             </SettingsRow>
@@ -3089,8 +3089,8 @@ EOF`,
             <DictationTranslationSettings />
           </TabPanel>
 
-          <TabPanel active={llmTab === "noteFormatting"}>
-            <NoteFormattingSettings />
+          <TabPanel active={llmTab === "actions"}>
+            <ActionsSettings />
           </TabPanel>
 
           <TabPanel active={llmTab === "chatIntelligence"}>

@@ -1,16 +1,16 @@
 // Provider overrides for note-formatting ReasoningService.processText calls.
 // Self-hosted must forward remoteUrl as lanUrl — without it, processText
 // would use the dictation-cleanup scope instead of this scope's endpoint.
-export function buildNoteFormattingOverrides(noteFormatting) {
-  const mode = noteFormatting?.mode;
+export function buildActionsOverrides(actions) {
+  const mode = actions?.mode;
 
   if (mode === "self-hosted") {
     return {
-      inferenceScope: /** @type {const} */ ("noteFormatting"),
+      inferenceScope: /** @type {const} */ ("actions"),
       provider: undefined,
       baseUrl: undefined,
-      customApiKey: noteFormatting?.customApiKey || undefined,
-      lanUrl: noteFormatting?.remoteUrl || undefined,
+      customApiKey: actions?.customApiKey || undefined,
+      lanUrl: actions?.remoteUrl || undefined,
     };
   }
 
@@ -20,14 +20,14 @@ export function buildNoteFormattingOverrides(noteFormatting) {
     mode === "local"
       ? "local"
       : mode === "providers" || mode === "enterprise"
-        ? noteFormatting?.provider || undefined
+        ? actions?.provider || undefined
         : undefined;
   const isCustom = provider === "custom";
   return {
-    inferenceScope: /** @type {const} */ ("noteFormatting"),
+    inferenceScope: /** @type {const} */ ("actions"),
     provider,
-    baseUrl: isCustom ? noteFormatting?.cloudBaseUrl || undefined : undefined,
-    customApiKey: isCustom ? noteFormatting?.customApiKey || undefined : undefined,
+    baseUrl: isCustom ? actions?.cloudBaseUrl || undefined : undefined,
+    customApiKey: isCustom ? actions?.customApiKey || undefined : undefined,
     lanUrl: undefined,
   };
 }

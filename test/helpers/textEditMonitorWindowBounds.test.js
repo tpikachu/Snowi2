@@ -51,11 +51,9 @@ test("reads are cached per pid for one press, then re-read", darwinOnly, async (
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), "ow-window-bounds-count-"));
   const counter = path.join(dir, "count");
   const binary = path.join(dir, "macos-text-monitor");
-  fs.writeFileSync(
-    binary,
-    `#!/bin/sh\nprintf x >> ${counter}\necho "BOUNDS:0,33,1512,949"\n`,
-    { mode: 0o755 }
-  );
+  fs.writeFileSync(binary, `#!/bin/sh\nprintf x >> ${counter}\necho "BOUNDS:0,33,1512,949"\n`, {
+    mode: 0o755,
+  });
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
 
   const monitor = new TextEditMonitor();

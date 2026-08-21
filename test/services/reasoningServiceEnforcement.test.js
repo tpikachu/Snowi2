@@ -155,59 +155,64 @@ test("ReasoningService entry points enforce endpoint and dispatch guards", async
     }
   });
 
-  await t.test("implicit cleanup pins the selected provider instead of inferring from its model", async () => {
-    useSettingsStore.setState({
-      cleanupMode: "providers",
-      cleanupProvider: "openai",
-      cleanupModel: "llama-3.3-70b-versatile",
-    });
-    globalThis.window.electronAPI.getOpenAIKey = async () => "openai-key";
-
-    const originalFetch = globalThis.fetch;
-    const requestedUrls = [];
-    globalThis.fetch = async (url) => {
-      requestedUrls.push(String(url));
-      return new Response(JSON.stringify({ error: "expected test stop" }), {
-        status: 400,
-        headers: { "content-type": "application/json" },
+  await t.test(
+    "implicit cleanup pins the selected provider instead of inferring from its model",
+    async () => {
+      useSettingsStore.setState({
+        cleanupMode: "providers",
+        cleanupProvider: "openai",
+        cleanupModel: "llama-3.3-70b-versatile",
       });
-    };
+      globalThis.window.electronAPI.getOpenAIKey = async () => "openai-key";
 
-    try {
-      await assert.rejects(
-        reasoningService.processText("hi", "llama-3.3-70b-versatile"),
-        { message: "expected test stop" }
-      );
-      assert.ok(requestedUrls.length > 0);
-      assert.ok(requestedUrls.every((url) => url.startsWith("https://api.openai.com/")));
-    } finally {
-      globalThis.fetch = originalFetch;
+      const originalFetch = globalThis.fetch;
+      const requestedUrls = [];
+      globalThis.fetch = async (url) => {
+        requestedUrls.push(String(url));
+        return new Response(JSON.stringify({ error: "expected test stop" }), {
+          status: 400,
+          headers: { "content-type": "application/json" },
+        });
+      };
+
+      try {
+        await assert.rejects(reasoningService.processText("hi", "llama-3.3-70b-versatile"), {
+          message: "expected test stop",
+        });
+        assert.ok(requestedUrls.length > 0);
+        assert.ok(requestedUrls.every((url) => url.startsWith("https://api.openai.com/")));
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
     }
-  });
+  );
 
-  await t.test("implicit self-hosted cleanup without a URL never infers a cloud provider", async () => {
-    useSettingsStore.setState({
-      cleanupMode: "self-hosted",
-      cleanupRemoteUrl: "",
-      cleanupModel: "gpt-4.1",
-    });
-
-    const originalFetch = globalThis.fetch;
-    let fetchCalls = 0;
-    globalThis.fetch = async () => {
-      fetchCalls += 1;
-      return new Response(null, { status: 500 });
-    };
-
-    try {
-      await assert.rejects(reasoningService.processText("hi", "gpt-4.1"), {
-        message: HTTPS_REQUIRED,
+  await t.test(
+    "implicit self-hosted cleanup without a URL never infers a cloud provider",
+    async () => {
+      useSettingsStore.setState({
+        cleanupMode: "self-hosted",
+        cleanupRemoteUrl: "",
+        cleanupModel: "gpt-4.1",
       });
-      assert.equal(fetchCalls, 0);
-    } finally {
-      globalThis.fetch = originalFetch;
+
+      const originalFetch = globalThis.fetch;
+      let fetchCalls = 0;
+      globalThis.fetch = async () => {
+        fetchCalls += 1;
+        return new Response(null, { status: 500 });
+      };
+
+      try {
+        await assert.rejects(reasoningService.processText("hi", "gpt-4.1"), {
+          message: HTTPS_REQUIRED,
+        });
+        assert.equal(fetchCalls, 0);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
     }
-  });
+  );
 
   await t.test(
     "self-hosted execution rejects unsafe endpoint schemes before dispatch",

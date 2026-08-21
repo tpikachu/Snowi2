@@ -127,7 +127,11 @@ test("open commitments answer from the index, without decrypting anything", (t) 
     ["2026-08-20T00:00:00Z", "2026-12-01T00:00:00Z"],
     "soonest first"
   );
-  assert.equal(open.every((r) => r.content === undefined), true, "the index carries no content");
+  assert.equal(
+    open.every((r) => r.content === undefined),
+    true,
+    "the index carries no content"
+  );
 });
 
 test("a fact restated in a later meeting supersedes rather than duplicates", (t) => {

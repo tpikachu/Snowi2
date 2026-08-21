@@ -104,6 +104,10 @@ test("an unrendered or off-screen anchor is not worth pointing at", async (t) =>
   // a ring in the top-left corner.
   assert.equal(isAnchorVisible(rect(0, 0, 0, 0), VIEWPORT), false);
   assert.equal(isAnchorVisible(rect(-100, 400), VIEWPORT), false, "scrolled above");
-  assert.equal(isAnchorVisible(rect(400, VIEWPORT.width + 10), VIEWPORT), false, "off to the right");
+  assert.equal(
+    isAnchorVisible(rect(400, VIEWPORT.width + 10), VIEWPORT),
+    false,
+    "off to the right"
+  );
   assert.equal(isAnchorVisible(rect(-20, 400), VIEWPORT), true, "partly visible still counts");
 });

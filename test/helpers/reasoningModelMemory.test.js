@@ -93,8 +93,8 @@ test("retired cloud model selections are repointed to the provider default", asy
       cleanupModel: "meta-llama/llama-4-scout-17b-16e-instruct",
       chatAgentProvider: "openai",
       chatAgentModel: "gpt-5.2",
-      noteFormattingProvider: "custom",
-      noteFormattingModel: "my-endpoint-model",
+      actionsProvider: "custom",
+      actionsModel: "my-endpoint-model",
     },
   });
   const vite = await createRendererServer(t, {
@@ -114,5 +114,5 @@ test("retired cloud model selections are repointed to the provider default", asy
   );
   assert.ok(state.cleanupModel, "repointed to a concrete replacement, not cleared");
   assert.equal(state.chatAgentModel, "gpt-5.2", "shipping models stay untouched");
-  assert.equal(state.noteFormattingModel, "my-endpoint-model", "custom ids are free-form");
+  assert.equal(state.actionsModel, "my-endpoint-model", "custom ids are free-form");
 });

@@ -19,13 +19,13 @@ import { getProviderDisplayName, getReasoningModelLabel } from "../../models/Mod
 import {
   selectResolvedLLMConfig,
   selectResolvedMeetingTranscription,
-  selectResolvedNoteFormatting,
+  selectResolvedActions,
   useSettingsStore,
 } from "../../stores/settingsStore";
 
 const COLLAPSED_KEY = "homeCapabilitiesCollapsed";
 
-type CapabilityId = "transcription" | "noteFormatting" | "chatIntelligence";
+type CapabilityId = "transcription" | "actions" | "chatIntelligence";
 
 interface Capability {
   id: CapabilityId;
@@ -44,7 +44,7 @@ const CAPABILITIES: Capability[] = [
   // feature: it is the built-in Generate Notes action, run automatically when a
   // meeting is kept. Calling it anything else here means the button leads to a
   // Settings panel with a different name on it.
-  { id: "noteFormatting", icon: Sparkles, remedy: "configureNoteFormatting" },
+  { id: "actions", icon: Sparkles, remedy: "configureActions" },
   { id: "chatIntelligence", icon: MessageSquareText, remedy: "configureChatIntelligence" },
 ];
 
@@ -89,12 +89,12 @@ export default function CapabilitiesCard() {
   // call, and Zustand compares by identity — without it this re-renders forever.
   const resolved = useSettingsStore(
     useShallow((state) => {
-      const noteFormatting = selectResolvedNoteFormatting(state);
+      const actions = selectResolvedActions(state);
       const chat = selectResolvedLLMConfig(state, "chatIntelligence");
       const transcription = selectResolvedMeetingTranscription(state);
       return {
-        noteFormattingModel: noteFormatting.model,
-        noteFormattingProvider: noteFormatting.provider,
+        actionsModel: actions.model,
+        actionsProvider: actions.provider,
         chatModel: chat.model,
         chatProvider: chat.provider,
         isLocalTranscription: transcription.useLocalWhisper,
@@ -136,7 +136,7 @@ export default function CapabilitiesCard() {
 
     const byId: Record<CapabilityId, Pick<CapabilityRow, "ready" | "model" | "where">> = {
       transcription,
-      noteFormatting: describe(resolved.noteFormattingModel, resolved.noteFormattingProvider),
+      actions: describe(resolved.actionsModel, resolved.actionsProvider),
       chatIntelligence: describe(resolved.chatModel, resolved.chatProvider),
     };
 

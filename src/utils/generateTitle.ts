@@ -13,9 +13,9 @@ export async function generateNoteTitle(
   try {
     const raw = await reasoningService.processText(text.slice(0, 2000), modelId, null, {
       systemPrompt: TITLE_SYSTEM_PROMPT,
-      inferenceScope: "noteFormatting",
+      inferenceScope: "actions",
       temperature: 0.3,
-      disableThinking: getSettings().noteFormattingDisableThinking,
+      disableThinking: getSettings().actionsDisableThinking,
       ...config,
     });
     const cleaned = raw.trim().replace(/^["']|["']$/g, "");

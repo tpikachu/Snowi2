@@ -94,5 +94,8 @@ test("sorts by vendor then label and dedupes by value", () => {
   const models = normalizeBedrockCatalog([...MODELS, MODELS[1]], PROFILES);
   assert.equal(models.filter((m) => m.value === "openai.gpt-oss-120b-1:0").length, 1);
   const vendors = models.map((m) => m.vendor);
-  assert.deepEqual(vendors, [...vendors].sort((a, b) => a.localeCompare(b)));
+  assert.deepEqual(
+    vendors,
+    [...vendors].sort((a, b) => a.localeCompare(b))
+  );
 });

@@ -1,4 +1,4 @@
-import { getSettings, selectResolvedNoteFormatting } from "../stores/settingsStore";
+import { getSettings, selectResolvedActions } from "../stores/settingsStore";
 import { runBackgroundAction, type RunActionLabels } from "../stores/actionProcessingStore";
 import { isRegenerableNoteTitle } from "./regenerableNoteTitle";
 import { makeNoteContentHash, noteEnhancementSource } from "../utils/noteContentHash";
@@ -45,8 +45,8 @@ export async function autoGenerateMeetingNotes(args: AutoGenerateArgs): Promise<
   const transcript = formatMeetingTranscript(args.segments, args.speakerLabels);
   if (!transcript.trim()) return false;
 
-  const noteFormatting = selectResolvedNoteFormatting(getSettings());
-  const modelId = noteFormatting.model;
+  const actions = selectResolvedActions(getSettings());
+  const modelId = actions.model;
   // Skipped in silence, on purpose.
   //
   // This used to raise a "Configure" toast, on the theory that the missing
@@ -59,10 +59,10 @@ export async function autoGenerateMeetingNotes(args: AutoGenerateArgs): Promise<
   //
   // A self-hosted scope with no URL is the same situation wearing different
   // clothes: nothing to run against, and no reason to say so here.
-  if (!modelId || (noteFormatting.mode === "self-hosted" && !noteFormatting.remoteUrl)) {
+  if (!modelId || (actions.mode === "self-hosted" && !actions.remoteUrl)) {
     logger.info(
       "Skipping automatic meeting notes — note formatting is not configured",
-      { hasModel: Boolean(modelId), mode: noteFormatting.mode },
+      { hasModel: Boolean(modelId), mode: actions.mode },
       "meeting"
     );
     return false;

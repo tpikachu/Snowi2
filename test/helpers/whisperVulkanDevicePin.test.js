@@ -1,10 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const {
-  parseVulkanDevices,
-  resolveVulkanPinAction,
-} = require("../../src/helpers/whisperServer");
+const { parseVulkanDevices, resolveVulkanPinAction } = require("../../src/helpers/whisperServer");
 
 // Shape taken from the reporter's 1.8.3 debug log on issue #1606 (whisper.cpp
 // GPU pack 0.0.9), with surrounding server noise included on purpose.

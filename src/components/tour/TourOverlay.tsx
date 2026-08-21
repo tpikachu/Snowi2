@@ -44,7 +44,7 @@ export default function TourOverlay({
   // user reads, and whether it offers a button.
   const setupComplete = useSettingsStore((s) =>
     isModelSetupComplete({
-      noteFormattingModel: selectResolvedLLMConfig(s, "noteFormatting").model,
+      actionsModel: selectResolvedLLMConfig(s, "actions").model,
       chatModel: selectResolvedLLMConfig(s, "chatIntelligence").model,
     })
   );

@@ -70,12 +70,16 @@ test("garbage output is not an NVIDIA GPU", () => {
 
 test("parseWmiVideoControllers picks the NVIDIA adapter out of a multi-GPU list", () => {
   // The #1606 reporter's three adapters, as PowerShell prints them
-  const stdout = "AMD Radeon RX 7900 XTX\r\nNVIDIA GeForce RTX 4060 Ti\r\nIntel(R) UHD Graphics 770\r\n";
+  const stdout =
+    "AMD Radeon RX 7900 XTX\r\nNVIDIA GeForce RTX 4060 Ti\r\nIntel(R) UHD Graphics 770\r\n";
   assert.equal(parseWmiVideoControllers(stdout), "NVIDIA GeForce RTX 4060 Ti");
 });
 
 test("parseWmiVideoControllers returns null when no NVIDIA adapter is present", () => {
-  assert.equal(parseWmiVideoControllers("AMD Radeon RX 7900 XTX\r\nIntel(R) UHD Graphics 770\r\n"), null);
+  assert.equal(
+    parseWmiVideoControllers("AMD Radeon RX 7900 XTX\r\nIntel(R) UHD Graphics 770\r\n"),
+    null
+  );
   assert.equal(parseWmiVideoControllers(""), null);
 });
 

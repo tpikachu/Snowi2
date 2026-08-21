@@ -9,14 +9,14 @@ import type { SettingsDeepLink } from "../stores/settingsNavigationStore";
  * move in one place rather than in every error path.
  */
 export type SettingsRemedy =
-  | "configureNoteFormatting"
+  | "configureActions"
   | "configureChatIntelligence"
   | "configureMeetingTranscription"
   | "configureUploadTranscription"
   | "configureDictationTranscription";
 
 export const SETTINGS_REMEDIES: Record<SettingsRemedy, SettingsDeepLink> = {
-  configureNoteFormatting: { section: "llms", panel: "noteFormatting" },
+  configureActions: { section: "llms", panel: "actions" },
   configureChatIntelligence: { section: "llms", panel: "chatIntelligence" },
   configureMeetingTranscription: { section: "speechToText", panel: "noteRecording" },
   configureUploadTranscription: { section: "speechToText", panel: "upload" },
@@ -93,10 +93,10 @@ export function transcriptionRemedy(
 }
 
 /** Which model-backed feature an error came from, so it lands on that tab. */
-export type LlmScope = "noteFormatting" | "chatIntelligence";
+export type LlmScope = "actions" | "chatIntelligence";
 
 const LLM_REMEDIES: Record<LlmScope, SettingsRemedy> = {
-  noteFormatting: "configureNoteFormatting",
+  actions: "configureActions",
   chatIntelligence: "configureChatIntelligence",
 };
 

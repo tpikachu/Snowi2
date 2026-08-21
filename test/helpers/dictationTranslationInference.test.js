@@ -137,4 +137,3 @@ test("enterprise mode without a provider fails closed", async () => {
   assert.equal(result.reachable, false);
   assert.equal(result.config.provider, undefined);
 });
-

@@ -64,7 +64,11 @@ test("an explicit meeting choice outranks the dictation lane", async (t) => {
   const state = useSettingsStore.getState();
   assert.equal(state.meetingUseLocalWhisper, true);
   assert.equal(state.meetingTranscriptionMode, "local");
-  assert.equal(state.uploadUseLocalWhisper, false, "upload was not configured, so it still follows");
+  assert.equal(
+    state.uploadUseLocalWhisper,
+    false,
+    "upload was not configured, so it still follows"
+  );
 });
 
 test("a stored mode alone still decides the lane for its scope", async (t) => {

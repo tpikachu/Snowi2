@@ -74,10 +74,7 @@ describe("modelDirUtils ASCII-safe cache (#1399)", () => {
     const root = getCacheRoot();
     assert.strictEqual(root, path.join(programData, "Snowy", "cache"));
     assert.ok(fs.existsSync(root));
-    assert.strictEqual(
-      getModelsDirForService("whisper"),
-      path.join(root, "whisper-models")
-    );
+    assert.strictEqual(getModelsDirForService("whisper"), path.join(root, "whisper-models"));
   });
 
   it("keeps home cache on Windows when the path is ASCII-safe", () => {

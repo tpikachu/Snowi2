@@ -59,10 +59,7 @@ test("weak semantic hits are dropped at the grounding bar", async () => {
 
 test("fresh retrieval outranks notes carried from earlier turns", async () => {
   const { mergeGrounding } = await load();
-  const merged = mergeGrounding(
-    [{ noteId: 5, title: "Fresh" }],
-    [{ noteId: 9, title: "Carried" }]
-  );
+  const merged = mergeGrounding([{ noteId: 5, title: "Fresh" }], [{ noteId: 9, title: "Carried" }]);
   assert.deepEqual(
     merged.map((n) => n.noteId),
     [5, 9]

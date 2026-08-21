@@ -1938,19 +1938,10 @@
       "tabs": {
         "dictationCleanup": "Limpieza de dictado",
         "dictationAgent": "Voice Agent",
-        "noteFormatting": "Acciones",
         "chatIntelligence": "Chat",
-        "dictationTranslation": "Traducción"
+        "dictationTranslation": "Traducción",
+        "actions": "Acciones"
       }
-    },
-    "noteFormatting": {
-      "autoGenerateTitle": "Generar títulos de notas automáticamente",
-      "autoGenerateTitleDescription": "Usar IA para generar un título corto para las notas después de la transcripción o mejora",
-      "actionsTitle": "Acciones",
-      "actionsDescription": "Todo lo que Snowy redacta por ti. Generar notas se ejecuta en cada reunión que guardas; el resto, cuando tú lo pides.",
-      "actionsRowDescription": "Crea, edita y reordena las acciones que puedes ejecutar en una nota.",
-      "manageActions": "Gestionar",
-      "modelDescription": "Todas las acciones usan este modelo, incluido el resumen al final de una reunión."
     },
     "transcription": {
       "customSetup": "Configuración personalizada",
@@ -2265,6 +2256,15 @@
       },
       "title": "Atajos",
       "useSuggested": "Usar {{hotkey}}"
+    },
+    "actions": {
+      "autoGenerateTitle": "Generar títulos de notas automáticamente",
+      "autoGenerateTitleDescription": "Usar IA para generar un título corto para las notas después de la transcripción o mejora",
+      "actionsTitle": "Acciones",
+      "actionsDescription": "Todo lo que Snowy redacta por ti. Generar notas se ejecuta en cada reunión que guardas; el resto, cuando tú lo pides.",
+      "actionsRowDescription": "Crea, edita y reordena las acciones que puedes ejecutar en una nota.",
+      "manageActions": "Gestionar",
+      "modelDescription": "Todas las acciones usan este modelo, incluido el resumen al final de una reunión."
     }
   },
   "models": {
@@ -3775,15 +3775,15 @@
           "title": "Grabación y transcripción",
           "ready": "Las reuniones se capturan y se convierten en texto en este equipo."
         },
-        "noteFormatting": {
-          "title": "Acciones",
-          "ready": "Generar notas se ejecuta en cada reunión que guardas: un resumen, las decisiones y quién debe qué. Tus propias acciones usan el mismo modelo.",
-          "missing": "No se redacta nada. Generar notas y todas las demás acciones necesitan un modelo de lenguaje para ejecutarse, así que las reuniones se quedan en transcripciones sin más."
-        },
         "chatIntelligence": {
           "title": "Respuestas durante la reunión",
           "ready": "El panel sugiere qué decir y responde preguntas a partir de tus notas.",
           "missing": "El panel de reunión puede sugerir qué decir y responder preguntas basándose en tus notas anteriores, sin salir de la llamada."
+        },
+        "actions": {
+          "title": "Acciones",
+          "ready": "Generar notas se ejecuta en cada reunión que guardas: un resumen, las decisiones y quién debe qué. Tus propias acciones usan el mismo modelo.",
+          "missing": "No se redacta nada. Generar notas y todas las demás acciones necesitan un modelo de lenguaje para ejecutarse, así que las reuniones se quedan en transcripciones sin más."
         }
       },
       "descriptionAllSet": "Todo está configurado. Esto es lo que usa cada parte.",

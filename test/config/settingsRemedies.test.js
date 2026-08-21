@@ -61,7 +61,7 @@ test("a missing local inference runtime is a configuration failure", async (t) =
   // local model that ships the runtime.
   const message = "llama-server binary not found. Please ensure the app is installed correctly.";
   assert.equal(isConfigurationFailure({ message }), true);
-  assert.equal(llmRemedy("noteFormatting", { message }), "configureNoteFormatting");
+  assert.equal(llmRemedy("actions", { message }), "configureActions");
 
   // And by code, for the paths that keep it across IPC.
   assert.equal(isConfigurationFailure({ code: "LLAMASERVER_NOT_FOUND" }), true);
@@ -86,7 +86,7 @@ test("a reachable model that simply failed gets no button", async (t) => {
 
   // A rate limit is worth retrying; sending the user to Settings would be a
   // dead end and would imply they configured something wrong.
-  assert.equal(llmRemedy("noteFormatting", { message: "Rate limit exceeded" }), null);
+  assert.equal(llmRemedy("actions", { message: "Rate limit exceeded" }), null);
   assert.equal(llmRemedy("chatIntelligence", { message: "The model returned 503" }), null);
 });
 

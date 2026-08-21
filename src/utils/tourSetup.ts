@@ -10,8 +10,8 @@ import type { TourStep } from "../config/tourSteps";
  * diagnosis is `settingsRemedies`, which runs on an actual failure.
  */
 export interface TourSetupState {
-  /** Resolved model id for the noteFormatting scope, if any. */
-  noteFormattingModel?: string | null;
+  /** Resolved model id for the actions scope, if any. */
+  actionsModel?: string | null;
   /** Resolved model id for the chatIntelligence scope, if any. */
   chatModel?: string | null;
 }
@@ -24,7 +24,7 @@ export interface TourSetupState {
  * exists to head off.
  */
 export function isModelSetupComplete(state: TourSetupState): boolean {
-  return Boolean(state.noteFormattingModel?.trim() && state.chatModel?.trim());
+  return Boolean(state.actionsModel?.trim() && state.chatModel?.trim());
 }
 
 /**

@@ -27,10 +27,9 @@ test("note refs reach the UI without reaching the model", async () => {
     stubTool({ success: true, data: { total: 2 }, displayText: "Found 2 meetings", noteRefs: REFS })
   );
 
-  const modelVisible = await registry.toAISDKFormat().list_meetings.execute(
-    {},
-    { toolCallId: "call-1" }
-  );
+  const modelVisible = await registry
+    .toAISDKFormat()
+    .list_meetings.execute({}, { toolCallId: "call-1" });
 
   // The whole reason noteRefs travels beside `data` rather than inside it: the
   // execute return value is what the model reads back as the tool's answer.
@@ -84,10 +83,9 @@ test("a failing tool reports its message to the model and records no refs", asyn
   const registry = new ToolRegistry();
   registry.register(stubTool({ success: false, data: null, displayText: "Space not found" }));
 
-  const modelVisible = await registry.toAISDKFormat().list_meetings.execute(
-    {},
-    { toolCallId: "call-1" }
-  );
+  const modelVisible = await registry
+    .toAISDKFormat()
+    .list_meetings.execute({}, { toolCallId: "call-1" });
 
   assert.deepEqual(modelVisible, { error: "Space not found" });
   assert.equal(registry.takeNoteRefs("call-1"), undefined);

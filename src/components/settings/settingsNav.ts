@@ -45,11 +45,7 @@ export function settingsGroupDomId(id: string): string {
 export type SpeechTab = "dictation" | "noteRecording" | "upload";
 
 export type LlmTab =
-  | "dictationCleanup"
-  | "dictationAgent"
-  | "dictationTranslation"
-  | "noteFormatting"
-  | "chatIntelligence";
+  "dictationCleanup" | "dictationAgent" | "dictationTranslation" | "actions" | "chatIntelligence";
 
 const ALL_SPEECH_TABS: readonly SpeechTab[] = ["dictation", "noteRecording", "upload"] as const;
 
@@ -59,7 +55,7 @@ export const SPEECH_TABS: readonly SpeechTab[] = ALL_SPEECH_TABS.filter((tab) =>
 
 // Same order as the panel list below, and for the same reason.
 const ALL_LLM_TABS: readonly LlmTab[] = [
-  "noteFormatting",
+  "actions",
   "chatIntelligence",
   "dictationCleanup",
   "dictationAgent",
@@ -100,7 +96,7 @@ export const SECTION_ALIASES: Record<string, SettingsSectionType> = {
 export const LEGACY_SUB_TAB: Record<string, string> = {
   transcription: "dictation",
   uploadTranscription: "upload",
-  meetings: "noteFormatting",
+  meetings: "actions",
   intelligence: "dictationCleanup",
   agentMode: "chatIntelligence",
   agentConfig: "chatIntelligence",
@@ -205,12 +201,16 @@ const ALL_SETTINGS_SECTIONS: SettingsSectionDef[] = [
     groupKey: "settingsModal.groups.aiModels",
     // Ordered by what this app is. Actions and Chat are two of the three
     // things Snowy does — the third, transcription, has its own section — and
-    // the dictation trio below them is the smaller, older surface. The panel
-    // ids stay as they are: `noteFormatting` names a set of persisted settings
-    // keys and one encrypted credential file, so renaming it is a migration
-    // rather than a label change, and the label is what a user reads.
+    // the dictation trio below them is the smaller, older surface.
+    //
+    // `actions` was called `noteFormatting` until it became clear that note
+    // formatting is not a peer of Chat but one of the things Actions does:
+    // writing up a meeting *is* the built-in Generate Notes action. A stored
+    // `noteFormatting` tab id is rewritten by migrateActionsScopeKeys, and any
+    // that escapes it fails the LLM_TABS membership check in SettingsModal and
+    // lands on the first tab — which is this one.
     panels: [
-      { id: "noteFormatting", labelKey: "settingsPage.llms.tabs.noteFormatting", icon: ListChecks },
+      { id: "actions", labelKey: "settingsPage.llms.tabs.actions", icon: ListChecks },
       {
         id: "chatIntelligence",
         labelKey: "settingsPage.llms.tabs.chatIntelligence",
@@ -470,14 +470,14 @@ const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
   },
   {
     section: "llms",
-    panel: "noteFormatting",
-    anchor: "noteFormattingOptions",
-    labelKey: "settingsPage.noteFormatting.autoGenerateTitle",
+    panel: "actions",
+    anchor: "actionsOptions",
+    labelKey: "settingsPage.actions.autoGenerateTitle",
   },
   {
     section: "llms",
-    panel: "noteFormatting",
-    anchor: "noteFormattingActions",
+    panel: "actions",
+    anchor: "actionsList",
     labelKey: "notes.actions.manageTitle",
   },
   {

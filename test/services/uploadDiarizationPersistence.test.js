@@ -100,9 +100,7 @@ test("a diarized file upload persists the diarization metadata", async (t) => {
 
   // The persisted count is the same one the diarizer was invoked with.
   assert.deepEqual(calls.diarize, [{ numSpeakers: 2 }]);
-  assert.deepEqual(calls.updateNote, [
-    [7, { diarization_enabled: 1, expected_speaker_count: 2 }],
-  ]);
+  assert.deepEqual(calls.updateNote, [[7, { diarization_enabled: 1, expected_speaker_count: 2 }]]);
 });
 
 test("a diarized URL ingest persists the diarization metadata", async (t) => {
@@ -138,9 +136,7 @@ test("a diarized URL ingest persists the diarization metadata", async (t) => {
   assert.equal(sourceFile, "Board Meeting Recording");
   assert.equal(audioDuration, 4359.87);
 
-  assert.deepEqual(calls.updateNote, [
-    [7, { diarization_enabled: 1, expected_speaker_count: 2 }],
-  ]);
+  assert.deepEqual(calls.updateNote, [[7, { diarization_enabled: 1, expected_speaker_count: 2 }]]);
   assert.deepEqual(calls.deletedTempFiles, ["/tmp/ow-url-download.m4a"]);
 });
 

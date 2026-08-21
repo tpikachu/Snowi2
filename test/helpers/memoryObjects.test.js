@@ -80,7 +80,11 @@ test("subject stays a role, so it can live outside the encrypted store", () => {
 test("the same claim reworded hashes the same", () => {
   // "pricing is $40k" and "Pricing is $40k." are one fact. Treating them as two
   // is how a store fills with the same sentence thirty times.
-  const a = memoryContentHash({ type: "project_fact", subject: "other", content: "Pricing is $40k." });
+  const a = memoryContentHash({
+    type: "project_fact",
+    subject: "other",
+    content: "Pricing is $40k.",
+  });
   const b = memoryContentHash({
     type: "project_fact",
     subject: "other",
@@ -90,8 +94,16 @@ test("the same claim reworded hashes the same", () => {
 });
 
 test("a different claim of the same kind hashes differently", () => {
-  const a = memoryContentHash({ type: "project_fact", subject: "other", content: "Pricing is $40k" });
-  const b = memoryContentHash({ type: "project_fact", subject: "other", content: "Pricing is $55k" });
+  const a = memoryContentHash({
+    type: "project_fact",
+    subject: "other",
+    content: "Pricing is $40k",
+  });
+  const b = memoryContentHash({
+    type: "project_fact",
+    subject: "other",
+    content: "Pricing is $55k",
+  });
   assert.notEqual(a, b);
 });
 
@@ -113,10 +125,10 @@ test("a changed fact supersedes the one it replaces", () => {
     raw({ type: "project_fact", content: "Pricing is $40k" }),
     CTX
   ).object;
-  const next = normalizeMemoryObject(
-    raw({ type: "project_fact", content: "Pricing is $55k" }),
-    { ...CTX, now: "2026-09-01T10:00:00.000Z" }
-  ).object;
+  const next = normalizeMemoryObject(raw({ type: "project_fact", content: "Pricing is $55k" }), {
+    ...CTX,
+    now: "2026-09-01T10:00:00.000Z",
+  }).object;
 
   assert.deepEqual(decideConsolidation(next, [{ ...old, id: "old-1" }]), {
     action: "supersede",
@@ -141,11 +153,21 @@ test("two similar action items are two commitments, not a replacement", () => {
 
 test("a fact about a different subject does not collide", () => {
   const mine = normalizeMemoryObject(
-    raw({ type: "preference", subject: "user", content: "Prefers short summaries", confidence: 0.9 }),
+    raw({
+      type: "preference",
+      subject: "user",
+      content: "Prefers short summaries",
+      confidence: 0.9,
+    }),
     CTX
   ).object;
   const theirs = normalizeMemoryObject(
-    raw({ type: "preference", subject: "other", content: "Prefers long summaries", confidence: 0.9 }),
+    raw({
+      type: "preference",
+      subject: "other",
+      content: "Prefers long summaries",
+      confidence: 0.9,
+    }),
     CTX
   ).object;
 
@@ -168,10 +190,28 @@ test("a superseded row is not superseded again", () => {
 
 test("the pinned profile carries only durable facts about the user", () => {
   const profile = buildMemoryProfile([
-    { type: "preference", subject: "user", status: "open", confidence: 0.9, content: "Prefers bullets" },
-    { type: "person_fact", subject: "user", status: "open", confidence: 0.85, content: "Based in Seoul" },
+    {
+      type: "preference",
+      subject: "user",
+      status: "open",
+      confidence: 0.9,
+      content: "Prefers bullets",
+    },
+    {
+      type: "person_fact",
+      subject: "user",
+      status: "open",
+      confidence: 0.85,
+      content: "Based in Seoul",
+    },
     // Someone else's preference is not part of who the user is.
-    { type: "preference", subject: "other", status: "open", confidence: 0.9, content: "Likes calls" },
+    {
+      type: "preference",
+      subject: "other",
+      status: "open",
+      confidence: 0.9,
+      content: "Likes calls",
+    },
     // Open work is a status query, not something to pay for on every message.
     { type: "action_item", subject: "user", status: "open", confidence: 0.9, content: "Send deck" },
     { type: "preference", subject: "user", status: "superseded", confidence: 0.9, content: "Old" },

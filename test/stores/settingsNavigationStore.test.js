@@ -13,8 +13,8 @@ test("nothing is pending until something asks", async () => {
 test("carries the section and panel through to the consumer, then clears", async () => {
   const { requestSettings, consumeSettingsRequest } = await load();
 
-  requestSettings({ section: "llms", panel: "noteFormatting" });
-  assert.deepEqual(consumeSettingsRequest(), { section: "llms", panel: "noteFormatting" });
+  requestSettings({ section: "llms", panel: "actions" });
+  assert.deepEqual(consumeSettingsRequest(), { section: "llms", panel: "actions" });
 
   // Cleared on read: the request is a one-shot instruction, not state. Leaving
   // it set would re-open settings on the next unrelated store update.
@@ -32,9 +32,9 @@ test("asking for the same target twice is two distinct requests", async () => {
   const { requestSettings, useSettingsNavigationStore } = await load();
 
   const before = useSettingsNavigationStore.getState().nonce;
-  requestSettings({ section: "llms", panel: "noteFormatting" });
+  requestSettings({ section: "llms", panel: "actions" });
   const once = useSettingsNavigationStore.getState().nonce;
-  requestSettings({ section: "llms", panel: "noteFormatting" });
+  requestSettings({ section: "llms", panel: "actions" });
   const twice = useSettingsNavigationStore.getState().nonce;
 
   // The reason the nonce exists: a user who dismisses settings and clicks the

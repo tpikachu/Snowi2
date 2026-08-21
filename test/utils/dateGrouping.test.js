@@ -66,7 +66,10 @@ test("boundary days land in the nearest bucket", async (t2) => {
 
 test("empty input yields no groups", async () => {
   const { groupItemsByDate } = await load();
-  assert.deepEqual(groupItemsByDate([], () => "", t), []);
+  assert.deepEqual(
+    groupItemsByDate([], () => "", t),
+    []
+  );
 });
 
 test("SQLite zoneless timestamps are grouped like their UTC instant", async (t2) => {

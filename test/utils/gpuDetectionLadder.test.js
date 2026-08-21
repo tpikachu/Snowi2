@@ -97,7 +97,10 @@ test("with no nvidia-smi anywhere, WMI still detects the NVIDIA GPU", async () =
   const execFileImpl = fakeExecFile((file) => {
     if (file === "nvidia-smi") return { error: enoent("nvidia-smi") };
     assert.equal(file, "powershell.exe");
-    return { stdout: "AMD Radeon RX 7900 XTX\r\nNVIDIA GeForce RTX 4060 Ti\r\nIntel(R) UHD Graphics 770\r\n" };
+    return {
+      stdout:
+        "AMD Radeon RX 7900 XTX\r\nNVIDIA GeForce RTX 4060 Ti\r\nIntel(R) UHD Graphics 770\r\n",
+    };
   });
 
   const info = await detectNvidiaGpu({ execFileImpl, fsImpl: fakeFs() });
@@ -133,9 +136,7 @@ test("detection results and the resolved path are cached", async () => {
 
 test("listNvidiaGpus uses the resolved path and stays empty on WMI-only machines", async () => {
   const withSmi = fakeExecFile((file) =>
-    file === "nvidia-smi"
-      ? { stdout: "0, GPU-abc123, NVIDIA GeForce RTX 4060 Ti, 16380\n" }
-      : {}
+    file === "nvidia-smi" ? { stdout: "0, GPU-abc123, NVIDIA GeForce RTX 4060 Ti, 16380\n" } : {}
   );
   const gpus = await listNvidiaGpus({ execFileImpl: withSmi, fsImpl: fakeFs() });
   assert.deepEqual(gpus, [
@@ -144,7 +145,9 @@ test("listNvidiaGpus uses the resolved path and stays empty on WMI-only machines
 
   clearCache();
   const withoutSmi = fakeExecFile((file) =>
-    file === "nvidia-smi" ? { error: enoent("nvidia-smi") } : { stdout: "NVIDIA GeForce RTX 4060 Ti\r\n" }
+    file === "nvidia-smi"
+      ? { error: enoent("nvidia-smi") }
+      : { stdout: "NVIDIA GeForce RTX 4060 Ti\r\n" }
   );
   assert.deepEqual(await listNvidiaGpus({ execFileImpl: withoutSmi, fsImpl: fakeFs() }), []);
 });

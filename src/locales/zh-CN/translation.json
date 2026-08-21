@@ -1890,19 +1890,10 @@
       "tabs": {
         "dictationCleanup": "听写清理",
         "dictationAgent": "语音助手",
-        "noteFormatting": "操作",
         "chatIntelligence": "聊天",
-        "dictationTranslation": "翻译"
+        "dictationTranslation": "翻译",
+        "actions": "操作"
       }
-    },
-    "noteFormatting": {
-      "autoGenerateTitle": "自动生成笔记标题",
-      "autoGenerateTitleDescription": "使用 AI 在转录或增强后为笔记生成简短标题",
-      "actionsTitle": "操作",
-      "actionsDescription": "Snowy 替你写的所有内容。「生成笔记」会在每场保留的会议后自动运行，其余的按需运行。",
-      "actionsRowDescription": "创建、编辑和排序可在笔记上运行的操作。",
-      "manageActions": "管理",
-      "modelDescription": "所有操作都使用这个模型，包括会议结束时的纪要。"
     },
     "transcription": {
       "customSetup": "自定义设置",
@@ -2217,6 +2208,15 @@
       },
       "title": "快捷键",
       "useSuggested": "使用 {{hotkey}}"
+    },
+    "actions": {
+      "autoGenerateTitle": "自动生成笔记标题",
+      "autoGenerateTitleDescription": "使用 AI 在转录或增强后为笔记生成简短标题",
+      "actionsTitle": "操作",
+      "actionsDescription": "Snowy 替你写的所有内容。「生成笔记」会在每场保留的会议后自动运行，其余的按需运行。",
+      "actionsRowDescription": "创建、编辑和排序可在笔记上运行的操作。",
+      "manageActions": "管理",
+      "modelDescription": "所有操作都使用这个模型，包括会议结束时的纪要。"
     }
   },
   "models": {
@@ -3775,15 +3775,15 @@
           "title": "录音与转写",
           "ready": "会议在这台机器上被录下并转成文字。"
         },
-        "noteFormatting": {
-          "title": "操作",
-          "ready": "每场保留的会议都会自动运行「生成笔记」：摘要、决定事项和责任人。你自定义的操作也使用同一个模型。",
-          "missing": "不会整理出任何内容。「生成笔记」和其他所有操作都需要语言模型才能运行，会议只会停留在原始转写。"
-        },
         "chatIntelligence": {
           "title": "会议进行中就能得到答案",
           "ready": "会议面板会提示该说什么，并根据你的笔记回答问题。",
           "missing": "会议面板可以提示你接下来该说什么，并根据你的历史笔记回答问题——不用离开通话。"
+        },
+        "actions": {
+          "title": "操作",
+          "ready": "每场保留的会议都会自动运行「生成笔记」：摘要、决定事项和责任人。你自定义的操作也使用同一个模型。",
+          "missing": "不会整理出任何内容。「生成笔记」和其他所有操作都需要语言模型才能运行，会议只会停留在原始转写。"
         }
       },
       "descriptionAllSet": "都已配置完成。以下是各部分正在使用的模型。",

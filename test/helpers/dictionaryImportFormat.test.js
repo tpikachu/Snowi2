@@ -15,9 +15,5 @@ test("import accepts one word per line", async () => {
 
 test("import accepts mixed commas and new lines and skips blanks", async () => {
   const { parseDictionaryImportText } = await load();
-  assert.deepEqual(parseDictionaryImportText("Alice,\n Bob\n\nCarol, "), [
-    "Alice",
-    "Bob",
-    "Carol",
-  ]);
+  assert.deepEqual(parseDictionaryImportText("Alice,\n Bob\n\nCarol, "), ["Alice", "Bob", "Carol"]);
 });

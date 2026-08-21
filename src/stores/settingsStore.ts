@@ -43,6 +43,7 @@ import type {
 import type { Snippet } from "../utils/snippets";
 import type { EnterpriseSetupMode } from "../types/enterpriseIdentity";
 import { getManagedScopeResolution } from "./enterpriseIdentityStore";
+import { migrateActionsScopeKeys } from "../utils/actionsScopeMigration";
 
 let _ReasoningService: typeof import("../services/ReasoningService").default | null = null;
 
@@ -235,6 +236,11 @@ function migrateMeetingFollowFlags() {
 
 migrateMeetingFollowFlags();
 
+// Renames the previous build's `noteFormatting*` keys. Runs before any read
+// below, and lives in its own module so the rules are unit-tested — a mistake
+// here silently resets somebody's configured model.
+if (isBrowser) migrateActionsScopeKeys(localStorage);
+
 const BOOLEAN_SETTINGS = new Set([
   "useLocalWhisper",
   "meetingUseLocalWhisper",
@@ -269,7 +275,7 @@ const BOOLEAN_SETTINGS = new Set([
   "cleanupDisableThinking",
   "dictationAgentDisableThinking",
   "dictationAgentVisionDisableThinking",
-  "noteFormattingDisableThinking",
+  "actionsDisableThinking",
   "chatAgentDisableThinking",
   "notificationsEnabled",
   "notifyMeetingDetection",
@@ -527,12 +533,12 @@ const LLM_SCOPE_KEY_PAIRS: ReadonlyArray<[string, string]> = [
   ["cloudReasoningBaseUrl", "cleanupCloudBaseUrl"],
   ["customReasoningApiKey", "cleanupCustomApiKey"],
   ["remoteReasoningUrl", "cleanupRemoteUrl"],
-  ["meetingReasoningMode", "noteFormattingMode"],
-  ["meetingReasoningProvider", "noteFormattingProvider"],
-  ["meetingReasoningModel", "noteFormattingModel"],
-  ["meetingCloudReasoningMode", "noteFormattingCloudMode"],
-  ["meetingCloudReasoningBaseUrl", "noteFormattingCloudBaseUrl"],
-  ["meetingRemoteReasoningUrl", "noteFormattingRemoteUrl"],
+  ["meetingReasoningMode", "actionsMode"],
+  ["meetingReasoningProvider", "actionsProvider"],
+  ["meetingReasoningModel", "actionsModel"],
+  ["meetingCloudReasoningMode", "actionsCloudMode"],
+  ["meetingCloudReasoningBaseUrl", "actionsCloudBaseUrl"],
+  ["meetingRemoteReasoningUrl", "actionsRemoteUrl"],
   ["agentInferenceMode", "chatAgentMode"],
   ["agentProvider", "chatAgentProvider"],
   ["agentModel", "chatAgentModel"],
@@ -567,7 +573,7 @@ migrateLLMScopeKeys();
 // writers that could still produce these values.
 const OPENWHISPR_LLM_MODE_KEYS = [
   "cleanupMode",
-  "noteFormattingMode",
+  "actionsMode",
   "translationMode",
   "chatAgentMode",
   "dictationAgentMode",
@@ -582,7 +588,7 @@ const OPENWHISPR_CLOUD_MODE_KEYS = [
   "meetingCloudTranscriptionMode",
   "uploadCloudTranscriptionMode",
   "cleanupCloudMode",
-  "noteFormattingCloudMode",
+  "actionsCloudMode",
   "translationCloudMode",
   "chatAgentCloudMode",
   "dictationAgentCloudMode",
@@ -633,9 +639,9 @@ function repairUnusableLlmScopes() {
     { mode: "cleanupMode", provider: "cleanupProvider", model: "cleanupModel" },
     { mode: "chatAgentMode", provider: "chatAgentProvider", model: "chatAgentModel" },
     {
-      mode: "noteFormattingMode",
-      provider: "noteFormattingProvider",
-      model: "noteFormattingModel",
+      mode: "actionsMode",
+      provider: "actionsProvider",
+      model: "actionsModel",
     },
     {
       mode: "dictationAgentMode",
@@ -745,13 +751,13 @@ export interface SettingsState
   /** LLM twin of transcriptionModelByProvider, keyed `"<scope>:<providerId>"`. */
   reasoningModelByProvider: Record<string, string>;
 
-  noteFormattingMode: InferenceMode;
-  noteFormattingProvider: string;
-  noteFormattingModel: string;
-  noteFormattingCloudMode: string;
-  noteFormattingCloudBaseUrl: string;
-  noteFormattingRemoteUrl: string;
-  noteFormattingCustomApiKey: string;
+  actionsMode: InferenceMode;
+  actionsProvider: string;
+  actionsModel: string;
+  actionsCloudMode: string;
+  actionsCloudBaseUrl: string;
+  actionsRemoteUrl: string;
+  actionsCustomApiKey: string;
 
   translationMode: InferenceMode;
   translationProvider: string;
@@ -788,7 +794,7 @@ export interface SettingsState
   cleanupDisableThinking: boolean;
   dictationAgentDisableThinking: boolean;
   dictationAgentVisionDisableThinking: boolean;
-  noteFormattingDisableThinking: boolean;
+  actionsDisableThinking: boolean;
   chatAgentDisableThinking: boolean;
 
   customPrompts: Record<PromptKind, string>;
@@ -841,13 +847,13 @@ export interface SettingsState
   setUploadCloudTranscriptionBaseUrl: (value: string) => void;
   setUploadCloudTranscriptionMode: (value: string) => void;
 
-  setNoteFormattingMode: (mode: InferenceMode) => void;
-  setNoteFormattingProvider: (value: string) => void;
-  setNoteFormattingModel: (value: string) => void;
-  setNoteFormattingCloudMode: (value: string) => void;
-  setNoteFormattingCloudBaseUrl: (value: string) => void;
-  setNoteFormattingRemoteUrl: (url: string) => void;
-  setNoteFormattingCustomApiKey: (key: string) => void;
+  setActionsMode: (mode: InferenceMode) => void;
+  setActionsProvider: (value: string) => void;
+  setActionsModel: (value: string) => void;
+  setActionsCloudMode: (value: string) => void;
+  setActionsCloudBaseUrl: (value: string) => void;
+  setActionsRemoteUrl: (url: string) => void;
+  setActionsCustomApiKey: (key: string) => void;
 
   setTranslationMode: (mode: InferenceMode) => void;
   setTranslationProvider: (value: string) => void;
@@ -864,7 +870,7 @@ export interface SettingsState
 
   setCleanupDisableThinking: (value: boolean) => void;
   setDictationAgentDisableThinking: (value: boolean) => void;
-  setNoteFormattingDisableThinking: (value: boolean) => void;
+  setActionsDisableThinking: (value: boolean) => void;
   setChatAgentDisableThinking: (value: boolean) => void;
 
   setUseLocalWhisper: (value: boolean) => void;
@@ -1150,7 +1156,7 @@ const SECRET_IPC_SAVERS = {
   tinfoil: "saveTinfoilKey",
   customTranscription: "saveCustomTranscriptionKey",
   cleanupCustom: "saveCleanupCustomKey",
-  noteFormattingCustom: "saveNoteFormattingCustomKey",
+  actionsCustom: "saveNoteFormattingCustomKey",
   translationCustom: "saveTranslationCustomKey",
   dictationAgentCustom: "saveDictationAgentCustomKey",
   dictationAgentVisionCustom: "saveDictationAgentVisionCustomKey",
@@ -1198,7 +1204,7 @@ const STALE_SECRET_LOCALSTORAGE_KEYS = [
   "customTranscriptionApiKey",
   "customReasoningApiKey",
   "cleanupCustomApiKey",
-  "noteFormattingCustomApiKey",
+  "actionsCustomApiKey",
   "translationCustomApiKey",
   "dictationAgentCustomApiKey",
   "dictationAgentVisionCustomApiKey",
@@ -1506,17 +1512,17 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   uploadCloudTranscriptionBaseUrl: readString("uploadCloudTranscriptionBaseUrl", ""),
   uploadCloudTranscriptionMode: readString("uploadCloudTranscriptionMode", ""),
 
-  noteFormattingMode: (() => {
-    const v = readString("noteFormattingMode", "local");
+  actionsMode: (() => {
+    const v = readString("actionsMode", "local");
     if (v === "providers" || v === "local" || v === "self-hosted" || v === "enterprise") return v;
     return "local" as InferenceMode;
   })(),
-  noteFormattingProvider: readString("noteFormattingProvider", ""),
-  noteFormattingModel: readString("noteFormattingModel", ""),
-  noteFormattingCloudMode: readString("noteFormattingCloudMode", ""),
-  noteFormattingCloudBaseUrl: readString("noteFormattingCloudBaseUrl", ""),
-  noteFormattingRemoteUrl: readString("noteFormattingRemoteUrl", ""),
-  noteFormattingCustomApiKey: readString("noteFormattingCustomApiKey", ""),
+  actionsProvider: readString("actionsProvider", ""),
+  actionsModel: readString("actionsModel", ""),
+  actionsCloudMode: readString("actionsCloudMode", ""),
+  actionsCloudBaseUrl: readString("actionsCloudBaseUrl", ""),
+  actionsRemoteUrl: readString("actionsRemoteUrl", ""),
+  actionsCustomApiKey: readString("actionsCustomApiKey", ""),
 
   translationMode: (() => {
     const v = readString("translationMode", "local");
@@ -1584,17 +1590,13 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setUploadCloudTranscriptionBaseUrl: createStringSetter("uploadCloudTranscriptionBaseUrl"),
   setUploadCloudTranscriptionMode: createStringSetter("uploadCloudTranscriptionMode"),
 
-  setNoteFormattingMode: createStringSetter("noteFormattingMode") as (mode: InferenceMode) => void,
-  setNoteFormattingProvider: createStringSetter("noteFormattingProvider"),
-  setNoteFormattingModel: createStringSetter("noteFormattingModel"),
-  setNoteFormattingCloudMode: createStringSetter("noteFormattingCloudMode"),
-  setNoteFormattingCloudBaseUrl: createStringSetter("noteFormattingCloudBaseUrl"),
-  setNoteFormattingRemoteUrl: createStringSetter("noteFormattingRemoteUrl"),
-  setNoteFormattingCustomApiKey: createSecretSetter(
-    "noteFormattingCustomApiKey",
-    "noteFormattingCustom",
-    "custom"
-  ),
+  setActionsMode: createStringSetter("actionsMode") as (mode: InferenceMode) => void,
+  setActionsProvider: createStringSetter("actionsProvider"),
+  setActionsModel: createStringSetter("actionsModel"),
+  setActionsCloudMode: createStringSetter("actionsCloudMode"),
+  setActionsCloudBaseUrl: createStringSetter("actionsCloudBaseUrl"),
+  setActionsRemoteUrl: createStringSetter("actionsRemoteUrl"),
+  setActionsCustomApiKey: createSecretSetter("actionsCustomApiKey", "actionsCustom", "custom"),
 
   setTranslationMode: createStringSetter("translationMode") as (mode: InferenceMode) => void,
   setTranslationProvider: createStringSetter("translationProvider"),
@@ -1657,7 +1659,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   cleanupDisableThinking: readBoolean("cleanupDisableThinking", true),
   dictationAgentDisableThinking: readBoolean("dictationAgentDisableThinking", true),
   dictationAgentVisionDisableThinking: readBoolean("dictationAgentVisionDisableThinking", true),
-  noteFormattingDisableThinking: readBoolean("noteFormattingDisableThinking", true),
+  actionsDisableThinking: readBoolean("actionsDisableThinking", true),
   chatAgentDisableThinking: readBoolean("chatAgentDisableThinking", true),
 
   customPrompts: PROMPT_KIND_LIST.reduce(
@@ -1703,7 +1705,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setDictationAgentVisionDisableThinking: createBooleanSetter(
     "dictationAgentVisionDisableThinking"
   ),
-  setNoteFormattingDisableThinking: createBooleanSetter("noteFormattingDisableThinking"),
+  setActionsDisableThinking: createBooleanSetter("actionsDisableThinking"),
   setChatAgentDisableThinking: createBooleanSetter("chatAgentDisableThinking"),
 
   setUseLocalWhisper: createBooleanSetter("useLocalWhisper"),
@@ -2340,23 +2342,17 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     // Derive the mode from the incoming patch (falling back to current state) so
     // the helper patches are the single source of truth for every scope's mode.
     const mode = deriveReasoningMode(settings.cleanupProvider ?? s.cleanupProvider);
-    const {
-      dictationCleanup,
-      noteFormatting,
-      dictationAgent,
-      chatIntelligence,
-      dictationTranslation,
-    } = buildReasoningScopePatches(settings, mode);
+    const { dictationCleanup, actions, dictationAgent, chatIntelligence, dictationTranslation } =
+      buildReasoningScopePatches(settings, mode);
     s.updateCleanupSettings(dictationCleanup);
     s.setCleanupMode(dictationCleanup.cleanupMode);
     // Each Settings tab selects on its own mode field, so set the mode for every
     // scope even when the routing fields are absent — otherwise the tab keeps
     // showing the previous provider despite the new cloud routing.
-    if (noteFormatting.provider !== undefined) s.setNoteFormattingProvider(noteFormatting.provider);
-    if (noteFormatting.model !== undefined) s.setNoteFormattingModel(noteFormatting.model);
-    if (noteFormatting.cloudMode !== undefined)
-      s.setNoteFormattingCloudMode(noteFormatting.cloudMode);
-    s.setNoteFormattingMode(mode);
+    if (actions.provider !== undefined) s.setActionsProvider(actions.provider);
+    if (actions.model !== undefined) s.setActionsModel(actions.model);
+    if (actions.cloudMode !== undefined) s.setActionsCloudMode(actions.cloudMode);
+    s.setActionsMode(mode);
     if (dictationAgent.provider !== undefined) s.setDictationAgentProvider(dictationAgent.provider);
     if (dictationAgent.model !== undefined) s.setDictationAgentModel(dictationAgent.model);
     if (dictationAgent.cloudMode !== undefined)
@@ -2468,7 +2464,7 @@ export const selectResolvedUploadTranscription = (
   transcriptionMode: state.uploadTranscriptionMode,
 });
 
-export interface ResolvedNoteFormatting {
+export interface ResolvedActions {
   provider: string;
   model: string;
   mode: InferenceMode;
@@ -2478,16 +2474,16 @@ export interface ResolvedNoteFormatting {
   customApiKey: string;
 }
 
-export const selectResolvedNoteFormatting = (state: SettingsState): ResolvedNoteFormatting => {
-  const cfg = selectResolvedLLMConfig(state, "noteFormatting");
+export const selectResolvedActions = (state: SettingsState): ResolvedActions => {
+  const cfg = selectResolvedLLMConfig(state, "actions");
   const cleanup = selectResolvedLLMConfig(state, "dictationCleanup");
   // The endpoint falls back to dictation cleanup, so the key that opens it must too,
   // or an inherited endpoint gets called with no credential.
   const borrowsEndpoint = inheritsFallbackEndpoint(
     {
       mode: cfg.mode,
-      cloudBaseUrl: state.noteFormattingCloudBaseUrl,
-      remoteUrl: state.noteFormattingRemoteUrl,
+      cloudBaseUrl: state.actionsCloudBaseUrl,
+      remoteUrl: state.actionsRemoteUrl,
     },
     cleanup.mode
   );
@@ -2542,7 +2538,7 @@ export const selectResolvedLLMConfig = (
     remoteUrl: read("remoteUrl") || fallback?.remoteUrl,
     // Not inherited here: the settings editor renders this field, and a borrowed key
     // in it would be committed to this scope's storage by an idle edit. Inheritance
-    // belongs on the request path — see selectResolvedNoteFormatting.
+    // belongs on the request path — see selectResolvedActions.
     customApiKey: read("customApiKey"),
     disableThinking,
   };
@@ -2564,7 +2560,7 @@ export const selectResolvedLLMConfig = (
 // setters so the values survive restarts.
 const SECRET_SCOPE_KEY_SETTERS = {
   cleanupCustomApiKey: "setCleanupCustomApiKey",
-  noteFormattingCustomApiKey: "setNoteFormattingCustomApiKey",
+  actionsCustomApiKey: "setActionsCustomApiKey",
   translationCustomApiKey: "setTranslationCustomApiKey",
   dictationAgentCustomApiKey: "setDictationAgentCustomApiKey",
   dictationAgentVisionCustomApiKey: "setDictationAgentVisionCustomApiKey",
@@ -2752,7 +2748,7 @@ export async function initializeSettings(): Promise<void> {
         tinfoil,
         customTx,
         customRx,
-        noteFormattingCustom,
+        actionsCustom,
         translationCustom,
         dictationAgentCustom,
         dictationAgentVisionCustom,
@@ -2804,7 +2800,7 @@ export async function initializeSettings(): Promise<void> {
         cleanupCustomApiKey: customRx || "",
         bedrockAccessKeyId: bedrockAccessKeyId || "",
         ...(await migrateScopeCustomKeys([
-          ["noteFormattingCustomApiKey", noteFormattingCustom, "saveNoteFormattingCustomKey"],
+          ["actionsCustomApiKey", actionsCustom, "saveNoteFormattingCustomKey"],
           ["translationCustomApiKey", translationCustom, "saveTranslationCustomKey"],
           ["dictationAgentCustomApiKey", dictationAgentCustom, "saveDictationAgentCustomKey"],
           [

@@ -34,7 +34,7 @@ export async function generateMeetingMemory(args: {
     const rows = (await window.electronAPI?.getNoteSegments?.(args.noteId)) ?? [];
     if (rows.length === 0) return null;
 
-    const config = selectResolvedLLMConfig(getSettings(), "noteFormatting");
+    const config = selectResolvedLLMConfig(getSettings(), "actions");
     if (!config.model) {
       logger.info("Skipping memory extraction — no note formatting model", {}, "memory");
       return null;
@@ -54,7 +54,7 @@ export async function generateMeetingMemory(args: {
     const response = await ReasoningService.processText(transcript, config.model, null, {
       systemPrompt: MEMORY_EXTRACTION_PROMPT,
       provider: config.provider,
-      inferenceScope: "noteFormatting",
+      inferenceScope: "actions",
       // Extraction is a transcription task, not a creative one: the same
       // meeting should yield the same objects, or consolidation sees a
       // reworded duplicate as a new claim every time.

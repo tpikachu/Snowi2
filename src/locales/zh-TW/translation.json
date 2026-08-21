@@ -1890,19 +1890,10 @@
       "tabs": {
         "dictationCleanup": "聽寫清理",
         "dictationAgent": "語音助手",
-        "noteFormatting": "操作",
         "chatIntelligence": "聊天",
-        "dictationTranslation": "翻譯"
+        "dictationTranslation": "翻譯",
+        "actions": "操作"
       }
-    },
-    "noteFormatting": {
-      "autoGenerateTitle": "自動產生筆記標題",
-      "autoGenerateTitleDescription": "使用 AI 在轉錄或增強後為筆記產生簡短標題",
-      "actionsTitle": "操作",
-      "actionsDescription": "Snowy 替你寫的所有內容。「產生筆記」會在每場保留的會議後自動執行，其餘的按需執行。",
-      "actionsRowDescription": "建立、編輯和排序可在筆記上執行的操作。",
-      "manageActions": "管理",
-      "modelDescription": "所有操作都使用這個模型，包括會議結束時的紀錄。"
     },
     "transcription": {
       "customSetup": "自訂設定",
@@ -2217,6 +2208,15 @@
       },
       "title": "快速鍵",
       "useSuggested": "使用 {{hotkey}}"
+    },
+    "actions": {
+      "autoGenerateTitle": "自動產生筆記標題",
+      "autoGenerateTitleDescription": "使用 AI 在轉錄或增強後為筆記產生簡短標題",
+      "actionsTitle": "操作",
+      "actionsDescription": "Snowy 替你寫的所有內容。「產生筆記」會在每場保留的會議後自動執行，其餘的按需執行。",
+      "actionsRowDescription": "建立、編輯和排序可在筆記上執行的操作。",
+      "manageActions": "管理",
+      "modelDescription": "所有操作都使用這個模型，包括會議結束時的紀錄。"
     }
   },
   "models": {
@@ -3775,15 +3775,15 @@
           "title": "錄音與轉錄",
           "ready": "會議會在這台電腦上錄下並轉成文字。"
         },
-        "noteFormatting": {
-          "title": "操作",
-          "ready": "每場保留的會議都會自動執行「產生筆記」：摘要、決議事項和負責人。你自訂的操作也使用同一個模型。",
-          "missing": "不會整理出任何內容。「產生筆記」和其他所有操作都需要語言模型才能執行，會議只會停留在原始轉錄。"
-        },
         "chatIntelligence": {
           "title": "會議進行中就能得到答案",
           "ready": "會議面板會提示該說什麼，並根據你的筆記回答問題。",
           "missing": "會議面板可以提示你接下來該說什麼，並根據你的歷史筆記回答問題——不用離開通話。"
+        },
+        "actions": {
+          "title": "操作",
+          "ready": "每場保留的會議都會自動執行「產生筆記」：摘要、決議事項和負責人。你自訂的操作也使用同一個模型。",
+          "missing": "不會整理出任何內容。「產生筆記」和其他所有操作都需要語言模型才能執行，會議只會停留在原始轉錄。"
         }
       },
       "descriptionAllSet": "都已設定完成。以下是各部分正在使用的模型。",

@@ -11,7 +11,8 @@ function blob(segments) {
 
 test("projects a transcript into ordered, addressable rows", async () => {
   const { parseTranscriptSegments } = await load();
-  const rows = parseTranscriptSegments(7,
+  const rows = parseTranscriptSegments(
+    7,
     blob([
       { id: "seg-1", text: "Shall we start?", source: "mic", timestamp: 0, speakerName: "You" },
       { id: "seg-2", text: "Yes.", source: "system", timestamp: 2400, speaker: "spk_1" },
@@ -102,7 +103,10 @@ test("non-finite timestamps become null rather than NaN", async () => {
   const { parseTranscriptSegments } = await load();
   const rows = parseTranscriptSegments(
     1,
-    blob([{ id: "a", text: "x", timestamp: Number.NaN }, { id: "b", text: "y", timestamp: "12" }])
+    blob([
+      { id: "a", text: "x", timestamp: Number.NaN },
+      { id: "b", text: "y", timestamp: "12" },
+    ])
   );
 
   assert.equal(rows[0].start_ms, null);

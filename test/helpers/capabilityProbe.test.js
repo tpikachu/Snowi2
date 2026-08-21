@@ -23,8 +23,7 @@ const fakeOs = (overrides = {}) => ({
   homedir: () => os.homedir(),
 });
 
-const tempCache = (name) =>
-  path.join(fs.mkdtempSync(path.join(os.tmpdir(), "snowy-probe-")), name);
+const tempCache = (name) => path.join(fs.mkdtempSync(path.join(os.tmpdir(), "snowy-probe-")), name);
 
 test("reports the machine's memory and cores", async () => {
   const snapshot = await probeCapabilities({ osImpl: fakeOs({ totalGb: 32, logicalCores: 12 }) });

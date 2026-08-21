@@ -2173,19 +2173,10 @@
       "tabs": {
         "dictationCleanup": "Diktat-Bereinigung",
         "dictationAgent": "Voice Agent",
-        "noteFormatting": "Aktionen",
         "chatIntelligence": "Chat",
-        "dictationTranslation": "Übersetzung"
+        "dictationTranslation": "Übersetzung",
+        "actions": "Aktionen"
       }
-    },
-    "noteFormatting": {
-      "autoGenerateTitle": "Notiztitel automatisch generieren",
-      "autoGenerateTitleDescription": "KI verwenden, um nach der Transkription oder Verbesserung einen kurzen Titel für Notizen zu generieren",
-      "actionsTitle": "Aktionen",
-      "actionsDescription": "Alles, was Snowy für Sie schreibt. Notizen erzeugen läuft bei jedem behaltenen Meeting; der Rest auf Zuruf.",
-      "actionsRowDescription": "Aktionen für Notizen anlegen, bearbeiten und sortieren.",
-      "manageActions": "Verwalten",
-      "modelDescription": "Alle Aktionen laufen auf diesem Modell, auch die Zusammenfassung am Ende eines Meetings."
     },
     "transcription": {
       "customSetup": "Benutzerdefinierte Einrichtung",
@@ -2305,6 +2296,15 @@
       },
       "title": "Tastenkürzel",
       "useSuggested": "{{hotkey}} verwenden"
+    },
+    "actions": {
+      "autoGenerateTitle": "Notiztitel automatisch generieren",
+      "autoGenerateTitleDescription": "KI verwenden, um nach der Transkription oder Verbesserung einen kurzen Titel für Notizen zu generieren",
+      "actionsTitle": "Aktionen",
+      "actionsDescription": "Alles, was Snowy für Sie schreibt. Notizen erzeugen läuft bei jedem behaltenen Meeting; der Rest auf Zuruf.",
+      "actionsRowDescription": "Aktionen für Notizen anlegen, bearbeiten und sortieren.",
+      "manageActions": "Verwalten",
+      "modelDescription": "Alle Aktionen laufen auf diesem Modell, auch die Zusammenfassung am Ende eines Meetings."
     }
   },
   "models": {
@@ -3775,15 +3775,15 @@
           "title": "Aufnahme und Transkription",
           "ready": "Meetings werden auf diesem Rechner aufgezeichnet und in Text umgewandelt."
         },
-        "noteFormatting": {
-          "title": "Aktionen",
-          "ready": "Notizen erzeugen läuft bei jedem behaltenen Meeting: Zusammenfassung, Entscheidungen und Zuständigkeiten. Eigene Aktionen nutzen dasselbe Modell.",
-          "missing": "Es wird nichts ausformuliert. Notizen erzeugen und alle anderen Aktionen brauchen ein Sprachmodell, also bleiben Meetings reine Transkripte."
-        },
         "chatIntelligence": {
           "title": "Antworten während des Meetings",
           "ready": "Das Meeting-Panel schlägt vor, was Sie sagen können, und antwortet aus Ihren Notizen.",
           "missing": "Das Meeting-Panel kann vorschlagen, was Sie als Nächstes sagen, und Fragen aus Ihren früheren Notizen beantworten — ohne den Call zu verlassen."
+        },
+        "actions": {
+          "title": "Aktionen",
+          "ready": "Notizen erzeugen läuft bei jedem behaltenen Meeting: Zusammenfassung, Entscheidungen und Zuständigkeiten. Eigene Aktionen nutzen dasselbe Modell.",
+          "missing": "Es wird nichts ausformuliert. Notizen erzeugen und alle anderen Aktionen brauchen ein Sprachmodell, also bleiben Meetings reine Transkripte."
         }
       },
       "descriptionAllSet": "Alles ist eingerichtet. Das läuft jeweils darunter.",

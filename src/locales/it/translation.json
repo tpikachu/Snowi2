@@ -1890,19 +1890,10 @@
       "tabs": {
         "dictationCleanup": "Pulizia della dettatura",
         "dictationAgent": "Voice Agent",
-        "noteFormatting": "Azioni",
         "chatIntelligence": "Chat",
-        "dictationTranslation": "Traduzione"
+        "dictationTranslation": "Traduzione",
+        "actions": "Azioni"
       }
-    },
-    "noteFormatting": {
-      "autoGenerateTitle": "Genera automaticamente i titoli delle note",
-      "autoGenerateTitleDescription": "Usa l'IA per generare un titolo breve per le note dopo la trascrizione o il miglioramento",
-      "actionsTitle": "Azioni",
-      "actionsDescription": "Tutto ciò che Snowy scrive per te. Genera note parte a ogni riunione che tieni; il resto quando lo chiedi.",
-      "actionsRowDescription": "Crea, modifica e riordina le azioni eseguibili su una nota.",
-      "manageActions": "Gestisci",
-      "modelDescription": "Tutte le azioni girano su questo modello, incluso il verbale a fine riunione."
     },
     "transcription": {
       "customSetup": "Configurazione personalizzata",
@@ -2217,6 +2208,15 @@
       },
       "title": "Scorciatoie",
       "useSuggested": "Usa {{hotkey}}"
+    },
+    "actions": {
+      "autoGenerateTitle": "Genera automaticamente i titoli delle note",
+      "autoGenerateTitleDescription": "Usa l'IA per generare un titolo breve per le note dopo la trascrizione o il miglioramento",
+      "actionsTitle": "Azioni",
+      "actionsDescription": "Tutto ciò che Snowy scrive per te. Genera note parte a ogni riunione che tieni; il resto quando lo chiedi.",
+      "actionsRowDescription": "Crea, modifica e riordina le azioni eseguibili su una nota.",
+      "manageActions": "Gestisci",
+      "modelDescription": "Tutte le azioni girano su questo modello, incluso il verbale a fine riunione."
     }
   },
   "models": {
@@ -3775,15 +3775,15 @@
           "title": "Registrazione e trascrizione",
           "ready": "Le riunioni vengono catturate e trasformate in testo su questo computer."
         },
-        "noteFormatting": {
-          "title": "Azioni",
-          "ready": "Genera note parte a ogni riunione che tieni: un riassunto, le decisioni e chi deve fare cosa. Le tue azioni usano lo stesso modello.",
-          "missing": "Non viene scritto niente. Genera note e tutte le altre azioni hanno bisogno di un modello linguistico, quindi le riunioni restano trascrizioni grezze."
-        },
         "chatIntelligence": {
           "title": "Risposte durante la riunione",
           "ready": "Il pannello suggerisce cosa dire e risponde partendo dai tuoi appunti.",
           "missing": "Il pannello della riunione può suggerire cosa dire e rispondere alle tue domande partendo dagli appunti passati, senza uscire dalla chiamata."
+        },
+        "actions": {
+          "title": "Azioni",
+          "ready": "Genera note parte a ogni riunione che tieni: un riassunto, le decisioni e chi deve fare cosa. Le tue azioni usano lo stesso modello.",
+          "missing": "Non viene scritto niente. Genera note e tutte le altre azioni hanno bisogno di un modello linguistico, quindi le riunioni restano trascrizioni grezze."
         }
       },
       "descriptionAllSet": "È tutto configurato. Ecco cosa usa ogni parte.",

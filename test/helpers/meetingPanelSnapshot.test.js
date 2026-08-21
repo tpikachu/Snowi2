@@ -48,7 +48,10 @@ test("a meeting that has not started reads zero", async () => {
 
 test("a start stamped in the future never yields a negative clock", async () => {
   const { buildMeetingPanelSnapshot } = await load();
-  assert.equal(buildMeetingPanelSnapshot(source({ recordingStartedAt: 9_000 }), 1_000).capturedMs, 0);
+  assert.equal(
+    buildMeetingPanelSnapshot(source({ recordingStartedAt: 9_000 }), 1_000).capturedMs,
+    0
+  );
 });
 
 // Publishing on every tick would put an IPC message behind a number the panel
@@ -77,7 +80,11 @@ test("every field the panel renders counts as a change", async () => {
 
   for (const change of changes) {
     const next = buildMeetingPanelSnapshot(source(change), 5_000);
-    assert.equal(snapshotsEqual(base, next), false, `expected a change for ${JSON.stringify(change)}`);
+    assert.equal(
+      snapshotsEqual(base, next),
+      false,
+      `expected a change for ${JSON.stringify(change)}`
+    );
   }
 });
 

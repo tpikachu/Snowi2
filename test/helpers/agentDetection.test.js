@@ -20,10 +20,7 @@ test("matches the name after a greeting cue", async () => {
 test("matches the name opening a new sentence", async () => {
   const { detectAgentName } = await load();
 
-  assert.equal(
-    detectAgentName("That's everything. Snowy, format this as bullets", "Snowy"),
-    true
-  );
+  assert.equal(detectAgentName("That's everything. Snowy, format this as bullets", "Snowy"), true);
 });
 
 test("ignores mentions that are dictated content, not commands", async () => {
@@ -42,10 +39,7 @@ test("handles STT splitting or misspelling the name, with the same gating", asyn
   assert.equal(detectAgentName("hey snowy translate this", "Snowy"), true);
   assert.equal(detectAgentName("Sno wi, take a note", "Snowy"), true);
   // ...but not as a mid-sentence mention...
-  assert.equal(
-    detectAgentName("people keep calling snowy a dictation app", "Snowy"),
-    false
-  );
+  assert.equal(detectAgentName("people keep calling snowy a dictation app", "Snowy"), false);
   // ...and a two-edit mishearing is beyond the budget even when addressed.
   assert.equal(detectAgentName("hey snowed translate this", "Snowy"), false);
 });

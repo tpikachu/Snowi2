@@ -65,11 +65,8 @@ test("does not remove agent name when only surrounding whitespace changes", asyn
 
 test("removes previous agent name when oldName contains surrounding whitespace", async () => {
   const { agentNameDictionaryChanges } = await load();
-  assert.deepEqual(
-    agentNameDictionaryChanges(["Snowy", "Alice"], "Jarvis", "  Snowy  "),
-    {
-      add: ["Jarvis"],
-      remove: ["Snowy"],
-    }
-  );
+  assert.deepEqual(agentNameDictionaryChanges(["Snowy", "Alice"], "Jarvis", "  Snowy  "), {
+    add: ["Jarvis"],
+    remove: ["Snowy"],
+  });
 });
