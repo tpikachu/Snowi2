@@ -37,6 +37,7 @@ class WindowManager {
     this.transcriptionPreviewWindow = null;
     this.meetingPanelWindow = null;
     this._meetingPanelState = null;
+    this._meetingPanelTranscript = null;
     this._meetingPanelOpening = null;
     /** True only while a meeting is holding the control panel minimised. */
     this._minimizedForMeeting = false;
@@ -1475,6 +1476,23 @@ class WindowManager {
     win.webContents.send("meeting-panel-level", level);
   }
 
+  /**
+   * The transcript tail. Cached like the snapshot rather than only forwarded,
+   * because the panel's renderer starts after the meeting and would otherwise
+   * show an empty transcript until the next word is spoken — which, in a
+   * meeting someone is listening to rather than talking in, can be a while.
+   */
+  sendMeetingPanelTranscript(transcript) {
+    this._meetingPanelTranscript = transcript;
+    const win = this.meetingPanelWindow;
+    if (!win || win.isDestroyed() || win.webContents.isLoading()) return;
+    win.webContents.send("meeting-panel-transcript", transcript);
+  }
+
+  getMeetingPanelTranscript() {
+    return this._meetingPanelTranscript;
+  }
+
   getMeetingPanelState() {
     return this._meetingPanelState;
   }
@@ -1577,6 +1595,9 @@ class WindowManager {
 
   closeMeetingPanel() {
     this._meetingPanelState = null;
+    // Cleared with the panel, or the next meeting would open showing the last
+    // one's words until somebody spoke.
+    this._meetingPanelTranscript = null;
     const win = this.meetingPanelWindow;
     this.meetingPanelWindow = null;
     if (win && !win.isDestroyed()) win.close();

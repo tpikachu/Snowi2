@@ -2890,6 +2890,21 @@
         "noMic": "Sem fonte de áudio",
         "paused": "Captura pausada",
         "systemOnly": "Apenas o áudio do sistema"
+      },
+      "suggestion": {
+        "label": "Sugestão",
+        "pending": "As sugestões aparecem aqui assim que o assistente for configurado."
+      },
+      "transcript": {
+        "label": "Transcrição",
+        "waiting": "Ouvindo…",
+        "earlier_one": "{{count}} linha anterior",
+        "earlier_other": "{{count}} linhas anteriores"
+      },
+      "ask": {
+        "label": "Pergunte sobre esta reunião",
+        "comingSoon": "Pergunte qualquer coisa — em breve",
+        "send": "Enviar"
       }
     },
     "transcript": {

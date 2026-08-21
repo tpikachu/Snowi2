@@ -2938,6 +2938,21 @@
         "noMic": "Sin fuente de audio",
         "paused": "Captura en pausa",
         "systemOnly": "Solo audio del sistema"
+      },
+      "suggestion": {
+        "label": "Sugerencia",
+        "pending": "Las sugerencias aparecerán aquí cuando configures el asistente."
+      },
+      "transcript": {
+        "label": "Transcripción",
+        "waiting": "Escuchando…",
+        "earlier_one": "{{count}} línea anterior",
+        "earlier_other": "{{count}} líneas anteriores"
+      },
+      "ask": {
+        "label": "Pregunta sobre esta reunión",
+        "comingSoon": "Pregunta lo que quieras — próximamente",
+        "send": "Enviar"
       }
     },
     "transcript": {

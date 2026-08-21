@@ -2890,6 +2890,21 @@
         "noMic": "沒有音訊來源",
         "paused": "擷取已暫停",
         "systemOnly": "僅系統音訊"
+      },
+      "suggestion": {
+        "label": "建議",
+        "pending": "設定助理後，建議會顯示在這裡。"
+      },
+      "transcript": {
+        "label": "轉錄",
+        "waiting": "正在聆聽…",
+        "earlier_one": "更早的 {{count}} 行",
+        "earlier_other": "更早的 {{count}} 行"
+      },
+      "ask": {
+        "label": "詢問這場會議",
+        "comingSoon": "有問題儘管問 — 即將推出",
+        "send": "傳送"
       }
     },
     "transcript": {

@@ -1,6 +1,7 @@
 import type { ModelDefinition } from "../models/ModelRegistry";
 import type { TinfoilCatalogModel } from "../models/tinfoilModels";
 import type { MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
+import type { PanelTranscript } from "../utils/meetingPanelTranscript";
 
 /** What the floating meeting panel can ask the control panel to do. */
 export type MeetingPanelCommand = "pause" | "resume" | "stop" | "open";
@@ -2094,11 +2095,15 @@ declare global {
       meetingPanelLevel?: (level: number) => void;
       /** The state the panel missed while its window was loading. */
       meetingPanelGetState?: () => Promise<MeetingPanelSnapshot | null>;
+      /** Transcript tail, on its own throttled channel. */
+      meetingPanelTranscript?: (transcript: PanelTranscript) => void;
+      meetingPanelGetTranscript?: () => Promise<PanelTranscript | null>;
       meetingPanelCommand?: (
         command: MeetingPanelCommand
       ) => Promise<{ success: boolean; error?: string }>;
       onMeetingPanelState?: (callback: (snapshot: MeetingPanelSnapshot) => void) => () => void;
       onMeetingPanelLevel?: (callback: (level: number) => void) => () => void;
+      onMeetingPanelTranscript?: (callback: (transcript: PanelTranscript) => void) => () => void;
       onMeetingPanelCommand?: (callback: (command: MeetingPanelCommand) => void) => () => void;
 
       /** Meeting pre-roll: buffer while a detection prompt is up, or drop it. */

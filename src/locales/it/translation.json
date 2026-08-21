@@ -2890,6 +2890,21 @@
         "noMic": "Nessuna sorgente audio",
         "paused": "Acquisizione in pausa",
         "systemOnly": "Solo audio di sistema"
+      },
+      "suggestion": {
+        "label": "Suggerimento",
+        "pending": "I suggerimenti appariranno qui una volta configurato l'assistente."
+      },
+      "transcript": {
+        "label": "Trascrizione",
+        "waiting": "In ascolto…",
+        "earlier_one": "{{count}} riga precedente",
+        "earlier_other": "{{count}} righe precedenti"
+      },
+      "ask": {
+        "label": "Chiedi di questa riunione",
+        "comingSoon": "Chiedi quello che vuoi — in arrivo",
+        "send": "Invia"
       }
     },
     "transcript": {

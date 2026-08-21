@@ -2818,6 +2818,21 @@
         "noMic": "音声ソースなし",
         "paused": "キャプチャ一時停止中",
         "systemOnly": "システム音声のみ"
+      },
+      "suggestion": {
+        "label": "提案",
+        "pending": "アシスタントを設定すると、ここに提案が表示されます。"
+      },
+      "transcript": {
+        "label": "文字起こし",
+        "waiting": "聞いています…",
+        "earlier_one": "以前の {{count}} 行",
+        "earlier_other": "以前の {{count}} 行"
+      },
+      "ask": {
+        "label": "この会議について質問する",
+        "comingSoon": "何でも質問できます — 近日公開",
+        "send": "送信"
       }
     },
     "transcript": {

@@ -2890,6 +2890,21 @@
         "noMic": "没有音频来源",
         "paused": "采集已暂停",
         "systemOnly": "仅系统音频"
+      },
+      "suggestion": {
+        "label": "建议",
+        "pending": "设置助手后，建议会显示在这里。"
+      },
+      "transcript": {
+        "label": "转写",
+        "waiting": "正在聆听…",
+        "earlier_one": "更早的 {{count}} 行",
+        "earlier_other": "更早的 {{count}} 行"
+      },
+      "ask": {
+        "label": "询问这场会议",
+        "comingSoon": "有问题尽管问 — 即将推出",
+        "send": "发送"
       }
     },
     "transcript": {

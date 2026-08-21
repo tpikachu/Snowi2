@@ -679,6 +679,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   meetingPanelPublish: (snapshot) => ipcRenderer.send("meeting-panel-publish", snapshot),
   meetingPanelLevel: (level) => ipcRenderer.send("meeting-panel-level", level),
   meetingPanelGetState: () => ipcRenderer.invoke("meeting-panel-get-state"),
+  // Its own channel, like the level: the transcript changes several times a
+  // second while a snapshot changes a handful of times an hour.
+  meetingPanelTranscript: (transcript) => ipcRenderer.send("meeting-panel-transcript", transcript),
+  meetingPanelGetTranscript: () => ipcRenderer.invoke("meeting-panel-get-transcript"),
   meetingPanelCommand: (command) => ipcRenderer.invoke("meeting-panel-command", command),
   onMeetingPanelState: registerListener(
     "meeting-panel-state",
@@ -687,6 +691,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onMeetingPanelLevel: registerListener(
     "meeting-panel-level",
     (callback) => (_event, level) => callback(level)
+  ),
+  onMeetingPanelTranscript: registerListener(
+    "meeting-panel-transcript",
+    (callback) => (_event, transcript) => callback(transcript)
   ),
   onMeetingPanelCommand: registerListener(
     "meeting-panel-command",

@@ -3097,6 +3097,21 @@
         "noMic": "Keine Audioquelle",
         "paused": "Aufnahme pausiert",
         "systemOnly": "Nur Systemaudio"
+      },
+      "suggestion": {
+        "label": "Vorschlag",
+        "pending": "Vorschläge erscheinen hier, sobald der Assistent eingerichtet ist."
+      },
+      "transcript": {
+        "label": "Transkript",
+        "waiting": "Hört zu…",
+        "earlier_one": "{{count}} frühere Zeile",
+        "earlier_other": "{{count}} frühere Zeilen"
+      },
+      "ask": {
+        "label": "Frage zu diesem Meeting",
+        "comingSoon": "Fragen Sie etwas — demnächst",
+        "send": "Senden"
       }
     },
     "transcript": {

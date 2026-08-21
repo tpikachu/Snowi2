@@ -154,13 +154,24 @@ const TRANSCRIPTION_PREVIEW_CONFIG = {
 // Spec §12.1 requires the meeting panel to be resizable, so these are real
 // bounds rather than a fixed size: wide enough for a title and a clock at the
 // minimum, tall enough at the maximum for the context panel that lands later.
+/**
+ * A side panel, not a status bar.
+ *
+ * It was a 56px strip that showed the clock and three buttons, back when the
+ * meeting itself lived in the main window. Now the main window minimises when a
+ * meeting starts and this is where the meeting happens: suggestions, a live
+ * transcript, and the question box. That needs height.
+ *
+ * `minHeight` stays low enough to collapse it back to roughly a bar for anyone
+ * who wants only the controls.
+ */
 const MEETING_PANEL_SIZE_LIMITS = {
-  minWidth: 300,
-  defaultWidth: 380,
+  minWidth: 320,
+  defaultWidth: 400,
   maxWidth: 720,
-  minHeight: 52,
-  defaultHeight: 56,
-  maxHeight: 560,
+  minHeight: 56,
+  defaultHeight: 620,
+  maxHeight: 1200,
 };
 
 const MEETING_PANEL_CONFIG = {
@@ -257,9 +268,12 @@ class WindowPositionUtil {
     const height = size.height || MEETING_PANEL_SIZE_LIMITS.defaultHeight;
     const MARGIN = 12;
     const workArea = display.workArea || display.bounds;
+    // Docked to the right edge rather than centred at the top. A tall panel
+    // centred horizontally sits on top of whatever the meeting is showing;
+    // against the edge it takes the strip of screen a video call uses least.
     const bounds = {
-      x: Math.round(workArea.x + (workArea.width - width) / 2),
-      y: workArea.y + MARGIN,
+      x: workArea.x + workArea.width - width - MARGIN,
+      y: Math.round(workArea.y + Math.max(MARGIN, (workArea.height - height) / 2)),
       width,
       height,
     };

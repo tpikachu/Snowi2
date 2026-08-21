@@ -1,24 +1,32 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ExternalLink, Pause, Play, Square } from "lucide-react";
+import { ExternalLink, Lightbulb, Pause, Play, SendHorizontal, Square } from "lucide-react";
 import { capturedMsAt, type MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
+import type { PanelTranscript } from "../utils/meetingPanelTranscript";
 import type { MeetingPanelCommand } from "../types/electron";
 import { formatMmSs } from "../utils/formatDuration";
 import { cn } from "./lib/utils";
 
 /**
- * The meeting panel: a floating status bar that stays with the user while they
- * are in the meeting rather than in Snowy.
+ * The meeting panel: where the meeting happens.
  *
- * It is a view, not a controller — the capture graph lives in the control
- * panel's renderer, so this window renders published snapshots and sends
- * commands back. Anything it can do, the in-app controls can do too, and both
- * go through the same store functions.
+ * It used to be a status bar, back when the meeting itself lived in the main
+ * window. Now the main window minimises when a meeting starts and this is the
+ * surface — a suggestion the assistant has already prepared, a small live
+ * transcript, and a question box.
  *
- * Visually it is the dictation HUD's language reused wholesale: same capsule,
- * same centre-weighted meter, same tabular clock, same always-dark ground. It
- * follows that convention rather than the app theme because it floats over
- * someone else's window, not inside ours.
+ * The three sections are sized by how much attention each deserves. The
+ * suggestion is at the top because it is the thing worth glancing at mid
+ * sentence. The transcript is deliberately small and scrolls: it is there to
+ * confirm the meeting is being heard, not to be read — anyone reading a
+ * transcript during a call has stopped attending to the call.
+ *
+ * Still a view, not a controller. The capture graph lives in the control
+ * panel's renderer; this window renders published state and sends commands
+ * back, so pause, resume and stop have one implementation.
+ *
+ * Always-dark on purpose, like the dictation HUD: it floats over someone
+ * else's window, not inside ours.
  */
 
 const BAR_COUNT = 5;
@@ -26,6 +34,9 @@ const BAR_WEIGHTS = [0.58, 0.84, 1, 0.84, 0.58];
 const BAR_FLOOR = 0.2;
 const METER_HEIGHT_PX = 14;
 const CLOCK_INTERVAL_MS = 250;
+
+/** Below this the window is a bar again, and the panes are not worth drawing. */
+const COMPACT_HEIGHT_PX = 140;
 
 const computeBarHeight = (level: number, index: number) => {
   const scaled = Math.sqrt(level) * 2.4 * BAR_WEIGHTS[index];
@@ -38,9 +49,14 @@ const truncateTitle = (title: string) =>
 export default function MeetingPanelOverlay() {
   const { t } = useTranslation();
   const [snapshot, setSnapshot] = useState<MeetingPanelSnapshot | null>(null);
+  const [transcript, setTranscript] = useState<PanelTranscript | null>(null);
   const [level, setLevel] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isBusy, setIsBusy] = useState(false);
+  const [question, setQuestion] = useState("");
+  const [isCompact, setIsCompact] = useState(false);
+
+  const transcriptRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // The window loads after the meeting has already started, so the state it
@@ -48,26 +64,47 @@ export default function MeetingPanelOverlay() {
     void window.electronAPI?.meetingPanelGetState?.().then((initial) => {
       if (initial) setSnapshot(initial);
     });
+    void window.electronAPI?.meetingPanelGetTranscript?.().then((initial) => {
+      if (initial) setTranscript(initial);
+    });
 
     const unbindState = window.electronAPI?.onMeetingPanelState?.(setSnapshot);
     const unbindLevel = window.electronAPI?.onMeetingPanelLevel?.(setLevel);
+    const unbindTranscript = window.electronAPI?.onMeetingPanelTranscript?.(setTranscript);
     return () => {
       unbindState?.();
       unbindLevel?.();
+      unbindTranscript?.();
     };
+  }, []);
+
+  // The panel is resizable down to a bar. Rather than two components, the panes
+  // drop out below a height where they would be unreadable anyway.
+  useEffect(() => {
+    const measure = () => setIsCompact(window.innerHeight < COMPACT_HEIGHT_PX);
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
   }, []);
 
   useEffect(() => {
     if (!snapshot) return undefined;
     // Read from the snapshot's own timestamp on every tick rather than counted
-    // up locally: this window is hidden whenever the control panel has focus,
-    // and a clock built from ticks would lose exactly that time.
+    // up locally, so time is never lost to a throttled or hidden window.
     const update = () => setElapsedMs(capturedMsAt(snapshot, Date.now()));
     update();
     if (snapshot.isPaused) return undefined;
     const intervalId = setInterval(update, CLOCK_INTERVAL_MS);
     return () => clearInterval(intervalId);
   }, [snapshot]);
+
+  // Follows the conversation. No "scroll back to live" affordance here on
+  // purpose: this pane holds a couple of minutes at most, and the full
+  // transcript is a click away in the note.
+  useEffect(() => {
+    const element = transcriptRef.current;
+    if (element) element.scrollTop = element.scrollHeight;
+  }, [transcript]);
 
   const send = useCallback(async (command: MeetingPanelCommand) => {
     setIsBusy(true);
@@ -101,118 +138,217 @@ export default function MeetingPanelOverlay() {
         ? t("notes.meetingPanel.sources.both")
         : t("notes.meetingPanel.sources.micOnly");
 
+  const lines = transcript?.lines ?? [];
+
   return (
     <div
-      className="meeting-panel-window flex h-full w-full items-center bg-transparent p-1"
+      className="meeting-panel-window flex h-full w-full flex-col bg-transparent p-1"
       style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
     >
       <div
         className={cn(
-          "hud-surface flex h-full w-full items-center gap-2 rounded-[13px] pl-2.5 pr-1.5",
+          "hud-surface flex h-full w-full flex-col overflow-hidden rounded-[13px]",
           isPaused ? "hud-surface" : isWaitingForMic ? "hud-surface-warn" : "hud-surface-live"
         )}
       >
-        <span
-          className="flex shrink-0 items-end gap-[2px]"
-          style={{ height: METER_HEIGHT_PX }}
-          aria-hidden="true"
-        >
-          {Array.from({ length: BAR_COUNT }, (_, i) => (
-            <span
-              key={i}
-              className={cn(
-                "w-[2px] rounded-full transition-[height] duration-75",
-                isPaused ? "bg-hud-muted" : isWaitingForMic ? "bg-hud-warning" : "bg-hud-accent"
-              )}
-              style={{ height: computeBarHeight(isPaused || isWaitingForMic ? 0 : level, i) }}
-            />
-          ))}
-        </span>
-
-        <span className="flex min-w-0 flex-1 flex-col justify-center gap-px">
-          <span className="truncate text-xs font-medium leading-tight text-hud-foreground">
-            {isPaused ? t("notes.meeting.pausedWithTitle", { title }) : title}
-          </span>
+        {/* Status row — the old panel, now the header. */}
+        <div className="flex shrink-0 items-center gap-2 py-1 pl-2.5 pr-1.5">
           <span
+            className="flex shrink-0 items-end gap-[2px]"
+            style={{ height: METER_HEIGHT_PX }}
+            aria-hidden="true"
+          >
+            {Array.from({ length: BAR_COUNT }, (_, i) => (
+              <span
+                key={i}
+                className={cn(
+                  "w-[2px] rounded-full transition-[height] duration-75",
+                  isPaused ? "bg-hud-muted" : isWaitingForMic ? "bg-hud-warning" : "bg-hud-accent"
+                )}
+                style={{ height: computeBarHeight(isPaused || isWaitingForMic ? 0 : level, i) }}
+              />
+            ))}
+          </span>
+
+          <span className="flex min-w-0 flex-1 flex-col justify-center gap-px">
+            <span className="truncate text-xs font-medium leading-tight text-hud-foreground">
+              {isPaused ? t("notes.meeting.pausedWithTitle", { title }) : title}
+            </span>
+            <span
+              className={cn(
+                "truncate text-[10px] leading-tight",
+                isWaitingForMic ? "text-hud-warning" : "text-hud-muted"
+              )}
+            >
+              {isWaitingForMic ? t("notes.meetingPill.waitingForMicrophone") : sourceLabel}
+            </span>
+          </span>
+
+          <span
+            data-numeric
             className={cn(
-              "truncate text-[10px] leading-tight",
+              "shrink-0 text-[11px] font-semibold leading-none tracking-[0.01em]",
               isWaitingForMic ? "text-hud-warning" : "text-hud-muted"
             )}
           >
-            {isWaitingForMic ? t("notes.meetingPill.waitingForMicrophone") : sourceLabel}
+            {formatMmSs(Math.floor(elapsedMs / 1000))}
           </span>
-        </span>
 
-        <span
-          data-numeric
-          className={cn(
-            "shrink-0 text-[11px] font-semibold leading-none tracking-[0.01em]",
-            isWaitingForMic ? "text-hud-warning" : "text-hud-muted"
-          )}
-        >
-          {formatMmSs(Math.floor(elapsedMs / 1000))}
-        </span>
+          <span className="h-4 w-px shrink-0 bg-hud-border" aria-hidden="true" />
 
-        <span className="h-4 w-px shrink-0 bg-hud-border" aria-hidden="true" />
-
-        <span
-          className="flex shrink-0 items-center gap-1"
-          style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-        >
-          <button
-            type="button"
-            onClick={() => void send("open")}
-            aria-label={openLabel}
-            title={openLabel}
-            className={cn(
-              "flex size-6 items-center justify-center rounded-md",
-              "text-hud-muted transition-colors duration-150",
-              "hover:bg-white/10 hover:text-hud-foreground",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
-            )}
+          <span
+            className="flex shrink-0 items-center gap-1"
+            style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
           >
-            <ExternalLink size={11} />
-          </button>
+            <button
+              type="button"
+              onClick={() => void send("open")}
+              aria-label={openLabel}
+              title={openLabel}
+              className={cn(
+                "flex size-6 items-center justify-center rounded-md",
+                "text-hud-muted transition-colors duration-150",
+                "hover:bg-white/10 hover:text-hud-foreground",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
+              )}
+            >
+              <ExternalLink size={11} />
+            </button>
 
-          <button
-            type="button"
-            onClick={() => void send(isPaused ? "resume" : "pause")}
-            disabled={isBusy}
-            aria-label={pauseLabel}
-            title={pauseLabel}
-            className={cn(
-              "flex size-6 items-center justify-center rounded-md",
-              "text-hud-muted transition-colors duration-150",
-              "hover:bg-white/10 hover:text-hud-foreground",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-              "disabled:opacity-50"
-            )}
-          >
-            {isPaused ? (
-              <Play size={11} fill="currentColor" />
-            ) : (
-              <Pause size={11} fill="currentColor" />
-            )}
-          </button>
+            <button
+              type="button"
+              onClick={() => void send(isPaused ? "resume" : "pause")}
+              disabled={isBusy}
+              aria-label={pauseLabel}
+              title={pauseLabel}
+              className={cn(
+                "flex size-6 items-center justify-center rounded-md",
+                "text-hud-muted transition-colors duration-150",
+                "hover:bg-white/10 hover:text-hud-foreground",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+                "disabled:opacity-50"
+              )}
+            >
+              {isPaused ? (
+                <Play size={11} fill="currentColor" />
+              ) : (
+                <Pause size={11} fill="currentColor" />
+              )}
+            </button>
 
-          <button
-            type="button"
-            onClick={() => void send("stop")}
-            disabled={isBusy}
-            aria-label={stopLabel}
-            title={stopLabel}
-            className={cn(
-              "flex h-7 items-center justify-center gap-1.5 rounded-lg px-2",
-              "text-[11px] font-medium transition-colors duration-150",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-              "bg-hud-danger/15 text-hud-danger hover:bg-hud-danger/25",
-              "disabled:cursor-not-allowed disabled:opacity-50"
-            )}
+            <button
+              type="button"
+              onClick={() => void send("stop")}
+              disabled={isBusy}
+              aria-label={stopLabel}
+              title={stopLabel}
+              className={cn(
+                "flex h-7 items-center justify-center gap-1.5 rounded-lg px-2",
+                "text-[11px] font-medium transition-colors duration-150",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+                "bg-hud-danger/15 text-hud-danger hover:bg-hud-danger/25",
+                "disabled:cursor-not-allowed disabled:opacity-50"
+              )}
+            >
+              <Square size={9} fill="currentColor" />
+              {stopLabel}
+            </button>
+          </span>
+        </div>
+
+        {!isCompact && (
+          <div
+            className="flex min-h-0 flex-1 flex-col gap-1.5 px-1.5 pb-1.5"
+            style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
           >
-            <Square size={9} fill="currentColor" />
-            {stopLabel}
-          </button>
-        </span>
+            {/* Suggestion. Top, because it is the one thing worth reading mid
+                sentence. Not yet wired to a model — the placeholder says so
+                rather than pretending to think. */}
+            <section className="shrink-0 rounded-[9px] border border-hud-border bg-white/[0.04] px-2.5 py-2">
+              <div className="mb-1 flex items-center gap-1.5">
+                <Lightbulb size={10} className="text-hud-accent" />
+                <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-hud-muted">
+                  {t("notes.meetingPanel.suggestion.label")}
+                </span>
+              </div>
+              <p className="text-[11px] leading-relaxed text-hud-muted/80">
+                {t("notes.meetingPanel.suggestion.pending")}
+              </p>
+            </section>
+
+            {/* Transcript. Small and scrolling by design. */}
+            <section className="flex min-h-0 flex-1 flex-col rounded-[9px] border border-hud-border bg-white/[0.03]">
+              <div className="flex shrink-0 items-center justify-between px-2.5 pb-1 pt-1.5">
+                <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-hud-muted">
+                  {t("notes.meetingPanel.transcript.label")}
+                </span>
+                {(transcript?.hiddenCount ?? 0) > 0 && (
+                  <span className="text-[9px] text-hud-muted/60">
+                    {t("notes.meetingPanel.transcript.earlier", {
+                      count: transcript?.hiddenCount ?? 0,
+                    })}
+                  </span>
+                )}
+              </div>
+              <div
+                ref={transcriptRef}
+                className="min-h-0 flex-1 space-y-1 overflow-y-auto px-2.5 pb-2"
+              >
+                {lines.length === 0 ? (
+                  <p className="pt-1 text-[11px] leading-relaxed text-hud-muted/60">
+                    {t("notes.meetingPanel.transcript.waiting")}
+                  </p>
+                ) : (
+                  lines.map((line) => (
+                    <p key={line.key} className="text-[11px] leading-relaxed">
+                      <span
+                        className={cn(
+                          "mr-1.5 text-[9px] font-semibold uppercase tracking-[0.06em]",
+                          line.source === "mic" ? "text-hud-accent" : "text-hud-muted/70"
+                        )}
+                      >
+                        {line.source === "mic"
+                          ? t("transcript.speaker.you")
+                          : t("transcript.speaker.others")}
+                      </span>
+                      <span className={cn(line.live ? "text-hud-muted" : "text-hud-foreground")}>
+                        {line.text}
+                      </span>
+                    </p>
+                  ))
+                )}
+              </div>
+            </section>
+
+            {/* Question box. Disabled until the assistant is wired, and it says
+                why — a box that swallows what you type is worse than one that
+                tells you it is not ready. */}
+            <form
+              className="flex shrink-0 items-center gap-1.5 rounded-[9px] border border-hud-border bg-white/[0.04] px-2 py-1.5"
+              onSubmit={(event) => event.preventDefault()}
+            >
+              <input
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                disabled
+                placeholder={t("notes.meetingPanel.ask.comingSoon")}
+                aria-label={t("notes.meetingPanel.ask.label")}
+                className={cn(
+                  "min-w-0 flex-1 bg-transparent text-[11px] text-hud-foreground outline-none",
+                  "placeholder:text-hud-muted/60 disabled:cursor-not-allowed"
+                )}
+              />
+              <button
+                type="submit"
+                disabled
+                aria-label={t("notes.meetingPanel.ask.send")}
+                className="flex size-5 shrink-0 items-center justify-center rounded text-hud-muted disabled:opacity-40"
+              >
+                <SendHorizontal size={11} />
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );

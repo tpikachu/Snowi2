@@ -10,9 +10,21 @@ import {
   resumeRecording,
   useMeetingRecordingStore,
 } from "../stores/meetingRecordingStore";
+import {
+  buildPanelTranscript,
+  panelTranscriptsEqual,
+  type PanelTranscript,
+} from "../utils/meetingPanelTranscript";
 import { isControlPanelWindow } from "../utils/windowContext";
 import type { MeetingPanelCommand } from "../types/electron";
 import logger from "../utils/logger";
+
+/**
+ * How often the transcript tail is rebuilt and, if it changed, sent.
+ * Fast enough to read as live, slow enough that a streaming caption does not
+ * cost one IPC round trip per word.
+ */
+const TRANSCRIPT_PUBLISH_MS = 250;
 
 /**
  * Connects the meeting store to the floating panel, which lives in its own
@@ -39,8 +51,26 @@ export function useMeetingPanelBridge(): void {
       window.electronAPI?.meetingPanelPublish?.(snapshot);
     };
 
+    // The transcript rides its own channel and its own clock. Publishing it
+    // from the store subscription would cross the IPC boundary on every word
+    // of every partial — several times a second once captions stream — and the
+    // panel cannot render faster than this anyway.
+    let lastTranscript: PanelTranscript | null = null;
+
+    const publishTranscript = () => {
+      const state = useMeetingRecordingStore.getState();
+      const transcript = state.isRecording
+        ? buildPanelTranscript(state)
+        : { lines: [], hiddenCount: 0 };
+      if (panelTranscriptsEqual(lastTranscript, transcript)) return;
+      lastTranscript = transcript;
+      window.electronAPI?.meetingPanelTranscript?.(transcript);
+    };
+
     publish(true);
+    publishTranscript();
     const unsubscribe = useMeetingRecordingStore.subscribe(() => publish());
+    const transcriptTimer = setInterval(publishTranscript, TRANSCRIPT_PUBLISH_MS);
 
     const unbindCommand = window.electronAPI?.onMeetingPanelCommand?.(
       (command: MeetingPanelCommand) => {
@@ -63,6 +93,7 @@ export function useMeetingPanelBridge(): void {
 
     return () => {
       unsubscribe();
+      clearInterval(transcriptTimer);
       unbindCommand?.();
       // Tells main the meeting is no longer being published, so the panel does
       // not outlive the renderer that was driving it.

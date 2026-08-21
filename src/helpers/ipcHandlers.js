@@ -7197,10 +7197,20 @@ class IPCHandlers {
       this.windowManager?.sendMeetingPanelLevel(typeof level === "number" ? level : 0);
     });
 
+    // `send` for the same reason as the level: this fires while someone talks,
+    // and a tail that arrives late has already been superseded.
+    ipcMain.on("meeting-panel-transcript", (_event, transcript) => {
+      this.windowManager?.sendMeetingPanelTranscript(transcript);
+    });
+
     // The panel's renderer starts after the meeting does, so it asks for the
     // state it missed rather than waiting for the next change.
     ipcMain.handle("meeting-panel-get-state", () => {
       return this.windowManager?.getMeetingPanelState() ?? null;
+    });
+
+    ipcMain.handle("meeting-panel-get-transcript", () => {
+      return this.windowManager?.getMeetingPanelTranscript() ?? null;
     });
 
     ipcMain.handle("meeting-panel-command", (_event, command) => {

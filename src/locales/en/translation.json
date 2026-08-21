@@ -3097,6 +3097,21 @@
         "noMic": "No audio source",
         "paused": "Capture paused",
         "systemOnly": "System audio only"
+      },
+      "suggestion": {
+        "label": "Suggested",
+        "pending": "Suggestions appear here once the assistant is set up."
+      },
+      "transcript": {
+        "label": "Transcript",
+        "waiting": "Listening…",
+        "earlier_one": "{{count}} earlier line",
+        "earlier_other": "{{count}} earlier lines"
+      },
+      "ask": {
+        "label": "Ask about this meeting",
+        "comingSoon": "Ask anything — coming soon",
+        "send": "Send"
       }
     },
     "transcript": {
