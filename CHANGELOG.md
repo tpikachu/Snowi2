@@ -85,6 +85,10 @@ listed there that are fixed are called out below.
 - Saving a meeting with no action model configured skips the write-up quietly
   instead of interrupting the end of the call with a setup prompt. The meeting
   still appears in Home's write-up backlog.
+- Buttons that open Settings on a particular panel now land on it. Opening
+  Settings from anywhere else in the app applied the section but not the panel,
+  so Home's "Set up" for Actions arrived at Language Models on whichever tab was
+  visited last.
 - The transcript pane no longer re-renders the whole conversation on every word,
   and no longer scrolls away from what you were reading.
 
