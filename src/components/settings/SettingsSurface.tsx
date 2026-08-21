@@ -4,6 +4,7 @@ import { Search, X } from "lucide-react";
 import { cn } from "../lib/utils";
 import WindowControls from "../WindowControls";
 import { SettingsLayoutProvider } from "../ui/useSettingsLayout";
+import { MAC_TRAFFIC_LIGHT_INSET_PX } from "../shell/macChrome";
 import { getCachedPlatform } from "../../utils/platform";
 import {
   SETTINGS_SEARCH_INDEX,
@@ -18,9 +19,10 @@ import {
   SettingsSurfaceContext,
 } from "./settingsSurfaceContext";
 
+// The nav owns the window's left edge here — there is no rail in front of it —
+// so it carries the full inset, and the content header beside it is already
+// clear at NAV_WIDTH_PX.
 const NAV_WIDTH_PX = 248;
-/** Traffic lights sit at x:20 with hiddenInset, so the nav title starts after them. */
-const MAC_TRAFFIC_LIGHT_INSET_PX = 84;
 
 const platform = getCachedPlatform();
 const isMac = platform === "darwin";

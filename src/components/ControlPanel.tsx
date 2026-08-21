@@ -28,9 +28,11 @@ import {
   useIsNarrowWindow,
   useMeetingRecordingStore,
 } from "../stores/meetingRecordingStore";
-import IconRail, { type ControlPanelView } from "./shell/IconRail";
+import IconRail, { ICON_RAIL_WIDTH_PX, type ControlPanelView } from "./shell/IconRail";
 import ContextPane from "./shell/ContextPane";
+import { macTopRowInset } from "./shell/macChrome";
 import {
+  CONTEXT_PANE_WIDTH_PX,
   ContextPaneSlotContext,
   useContextPaneCollapse,
   useContextPaneHost,
@@ -60,11 +62,6 @@ import type { CalendarEvent } from "../types/calendar";
 import logger from "../utils/logger";
 
 const platform = getCachedPlatform();
-
-// macOS draws its traffic lights over the top-left of the frameless window.
-// The icon rail normally takes that corner and starts below them; only the
-// side-panel layout, which drops the rail, has to inset its header instead.
-const MAC_TRAFFIC_LIGHT_INSET_PX = 84;
 
 const railUpdateButtonClass = [
   "relative flex size-9 items-center justify-center rounded-md",
@@ -821,10 +818,12 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     "personal-notes": t("sidebar.notes"),
   };
 
-  // The rail owns the window's left edge everywhere except the side-panel
-  // layout, which drops it — only then does the header inherit the inset.
-  const headerLeftInset =
-    platform === "darwin" && isSidePanelLayout ? MAC_TRAFFIC_LIGHT_INSET_PX : 8;
+  // Whatever stands between this header and the window's left edge. The rail
+  // is 48px and the traffic lights reach 84, so having a rail is not the same
+  // as being clear of them — `macTopRowInset` works out the difference.
+  const chromeLeftOfHeader =
+    (isSidePanelLayout ? 0 : ICON_RAIL_WIDTH_PX) + (showContextPane ? CONTEXT_PANE_WIDTH_PX : 0);
+  const headerLeftInset = platform === "darwin" ? macTopRowInset(chromeLeftOfHeader, 8) : 8;
 
   const openNoteFromFeed = useCallback((note: NoteItem) => {
     if (note.folder_id != null) setActiveFolderId(note.folder_id);

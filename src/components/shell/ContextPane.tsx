@@ -2,6 +2,11 @@ import React from "react";
 import { PanelLeftClose } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { CONTEXT_PANE_WIDTH_PX } from "./contextPaneSlot";
+import { ICON_RAIL_WIDTH_PX } from "./IconRail";
+import { macTopRowInset } from "./macChrome";
+import { getCachedPlatform } from "../../utils/platform";
+
+const isMac = getCachedPlatform() === "darwin";
 
 interface ContextPaneProps {
   /** Section name — this pane's own title, distinct from the content header. */
@@ -23,9 +28,16 @@ export default function ContextPane({ title, onCollapse, children }: ContextPane
       className="flex h-full shrink-0 flex-col border-r border-border-subtle bg-surface-1"
       style={{ width: CONTEXT_PANE_WIDTH_PX }}
     >
+      {/* This pane only ever renders beside the rail, and the rail is narrower
+          than the traffic lights, so its title needs the leftover inset too. */}
       <div
-        className="flex h-11 shrink-0 items-center gap-2 border-b border-border-subtle pl-3 pr-2"
-        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+        className="flex h-11 shrink-0 items-center gap-2 border-b border-border-subtle pr-2"
+        style={
+          {
+            WebkitAppRegion: "drag",
+            paddingLeft: isMac ? macTopRowInset(ICON_RAIL_WIDTH_PX, 12) : 12,
+          } as React.CSSProperties
+        }
       >
         <h2 className="min-w-0 flex-1 truncate text-[13px] font-medium leading-none tracking-tight text-foreground">
           {title}
