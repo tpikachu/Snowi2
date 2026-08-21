@@ -3110,7 +3110,8 @@
       "ask": {
         "label": "Frage zu diesem Meeting",
         "comingSoon": "Fragen Sie etwas — demnächst",
-        "send": "Senden"
+        "send": "Senden",
+        "empty": "Stellen Sie eine Frage, die Antwort erscheint hier."
       }
     },
     "transcript": {
@@ -3764,6 +3765,23 @@
       "action": "Ausarbeiten",
       "more_one": "und {{count}} weiteres",
       "more_other": "und {{count}} weitere"
+    },
+    "aiSetup": {
+      "title": "Snowy kann mehr als transkribieren",
+      "description": "Aufnahme und Transkription laufen von allein. Diese beiden brauchen dafür ein Sprachmodell.",
+      "configure": "Einrichten",
+      "dismiss": "Ausblenden",
+      "footnote": "Abonnieren Sie unseren Dienst oder verbinden Sie Ihren eigenen Anbieterschlüssel.",
+      "capabilities": {
+        "noteFormatting": {
+          "title": "Ausformulierte Meetings",
+          "description": "Derzeit werden Meetings transkribiert und bleiben Rohtext. Mit einem Modell endet jedes mit einer Zusammenfassung, den Entscheidungen und den Zuständigkeiten."
+        },
+        "chatIntelligence": {
+          "title": "Antworten während des Meetings",
+          "description": "Fragen Sie, was letztes Mal vereinbart wurde oder was Sie als Nächstes sagen sollten — beantwortet aus Ihren eigenen Notizen, ohne den Call zu verlassen."
+        }
+      }
     }
   },
   "tour": {

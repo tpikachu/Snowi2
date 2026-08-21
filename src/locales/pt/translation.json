@@ -2903,7 +2903,8 @@
       "ask": {
         "label": "Pergunte sobre esta reunião",
         "comingSoon": "Pergunte qualquer coisa — em breve",
-        "send": "Enviar"
+        "send": "Enviar",
+        "empty": "Faça uma pergunta e a resposta aparece aqui."
       }
     },
     "transcript": {
@@ -3764,6 +3765,23 @@
       "action": "Redigir",
       "more_one": "e mais {{count}}",
       "more_other": "e mais {{count}}"
+    },
+    "aiSetup": {
+      "title": "O Snowy faz mais do que transcrever",
+      "description": "A gravação e a transcrição funcionam sozinhas. Estas duas precisam de um modelo de linguagem para funcionar.",
+      "configure": "Configurar",
+      "dismiss": "Dispensar",
+      "footnote": "Assine nosso serviço ou conecte a chave do seu próprio provedor.",
+      "capabilities": {
+        "noteFormatting": {
+          "title": "Reuniões redigidas",
+          "description": "Hoje as reuniões são transcritas e ficam só como texto bruto. Com um modelo, cada uma termina com um resumo, as decisões e quem ficou com o quê."
+        },
+        "chatIntelligence": {
+          "title": "Respostas durante a reunião",
+          "description": "Pergunte o que foi combinado da última vez, ou o que dizer agora, e receba uma resposta tirada das suas próprias notas — sem sair da chamada."
+        }
+      }
     }
   },
   "tour": {

@@ -9,6 +9,7 @@ import NowCard from "./NowCard";
 import MeetingActivityCard from "./MeetingActivityCard";
 import CommitmentsCard from "./CommitmentsCard";
 import NeedsWriteUpCard from "./NeedsWriteUpCard";
+import AiSetupCard from "./AiSetupCard";
 import StatusPanel from "./StatusPanel";
 import { useRecentMeetings } from "../../hooks/useRecentMeetings";
 import { useUpcomingEvents } from "../../hooks/useUpcomingEvents";
@@ -82,11 +83,13 @@ export default function HomeView({
 
         <MeetingActivityCard />
 
-        {/* Both hide themselves when empty. Order is by how much they are
-            asking of the user: commitments are a to-do list, the write-up
-            backlog is a repair job. */}
+        {/* All three hide themselves when there is nothing to say. Order is by
+            how much they are asking of the user: commitments are a to-do list,
+            the write-up backlog is a repair job, and the AI setup is an offer
+            — so it goes last, where it cannot push real work down the page. */}
         <CommitmentsCard onOpenNote={openNoteById} />
         <NeedsWriteUpCard onOpenNote={openNoteById} />
+        <AiSetupCard />
 
         <div className="mt-4 flex gap-6">
           <div className="min-w-0 flex-1">

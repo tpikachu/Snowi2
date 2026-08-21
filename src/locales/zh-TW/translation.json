@@ -2903,7 +2903,8 @@
       "ask": {
         "label": "詢問這場會議",
         "comingSoon": "有問題儘管問 — 即將推出",
-        "send": "傳送"
+        "send": "傳送",
+        "empty": "提問後，答案會顯示在這裡。"
       }
     },
     "transcript": {
@@ -3764,6 +3765,23 @@
       "action": "整理",
       "more_one": "還有 {{count}} 場",
       "more_other": "還有 {{count}} 場"
+    },
+    "aiSetup": {
+      "title": "Snowy 不只是轉錄",
+      "description": "錄音和轉錄本身就能用。下面這兩項需要先設定語言模型。",
+      "configure": "去設定",
+      "dismiss": "不再提示",
+      "footnote": "訂閱我們的服務，或連接你自己的服務商金鑰。",
+      "capabilities": {
+        "noteFormatting": {
+          "title": "整理好的會議紀錄",
+          "description": "現在會議只會被轉錄成原始文字。設定模型後，每場會議結束時都會有摘要、決議事項和負責人。"
+        },
+        "chatIntelligence": {
+          "title": "會議進行中就能得到答案",
+          "description": "問問上次決定了什麼，或者接下來該怎麼說，答案會從你自己的歷史筆記中給出——不用離開通話。"
+        }
+      }
     }
   },
   "tour": {

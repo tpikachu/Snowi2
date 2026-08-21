@@ -2903,7 +2903,8 @@
       "ask": {
         "label": "询问这场会议",
         "comingSoon": "有问题尽管问 — 即将推出",
-        "send": "发送"
+        "send": "发送",
+        "empty": "提问后，答案会显示在这里。"
       }
     },
     "transcript": {
@@ -3764,6 +3765,23 @@
       "action": "整理",
       "more_one": "还有 {{count}} 场",
       "more_other": "还有 {{count}} 场"
+    },
+    "aiSetup": {
+      "title": "Snowy 不只是转写",
+      "description": "录音和转写本身就能用。下面这两项需要先配置语言模型。",
+      "configure": "去设置",
+      "dismiss": "不再提示",
+      "footnote": "订阅我们的服务，或连接你自己的服务商密钥。",
+      "capabilities": {
+        "noteFormatting": {
+          "title": "整理好的会议纪要",
+          "description": "现在会议只会被转写成原始文字。配置模型后，每场会议结束时都会有摘要、决定事项和责任人。"
+        },
+        "chatIntelligence": {
+          "title": "会议进行中就能得到答案",
+          "description": "问问上次定了什么，或者接下来该怎么说，答案会从你自己的历史笔记里给出——不用离开通话。"
+        }
+      }
     }
   },
   "tour": {

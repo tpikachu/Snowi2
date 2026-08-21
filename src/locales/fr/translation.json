@@ -3110,7 +3110,8 @@
       "ask": {
         "label": "Poser une question sur cette réunion",
         "comingSoon": "Posez votre question — bientôt disponible",
-        "send": "Envoyer"
+        "send": "Envoyer",
+        "empty": "Posez une question et la réponse apparaîtra ici."
       }
     },
     "transcript": {
@@ -3764,6 +3765,23 @@
       "action": "Rédiger",
       "more_one": "et {{count}} autre",
       "more_other": "et {{count}} autres"
+    },
+    "aiSetup": {
+      "title": "Snowy peut faire plus que transcrire",
+      "description": "L'enregistrement et la transcription fonctionnent seuls. Ces deux fonctions ont besoin d'un modèle de langage.",
+      "configure": "Configurer",
+      "dismiss": "Ignorer",
+      "footnote": "Abonnez-vous à notre service, ou connectez la clé de votre fournisseur.",
+      "capabilities": {
+        "noteFormatting": {
+          "title": "Comptes rendus de réunion",
+          "description": "Aujourd'hui les réunions sont transcrites et restent du texte brut. Avec un modèle, chacune se termine par un résumé, les décisions et qui doit quoi."
+        },
+        "chatIntelligence": {
+          "title": "Des réponses pendant la réunion",
+          "description": "Demandez ce qui a été convenu la dernière fois, ou quoi dire ensuite, et obtenez une réponse tirée de vos propres notes, sans quitter l'appel."
+        }
+      }
     }
   },
   "tour": {

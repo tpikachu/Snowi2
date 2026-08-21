@@ -3110,7 +3110,8 @@
       "ask": {
         "label": "Ask about this meeting",
         "comingSoon": "Ask anything — coming soon",
-        "send": "Send"
+        "send": "Send",
+        "empty": "Ask a question and the answer appears here."
       }
     },
     "transcript": {
@@ -3764,6 +3765,23 @@
       "action": "Write up",
       "more_one": "and {{count}} more",
       "more_other": "and {{count}} more"
+    },
+    "aiSetup": {
+      "title": "Snowy can do more than transcribe",
+      "description": "Recording and transcription work on their own. These two need a language model before they can run.",
+      "configure": "Set up",
+      "dismiss": "Dismiss",
+      "footnote": "Subscribe to use our service, or connect your own provider key.",
+      "capabilities": {
+        "noteFormatting": {
+          "title": "Written-up meetings",
+          "description": "Right now meetings are transcribed and left as raw text. With a model, each one ends with a summary, the decisions and who owes what."
+        },
+        "chatIntelligence": {
+          "title": "Answers during the meeting",
+          "description": "Ask what was agreed last time, or what to say next, and get an answer drawn from your own past notes — without leaving the call."
+        }
+      }
     }
   },
   "tour": {

@@ -2903,7 +2903,8 @@
       "ask": {
         "label": "Chiedi di questa riunione",
         "comingSoon": "Chiedi quello che vuoi — in arrivo",
-        "send": "Invia"
+        "send": "Invia",
+        "empty": "Fai una domanda e la risposta apparirà qui."
       }
     },
     "transcript": {
@@ -3764,6 +3765,23 @@
       "action": "Elabora",
       "more_one": "e {{count}} altra",
       "more_other": "e altre {{count}}"
+    },
+    "aiSetup": {
+      "title": "Snowy può fare più che trascrivere",
+      "description": "Registrazione e trascrizione funzionano da sole. Queste due hanno bisogno di un modello linguistico.",
+      "configure": "Configura",
+      "dismiss": "Ignora",
+      "footnote": "Abbonati al nostro servizio, oppure collega la chiave del tuo provider.",
+      "capabilities": {
+        "noteFormatting": {
+          "title": "Riunioni verbalizzate",
+          "description": "Adesso le riunioni vengono trascritte e restano testo grezzo. Con un modello, ognuna finisce con un riassunto, le decisioni e chi deve fare cosa."
+        },
+        "chatIntelligence": {
+          "title": "Risposte durante la riunione",
+          "description": "Chiedi cosa era stato deciso l'ultima volta, o cosa dire adesso, e ottieni una risposta presa dai tuoi appunti, senza uscire dalla chiamata."
+        }
+      }
     }
   },
   "tour": {
