@@ -1890,14 +1890,19 @@
       "tabs": {
         "dictationCleanup": "ディクテーションのクリーンアップ",
         "dictationAgent": "Voice Agent",
-        "noteFormatting": "ノートのフォーマット",
+        "noteFormatting": "アクション",
         "chatIntelligence": "チャット",
         "dictationTranslation": "翻訳"
       }
     },
     "noteFormatting": {
       "autoGenerateTitle": "ノートのタイトルを自動生成",
-      "autoGenerateTitleDescription": "文字起こしや改善後にAIを使用してノートの短いタイトルを生成します"
+      "autoGenerateTitleDescription": "文字起こしや改善後にAIを使用してノートの短いタイトルを生成します",
+      "actionsTitle": "アクション",
+      "actionsDescription": "Snowy が書くもの全般。「ノートを生成」は保存した会議ごとに自動で実行され、ほかは必要なときに実行します。",
+      "actionsRowDescription": "ノートに対して実行できるアクションの作成・編集・並べ替え。",
+      "manageActions": "管理",
+      "modelDescription": "会議終了時の議事録を含め、すべてのアクションはこのモデルで動きます。"
     },
     "transcription": {
       "customSetup": "カスタム設定",
@@ -2355,8 +2360,7 @@
     },
     "sidebar": {
       "newNote": "新しいノート",
-      "searchNotes": "ノートを検索",
-      "actions": "アクション"
+      "searchNotes": "ノートを検索"
     },
     "spaces": {
       "privateSpaces": "プライベートスペース",
@@ -2524,7 +2528,6 @@
       "showInFileManager": "{{manager}}で表示"
     },
     "actions": {
-      "manage": "アクションを管理...",
       "manageTitle": "カスタムアクション",
       "addAction": "新しいアクション",
       "editAction": "アクションを編集",
@@ -2549,9 +2552,9 @@
         }
       },
       "errors": {
-        "noModel": "メモの整形に使う AI モデルがまだ設定されていません。",
+        "noModel": "アクション用の AI モデルがまだ設定されていません。",
         "actionFailed": "アクションに失敗しました",
-        "noEndpoint": "メモの整形用のセルフホストサーバーの URL が設定されていません。",
+        "noEndpoint": "アクション用のセルフホストサーバー URL が設定されていません。",
         "configure": "設定する"
       }
     },
@@ -3796,8 +3799,8 @@
         },
         "noteFormatting": {
           "title": "議事録の作成",
-          "ready": "会議ごとに要約・決定事項・担当がまとまります。",
-          "missing": "会議は文字起こしされたまま、素のテキストで残ります。モデルを設定すると、会議ごとに要約・決定事項・担当がまとまります。"
+          "ready": "会議ごとに要約・決定事項・担当がまとまります。ノートのアクション（ノートを生成など）も同じモデルで動きます。",
+          "missing": "会議は素のテキストのまま残り、ノートを生成などのアクションも実行できません。モデルを設定すると、会議ごとに要約・決定事項・担当がまとまります。"
         },
         "chatIntelligence": {
           "title": "会議中に答えが返る",

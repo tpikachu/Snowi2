@@ -2173,14 +2173,19 @@
       "tabs": {
         "dictationCleanup": "Nettoyage de la dictée",
         "dictationAgent": "Voice Agent",
-        "noteFormatting": "Mise en forme des notes",
+        "noteFormatting": "Actions",
         "chatIntelligence": "Chat",
         "dictationTranslation": "Traduction"
       }
     },
     "noteFormatting": {
       "autoGenerateTitle": "Générer automatiquement les titres des notes",
-      "autoGenerateTitleDescription": "Utiliser l'IA pour générer un titre court pour les notes après la transcription ou l'amélioration"
+      "autoGenerateTitleDescription": "Utiliser l'IA pour générer un titre court pour les notes après la transcription ou l'amélioration",
+      "actionsTitle": "Actions",
+      "actionsDescription": "Tout ce que Snowy rédige pour vous. Générer des notes s'exécute sur chaque réunion conservée ; le reste à la demande.",
+      "actionsRowDescription": "Créez, modifiez et réordonnez les actions exécutables sur une note.",
+      "manageActions": "Gérer",
+      "modelDescription": "Toutes les actions utilisent ce modèle, y compris le compte rendu de fin de réunion."
     },
     "transcription": {
       "customSetup": "Configuration personnalisée",
@@ -2634,8 +2639,7 @@
     },
     "sidebar": {
       "newNote": "Nouvelle note",
-      "searchNotes": "Rechercher des notes",
-      "actions": "Actions"
+      "searchNotes": "Rechercher des notes"
     },
     "spaces": {
       "privateSpaces": "Espaces privés",
@@ -2946,7 +2950,6 @@
     },
     "actions": {
       "done": "Terminé",
-      "manage": "Gérer les actions...",
       "manageTitle": "Actions personnalisées",
       "addAction": "Nouvelle action",
       "editAction": "Modifier l'action",
@@ -2970,9 +2973,9 @@
         }
       },
       "errors": {
-        "noModel": "Aucun modèle IA n'est encore configuré pour la mise en forme des notes.",
+        "noModel": "Aucun modèle d'IA n'est configuré pour les actions.",
         "actionFailed": "L'action a échoué",
-        "noEndpoint": "Aucune URL de serveur auto-hébergé n'est définie pour la mise en forme des notes.",
+        "noEndpoint": "Aucune URL de serveur auto-hébergé n'est définie pour les actions.",
         "configure": "Configurer"
       }
     },
@@ -3796,8 +3799,8 @@
         },
         "noteFormatting": {
           "title": "Comptes rendus de réunion",
-          "ready": "Chaque réunion se termine par un résumé, les décisions et qui doit quoi.",
-          "missing": "Les réunions sont transcrites et restent du texte brut. Avec un modèle, chacune se termine par un résumé, les décisions et qui doit quoi."
+          "ready": "Chaque réunion se termine par un résumé, les décisions et qui doit quoi. Les actions de note comme Générer des notes utilisent aussi ce modèle.",
+          "missing": "Les réunions sont transcrites et restent du texte brut, et les actions de note comme Générer des notes ne peuvent pas s'exécuter. Avec un modèle, chacune se termine par un résumé, les décisions et qui doit quoi."
         },
         "chatIntelligence": {
           "title": "Des réponses pendant la réunion",

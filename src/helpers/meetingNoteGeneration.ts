@@ -1,9 +1,5 @@
 import { getSettings, selectResolvedNoteFormatting } from "../stores/settingsStore";
-import {
-  pushErrorEvent,
-  runBackgroundAction,
-  type RunActionLabels,
-} from "../stores/actionProcessingStore";
+import { runBackgroundAction, type RunActionLabels } from "../stores/actionProcessingStore";
 import { isRegenerableNoteTitle } from "./regenerableNoteTitle";
 import { makeNoteContentHash, noteEnhancementSource } from "../utils/noteContentHash";
 import {
@@ -49,18 +45,26 @@ export async function autoGenerateMeetingNotes(args: AutoGenerateArgs): Promise<
   const transcript = formatMeetingTranscript(args.segments, args.speakerLabels);
   if (!transcript.trim()) return false;
 
-  const modelId = selectResolvedNoteFormatting(getSettings()).model;
-  if (!modelId) {
-    // Worth telling the user about, because it is the one thing standing
-    // between the meeting they just recorded and the notes they expected — and
-    // silence here reads as "notes are coming" right up until they never do.
-    // The transcript is saved either way, so this asks rather than alarms.
-    logger.info("Skipping automatic meeting notes — no note formatting model", {}, "meeting");
-    pushErrorEvent({
-      noteId: args.noteId,
-      message: args.labels.noModel,
-      remedy: "configureNoteFormatting",
-    });
+  const noteFormatting = selectResolvedNoteFormatting(getSettings());
+  const modelId = noteFormatting.model;
+  // Skipped in silence, on purpose.
+  //
+  // This used to raise a "Configure" toast, on the theory that the missing
+  // model is the one thing standing between the meeting and the notes the user
+  // expected. But nobody chose to run this — saving a meeting did — so the
+  // toast interrupts the end of every single meeting to sell a feature that
+  // was never set up, and it does it at the moment the user is walking out of
+  // a call. Setup belongs in Settings; Home already says which capabilities
+  // need a model, and the meeting still lands in the write-up backlog there.
+  //
+  // A self-hosted scope with no URL is the same situation wearing different
+  // clothes: nothing to run against, and no reason to say so here.
+  if (!modelId || (noteFormatting.mode === "self-hosted" && !noteFormatting.remoteUrl)) {
+    logger.info(
+      "Skipping automatic meeting notes — note formatting is not configured",
+      { hasModel: Boolean(modelId), mode: noteFormatting.mode },
+      "meeting"
+    );
     return false;
   }
 

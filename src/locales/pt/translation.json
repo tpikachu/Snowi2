@@ -1869,14 +1869,19 @@
       "tabs": {
         "dictationCleanup": "Limpeza do ditado",
         "dictationAgent": "Voice Agent",
-        "noteFormatting": "Formatação de notas",
+        "noteFormatting": "Ações",
         "chatIntelligence": "Chat",
         "dictationTranslation": "Tradução"
       }
     },
     "noteFormatting": {
       "autoGenerateTitle": "Gerar títulos de notas automaticamente",
-      "autoGenerateTitleDescription": "Usar IA para gerar um título curto para notas após transcrição ou aprimoramento"
+      "autoGenerateTitleDescription": "Usar IA para gerar um título curto para notas após transcrição ou aprimoramento",
+      "actionsTitle": "Ações",
+      "actionsDescription": "Tudo o que o Snowy escreve por você. Gerar notas roda em toda reunião que você guarda; o resto, quando você pede.",
+      "actionsRowDescription": "Crie, edite e reordene as ações que você pode rodar em uma nota.",
+      "manageActions": "Gerenciar",
+      "modelDescription": "Todas as ações usam este modelo, inclusive o resumo no fim de uma reunião."
     },
     "transcription": {
       "customSetup": "Configuração personalizada",
@@ -2427,8 +2432,7 @@
     },
     "sidebar": {
       "newNote": "Nova nota",
-      "searchNotes": "Pesquisar notas",
-      "actions": "Ações"
+      "searchNotes": "Pesquisar notas"
     },
     "spaces": {
       "privateSpaces": "Espaços privados",
@@ -2722,7 +2726,6 @@
       "showInFileManager": "Mostrar no {{manager}}"
     },
     "actions": {
-      "manage": "Gerenciar ações...",
       "manageTitle": "Ações personalizadas",
       "addAction": "Nova ação",
       "editAction": "Editar ação",
@@ -2747,9 +2750,9 @@
         }
       },
       "errors": {
-        "noModel": "Ainda não há nenhum modelo de IA configurado para a formatação de notas.",
+        "noModel": "Ainda não há um modelo de IA configurado para as ações.",
         "actionFailed": "A ação falhou",
-        "noEndpoint": "Nenhum URL de servidor auto-hospedado definido para a formatação de notas.",
+        "noEndpoint": "Não há URL de servidor próprio definida para as ações.",
         "configure": "Configurar"
       }
     },
@@ -3796,8 +3799,8 @@
         },
         "noteFormatting": {
           "title": "Reuniões redigidas",
-          "ready": "Cada reunião termina com um resumo, as decisões e quem ficou com o quê.",
-          "missing": "As reuniões são transcritas e ficam só como texto bruto. Com um modelo, cada uma termina com um resumo, as decisões e quem ficou com o quê."
+          "ready": "Cada reunião termina com um resumo, as decisões e quem ficou com o quê. Ações de nota como Gerar notas também usam este modelo.",
+          "missing": "As reuniões são transcritas e ficam só como texto bruto, e ações de nota como Gerar notas não conseguem rodar. Com um modelo, cada uma termina com um resumo, as decisões e quem ficou com o quê."
         },
         "chatIntelligence": {
           "title": "Respostas durante a reunião",

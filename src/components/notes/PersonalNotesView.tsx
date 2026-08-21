@@ -7,7 +7,6 @@ import SpacesTree from "./SpacesTree";
 import ContextPaneSection from "../shell/ContextPaneSection";
 import { ContainerOverview } from "./overview/ContainerOverview";
 import ActionPicker from "./ActionPicker";
-import ActionManagerDialog from "./ActionManagerDialog";
 import AddNotesToFolderDialog from "./AddNotesToFolderDialog";
 import { useActionProcessing } from "../../hooks/useActionProcessing";
 import type { NoteMoveTarget } from "../../hooks/useNoteDragAndDrop";
@@ -108,7 +107,6 @@ export default function PersonalNotesView({
   const [isSaving, setIsSaving] = useState(false);
   const [draft, setDraftState] = useState<NoteEditorDraft | null>(null);
   const draftRef = useRef<NoteEditorDraft | null>(null);
-  const [showActionManager, setShowActionManager] = useState(false);
   const [showAddNotesDialog, setShowAddNotesDialog] = useState(false);
   const pendingDocumentRef = useRef<PendingDocumentSave | null>(null);
   const pendingEnhancedRef = useRef<PendingEnhancedSave | null>(null);
@@ -638,18 +636,6 @@ export default function PersonalNotesView({
                 {t("notes.sidebar.searchNotes")}
               </button>
             )}
-            <button
-              onClick={() => setShowActionManager(true)}
-              className={cn(
-                "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs",
-                "text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5",
-                "transition-colors duration-150",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              )}
-            >
-              <Sparkles size={14} className="shrink-0" />
-              {t("notes.sidebar.actions")}
-            </button>
           </div>
 
           <SpacesTree
@@ -724,7 +710,6 @@ export default function PersonalNotesView({
                       ),
                     });
                   }}
-                  onManageActions={() => setShowActionManager(true)}
                   disabled={
                     (!editorNote?.content?.trim() &&
                       !hasLiveTranscript &&
@@ -734,7 +719,6 @@ export default function PersonalNotesView({
                 />
               }
             />
-            <ActionManagerDialog open={showActionManager} onOpenChange={setShowActionManager} />
           </>
         ) : activeContext && overviewSpace ? (
           <ContainerOverview

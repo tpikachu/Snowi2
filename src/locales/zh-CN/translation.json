@@ -1890,14 +1890,19 @@
       "tabs": {
         "dictationCleanup": "听写清理",
         "dictationAgent": "语音助手",
-        "noteFormatting": "笔记格式化",
+        "noteFormatting": "操作",
         "chatIntelligence": "聊天",
         "dictationTranslation": "翻译"
       }
     },
     "noteFormatting": {
       "autoGenerateTitle": "自动生成笔记标题",
-      "autoGenerateTitleDescription": "使用 AI 在转录或增强后为笔记生成简短标题"
+      "autoGenerateTitleDescription": "使用 AI 在转录或增强后为笔记生成简短标题",
+      "actionsTitle": "操作",
+      "actionsDescription": "Snowy 替你写的所有内容。「生成笔记」会在每场保留的会议后自动运行，其余的按需运行。",
+      "actionsRowDescription": "创建、编辑和排序可在笔记上运行的操作。",
+      "manageActions": "管理",
+      "modelDescription": "所有操作都使用这个模型，包括会议结束时的纪要。"
     },
     "transcription": {
       "customSetup": "自定义设置",
@@ -2427,8 +2432,7 @@
     },
     "sidebar": {
       "newNote": "新建笔记",
-      "searchNotes": "搜索笔记",
-      "actions": "操作"
+      "searchNotes": "搜索笔记"
     },
     "spaces": {
       "privateSpaces": "私人空间",
@@ -2722,7 +2726,6 @@
       "showInFileManager": "在{{manager}}中显示"
     },
     "actions": {
-      "manage": "管理操作...",
       "manageTitle": "自定义操作",
       "addAction": "新建操作",
       "editAction": "编辑操作",
@@ -2747,9 +2750,9 @@
         }
       },
       "errors": {
-        "noModel": "尚未为笔记整理设置 AI 模型。",
+        "noModel": "还没有为操作配置 AI 模型。",
         "actionFailed": "操作失败",
-        "noEndpoint": "尚未为笔记整理设置自托管服务器 URL。",
+        "noEndpoint": "没有为操作设置自托管服务器地址。",
         "configure": "去设置"
       }
     },
@@ -3796,8 +3799,8 @@
         },
         "noteFormatting": {
           "title": "整理好的会议纪要",
-          "ready": "每场会议结束时都会有摘要、决定事项和责任人。",
-          "missing": "会议只会被转写成原始文字。配置模型后，每场会议结束时都会有摘要、决定事项和责任人。"
+          "ready": "每场会议结束时都会有摘要、决定事项和责任人。笔记操作（如生成笔记）也使用这个模型。",
+          "missing": "会议只会被转写成原始文字，生成笔记等笔记操作也无法运行。配置模型后，每场会议结束时都会有摘要、决定事项和责任人。"
         },
         "chatIntelligence": {
           "title": "会议进行中就能得到答案",

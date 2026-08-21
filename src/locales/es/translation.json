@@ -1938,14 +1938,19 @@
       "tabs": {
         "dictationCleanup": "Limpieza de dictado",
         "dictationAgent": "Voice Agent",
-        "noteFormatting": "Formato de notas",
+        "noteFormatting": "Acciones",
         "chatIntelligence": "Chat",
         "dictationTranslation": "Traducción"
       }
     },
     "noteFormatting": {
       "autoGenerateTitle": "Generar títulos de notas automáticamente",
-      "autoGenerateTitleDescription": "Usar IA para generar un título corto para las notas después de la transcripción o mejora"
+      "autoGenerateTitleDescription": "Usar IA para generar un título corto para las notas después de la transcripción o mejora",
+      "actionsTitle": "Acciones",
+      "actionsDescription": "Todo lo que Snowy redacta por ti. Generar notas se ejecuta en cada reunión que guardas; el resto, cuando tú lo pides.",
+      "actionsRowDescription": "Crea, edita y reordena las acciones que puedes ejecutar en una nota.",
+      "manageActions": "Gestionar",
+      "modelDescription": "Todas las acciones usan este modelo, incluido el resumen al final de una reunión."
     },
     "transcription": {
       "customSetup": "Configuración personalizada",
@@ -2475,8 +2480,7 @@
     },
     "sidebar": {
       "newNote": "Nueva nota",
-      "searchNotes": "Buscar notas",
-      "actions": "Acciones"
+      "searchNotes": "Buscar notas"
     },
     "spaces": {
       "privateSpaces": "Espacios privados",
@@ -2770,7 +2774,6 @@
       "showInFileManager": "Mostrar en {{manager}}"
     },
     "actions": {
-      "manage": "Gestionar acciones...",
       "manageTitle": "Acciones personalizadas",
       "addAction": "Nueva acción",
       "editAction": "Editar acción",
@@ -2795,9 +2798,9 @@
         }
       },
       "errors": {
-        "noModel": "Aún no hay ningún modelo de IA configurado para el formato de notas.",
+        "noModel": "Todavía no hay ningún modelo de IA configurado para las acciones.",
         "actionFailed": "La acción falló",
-        "noEndpoint": "No hay ninguna URL de servidor autoalojado para el formato de notas.",
+        "noEndpoint": "No hay una URL de servidor propio configurada para las acciones.",
         "configure": "Configurar"
       }
     },
@@ -3796,8 +3799,8 @@
         },
         "noteFormatting": {
           "title": "Reuniones redactadas",
-          "ready": "Cada reunión termina con un resumen, las decisiones y quién debe qué.",
-          "missing": "Las reuniones se transcriben y se quedan en texto sin más. Con un modelo, cada una termina con un resumen, las decisiones y quién debe qué."
+          "ready": "Cada reunión termina con un resumen, las decisiones y quién debe qué. Las acciones de notas como Generar notas también usan este modelo.",
+          "missing": "Las reuniones se transcriben y se quedan en texto sin más, y las acciones de notas como Generar notas no pueden ejecutarse. Con un modelo, cada reunión termina con un resumen, las decisiones y quién debe qué."
         },
         "chatIntelligence": {
           "title": "Respuestas durante la reunión",

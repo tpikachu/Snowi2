@@ -5,6 +5,75 @@ All notable changes to Snowy are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-rc2] — 2026-08-21
+
+Second release candidate. The meeting panel stops being a status bar and starts
+being the meeting, local captions get much faster, and Home says what Snowy can
+and cannot do rather than leaving you to find out.
+
+**Still a release candidate.** See _Known limitations_ under 0.1.0-rc1; the ones
+listed there that are fixed are called out below.
+
+### The meeting panel
+
+- The panel is now the meeting surface. Starting a meeting minimises the main
+  window and opens a side panel carrying a suggestion, a small live transcript
+  and a question box. It stays excluded from screen shares.
+- **Suggestions.** When the other side stops talking, the panel already has a
+  line ready — computed in the background, drawn from the meeting so far and
+  from your own past notes. It is precomputed rather than fetched on demand
+  because a suggestion that arrives eight seconds into an awkward silence is one
+  nobody wanted.
+- **Ask during the call.** A question box answers from the live meeting first
+  and your note library second, streaming, so the first sentence lands early.
+  Both the suggestion and the answer name the notes they drew on.
+- The transcript pane is capped at about five lines and never grows. It is there
+  to show the meeting is being heard, not to be read.
+
+### Transcription
+
+- **Local captions stream properly.** Meetings using a streaming-capable local
+  model now feed a live websocket instead of decoding the last few seconds over
+  and over. Captions arrive word by word rather than a sentence at a time.
+- Captions are attributed as **You** and **Others**. Speaker identification is
+  off for now — it cost more latency than it was worth during a live call.
+- **Transcription setup has a Basic mode**, which measures the machine and picks
+  and downloads a model for it. Advanced still exposes every model, and it is
+  now possible to get back from Advanced to Basic.
+- Setup explains why a model has to be downloaded at all, for people who have
+  never had to think about it.
+
+### Home
+
+- A capability card says what works right now and what still needs a language
+  model — written as what you get, not what the setting is called. Once
+  something is configured it names the model it is running and where.
+- Onboarding's "About you" categories are meeting kinds now (team meetings,
+  client calls, interviews, research, healthcare, education) rather than the
+  generic dictation categories they inherited.
+
+### Actions
+
+- Settings' "Note Formatting" panel is now **Actions**, which is what it always
+  was: writing up a meeting is not a separate feature from Generate Notes, it is
+  that action run automatically. The panel leads with the actions, then names
+  the model they all run on.
+- Creating and editing actions moved out of the notes page and into that panel.
+  A configuration screen one click from a note read as something about the note.
+- The action button no longer appears on a note when no model is configured.
+  There was nothing for it to run, so it could only produce a setup prompt.
+
+### Fixed
+
+- Stopping a meeting no longer generates the write-up before you have said
+  whether to keep it. Discard now means nothing happened, and no inference call
+  is spent on a meeting that was thrown away.
+- Saving a meeting with no note-formatting model configured skips the write-up
+  quietly instead of interrupting the end of the call with a setup prompt. The
+  meeting still appears in Home's write-up backlog.
+- The transcript pane no longer re-renders the whole conversation on every word,
+  and no longer scrolls away from what you were reading.
+
 ## [0.1.0-rc1] — 2026-08-19
 
 First release candidate. Everything below is new, because this is the first

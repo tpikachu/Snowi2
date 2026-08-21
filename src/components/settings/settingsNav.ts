@@ -469,6 +469,12 @@ const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
   },
   {
     section: "llms",
+    panel: "noteFormatting",
+    anchor: "noteFormattingActions",
+    labelKey: "notes.actions.manageTitle",
+  },
+  {
+    section: "llms",
     panel: "chatIntelligence",
     anchor: "chatAgentPrompt",
     labelKey: "agentMode.settings.systemPrompt",

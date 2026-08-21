@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Sparkles, ChevronDown, Settings2 } from "lucide-react";
+import { Sparkles, ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
 } from "../ui/dropdown-menu";
 import { cn } from "../lib/utils";
 import {
@@ -15,21 +14,32 @@ import {
   getActionName,
   getActionDescription,
 } from "../../stores/actionStore";
+import { selectResolvedNoteFormatting, useSettingsStore } from "../../stores/settingsStore";
 import type { ActionItem } from "../../types/electron";
 
 interface ActionPickerProps {
   onRunAction: (action: ActionItem) => void;
-  onManageActions: () => void;
   disabled?: boolean;
 }
 
-export default function ActionPicker({
-  onRunAction,
-  onManageActions,
-  disabled,
-}: ActionPickerProps) {
+/**
+ * Run an action on the open note.
+ *
+ * Runs them; does not manage them. Creating and editing actions used to hang
+ * off this dropdown, which put a configuration screen one click from a note
+ * and made "which of these am I about to run" and "what is this app set up
+ * with" the same menu. That lives in Settings now, next to the model the
+ * actions actually run on.
+ *
+ * Hidden outright when note formatting has no model. There is nothing to run,
+ * so an enabled button that can only produce "you have not set this up" is a
+ * trap — and offering it beside a note the user is reading suggests the note
+ * is what needs configuring, which it is not.
+ */
+export default function ActionPicker({ onRunAction, disabled }: ActionPickerProps) {
   const { t } = useTranslation();
   const actions = useActions();
+  const hasModel = useSettingsStore((state) => Boolean(selectResolvedNoteFormatting(state).model));
   const [lastUsedId, setLastUsedId] = useState<number | null>(() => {
     const stored = localStorage.getItem("lastUsedActionId");
     return stored ? Number(stored) : null;
@@ -47,7 +57,7 @@ export default function ActionPicker({
     onRunAction(action);
   };
 
-  if (!activeAction) return null;
+  if (!activeAction || !hasModel) return null;
 
   return (
     <div className="flex items-center shrink-0">
@@ -111,14 +121,6 @@ export default function ActionPicker({
               </div>
             </DropdownMenuItem>
           ))}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem
-            onClick={onManageActions}
-            className="text-xs gap-2.5 rounded-md px-2.5 py-1.5 text-muted-foreground/60"
-          >
-            <Settings2 size={12} />
-            {t("notes.actions.manage")}
-          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

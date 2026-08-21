@@ -2173,14 +2173,19 @@
       "tabs": {
         "dictationCleanup": "Diktat-Bereinigung",
         "dictationAgent": "Voice Agent",
-        "noteFormatting": "Notizformatierung",
+        "noteFormatting": "Aktionen",
         "chatIntelligence": "Chat",
         "dictationTranslation": "Übersetzung"
       }
     },
     "noteFormatting": {
       "autoGenerateTitle": "Notiztitel automatisch generieren",
-      "autoGenerateTitleDescription": "KI verwenden, um nach der Transkription oder Verbesserung einen kurzen Titel für Notizen zu generieren"
+      "autoGenerateTitleDescription": "KI verwenden, um nach der Transkription oder Verbesserung einen kurzen Titel für Notizen zu generieren",
+      "actionsTitle": "Aktionen",
+      "actionsDescription": "Alles, was Snowy für Sie schreibt. Notizen erzeugen läuft bei jedem behaltenen Meeting; der Rest auf Zuruf.",
+      "actionsRowDescription": "Aktionen für Notizen anlegen, bearbeiten und sortieren.",
+      "manageActions": "Verwalten",
+      "modelDescription": "Alle Aktionen laufen auf diesem Modell, auch die Zusammenfassung am Ende eines Meetings."
     },
     "transcription": {
       "customSetup": "Benutzerdefinierte Einrichtung",
@@ -2634,8 +2639,7 @@
     },
     "sidebar": {
       "newNote": "Neue Notiz",
-      "searchNotes": "Notizen suchen",
-      "actions": "Aktionen"
+      "searchNotes": "Notizen suchen"
     },
     "spaces": {
       "privateSpaces": "Private Bereiche",
@@ -2946,7 +2950,6 @@
     },
     "actions": {
       "done": "Fertig",
-      "manage": "Aktionen verwalten...",
       "manageTitle": "Benutzerdefinierte Aktionen",
       "addAction": "Neue Aktion",
       "editAction": "Aktion bearbeiten",
@@ -2970,9 +2973,9 @@
         }
       },
       "errors": {
-        "noModel": "Für die Notizformatierung ist noch kein KI-Modell eingerichtet.",
+        "noModel": "Für Aktionen ist noch kein KI-Modell eingerichtet.",
         "actionFailed": "Aktion fehlgeschlagen",
-        "noEndpoint": "Für die Notizformatierung ist keine URL für den selbst gehosteten Server festgelegt.",
+        "noEndpoint": "Für Aktionen ist keine Server-URL hinterlegt.",
         "configure": "Einrichten"
       }
     },
@@ -3796,8 +3799,8 @@
         },
         "noteFormatting": {
           "title": "Ausformulierte Meetings",
-          "ready": "Jedes Meeting endet mit Zusammenfassung, Entscheidungen und Zuständigkeiten.",
-          "missing": "Meetings werden transkribiert und bleiben Rohtext. Mit einem Modell endet jedes mit einer Zusammenfassung, den Entscheidungen und den Zuständigkeiten."
+          "ready": "Jedes Meeting endet mit Zusammenfassung, Entscheidungen und Zuständigkeiten. Notizaktionen wie Notizen erzeugen nutzen dasselbe Modell.",
+          "missing": "Meetings werden transkribiert und bleiben Rohtext, und Notizaktionen wie Notizen erzeugen können nicht laufen. Mit einem Modell endet jedes mit einer Zusammenfassung, den Entscheidungen und den Zuständigkeiten."
         },
         "chatIntelligence": {
           "title": "Antworten während des Meetings",

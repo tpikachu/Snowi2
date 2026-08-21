@@ -2173,14 +2173,19 @@
       "tabs": {
         "dictationCleanup": "Dictation Cleanup",
         "dictationAgent": "Voice Agent",
-        "noteFormatting": "Note Formatting",
+        "noteFormatting": "Actions",
         "chatIntelligence": "Chat",
         "dictationTranslation": "Translation"
       }
     },
     "noteFormatting": {
       "autoGenerateTitle": "Auto-generate note titles",
-      "autoGenerateTitleDescription": "Use AI to generate a short title for notes after transcription or enhancement"
+      "autoGenerateTitleDescription": "Use AI to generate a short title for notes after transcription or enhancement",
+      "actionsTitle": "Actions",
+      "actionsDescription": "Everything Snowy writes for you. Generate Notes runs on every meeting you keep; the rest run when you ask.",
+      "actionsRowDescription": "Create, edit and reorder the actions you can run on a note.",
+      "manageActions": "Manage",
+      "modelDescription": "Every action runs on this model, including the write-up at the end of a meeting."
     },
     "transcription": {
       "customSetup": "Custom Setup",
@@ -2634,8 +2639,7 @@
     },
     "sidebar": {
       "newNote": "New note",
-      "searchNotes": "Search notes",
-      "actions": "Actions"
+      "searchNotes": "Search notes"
     },
     "spaces": {
       "privateSpaces": "Private spaces",
@@ -2946,7 +2950,6 @@
     },
     "actions": {
       "done": "Done",
-      "manage": "Manage Actions...",
       "manageTitle": "Custom Actions",
       "addAction": "New Action",
       "editAction": "Edit Action",
@@ -2970,9 +2973,9 @@
         }
       },
       "errors": {
-        "noModel": "No AI model is set up for note formatting yet.",
+        "noModel": "No AI model is set up for actions yet.",
         "actionFailed": "Action failed",
-        "noEndpoint": "No self-hosted server URL is set for note formatting.",
+        "noEndpoint": "No self-hosted server URL is set for actions.",
         "configure": "Configure"
       }
     },
@@ -3796,8 +3799,8 @@
         },
         "noteFormatting": {
           "title": "Written-up meetings",
-          "ready": "Each meeting ends with a summary, the decisions and who owes what.",
-          "missing": "Meetings are transcribed and left as raw text. With a model, each one ends with a summary, the decisions and who owes what."
+          "ready": "Each meeting ends with a summary, the decisions and who owes what. Note actions like Generate Notes run on this model too.",
+          "missing": "Meetings are transcribed and left as raw text, and note actions like Generate Notes cannot run. With a model, each meeting ends with a summary, the decisions and who owes what."
         },
         "chatIntelligence": {
           "title": "Answers during the meeting",

@@ -1890,14 +1890,19 @@
       "tabs": {
         "dictationCleanup": "聽寫清理",
         "dictationAgent": "語音助手",
-        "noteFormatting": "筆記格式化",
+        "noteFormatting": "操作",
         "chatIntelligence": "聊天",
         "dictationTranslation": "翻譯"
       }
     },
     "noteFormatting": {
       "autoGenerateTitle": "自動產生筆記標題",
-      "autoGenerateTitleDescription": "使用 AI 在轉錄或增強後為筆記產生簡短標題"
+      "autoGenerateTitleDescription": "使用 AI 在轉錄或增強後為筆記產生簡短標題",
+      "actionsTitle": "操作",
+      "actionsDescription": "Snowy 替你寫的所有內容。「產生筆記」會在每場保留的會議後自動執行，其餘的按需執行。",
+      "actionsRowDescription": "建立、編輯和排序可在筆記上執行的操作。",
+      "manageActions": "管理",
+      "modelDescription": "所有操作都使用這個模型，包括會議結束時的紀錄。"
     },
     "transcription": {
       "customSetup": "自訂設定",
@@ -2427,8 +2432,7 @@
     },
     "sidebar": {
       "newNote": "新增筆記",
-      "searchNotes": "搜尋筆記",
-      "actions": "動作"
+      "searchNotes": "搜尋筆記"
     },
     "spaces": {
       "privateSpaces": "私人空間",
@@ -2722,7 +2726,6 @@
       "showInFileManager": "在{{manager}}中顯示"
     },
     "actions": {
-      "manage": "管理動作...",
       "manageTitle": "自訂動作",
       "addAction": "新增動作",
       "editAction": "編輯動作",
@@ -2747,9 +2750,9 @@
         }
       },
       "errors": {
-        "noModel": "尚未為筆記整理設定 AI 模型。",
+        "noModel": "還沒有為操作設定 AI 模型。",
         "actionFailed": "操作失敗",
-        "noEndpoint": "尚未為筆記整理設定自架伺服器 URL。",
+        "noEndpoint": "沒有為操作設定自架伺服器位址。",
         "configure": "前往設定"
       }
     },
@@ -3796,8 +3799,8 @@
         },
         "noteFormatting": {
           "title": "整理好的會議紀錄",
-          "ready": "每場會議結束時都會有摘要、決議事項和負責人。",
-          "missing": "會議只會被轉錄成原始文字。設定模型後，每場會議結束時都會有摘要、決議事項和負責人。"
+          "ready": "每場會議結束時都會有摘要、決議事項和負責人。筆記操作（如產生筆記）也使用這個模型。",
+          "missing": "會議只會被轉錄成原始文字，產生筆記等筆記操作也無法執行。設定模型後，每場會議結束時都會有摘要、決議事項和負責人。"
         },
         "chatIntelligence": {
           "title": "會議進行中就能得到答案",

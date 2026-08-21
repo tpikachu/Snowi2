@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
+import ActionManagerDialog from "./notes/ActionManagerDialog";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
 import {
@@ -349,9 +350,41 @@ function NoteFormattingSettings() {
   const { t } = useTranslation();
   const autoGenerateNoteTitle = useSettingsStore((s) => s.autoGenerateNoteTitle);
   const setAutoGenerateNoteTitle = useSettingsStore((s) => s.setAutoGenerateNoteTitle);
+  const [showActionManager, setShowActionManager] = useState(false);
 
+  // Actions first: this panel is about them. Writing up a meeting is not a
+  // separate feature from "Generate Notes" — it *is* that action, run
+  // automatically — so the panel leads with the actions, then names the model
+  // they all run on, then the odds and ends.
   return (
     <SettingsPanelBody>
+      <SettingsGroup
+        id="noteFormattingActions"
+        title={t("settingsPage.noteFormatting.actionsTitle")}
+        description={t("settingsPage.noteFormatting.actionsDescription")}
+      >
+        <SettingsPanel>
+          <SettingsPanelRow>
+            <SettingsRow
+              label={t("notes.actions.manageTitle")}
+              description={t("settingsPage.noteFormatting.actionsRowDescription")}
+            >
+              <Button variant="outline" size="sm" onClick={() => setShowActionManager(true)}>
+                {t("settingsPage.noteFormatting.manageActions")}
+              </Button>
+            </SettingsRow>
+          </SettingsPanelRow>
+        </SettingsPanel>
+      </SettingsGroup>
+
+      <SettingsGroup
+        id="noteFormattingModel"
+        title={t("common.model")}
+        description={t("settingsPage.noteFormatting.modelDescription")}
+      >
+        <InferenceConfigEditor scope="noteFormatting" />
+      </SettingsGroup>
+
       <SettingsGroup id="noteFormattingOptions" title={t("settingsModal.groupTitles.options")}>
         <SettingsPanel>
           <SettingsPanelRow>
@@ -365,13 +398,7 @@ function NoteFormattingSettings() {
         </SettingsPanel>
       </SettingsGroup>
 
-      <SettingsGroup
-        id="noteFormattingModel"
-        title={t("common.model")}
-        description={t("settingsModal.groupTitles.modelDescription")}
-      >
-        <InferenceConfigEditor scope="noteFormatting" />
-      </SettingsGroup>
+      <ActionManagerDialog open={showActionManager} onOpenChange={setShowActionManager} />
     </SettingsPanelBody>
   );
 }
