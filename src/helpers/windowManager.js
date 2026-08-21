@@ -38,6 +38,8 @@ class WindowManager {
     this.meetingPanelWindow = null;
     this._meetingPanelState = null;
     this._meetingPanelOpening = null;
+    /** True only while a meeting is holding the control panel minimised. */
+    this._minimizedForMeeting = false;
     this.updateNotificationWindow = null;
     this._updateNotificationDismissed = false;
     this.notificationPrefs = {
@@ -1389,6 +1391,12 @@ class WindowManager {
   updateMeetingPanel(snapshot) {
     if (!snapshot || !snapshot.isRecording) {
       this.closeMeetingPanel();
+      // Every route out of a meeting ends here — the panel's Stop, the in-app
+      // one, the hotkey — so this is the one place that can guarantee the
+      // window is back before the keep-or-discard prompt renders inside it.
+      // Without it, stopping by hotkey puts that prompt behind a minimised
+      // window and the meeting looks like it saved nothing.
+      this._restoreAfterMeeting();
       return;
     }
 
@@ -1400,11 +1408,64 @@ class WindowManager {
       this.createMeetingPanelWindow().catch((error) => {
         debugLogger.error("Failed to open the meeting panel", { error: error.message }, "meeting");
       });
+      this._minimizeForMeeting();
       return;
     }
 
     this.sendToMeetingPanel("meeting-panel-state", snapshot);
     this._syncMeetingPanelVisibility();
+  }
+
+  /**
+   * Step the control panel out of the way when a meeting starts.
+   *
+   * The panel is the meeting surface, and it is content-protected; the control
+   * panel is neither. Leaving a full window of transcript on screen during a
+   * call the user is very likely sharing is the wrong default, and the two
+   * windows showing the same meeting is just noise.
+   *
+   * Minimised, not hidden: the user has to be able to find it again from the
+   * taskbar or dock without hunting through a tray menu. Only minimises a
+   * window that is actually up — a meeting started from the tray should not
+   * make a hidden window appear in the taskbar just to sit there minimised.
+   */
+  _minimizeForMeeting() {
+    const win = this.controlPanelWindow;
+    if (!win || win.isDestroyed()) return;
+    if (!win.isVisible() || win.isMinimized()) return;
+
+    try {
+      win.minimize();
+      // Only what this minimised gets restored. A window the user had already
+      // minimised themselves before the meeting is left where they put it.
+      this._minimizedForMeeting = true;
+    } catch (error) {
+      debugLogger.debug(
+        "Could not minimize the control panel for a meeting",
+        { error: error.message },
+        "meeting"
+      );
+    }
+  }
+
+  /** Undo `_minimizeForMeeting`, once, when the meeting ends. */
+  _restoreAfterMeeting() {
+    if (!this._minimizedForMeeting) return;
+    this._minimizedForMeeting = false;
+
+    const win = this.controlPanelWindow;
+    if (!win || win.isDestroyed()) return;
+
+    try {
+      if (win.isMinimized()) win.restore();
+      win.focus();
+    } catch (error) {
+      debugLogger.debug(
+        "Could not restore the control panel after a meeting",
+        { error: error.message },
+        "meeting"
+      );
+    }
   }
 
   sendMeetingPanelLevel(level) {
