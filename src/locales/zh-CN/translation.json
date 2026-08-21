@@ -223,7 +223,8 @@
     "transcription": {
       "title": "转录设置",
       "description": "选择模式和服务商",
-      "preferredLanguage": "首选语言"
+      "preferredLanguage": "首选语言",
+      "automaticDescription": "Snowy 会根据你的硬件挑选模型"
     },
     "activation": {
       "title": "听写设置",
@@ -3786,6 +3787,29 @@
         "body": "在这里连接日历、选择转录的运行位置并设置快捷键。你也可以从这里重播本导览。",
         "title": "设置"
       }
+    }
+  },
+  "transcriptionSetup": {
+    "probing": "正在检测这台设备能运行什么…",
+    "unavailable": "无法检测这台设备的硬件。请手动选择模型。",
+    "ready": "已就绪",
+    "download": "下载 {{size}}",
+    "cancel": "取消",
+    "recheck": "重新检测硬件",
+    "switchToAdvanced": "手动选择",
+    "switchToBasic": "返回自动设置",
+    "why": "根据 {{memory}} GB 内存和 {{cores}} 个核心选择。",
+    "whyUnmeasured": "无法测量这台设备的硬件，因此选择了较保守的方案。",
+    "roles": {
+      "live": "实时字幕",
+      "buffered": "字幕（分批解码）",
+      "archive": "会议结束后的高精度处理"
+    },
+    "warnings": {
+      "lowDisk": "磁盘空间不足。请先释放空间再下载。",
+      "noAvx2": "该处理器不支持 AVX2，无法运行更快的模型。",
+      "onBattery": "正在使用电池供电。接通电源后转写更快。",
+      "generic": "这台设备存在影响转写的限制。"
     }
   }
 }

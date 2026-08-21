@@ -780,6 +780,53 @@ export interface ParakeetDiagnosticsResult {
   models: string[];
 }
 
+/** One model the tiering picked. `runtime` is what decides which engine runs it. */
+export interface RecommendedModel {
+  name: string;
+  runtime: "online" | "offline" | "whisper";
+  diskGb: number;
+}
+
+/** Hardware facts behind a recommendation, for the "why this?" disclosure. */
+export interface CapabilitySnapshot {
+  probeVersion: number;
+  platform: string;
+  arch: string;
+  cpuModel: string;
+  logicalCores: number;
+  physicalCores: number | null;
+  totalMemGb: number;
+  freeMemGb: number;
+  hasAvx2: boolean;
+  hasAvx512: boolean;
+  isAppleSilicon: boolean;
+  gpu: { name?: string; cudaCapable?: boolean; vramGb?: number } | null;
+  freeDiskGb: number | null;
+  onBattery: boolean;
+  probeMs: number;
+}
+
+export interface TranscriptionRecommendation {
+  tier: string;
+  label: string;
+  /** The model that produces live captions. Always present. */
+  live: RecommendedModel;
+  /** The higher-accuracy pass run after Stop, or null when the machine cannot afford one. */
+  archive: RecommendedModel | null;
+  /** False when `live` is decoded in buffered chunks rather than streamed. */
+  streaming: boolean;
+  downloadGb: number;
+  warnings: string[];
+}
+
+export interface TranscriptionRecommendationResult {
+  success: boolean;
+  capability: CapabilitySnapshot | null;
+  recommendation: TranscriptionRecommendation;
+  /** True when the probe threw and the conservative tier was substituted. */
+  probeFailed?: boolean;
+}
+
 export interface PasteToolsResult {
   platform: "darwin" | "win32" | "linux";
   available: boolean;
@@ -1416,6 +1463,10 @@ declare global {
         } & PolicyFailureMetadata
       >;
       getParakeetDiagnostics: () => Promise<ParakeetDiagnosticsResult>;
+      getTranscriptionRecommendation: (options?: {
+        language?: "en" | "multilingual";
+        force?: boolean;
+      }) => Promise<TranscriptionRecommendationResult>;
 
       // Local AI model management
       modelGetAll: () => Promise<LocalLLMModelStatus[]>;

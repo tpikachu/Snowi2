@@ -223,7 +223,8 @@
     "transcription": {
       "title": "Transkriptions-Einrichtung",
       "description": "Wählen Sie Modus und Anbieter",
-      "preferredLanguage": "Bevorzugte Sprache"
+      "preferredLanguage": "Bevorzugte Sprache",
+      "automaticDescription": "Snowy wählt ein Modell passend zu Ihrer Hardware"
     },
     "activation": {
       "title": "Diktat-Einrichtung",
@@ -3786,6 +3787,29 @@
         "body": "Kalender verbinden, festlegen wo die Transkription läuft, und Tastenkürzel einrichten. Diese Tour lässt sich von hier aus erneut starten.",
         "title": "Einstellungen"
       }
+    }
+  },
+  "transcriptionSetup": {
+    "probing": "Prüfen, was dieser Rechner leisten kann…",
+    "unavailable": "Die Hardware konnte nicht geprüft werden. Wählen Sie ein Modell manuell.",
+    "ready": "Bereit",
+    "download": "{{size}} herunterladen",
+    "cancel": "Abbrechen",
+    "recheck": "Hardware erneut prüfen",
+    "switchToAdvanced": "Manuell auswählen",
+    "switchToBasic": "Zurück zur automatischen Einrichtung",
+    "why": "Ausgewählt für {{memory}} GB Arbeitsspeicher und {{cores}} Kerne.",
+    "whyUnmeasured": "Konservativ gewählt – die Hardware dieses Rechners ließ sich nicht messen.",
+    "roles": {
+      "live": "Live-Untertitel",
+      "buffered": "Untertitel, stapelweise dekodiert",
+      "archive": "Genauerer Durchlauf nach dem Meeting"
+    },
+    "warnings": {
+      "lowDisk": "Wenig Speicherplatz. Geben Sie vor dem Download etwas frei.",
+      "noAvx2": "Dieser Prozessor hat kein AVX2, daher laufen die schnelleren Modelle hier nicht.",
+      "onBattery": "Im Akkubetrieb. Am Netzteil ist die Transkription schneller.",
+      "generic": "Dieser Rechner hat eine Einschränkung, die die Transkription betrifft."
     }
   }
 }

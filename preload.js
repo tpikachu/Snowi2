@@ -402,6 +402,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   cancelParakeetDownload: () => ipcRenderer.invoke("cancel-parakeet-download"),
   getParakeetDiagnostics: () => ipcRenderer.invoke("get-parakeet-diagnostics"),
 
+  // Which transcription models this machine should run, measured rather than guessed.
+  getTranscriptionRecommendation: (options) =>
+    ipcRenderer.invoke("get-transcription-recommendation", options),
+
   // Parakeet server functions (faster repeated transcriptions)
   parakeetServerStart: (modelName) => ipcRenderer.invoke("parakeet-server-start", modelName),
   parakeetServerStop: () => ipcRenderer.invoke("parakeet-server-stop"),

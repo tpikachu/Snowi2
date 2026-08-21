@@ -223,7 +223,8 @@
     "transcription": {
       "title": "轉錄設定",
       "description": "選擇模式和服務供應商",
-      "preferredLanguage": "偏好語言"
+      "preferredLanguage": "偏好語言",
+      "automaticDescription": "Snowy 會根據你的硬體挑選模型"
     },
     "activation": {
       "title": "聽寫設定",
@@ -3786,6 +3787,29 @@
         "body": "在這裡連接行事曆、選擇轉錄的執行位置並設定快速鍵。你也可以從這裡重播本導覽。",
         "title": "設定"
       }
+    }
+  },
+  "transcriptionSetup": {
+    "probing": "正在檢測這台裝置能執行什麼…",
+    "unavailable": "無法檢測這台裝置的硬體。請手動選擇模型。",
+    "ready": "已就緒",
+    "download": "下載 {{size}}",
+    "cancel": "取消",
+    "recheck": "重新檢測硬體",
+    "switchToAdvanced": "手動選擇",
+    "switchToBasic": "返回自動設定",
+    "why": "根據 {{memory}} GB 記憶體與 {{cores}} 個核心選擇。",
+    "whyUnmeasured": "無法測量這台裝置的硬體，因此選擇了較保守的方案。",
+    "roles": {
+      "live": "即時字幕",
+      "buffered": "字幕（分批解碼）",
+      "archive": "會議結束後的高精度處理"
+    },
+    "warnings": {
+      "lowDisk": "磁碟空間不足。請先釋放空間再下載。",
+      "noAvx2": "該處理器不支援 AVX2，無法執行更快的模型。",
+      "onBattery": "正在使用電池供電。接上電源後轉錄更快。",
+      "generic": "這台裝置存在影響轉錄的限制。"
     }
   }
 }

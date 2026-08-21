@@ -1,5 +1,7 @@
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
 import TranscriptionModelPicker from "../TranscriptionModelPicker";
+import TranscriptionAutoSetup from "../TranscriptionAutoSetup";
 import LanguageSelector from "../ui/LanguageSelector";
 import StepShell, { StepSection } from "./StepShell";
 
@@ -40,27 +42,65 @@ export default function TranscriptionStep({
 }: TranscriptionStepProps) {
   const { t } = useTranslation();
 
+  // Automatic by default. Someone arriving here for the first time has no way
+  // to rank four 630 MB ASR models against their own hardware, and the manual
+  // picker asked them to do exactly that before they had heard the app speak
+  // once. Advanced stays one click away and unchanged.
+  const [advanced, setAdvanced] = useState(false);
+
+  const applyRecommendation = useCallback(
+    ({ provider, modelId }: { provider: "whisper" | "nvidia"; modelId: string }) => {
+      onModeChange(true);
+      onLocalProviderSelect(provider);
+      onLocalModelSelect(modelId);
+    },
+    [onModeChange, onLocalProviderSelect, onLocalModelSelect]
+  );
+
+  const languageFamily = preferredLanguage === "en" ? "en" : "multilingual";
+
   return (
     <StepShell
       eyebrow={eyebrow}
       title={t("onboarding.transcription.title")}
-      description={t("onboarding.transcription.description")}
+      description={t(
+        advanced
+          ? "onboarding.transcription.description"
+          : "onboarding.transcription.automaticDescription"
+      )}
     >
-      <TranscriptionModelPicker
-        selectedCloudProvider={cloudTranscriptionProvider}
-        onCloudProviderSelect={onCloudProviderSelect}
-        selectedCloudModel={cloudTranscriptionModel}
-        onCloudModelSelect={onCloudModelSelect}
-        selectedLocalModel={selectedLocalModel}
-        onLocalModelSelect={onLocalModelSelect}
-        selectedLocalProvider={localTranscriptionProvider}
-        onLocalProviderSelect={onLocalProviderSelect}
-        useLocalWhisper={useLocalWhisper}
-        onModeChange={onModeChange}
-        cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
-        setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
-        variant="onboarding"
-      />
+      {advanced ? (
+        <>
+          <TranscriptionModelPicker
+            selectedCloudProvider={cloudTranscriptionProvider}
+            onCloudProviderSelect={onCloudProviderSelect}
+            selectedCloudModel={cloudTranscriptionModel}
+            onCloudModelSelect={onCloudModelSelect}
+            selectedLocalModel={selectedLocalModel}
+            onLocalModelSelect={onLocalModelSelect}
+            selectedLocalProvider={localTranscriptionProvider}
+            onLocalProviderSelect={onLocalProviderSelect}
+            useLocalWhisper={useLocalWhisper}
+            onModeChange={onModeChange}
+            cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
+            setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
+            variant="onboarding"
+          />
+          <button
+            type="button"
+            onClick={() => setAdvanced(false)}
+            className="text-[11px] text-muted-foreground underline-offset-2 outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {t("transcriptionSetup.switchToBasic")}
+          </button>
+        </>
+      ) : (
+        <TranscriptionAutoSetup
+          language={languageFamily}
+          onApply={applyRecommendation}
+          onSwitchToAdvanced={() => setAdvanced(true)}
+        />
+      )}
 
       <StepSection label={t("onboarding.transcription.preferredLanguage")}>
         <LanguageSelector

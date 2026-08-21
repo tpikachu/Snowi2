@@ -202,7 +202,8 @@
     "transcription": {
       "title": "Configuração de transcrição",
       "description": "Escolha seu modo e provedor",
-      "preferredLanguage": "Idioma preferido"
+      "preferredLanguage": "Idioma preferido",
+      "automaticDescription": "O Snowy escolhe um modelo compatível com seu hardware"
     },
     "activation": {
       "title": "Configuração de ditado",
@@ -3786,6 +3787,29 @@
         "body": "Conecte um calendário, escolha onde a transcrição é executada e defina seus atalhos. Você pode repetir este tour por aqui.",
         "title": "Configuracoes"
       }
+    }
+  },
+  "transcriptionSetup": {
+    "probing": "Verificando o que este computador consegue executar…",
+    "unavailable": "Não foi possível verificar o hardware deste computador. Escolha um modelo manualmente.",
+    "ready": "Pronto",
+    "download": "Baixar {{size}}",
+    "cancel": "Cancelar",
+    "recheck": "Verificar o hardware novamente",
+    "switchToAdvanced": "Escolher manualmente",
+    "switchToBasic": "Voltar à configuração automática",
+    "why": "Escolhido para {{memory}} GB de memória e {{cores}} núcleos.",
+    "whyUnmeasured": "Escolhido de forma conservadora: não foi possível medir o hardware deste computador.",
+    "roles": {
+      "live": "Legendas ao vivo",
+      "buffered": "Legendas, decodificadas em lotes",
+      "archive": "Passagem mais precisa após a reunião"
+    },
+    "warnings": {
+      "lowDisk": "Pouco espaço em disco. Libere espaço antes de baixar.",
+      "noAvx2": "Este processador não tem AVX2, então os modelos mais rápidos não funcionam aqui.",
+      "onBattery": "Na bateria. A transcrição fica mais rápida conectado à tomada.",
+      "generic": "Este computador tem uma limitação que afeta a transcrição."
     }
   }
 }

@@ -223,7 +223,8 @@
     "transcription": {
       "title": "Transcription Setup",
       "description": "Choose your mode and provider",
-      "preferredLanguage": "Preferred Language"
+      "preferredLanguage": "Preferred Language",
+      "automaticDescription": "Snowy picks a model to match your hardware"
     },
     "activation": {
       "title": "Dictation Setup",
@@ -3786,6 +3787,29 @@
         "body": "Connect a calendar, choose where transcription runs, and set your hotkeys. You can replay this tour from here.",
         "title": "Settings"
       }
+    }
+  },
+  "transcriptionSetup": {
+    "probing": "Checking what this machine can run…",
+    "unavailable": "Couldn't check this machine's hardware. Choose a model manually instead.",
+    "ready": "Ready",
+    "download": "Download {{size}}",
+    "cancel": "Cancel",
+    "recheck": "Re-check hardware",
+    "switchToAdvanced": "Choose manually",
+    "switchToBasic": "Back to automatic setup",
+    "why": "Picked for {{memory}} GB of memory and {{cores}} cores.",
+    "whyUnmeasured": "Picked conservatively — this machine's hardware couldn't be measured.",
+    "roles": {
+      "live": "Live captions",
+      "buffered": "Captions, decoded in batches",
+      "archive": "Higher-accuracy pass after the meeting"
+    },
+    "warnings": {
+      "lowDisk": "Low disk space. Free some up before downloading.",
+      "noAvx2": "This processor has no AVX2, so the faster models can't run here.",
+      "onBattery": "On battery. Transcription runs faster plugged in.",
+      "generic": "This machine has a limitation that affects transcription."
     }
   }
 }

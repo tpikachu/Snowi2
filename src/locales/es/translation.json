@@ -223,7 +223,8 @@
     "transcription": {
       "title": "Configuración de transcripción",
       "description": "Elige tu modo y proveedor",
-      "preferredLanguage": "Idioma preferido"
+      "preferredLanguage": "Idioma preferido",
+      "automaticDescription": "Snowy elige un modelo acorde a tu hardware"
     },
     "activation": {
       "title": "Configuración de dictado",
@@ -3786,6 +3787,29 @@
         "body": "Conecta un calendario, elige dónde se ejecuta la transcripción y configura tus atajos. Puedes repetir esta guía desde aquí.",
         "title": "Ajustes"
       }
+    }
+  },
+  "transcriptionSetup": {
+    "probing": "Comprobando qué puede ejecutar este equipo…",
+    "unavailable": "No se pudo comprobar el hardware de este equipo. Elige un modelo manualmente.",
+    "ready": "Listo",
+    "download": "Descargar {{size}}",
+    "cancel": "Cancelar",
+    "recheck": "Volver a comprobar el hardware",
+    "switchToAdvanced": "Elegir manualmente",
+    "switchToBasic": "Volver a la configuración automática",
+    "why": "Elegido para {{memory}} GB de memoria y {{cores}} núcleos.",
+    "whyUnmeasured": "Elegido de forma conservadora: no se pudo medir el hardware de este equipo.",
+    "roles": {
+      "live": "Subtítulos en directo",
+      "buffered": "Subtítulos, descodificados por lotes",
+      "archive": "Pasada de mayor precisión tras la reunión"
+    },
+    "warnings": {
+      "lowDisk": "Poco espacio en disco. Libera algo antes de descargar.",
+      "noAvx2": "Este procesador no tiene AVX2, así que los modelos más rápidos no pueden ejecutarse aquí.",
+      "onBattery": "Con batería. La transcripción es más rápida conectado a la corriente.",
+      "generic": "Este equipo tiene una limitación que afecta a la transcripción."
     }
   }
 }

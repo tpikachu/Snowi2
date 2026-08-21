@@ -3003,6 +3003,36 @@ class IPCHandlers {
       return this.parakeetManager.getDiagnostics();
     });
 
+    // What this machine should run. The probe is cached against a fingerprint
+    // of the hardware, so repeat calls are a file read; only a real change
+    // (more RAM, a different machine, a newer probe) re-measures.
+    ipcMain.handle("get-transcription-recommendation", async (_event, options) => {
+      try {
+        const { getCapabilities } = require("./capabilityProbe");
+        const { selectTier } = require("../utils/modelTiering");
+        const cachePath = path.join(app.getPath("userData"), "capability.json");
+
+        const capability = await getCapabilities(cachePath, { force: options?.force === true });
+        const recommendation = selectTier(capability, { language: options?.language });
+
+        return { success: true, capability, recommendation };
+      } catch (error) {
+        // A machine we could not measure still has to be able to transcribe.
+        // selectTier's own fallback is the most conservative tier, so hand it
+        // nothing and let it answer rather than failing the caller.
+        debugLogger.warn("capability probe failed; falling back to the conservative tier", {
+          error: error.message,
+        });
+        const { selectTier } = require("../utils/modelTiering");
+        return {
+          success: true,
+          capability: null,
+          recommendation: selectTier(null, { language: options?.language }),
+          probeFailed: true,
+        };
+      }
+    });
+
     ipcMain.handle("parakeet-server-start", async (event, modelName) => {
       const result = await this.parakeetManager.startServer(modelName);
       // Persisting a provider that failed to start would wedge every launch

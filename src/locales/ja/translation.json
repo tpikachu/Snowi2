@@ -223,7 +223,8 @@
     "transcription": {
       "title": "文字起こし設定",
       "description": "モードとプロバイダーを選択してください",
-      "preferredLanguage": "優先言語"
+      "preferredLanguage": "優先言語",
+      "automaticDescription": "Snowy がハードウェアに合ったモデルを選びます"
     },
     "activation": {
       "title": "ディクテーション設定",
@@ -3786,6 +3787,29 @@
         "body": "カレンダーの接続、文字起こしの実行場所、ショートカットの設定はここです。このツアーはここから再生できます。",
         "title": "設定"
       }
+    }
+  },
+  "transcriptionSetup": {
+    "probing": "このマシンで実行できる内容を確認しています…",
+    "unavailable": "このマシンのハードウェアを確認できませんでした。手動でモデルを選択してください。",
+    "ready": "準備完了",
+    "download": "{{size}} をダウンロード",
+    "cancel": "キャンセル",
+    "recheck": "ハードウェアを再確認",
+    "switchToAdvanced": "手動で選択",
+    "switchToBasic": "自動設定に戻る",
+    "why": "メモリ {{memory}} GB、{{cores}} コアに合わせて選択しました。",
+    "whyUnmeasured": "このマシンのハードウェアを測定できなかったため、控えめに選択しました。",
+    "roles": {
+      "live": "ライブ字幕",
+      "buffered": "字幕（バッチでデコード）",
+      "archive": "会議後の高精度パス"
+    },
+    "warnings": {
+      "lowDisk": "ディスクの空き容量が不足しています。ダウンロード前に空き容量を確保してください。",
+      "noAvx2": "このプロセッサは AVX2 に対応していないため、高速なモデルは実行できません。",
+      "onBattery": "バッテリー駆動中です。電源に接続すると文字起こしが速くなります。",
+      "generic": "このマシンには文字起こしに影響する制約があります。"
     }
   }
 }
