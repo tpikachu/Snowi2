@@ -261,8 +261,8 @@
       "continue": "仍然继续"
     },
     "useCase": {
-      "title": "你为什么来到这里？",
-      "description": "我们是一个小团队，每周发布更新。你的选择会为你配置应用，也告诉我们接下来该做什么。",
+      "title": "你开的是哪类会议？",
+      "description": "我们是每周发布的小团队。你的选择会调整笔记的方向，也告诉我们接下来该做什么。",
       "noteLabel": "还有什么想告诉我们的吗？",
       "notePlaceholder": "可选",
       "options": {
@@ -270,25 +270,33 @@
           "title": "更快地写作",
           "description": "在任何应用中口述，而不是打字"
         },
-        "meetings": {
-          "title": "会议笔记与摘要",
-          "description": "录制、转写并总结会议"
-        },
         "healthcare": {
-          "title": "医疗、临床与治疗转写",
-          "description": "口述病历、咨询记录和报告"
+          "title": "诊疗与心理咨询",
+          "description": "问诊与会谈——可以直接归档的记录"
         },
         "translation": {
           "title": "语言翻译",
           "description": "说一种语言，输出另一种"
         },
-        "ai": {
-          "title": "与我的 AI 对话",
-          "description": "用语音驱动 ChatGPT、Claude 等智能体"
+        "team": {
+          "title": "团队会议与一对一",
+          "description": "站会、规划、复盘——决定了什么，谁来负责"
         },
-        "upload": {
-          "title": "上传音频文件",
-          "description": "上传并转写 MP3、OGG 等"
+        "clients": {
+          "title": "客户与销售通话",
+          "description": "需求沟通、演示、跟进——你承诺了什么，什么时候交"
+        },
+        "interviews": {
+          "title": "面试与招聘",
+          "description": "初筛与面试——可以并排比较的记录"
+        },
+        "research": {
+          "title": "用户研究",
+          "description": "客户访谈与可用性测试——原话引用与反复出现的主题"
+        },
+        "education": {
+          "title": "讲课与培训",
+          "description": "课程、工作坊与入职培训——可用来复习的总结"
         }
       },
       "selectHint": "可多选"
@@ -3801,15 +3809,24 @@
     "why": "根据 {{memory}} GB 内存和 {{cores}} 个核心选择。",
     "whyUnmeasured": "无法测量这台设备的硬件，因此选择了较保守的方案。",
     "roles": {
-      "live": "实时字幕",
-      "buffered": "字幕（分批解码）",
-      "archive": "会议结束后的高精度处理"
+      "live": "在大家说话的同时就写出字幕",
+      "buffered": "比对话晚几秒写出字幕",
+      "archive": "会议结束后再把全程更仔细地过一遍"
     },
     "warnings": {
       "lowDisk": "磁盘空间不足。请先释放空间再下载。",
       "noAvx2": "该处理器不支持 AVX2，无法运行更快的模型。",
       "onBattery": "正在使用电池供电。接通电源后转写更快。",
       "generic": "这台设备存在影响转写的限制。"
+    },
+    "modeLabel": "设置方式",
+    "modeBasic": "推荐",
+    "modeAdvanced": "高级",
+    "explainer": {
+      "lead": "Snowy 在这台电脑上把语音转成文字。为此需要一个语音模型——它读取这个文件来识别词语。",
+      "onDevice": "音频在本机处理，不会发送到任何地方。",
+      "oneTime": "只需下载一次，之后不会再问你。",
+      "offline": "下载之后，完全没有网络也能记录会议。"
     }
   }
 }

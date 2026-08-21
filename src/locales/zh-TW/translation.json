@@ -261,8 +261,8 @@
       "continue": "仍然繼續"
     },
     "useCase": {
-      "title": "你為什麼來到這裡？",
-      "description": "我們是一個小團隊，每週發布更新。你的選擇會為你設定應用程式，也告訴我們接下來該做什麼。",
+      "title": "你開的是哪一類會議？",
+      "description": "我們是每週發布的小團隊。你的選擇會調整筆記的方向，也告訴我們接下來該做什麼。",
       "noteLabel": "還有什麼想告訴我們的嗎？",
       "notePlaceholder": "選填",
       "options": {
@@ -270,25 +270,33 @@
           "title": "更快地寫作",
           "description": "在任何應用程式中口述，而不是打字"
         },
-        "meetings": {
-          "title": "會議筆記與摘要",
-          "description": "錄製、轉寫並總結會議"
-        },
         "healthcare": {
-          "title": "醫療、臨床與治療轉寫",
-          "description": "口述病歷、諮商紀錄和報告"
+          "title": "診療與心理諮商",
+          "description": "問診與會談——可以直接歸檔的記錄"
         },
         "translation": {
           "title": "語言翻譯",
           "description": "說一種語言，輸出另一種"
         },
-        "ai": {
-          "title": "與我的 AI 對話",
-          "description": "用語音驅動 ChatGPT、Claude 等代理"
+        "team": {
+          "title": "團隊會議與一對一",
+          "description": "站立會議、規劃、檢討——決定了什麼，誰來負責"
         },
-        "upload": {
-          "title": "上傳音訊檔案",
-          "description": "上傳並轉寫 MP3、OGG 等"
+        "clients": {
+          "title": "客戶與業務通話",
+          "description": "需求溝通、展示、追蹤——你承諾了什麼，什麼時候交"
+        },
+        "interviews": {
+          "title": "面試與招募",
+          "description": "初篩與面談——可以並排比較的記錄"
+        },
+        "research": {
+          "title": "使用者研究",
+          "description": "客戶訪談與可用性測試——原話引用與反覆出現的主題"
+        },
+        "education": {
+          "title": "授課與訓練",
+          "description": "課程、工作坊與新人訓練——可用來複習的整理"
         }
       },
       "selectHint": "可複選"
@@ -3801,15 +3809,24 @@
     "why": "根據 {{memory}} GB 記憶體與 {{cores}} 個核心選擇。",
     "whyUnmeasured": "無法測量這台裝置的硬體，因此選擇了較保守的方案。",
     "roles": {
-      "live": "即時字幕",
-      "buffered": "字幕（分批解碼）",
-      "archive": "會議結束後的高精度處理"
+      "live": "在大家說話的同時就寫出字幕",
+      "buffered": "比對話晚幾秒寫出字幕",
+      "archive": "會議結束後再把全程更仔細地看過一遍"
     },
     "warnings": {
       "lowDisk": "磁碟空間不足。請先釋放空間再下載。",
       "noAvx2": "該處理器不支援 AVX2，無法執行更快的模型。",
       "onBattery": "正在使用電池供電。接上電源後轉錄更快。",
       "generic": "這台裝置存在影響轉錄的限制。"
+    },
+    "modeLabel": "設定方式",
+    "modeBasic": "建議",
+    "modeAdvanced": "進階",
+    "explainer": {
+      "lead": "Snowy 在這台電腦上把語音轉成文字。為此需要一個語音模型——它讀取這個檔案來辨識詞語。",
+      "onDevice": "音訊在本機處理，不會傳送到任何地方。",
+      "oneTime": "只需下載一次，之後不會再問你。",
+      "offline": "下載之後，完全沒有網路也能記錄會議。"
     }
   }
 }

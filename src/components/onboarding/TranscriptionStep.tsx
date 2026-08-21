@@ -5,6 +5,7 @@ import TranscriptionAutoSetup from "../TranscriptionAutoSetup";
 import LanguageSelector from "../ui/LanguageSelector";
 import StepShell, { StepSection } from "./StepShell";
 import { useSettingsStore } from "../../stores/settingsStore";
+import { cn } from "../lib/utils";
 
 interface TranscriptionStepProps {
   eyebrow?: string;
@@ -104,37 +105,56 @@ export default function TranscriptionStep({
           : "onboarding.transcription.automaticDescription"
       )}
     >
-      {advanced ? (
-        <>
-          <TranscriptionModelPicker
-            selectedCloudProvider={cloudTranscriptionProvider}
-            onCloudProviderSelect={onCloudProviderSelect}
-            selectedCloudModel={cloudTranscriptionModel}
-            onCloudModelSelect={onCloudModelSelect}
-            selectedLocalModel={selectedLocalModel}
-            onLocalModelSelect={onLocalModelSelect}
-            selectedLocalProvider={localTranscriptionProvider}
-            onLocalProviderSelect={onLocalProviderSelect}
-            useLocalWhisper={useLocalWhisper}
-            onModeChange={onModeChange}
-            cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
-            setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
-            variant="onboarding"
-          />
+      {/* A switch that sits above the content and is present in both modes.
+          The way back used to be a small text link *below* the manual picker,
+          which is a tall control — so on any normal window the only exit was
+          off-screen, and Advanced read as a one-way door. */}
+      <div
+        role="radiogroup"
+        aria-label={t("transcriptionSetup.modeLabel")}
+        className="inline-flex rounded-control border border-border-subtle bg-surface-2 p-0.5 shadow-(--shadow-control)"
+      >
+        {[
+          { id: "basic", label: t("transcriptionSetup.modeBasic"), value: false },
+          { id: "advanced", label: t("transcriptionSetup.modeAdvanced"), value: true },
+        ].map((mode) => (
           <button
+            key={mode.id}
             type="button"
-            onClick={() => setAdvanced(false)}
-            className="text-[11px] text-muted-foreground underline-offset-2 outline-none hover:text-foreground hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+            role="radio"
+            aria-checked={advanced === mode.value}
+            onClick={() => setAdvanced(mode.value)}
+            className={cn(
+              "rounded-control px-3 py-1 text-xs font-medium outline-none transition-colors",
+              "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+              advanced === mode.value
+                ? "bg-surface-1 text-foreground shadow-(--shadow-control)"
+                : "text-muted-foreground hover:text-foreground"
+            )}
           >
-            {t("transcriptionSetup.switchToBasic")}
+            {mode.label}
           </button>
-        </>
-      ) : (
-        <TranscriptionAutoSetup
-          language={languageFamily}
-          onApply={applyRecommendation}
-          onSwitchToAdvanced={() => setAdvanced(true)}
+        ))}
+      </div>
+
+      {advanced ? (
+        <TranscriptionModelPicker
+          selectedCloudProvider={cloudTranscriptionProvider}
+          onCloudProviderSelect={onCloudProviderSelect}
+          selectedCloudModel={cloudTranscriptionModel}
+          onCloudModelSelect={onCloudModelSelect}
+          selectedLocalModel={selectedLocalModel}
+          onLocalModelSelect={onLocalModelSelect}
+          selectedLocalProvider={localTranscriptionProvider}
+          onLocalProviderSelect={onLocalProviderSelect}
+          useLocalWhisper={useLocalWhisper}
+          onModeChange={onModeChange}
+          cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
+          setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
+          variant="onboarding"
         />
+      ) : (
+        <TranscriptionAutoSetup language={languageFamily} onApply={applyRecommendation} />
       )}
 
       <StepSection label={t("onboarding.transcription.preferredLanguage")}>

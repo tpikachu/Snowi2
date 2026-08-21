@@ -261,8 +261,8 @@
       "continue": "Continuar de todos modos"
     },
     "useCase": {
-      "title": "¿Qué te trae por aquí?",
-      "description": "Somos un equipo pequeño que lanza mejoras cada semana. Lo que elijas configura la aplicación a tu medida y nos dice qué construir a continuación.",
+      "title": "¿Qué tipo de reuniones tienes?",
+      "description": "Somos un equipo pequeño que publica cada semana. Lo que elijas ajusta tus notas y nos dice qué construir a continuación.",
       "noteLabel": "¿Algo más que quieras contarnos?",
       "notePlaceholder": "Opcional",
       "options": {
@@ -270,25 +270,33 @@
           "title": "Escribir más rápido",
           "description": "Dicta en cualquier aplicación en lugar de teclear"
         },
-        "meetings": {
-          "title": "Notas y resúmenes de reuniones",
-          "description": "Graba, transcribe y resume tus reuniones"
-        },
         "healthcare": {
-          "title": "Transcripción médica, clínica y terapéutica",
-          "description": "Dicta notas de pacientes, notas de sesión e informes"
+          "title": "Sesiones clínicas y de terapia",
+          "description": "Consultas y visitas: notas listas para archivar"
         },
         "translation": {
           "title": "Traducir idiomas",
           "description": "Habla un idioma, escribe en otro"
         },
-        "ai": {
-          "title": "Hablar con mi IA",
-          "description": "Controla por voz ChatGPT, Claude y otros agentes"
+        "team": {
+          "title": "Reuniones de equipo y 1:1",
+          "description": "Dailies, planificación, revisiones: decisiones y responsables"
         },
-        "upload": {
-          "title": "Subir archivos de audio",
-          "description": "Sube y transcribe MP3, OGG y más"
+        "clients": {
+          "title": "Llamadas con clientes y ventas",
+          "description": "Descubrimiento, demos, seguimientos: qué prometiste y cuándo"
+        },
+        "interviews": {
+          "title": "Entrevistas y contratación",
+          "description": "Cribas y paneles: notas que puedes comparar una al lado de otra"
+        },
+        "research": {
+          "title": "Investigación de usuarios",
+          "description": "Entrevistas de usabilidad y clientes: citas y temas recurrentes"
+        },
+        "education": {
+          "title": "Clases y formación",
+          "description": "Clases, talleres e incorporaciones: resúmenes para estudiar"
         }
       },
       "selectHint": "Selecciona todas las que correspondan"
@@ -3801,15 +3809,24 @@
     "why": "Elegido para {{memory}} GB de memoria y {{cores}} núcleos.",
     "whyUnmeasured": "Elegido de forma conservadora: no se pudo medir el hardware de este equipo.",
     "roles": {
-      "live": "Subtítulos en directo",
-      "buffered": "Subtítulos, descodificados por lotes",
-      "archive": "Pasada de mayor precisión tras la reunión"
+      "live": "Escribe los subtítulos mientras la gente habla",
+      "buffered": "Escribe los subtítulos unos segundos por detrás de la conversación",
+      "archive": "Repasa toda la reunión después, con más cuidado"
     },
     "warnings": {
       "lowDisk": "Poco espacio en disco. Libera algo antes de descargar.",
       "noAvx2": "Este procesador no tiene AVX2, así que los modelos más rápidos no pueden ejecutarse aquí.",
       "onBattery": "Con batería. La transcripción es más rápida conectado a la corriente.",
       "generic": "Este equipo tiene una limitación que afecta a la transcripción."
+    },
+    "modeLabel": "Modo de configuración",
+    "modeBasic": "Recomendado",
+    "modeAdvanced": "Avanzado",
+    "explainer": {
+      "lead": "Snowy convierte el habla en texto en este equipo. Para ello necesita un modelo de voz: un archivo que lee para reconocer las palabras.",
+      "onDevice": "Tu audio se procesa aquí y nunca se envía a ningún sitio.",
+      "oneTime": "Se descarga una sola vez. No volveremos a pedírtelo.",
+      "offline": "Después, las reuniones funcionan sin conexión a internet."
     }
   }
 }

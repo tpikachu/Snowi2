@@ -261,8 +261,8 @@
       "continue": "Trotzdem fortfahren"
     },
     "useCase": {
-      "title": "Was führt dich hierher?",
-      "description": "Wir sind ein kleines Team und liefern jede Woche. Deine Auswahl richtet die App für dich ein — und sagt uns, was wir als Nächstes bauen sollen.",
+      "title": "Welche Art von Meetings haben Sie?",
+      "description": "Wir sind ein kleines Team und liefern jede Woche. Ihre Auswahl richtet Ihre Notizen aus – und sagt uns, was wir als Nächstes bauen sollen.",
       "noteLabel": "Möchtest du uns noch etwas mitteilen?",
       "notePlaceholder": "Optional",
       "options": {
@@ -270,25 +270,33 @@
           "title": "Schneller schreiben",
           "description": "Diktiere in jede App, statt zu tippen"
         },
-        "meetings": {
-          "title": "Meeting-Notizen & Zusammenfassungen",
-          "description": "Meetings aufnehmen, transkribieren und zusammenfassen"
-        },
         "healthcare": {
-          "title": "Medizinische, klinische & Therapie-Transkription",
-          "description": "Diktiere Patientennotizen, Sitzungsnotizen und Berichte"
+          "title": "Klinische und therapeutische Sitzungen",
+          "description": "Sprechstunden und Konsultationen: Notizen, die direkt abgelegt werden können"
         },
         "translation": {
           "title": "Sprachen übersetzen",
           "description": "Sprich eine Sprache, schreibe eine andere"
         },
-        "ai": {
-          "title": "Mit meiner KI sprechen",
-          "description": "Steuere ChatGPT, Claude und andere Agenten per Stimme"
+        "team": {
+          "title": "Teammeetings und Einzelgespräche",
+          "description": "Standups, Planung, Reviews: Entscheidungen und Zuständigkeiten"
         },
-        "upload": {
-          "title": "Audiodateien hochladen",
-          "description": "Lade MP3, OGG und mehr hoch und transkribiere sie"
+        "clients": {
+          "title": "Kunden- und Vertriebsgespräche",
+          "description": "Erstgespräche, Demos, Follow-ups: was Sie zugesagt haben und bis wann"
+        },
+        "interviews": {
+          "title": "Interviews und Recruiting",
+          "description": "Screenings und Panels: Notizen, die sich vergleichen lassen"
+        },
+        "research": {
+          "title": "Nutzerforschung",
+          "description": "Kunden- und Usability-Interviews: Zitate und wiederkehrende Themen"
+        },
+        "education": {
+          "title": "Vorlesungen und Schulungen",
+          "description": "Kurse, Workshops und Einarbeitungen: Zusammenfassungen zum Lernen"
         }
       },
       "selectHint": "Wähle alles Zutreffende aus"
@@ -3801,15 +3809,24 @@
     "why": "Ausgewählt für {{memory}} GB Arbeitsspeicher und {{cores}} Kerne.",
     "whyUnmeasured": "Konservativ gewählt – die Hardware dieses Rechners ließ sich nicht messen.",
     "roles": {
-      "live": "Live-Untertitel",
-      "buffered": "Untertitel, stapelweise dekodiert",
-      "archive": "Genauerer Durchlauf nach dem Meeting"
+      "live": "Schreibt Untertitel mit, während gesprochen wird",
+      "buffered": "Schreibt Untertitel mit ein paar Sekunden Verzögerung",
+      "archive": "Geht das gesamte Meeting danach noch einmal genauer durch"
     },
     "warnings": {
       "lowDisk": "Wenig Speicherplatz. Geben Sie vor dem Download etwas frei.",
       "noAvx2": "Dieser Prozessor hat kein AVX2, daher laufen die schnelleren Modelle hier nicht.",
       "onBattery": "Im Akkubetrieb. Am Netzteil ist die Transkription schneller.",
       "generic": "Dieser Rechner hat eine Einschränkung, die die Transkription betrifft."
+    },
+    "modeLabel": "Einrichtungsmodus",
+    "modeBasic": "Empfohlen",
+    "modeAdvanced": "Erweitert",
+    "explainer": {
+      "lead": "Snowy wandelt Sprache auf diesem Rechner in Text um. Dafür braucht es ein Sprachmodell – eine Datei, aus der es Wörter erkennt.",
+      "onDevice": "Ihr Audio wird hier verarbeitet und nirgendwohin gesendet.",
+      "oneTime": "Es wird einmal heruntergeladen. Wir fragen nicht noch einmal.",
+      "offline": "Danach funktionieren Meetings ganz ohne Internet."
     }
   }
 }

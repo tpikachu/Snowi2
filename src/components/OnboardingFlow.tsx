@@ -46,7 +46,6 @@ import ActivationStep from "./onboarding/ActivationStep";
 import VoiceAgentStep from "./onboarding/VoiceAgentStep";
 import MeetingSetupStep from "./onboarding/MeetingSetupStep";
 import FinishStep from "./onboarding/FinishStep";
-import { USE_CASE_IDS } from "./onboarding/useCases";
 
 // Highest possible step index across flow variants (with the meeting step shown).
 const MAX_STEP_INDEX = 6;
@@ -181,8 +180,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   // The meeting step is temporarily hidden for all users while it gets more
   // design polish — the step's render code and MeetingSetupStep stay in place.
-  // Restore by reinstating the relevance check:
-  //   systemAudio.granted || onboardingUseCases.includes(USE_CASE_IDS.meetings)
+  // Restore by showing it once system audio is granted; the old relevance check
+  // keyed off a "meetings" use case that no longer exists, because every use
+  // case is a kind of meeting now.
   const showMeetingStep = false;
 
   const steps = useMemo(() => {
@@ -499,12 +499,16 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         );
 
       case "permissions":
+        // Every use case is now a kind of meeting, so capturing the other side
+        // of the call is never optional. This used to key off a "meetings"
+        // option that no longer exists as a choice — it was the whole product
+        // wearing a checkbox.
         return (
           <PermissionsStep
             eyebrow={stepTitle}
             permissions={permissionsHook}
             systemAudio={systemAudio}
-            systemAudioRecommended={onboardingUseCases.includes(USE_CASE_IDS.meetings)}
+            systemAudioRecommended
           />
         );
 

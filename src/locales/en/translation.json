@@ -261,8 +261,8 @@
       "continue": "Continue anyway"
     },
     "useCase": {
-      "title": "Why are you here?",
-      "description": "We're a small team shipping every week. What you pick sets up the app for you — and tells us what to build next.",
+      "title": "What kind of meetings do you run?",
+      "description": "We're a small team shipping every week. What you pick tunes your notes — and tells us what to build next.",
       "noteLabel": "Anything else you'd like us to know?",
       "notePlaceholder": "Optional",
       "options": {
@@ -270,25 +270,33 @@
           "title": "Writing faster",
           "description": "Dictate into any app instead of typing"
         },
-        "meetings": {
-          "title": "Meeting notes & summaries",
-          "description": "Record, transcribe and summarize meetings"
-        },
         "healthcare": {
-          "title": "Medical, clinical & therapy transcription",
-          "description": "Dictate patient notes, session notes and reports"
+          "title": "Clinical & therapy sessions",
+          "description": "Patient visits and consultations — notes ready to file"
         },
         "translation": {
           "title": "Translating languages",
           "description": "Speak one language, type another"
         },
-        "ai": {
-          "title": "Talking to my AI",
-          "description": "Voice-drive ChatGPT, Claude and other agents"
+        "team": {
+          "title": "Team meetings & 1:1s",
+          "description": "Standups, planning, reviews — decisions and who owns what"
         },
-        "upload": {
-          "title": "Uploading audio files",
-          "description": "Upload and transcribe MP3, OGG and more"
+        "clients": {
+          "title": "Client & sales calls",
+          "description": "Discovery, demos, check-ins — what you promised and when"
+        },
+        "interviews": {
+          "title": "Interviews & hiring",
+          "description": "Screens and panels — notes you can compare side by side"
+        },
+        "research": {
+          "title": "User research",
+          "description": "Customer and usability interviews — quotes and recurring themes"
+        },
+        "education": {
+          "title": "Lectures & training",
+          "description": "Classes, workshops and onboarding — summaries to study from"
         }
       },
       "selectHint": "Select all that apply"
@@ -3801,15 +3809,24 @@
     "why": "Picked for {{memory}} GB of memory and {{cores}} cores.",
     "whyUnmeasured": "Picked conservatively — this machine's hardware couldn't be measured.",
     "roles": {
-      "live": "Live captions",
-      "buffered": "Captions, decoded in batches",
-      "archive": "Higher-accuracy pass after the meeting"
+      "live": "Writes captions while people are still talking",
+      "buffered": "Writes captions a few seconds behind the conversation",
+      "archive": "Goes back over the whole meeting afterwards, more carefully"
     },
     "warnings": {
       "lowDisk": "Low disk space. Free some up before downloading.",
       "noAvx2": "This processor has no AVX2, so the faster models can't run here.",
       "onBattery": "On battery. Transcription runs faster plugged in.",
       "generic": "This machine has a limitation that affects transcription."
+    },
+    "modeLabel": "Setup mode",
+    "modeBasic": "Recommended",
+    "modeAdvanced": "Advanced",
+    "explainer": {
+      "lead": "Snowy turns speech into text on this computer. To do that it needs a speech model — a file it reads to recognise words.",
+      "onDevice": "Your audio is processed here, and never sent anywhere.",
+      "oneTime": "It downloads once. You won't be asked again.",
+      "offline": "After that, meetings work with no internet at all."
     }
   }
 }

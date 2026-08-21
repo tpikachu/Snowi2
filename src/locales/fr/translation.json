@@ -261,8 +261,8 @@
       "continue": "Continuer quand même"
     },
     "useCase": {
-      "title": "Qu'est-ce qui vous amène ?",
-      "description": "Nous sommes une petite équipe qui publie chaque semaine. Vos choix configurent l'application pour vous — et nous disent quoi construire ensuite.",
+      "title": "Quel type de réunions avez-vous ?",
+      "description": "Nous sommes une petite équipe qui livre chaque semaine. Votre choix ajuste vos notes et nous indique quoi construire ensuite.",
       "noteLabel": "Autre chose à nous dire ?",
       "notePlaceholder": "Facultatif",
       "options": {
@@ -270,25 +270,33 @@
           "title": "Écrire plus vite",
           "description": "Dictez dans n'importe quelle application au lieu de taper"
         },
-        "meetings": {
-          "title": "Notes et résumés de réunion",
-          "description": "Enregistrez, transcrivez et résumez vos réunions"
-        },
         "healthcare": {
-          "title": "Transcription médicale, clinique et thérapeutique",
-          "description": "Dictez notes de patients, notes de séance et comptes rendus"
+          "title": "Consultations et séances de thérapie",
+          "description": "Visites et consultations : des notes prêtes à classer"
         },
         "translation": {
           "title": "Traduire des langues",
           "description": "Parlez une langue, écrivez-en une autre"
         },
-        "ai": {
-          "title": "Parler à mon IA",
-          "description": "Pilotez ChatGPT, Claude et d'autres agents à la voix"
+        "team": {
+          "title": "Réunions d'équipe et entretiens individuels",
+          "description": "Points quotidiens, planning, revues : décisions et responsables"
         },
-        "upload": {
-          "title": "Importer des fichiers audio",
-          "description": "Importez et transcrivez MP3, OGG et plus"
+        "clients": {
+          "title": "Appels clients et commerciaux",
+          "description": "Découverte, démos, suivis : ce que vous avez promis et pour quand"
+        },
+        "interviews": {
+          "title": "Entretiens et recrutement",
+          "description": "Préqualifications et jurys : des notes comparables entre elles"
+        },
+        "research": {
+          "title": "Recherche utilisateur",
+          "description": "Entretiens clients et tests d'usage : citations et thèmes récurrents"
+        },
+        "education": {
+          "title": "Cours et formations",
+          "description": "Cours, ateliers et intégrations : des résumés pour réviser"
         }
       },
       "selectHint": "Sélectionnez tout ce qui s'applique"
@@ -3801,15 +3809,24 @@
     "why": "Choisi pour {{memory}} Go de mémoire et {{cores}} cœurs.",
     "whyUnmeasured": "Choix prudent : le matériel de cet ordinateur n'a pas pu être mesuré.",
     "roles": {
-      "live": "Sous-titres en direct",
-      "buffered": "Sous-titres, décodés par lots",
-      "archive": "Passe plus précise après la réunion"
+      "live": "Écrit les sous-titres pendant que les gens parlent",
+      "buffered": "Écrit les sous-titres avec quelques secondes de retard",
+      "archive": "Reprend toute la réunion ensuite, plus attentivement"
     },
     "warnings": {
       "lowDisk": "Espace disque faible. Libérez de la place avant de télécharger.",
       "noAvx2": "Ce processeur n'a pas AVX2 : les modèles les plus rapides ne peuvent pas fonctionner ici.",
       "onBattery": "Sur batterie. La transcription est plus rapide sur secteur.",
       "generic": "Cet ordinateur présente une limite qui affecte la transcription."
+    },
+    "modeLabel": "Mode de configuration",
+    "modeBasic": "Recommandé",
+    "modeAdvanced": "Avancé",
+    "explainer": {
+      "lead": "Snowy transforme la parole en texte sur cet ordinateur. Pour cela, il lui faut un modèle vocal : un fichier qu'il lit pour reconnaître les mots.",
+      "onDevice": "Votre audio est traité ici et n'est jamais envoyé ailleurs.",
+      "oneTime": "Il se télécharge une seule fois. On ne vous le redemandera pas.",
+      "offline": "Ensuite, les réunions fonctionnent sans aucune connexion internet."
     }
   }
 }

@@ -240,8 +240,8 @@
       "continue": "Continuar mesmo assim"
     },
     "useCase": {
-      "title": "O que traz você aqui?",
-      "description": "Somos uma equipe pequena lançando melhorias toda semana. O que você escolher configura o app para você — e nos diz o que construir em seguida.",
+      "title": "Que tipo de reunião você tem?",
+      "description": "Somos um time pequeno lançando toda semana. O que você escolher ajusta suas notas — e nos diz o que construir em seguida.",
       "noteLabel": "Algo mais que gostaria de nos contar?",
       "notePlaceholder": "Opcional",
       "options": {
@@ -249,25 +249,33 @@
           "title": "Escrever mais rápido",
           "description": "Dite em qualquer aplicativo em vez de digitar"
         },
-        "meetings": {
-          "title": "Notas e resumos de reuniões",
-          "description": "Grave, transcreva e resuma suas reuniões"
-        },
         "healthcare": {
-          "title": "Transcrição médica, clínica e terapêutica",
-          "description": "Dite notas de pacientes, notas de sessão e relatórios"
+          "title": "Sessões clínicas e de terapia",
+          "description": "Consultas e atendimentos: notas prontas para arquivar"
         },
         "translation": {
           "title": "Traduzir idiomas",
           "description": "Fale um idioma, escreva em outro"
         },
-        "ai": {
-          "title": "Falar com minha IA",
-          "description": "Controle por voz o ChatGPT, o Claude e outros agentes"
+        "team": {
+          "title": "Reuniões de equipe e 1:1",
+          "description": "Dailies, planejamento, revisões: decisões e quem é responsável"
         },
-        "upload": {
-          "title": "Enviar arquivos de áudio",
-          "description": "Envie e transcreva MP3, OGG e mais"
+        "clients": {
+          "title": "Chamadas com clientes e vendas",
+          "description": "Descoberta, demos, follow-ups: o que você prometeu e para quando"
+        },
+        "interviews": {
+          "title": "Entrevistas e contratação",
+          "description": "Triagens e painéis: notas que dá para comparar lado a lado"
+        },
+        "research": {
+          "title": "Pesquisa com usuários",
+          "description": "Entrevistas com clientes e testes de usabilidade: citações e temas"
+        },
+        "education": {
+          "title": "Aulas e treinamentos",
+          "description": "Aulas, workshops e integrações: resumos para estudar"
         }
       },
       "selectHint": "Selecione todas as opções aplicáveis"
@@ -3801,15 +3809,24 @@
     "why": "Escolhido para {{memory}} GB de memória e {{cores}} núcleos.",
     "whyUnmeasured": "Escolhido de forma conservadora: não foi possível medir o hardware deste computador.",
     "roles": {
-      "live": "Legendas ao vivo",
-      "buffered": "Legendas, decodificadas em lotes",
-      "archive": "Passagem mais precisa após a reunião"
+      "live": "Escreve as legendas enquanto as pessoas falam",
+      "buffered": "Escreve as legendas alguns segundos atrás da conversa",
+      "archive": "Revê a reunião inteira depois, com mais cuidado"
     },
     "warnings": {
       "lowDisk": "Pouco espaço em disco. Libere espaço antes de baixar.",
       "noAvx2": "Este processador não tem AVX2, então os modelos mais rápidos não funcionam aqui.",
       "onBattery": "Na bateria. A transcrição fica mais rápida conectado à tomada.",
       "generic": "Este computador tem uma limitação que afeta a transcrição."
+    },
+    "modeLabel": "Modo de configuração",
+    "modeBasic": "Recomendado",
+    "modeAdvanced": "Avançado",
+    "explainer": {
+      "lead": "O Snowy transforma fala em texto neste computador. Para isso ele precisa de um modelo de voz: um arquivo que ele lê para reconhecer as palavras.",
+      "onDevice": "Seu áudio é processado aqui e nunca é enviado a lugar nenhum.",
+      "oneTime": "Ele é baixado uma única vez. Não vamos pedir de novo.",
+      "offline": "Depois disso, as reuniões funcionam sem nenhuma internet."
     }
   }
 }

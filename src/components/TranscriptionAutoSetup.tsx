@@ -1,6 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, Cpu, Download, Loader2, RefreshCw, TriangleAlert } from "lucide-react";
+import {
+  Check,
+  Cpu,
+  Download,
+  HardDriveDownload,
+  Loader2,
+  RefreshCw,
+  ShieldCheck,
+  TriangleAlert,
+  WifiOff,
+} from "lucide-react";
 import modelRegistryData from "../models/modelRegistryData.json";
 import { useTranscriptionRecommendation } from "../hooks/useTranscriptionRecommendation";
 import { useModelDownload } from "../hooks/useModelDownload";
@@ -43,7 +53,43 @@ interface TranscriptionAutoSetupProps {
   language?: "en" | "multilingual";
   /** Called once the live model is on disk, to persist the selection. */
   onApply: (selection: { provider: "whisper" | "nvidia"; modelId: string }) => void;
-  onSwitchToAdvanced: () => void;
+}
+
+/**
+ * What a "speech model" is and why it has to be fetched, for someone who has
+ * never heard the phrase.
+ *
+ * Worth the space: this is the first screen that asks for hundreds of megabytes
+ * and it arrives before the app has done anything useful. Unexplained, a
+ * download that size reads as bloat. Explained, it is the reason the product
+ * can promise that meetings never leave the machine — which is the thing people
+ * are actually here for.
+ */
+function WhyDownload({ t }: { t: (key: string) => string }) {
+  const points = [
+    { icon: ShieldCheck, key: "onDevice" },
+    { icon: HardDriveDownload, key: "oneTime" },
+    { icon: WifiOff, key: "offline" },
+  ];
+
+  return (
+    <div className="rounded-control border border-border-subtle bg-surface-2 px-3 py-3">
+      <p className="text-xs leading-relaxed text-foreground">
+        {t("transcriptionSetup.explainer.lead")}
+      </p>
+      <ul className="mt-2.5 space-y-1.5">
+        {points.map(({ icon: Icon, key }) => (
+          <li
+            key={key}
+            className="flex items-start gap-2 text-[11px] leading-relaxed text-muted-foreground"
+          >
+            <Icon className="mt-px size-3 shrink-0 text-primary" strokeWidth={1.75} />
+            <span>{t(`transcriptionSetup.explainer.${key}`)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 /**
@@ -61,7 +107,6 @@ interface TranscriptionAutoSetupProps {
 export default function TranscriptionAutoSetup({
   language = "en",
   onApply,
-  onSwitchToAdvanced,
 }: TranscriptionAutoSetupProps) {
   const { t } = useTranslation();
   const { recommendation, capability, probeFailed, loading, refresh } =
@@ -140,11 +185,17 @@ export default function TranscriptionAutoSetup({
     }
   }, [missing, parakeetDownload, whisperDownload]);
 
+  // The explainer renders immediately rather than behind the probe's spinner:
+  // it is the answer to "why is this asking me to download something", and
+  // that question arrives before the probe finishes.
   if (loading || checking) {
     return (
-      <div className="flex items-center gap-2 rounded-control border border-border-subtle bg-surface-2 px-3 py-4 text-xs text-muted-foreground">
-        <Loader2 className="size-3.5 animate-spin" strokeWidth={1.75} />
-        {t("transcriptionSetup.probing")}
+      <div className="space-y-3">
+        <WhyDownload t={t} />
+        <div className="flex items-center gap-2 rounded-control border border-border-subtle bg-surface-2 px-3 py-4 text-xs text-muted-foreground">
+          <Loader2 className="size-3.5 animate-spin" strokeWidth={1.75} />
+          {t("transcriptionSetup.probing")}
+        </div>
       </div>
     );
   }
@@ -152,13 +203,11 @@ export default function TranscriptionAutoSetup({
   if (!recommendation) {
     return (
       <div className="space-y-3">
+        <WhyDownload t={t} />
         <div className="flex items-start gap-2 rounded-control border border-border-subtle bg-surface-2 px-3 py-3 text-xs text-muted-foreground">
           <TriangleAlert className="mt-0.5 size-3.5 shrink-0 text-warning" strokeWidth={1.75} />
           <span>{t("transcriptionSetup.unavailable")}</span>
         </div>
-        <Button variant="outline" size="sm" onClick={onSwitchToAdvanced}>
-          {t("transcriptionSetup.switchToAdvanced")}
-        </Button>
       </div>
     );
   }
@@ -167,6 +216,8 @@ export default function TranscriptionAutoSetup({
 
   return (
     <div className="space-y-3">
+      <WhyDownload t={t} />
+
       <div className="overflow-hidden rounded-control border border-border-subtle bg-surface-2">
         {models.map(({ model, role }) => {
           const ready = installed.has(model.name);
@@ -255,15 +306,10 @@ export default function TranscriptionAutoSetup({
           </Button>
         )}
         {!isDownloading && (
-          <>
-            <Button variant="ghost" size="sm" onClick={refresh}>
-              <RefreshCw className="size-3.5" strokeWidth={1.75} />
-              {t("transcriptionSetup.recheck")}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onSwitchToAdvanced}>
-              {t("transcriptionSetup.switchToAdvanced")}
-            </Button>
-          </>
+          <Button variant="ghost" size="sm" onClick={refresh}>
+            <RefreshCw className="size-3.5" strokeWidth={1.75} />
+            {t("transcriptionSetup.recheck")}
+          </Button>
         )}
       </div>
     </div>
