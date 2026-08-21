@@ -2702,7 +2702,6 @@
         "description": "「{{title}}」會連同逐字稿保留在筆記中。捨棄將永久刪除。",
         "descriptionEmpty": "這場會議沒有產生逐字稿。保留會留下一則空筆記。",
         "discard": "捨棄",
-        "generating": "正在產生筆記。",
         "save": "儲存",
         "title": "要儲存這場會議嗎？",
         "titleEmpty": "沒有錄到任何內容",

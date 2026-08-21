@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "./ui/useToast";
 import {
@@ -41,49 +41,48 @@ const MEETING_ERROR_KEYS: Record<string, string> = {};
 function MeetingStopDialog() {
   const { t } = useTranslation();
   const pendingStop = useMeetingRecordingStore((s) => s.pendingStop);
-  const [isGenerating, setIsGenerating] = useState(false);
 
-  const noteId = pendingStop?.noteId ?? null;
-  const hasContent = pendingStop?.hasContent ?? false;
+  /**
+   * Write the notes, once the user has said to keep the meeting.
+   *
+   * This used to start the moment the prompt appeared, on the theory that the
+   * notes would be ready by the time the user finished deciding. That traded
+   * away the wrong thing: it spends an inference call — real money on a BYOK
+   * key — on a meeting the user may be about to discard, and it sends the
+   * transcript of that meeting to a model after they have decided they do not
+   * want it kept. Discard has to mean nothing happened.
+   *
+   * Everything is read out of `pendingStop` before `resolvePendingStop` clears
+   * it, so the work runs against the values this dialog was showing rather
+   * than against state that has already moved on.
+   */
+  const keepMeeting = useCallback(() => {
+    const pending = useMeetingRecordingStore.getState().pendingStop;
+    void resolvePendingStop(true);
 
-  useEffect(() => {
-    if (noteId == null || !hasContent) return;
-    // Started while the prompt is up rather than after Save, so the notes are
-    // usually written by the time the user has finished deciding. Discarding
-    // cancels it — see resolvePendingStop.
-    let cancelled = false;
+    if (!pending || pending.noteId == null || !pending.hasContent) return;
+    const noteId = pending.noteId;
+    const speakerLabels = { you: t("notes.speaker.you"), them: t("notes.speaker.them") };
+
     void autoGenerateMeetingNotes({
       noteId,
-      noteTitle: pendingStop?.noteTitle ?? null,
-      segments: pendingStop?.segments ?? [],
-      speakerLabels: { you: t("notes.speaker.you"), them: t("notes.speaker.them") },
+      noteTitle: pending.noteTitle ?? null,
+      segments: pending.segments ?? [],
+      speakerLabels,
       titlePlaceholders: MEETING_TITLE_PLACEHOLDERS.map((key) => t(key)),
       labels: {
         noModel: t("notes.actions.errors.noModel"),
         noEndpoint: t("notes.actions.errors.noEndpoint"),
         actionFailed: t("notes.actions.errors.actionFailed"),
       },
-    }).then((started) => {
-      if (!cancelled) setIsGenerating(started);
     });
 
     // Memory extraction rides the same trigger but is not tied to the note
     // result: it reads segments back from the database (so the ids it cites are
     // the ones a citation resolves against), and a meeting should still yield
-    // its commitments when note generation is off or fails. Silent by design —
-    // nothing about it is worth interrupting the stop dialog for.
-    void generateMeetingMemory({
-      noteId,
-      speakerLabels: { you: t("notes.speaker.you"), them: t("notes.speaker.them") },
-    });
-
-    return () => {
-      cancelled = true;
-    };
-    // Deliberately keyed on the note alone: this must fire once per stop, not
-    // again every time a translation function identity changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [noteId, hasContent]);
+    // its commitments when note generation is off or fails.
+    void generateMeetingMemory({ noteId, speakerLabels });
+  }, [t]);
 
   if (!pendingStop) return null;
 
@@ -93,8 +92,10 @@ function MeetingStopDialog() {
     <ConfirmDialog
       open
       onOpenChange={(open) => {
-        // Dismissing without choosing keeps the meeting: the safe answer.
-        if (!open && useMeetingRecordingStore.getState().pendingStop) void resolvePendingStop(true);
+        // Dismissing without choosing keeps the meeting: the safe answer. It
+        // goes through the same path as Save, so a dismissed prompt still
+        // produces the notes a kept meeting is supposed to have.
+        if (!open && useMeetingRecordingStore.getState().pendingStop) keepMeeting();
       }}
       title={
         isEmpty ? t("notes.meeting.stopDialog.titleEmpty") : t("notes.meeting.stopDialog.title")
@@ -102,18 +103,13 @@ function MeetingStopDialog() {
       description={
         isEmpty
           ? t("notes.meeting.stopDialog.descriptionEmpty")
-          : [
-              t("notes.meeting.stopDialog.description", {
-                title: pendingStop.noteTitle || t("notes.meeting.stopDialog.untitled"),
-              }),
-              isGenerating ? t("notes.meeting.stopDialog.generating") : "",
-            ]
-              .filter(Boolean)
-              .join(" ")
+          : t("notes.meeting.stopDialog.description", {
+              title: pendingStop.noteTitle || t("notes.meeting.stopDialog.untitled"),
+            })
       }
       confirmText={t("notes.meeting.stopDialog.save")}
       cancelText={t("notes.meeting.stopDialog.discard")}
-      onConfirm={() => void resolvePendingStop(true)}
+      onConfirm={keepMeeting}
       onCancel={() => void resolvePendingStop(false)}
     />
   );

@@ -2909,7 +2909,6 @@
         "description": "“{{title}}” will stay in your notes with its transcript. Discard removes it permanently.",
         "descriptionEmpty": "This meeting produced no transcript. Keeping it leaves an empty note behind.",
         "discard": "Discard",
-        "generating": "Notes are being generated now.",
         "save": "Save",
         "title": "Save this meeting?",
         "titleEmpty": "Nothing was recorded",

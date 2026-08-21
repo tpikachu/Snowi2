@@ -1766,8 +1766,11 @@ export async function resolvePendingStop(keep: boolean): Promise<void> {
   useMeetingRecordingStore.setState({ pendingStop: null });
   if (!pending || keep || pending.noteId == null) return;
 
-  // Note generation starts while the prompt is open, so a discard has to stop
-  // it — otherwise the result lands on a note that is about to be deleted.
+  // Nothing should be running: note generation now waits for Save rather than
+  // starting while the prompt is up. Kept as a backstop for the paths that can
+  // still have queued work against this note — a manual Generate notes fired
+  // before Stop, or a retry — because the result would otherwise land on a note
+  // that is about to be deleted.
   cancelAction(pending.noteId);
 
   try {

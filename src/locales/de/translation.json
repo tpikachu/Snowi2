@@ -2909,7 +2909,6 @@
         "description": "„{{title}}“ bleibt mit Transkript in Ihren Notizen. Verwerfen entfernt es endgültig.",
         "descriptionEmpty": "Dieses Meeting hat kein Transkript erzeugt. Beim Behalten bleibt eine leere Notiz zurück.",
         "discard": "Verwerfen",
-        "generating": "Die Notizen werden gerade erstellt.",
         "save": "Speichern",
         "title": "Dieses Meeting speichern?",
         "titleEmpty": "Es wurde nichts aufgezeichnet",
