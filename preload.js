@@ -15,9 +15,9 @@ const BYOK_KEY_BRIDGES = [
   { base: "tinfoil", get: "getTinfoilKey", save: "saveTinfoilKey" },
   { base: "corti", get: "getCortiKey", save: "saveCortiKey" },
   {
-    base: "note-formatting-custom",
-    get: "getNoteFormattingCustomKey",
-    save: "saveNoteFormattingCustomKey",
+    base: "actions-custom",
+    get: "getActionsCustomKey",
+    save: "saveActionsCustomKey",
   },
   { base: "translation-custom", get: "getTranslationCustomKey", save: "saveTranslationCustomKey" },
   {

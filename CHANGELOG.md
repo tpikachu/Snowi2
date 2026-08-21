@@ -59,10 +59,11 @@ listed there that are fixed are called out below.
   that action run automatically. The panel leads with the actions, then names
   the model they all run on.
 - The rename goes all the way down. The `noteFormatting` inference scope, its
-  settings keys and its panel id are now `actions`, so the code stops listing a
-  single action as a peer of Chat. Existing settings are migrated on first
-  launch; the encrypted custom-endpoint key keeps its filename on disk, because
-  moving a credential is a worse trade than an inconsistent string.
+  settings keys, its panel id, its IPC channels and the name its credential is
+  filed under are now `actions`, so nothing left in the code lists a single
+  action as a peer of Chat. Settings are migrated on first launch. The one
+  thing that does not carry over is a custom Actions endpoint's API key, which
+  was stored under the old name and has to be entered once more.
 - Creating and editing actions moved out of the notes page and into that panel.
   A configuration screen one click from a note read as something about the note.
 - The action button no longer appears on a note when no model is configured.

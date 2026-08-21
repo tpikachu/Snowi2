@@ -1156,7 +1156,7 @@ const SECRET_IPC_SAVERS = {
   tinfoil: "saveTinfoilKey",
   customTranscription: "saveCustomTranscriptionKey",
   cleanupCustom: "saveCleanupCustomKey",
-  actionsCustom: "saveNoteFormattingCustomKey",
+  actionsCustom: "saveActionsCustomKey",
   translationCustom: "saveTranslationCustomKey",
   dictationAgentCustom: "saveDictationAgentCustomKey",
   dictationAgentVisionCustom: "saveDictationAgentVisionCustomKey",
@@ -2772,7 +2772,7 @@ export async function initializeSettings(): Promise<void> {
         window.electronAPI.getTinfoilKey?.(),
         window.electronAPI.getCustomTranscriptionKey?.(),
         window.electronAPI.getCleanupCustomKey?.(),
-        window.electronAPI.getNoteFormattingCustomKey?.(),
+        window.electronAPI.getActionsCustomKey?.(),
         window.electronAPI.getTranslationCustomKey?.(),
         window.electronAPI.getDictationAgentCustomKey?.(),
         window.electronAPI.getDictationAgentVisionCustomKey?.(),
@@ -2800,7 +2800,7 @@ export async function initializeSettings(): Promise<void> {
         cleanupCustomApiKey: customRx || "",
         bedrockAccessKeyId: bedrockAccessKeyId || "",
         ...(await migrateScopeCustomKeys([
-          ["actionsCustomApiKey", actionsCustom, "saveNoteFormattingCustomKey"],
+          ["actionsCustomApiKey", actionsCustom, "saveActionsCustomKey"],
           ["translationCustomApiKey", translationCustom, "saveTranslationCustomKey"],
           ["dictationAgentCustomApiKey", dictationAgentCustom, "saveDictationAgentCustomKey"],
           [

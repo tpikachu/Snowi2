@@ -1717,8 +1717,8 @@ declare global {
       saveCustomTranscriptionKey?: (key: string) => Promise<void>;
       getCleanupCustomKey?: () => Promise<string | null>;
       saveCleanupCustomKey?: (key: string) => Promise<void>;
-      getNoteFormattingCustomKey?: () => Promise<string | null>;
-      saveNoteFormattingCustomKey?: (key: string) => Promise<void>;
+      getActionsCustomKey?: () => Promise<string | null>;
+      saveActionsCustomKey?: (key: string) => Promise<void>;
       getTranslationCustomKey?: () => Promise<string | null>;
       saveTranslationCustomKey?: (key: string) => Promise<void>;
       getDictationAgentCustomKey?: () => Promise<string | null>;

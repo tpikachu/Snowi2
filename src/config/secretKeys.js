@@ -66,18 +66,18 @@ const BYOK_API_KEYS = [
   },
   // Per-scope Custom-endpoint keys. Dictation cleanup's counterpart predates
   // this manifest and keeps its bespoke accessors (CUSTOM_CLEANUP_API_KEY).
-  // The Actions scope. `base`, `env` and the accessors still say "note
-  // formatting", the name the scope carried until it was renamed: `base` is
-  // the filename of an encrypted key under userData/secure-keys, and the
-  // accessors are IPC channel names. Renaming those moves a credential the
-  // user cannot re-derive if the move goes wrong, which is a poor trade for a
-  // string nobody outside this file reads. Only `storeKey` — a renderer field
-  // name, not data at rest — follows the scope.
+  // The Actions scope, formerly `note-formatting-custom`. `base` names the
+  // encrypted file under userData/secure-keys and `env` the variable it is
+  // loaded into, so this rename orphans a key stored by an earlier build
+  // rather than moving it: whoever had a custom Actions endpoint re-enters it
+  // once. Deliberate — a scope whose credential is filed under a name the
+  // scope no longer has is the kind of thing that is only ever discovered by
+  // someone debugging something else.
   {
-    base: "note-formatting-custom",
-    env: "NOTE_FORMATTING_CUSTOM_API_KEY",
-    get: "getNoteFormattingCustomKey",
-    save: "saveNoteFormattingCustomKey",
+    base: "actions-custom",
+    env: "ACTIONS_CUSTOM_API_KEY",
+    get: "getActionsCustomKey",
+    save: "saveActionsCustomKey",
     storeKey: "actionsCustomApiKey",
   },
   {

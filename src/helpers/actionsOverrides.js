@@ -1,4 +1,4 @@
-// Provider overrides for note-formatting ReasoningService.processText calls.
+// Provider overrides for Actions-scope ReasoningService.processText calls.
 // Self-hosted must forward remoteUrl as lanUrl — without it, processText
 // would use the dictation-cleanup scope instead of this scope's endpoint.
 export function buildActionsOverrides(actions) {
