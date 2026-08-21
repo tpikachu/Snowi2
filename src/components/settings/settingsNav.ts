@@ -109,6 +109,34 @@ export function resolveSectionId(section: string | undefined): SettingsSectionTy
   return (SECTION_ALIASES[section] ?? section) as SettingsSectionType;
 }
 
+export interface ResolvedDeepLink {
+  section: SettingsSectionType;
+  /** Set only when the link named a panel that section actually has. */
+  speechTab?: SpeechTab;
+  llmTab?: LlmTab;
+}
+
+/**
+ * Where a deep link lands: a section, plus the sub-panel to open with it.
+ *
+ * A panel is only returned when the resolved section really has it, because the
+ * caller's fallback is a *stored* tab from an earlier visit — so a link naming a
+ * panel that does not exist, or one belonging to a different section, would not
+ * land on some neutral default but on wherever the user happened to be last.
+ */
+export function resolveDeepLink(section: string, panel?: string): ResolvedDeepLink {
+  const resolved = resolveSectionId(section);
+  const subTab = panel ?? LEGACY_SUB_TAB[section];
+  if (!subTab) return { section: resolved };
+  if (resolved === "speechToText" && SPEECH_TABS.includes(subTab as SpeechTab)) {
+    return { section: resolved, speechTab: subTab as SpeechTab };
+  }
+  if (resolved === "llms" && LLM_TABS.includes(subTab as LlmTab)) {
+    return { section: resolved, llmTab: subTab as LlmTab };
+  }
+  return { section: resolved };
+}
+
 type IconComponent = React.ComponentType<{ className?: string; size?: number }>;
 
 export interface SettingsPanelDef {

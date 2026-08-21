@@ -6,9 +6,9 @@ import SettingsSurface from "./settings/SettingsSurface";
 import { useUpperLayerDismissGuard } from "./ui/useUpperLayerDismissGuard";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import {
-  LEGACY_SUB_TAB,
   LLM_TAB_STORAGE_KEY,
   LLM_TABS,
+  resolveDeepLink,
   resolveSectionId,
   SPEECH_TAB_STORAGE_KEY,
   SPEECH_TABS,
@@ -61,16 +61,20 @@ export default function SettingsModal({
     SPEECH_TABS[0]
   );
   const [llmTab, setLlmTab] = useLocalStorage<LlmTab>(LLM_TAB_STORAGE_KEY, LLM_TABS[0]);
-  const [prevOpen, setPrevOpen] = useState(open);
+  // Seeded to a value the first render cannot match, so the resolve below runs
+  // on mount as well as on change. ControlPanel mounts this component already
+  // open (`{showSettings && <SettingsModal open …>}`), so tracking the previous
+  // props from the current ones would skip every deep link that arrives with
+  // the surface — the section still landed, via its lazy initializer, while the
+  // panel silently fell back to whichever tab localStorage last held.
+  const [prevOpen, setPrevOpen] = useState(false);
 
-  const applySubTab = useCallback(
-    (section: SettingsSectionType, subTab: string | undefined) => {
-      if (!subTab) return;
-      if (section === "speechToText" && SPEECH_TABS.includes(subTab as SpeechTab)) {
-        setSpeechTab(subTab as SpeechTab);
-      } else if (section === "llms" && LLM_TABS.includes(subTab as LlmTab)) {
-        setLlmTab(subTab as LlmTab);
-      }
+  const applyDeepLink = useCallback(
+    (section: string, panel?: string) => {
+      const resolved = resolveDeepLink(section, panel);
+      setActiveSection(resolved.section);
+      if (resolved.speechTab) setSpeechTab(resolved.speechTab);
+      if (resolved.llmTab) setLlmTab(resolved.llmTab);
     },
     [setSpeechTab, setLlmTab]
   );
@@ -79,16 +83,12 @@ export default function SettingsModal({
   // mount — and again when a new one arrives while it is already open, since a
   // toast can deep-link from behind the settings surface.
   const deepLink = `${initialSection ?? ""}|${initialPanel ?? ""}`;
-  const [prevDeepLink, setPrevDeepLink] = useState(deepLink);
+  const [prevDeepLink, setPrevDeepLink] = useState<string | null>(null);
 
   if (open !== prevOpen || deepLink !== prevDeepLink) {
     setPrevOpen(open);
     setPrevDeepLink(deepLink);
-    if (open && initialSection) {
-      const resolved = resolveSectionId(initialSection);
-      setActiveSection(resolved);
-      applySubTab(resolved, initialPanel ?? LEGACY_SUB_TAB[initialSection]);
-    }
+    if (open && initialSection) applyDeepLink(initialSection, initialPanel);
   }
 
   // A stored tab from an older build can name a panel that no longer exists.
@@ -103,11 +103,8 @@ export default function SettingsModal({
         : undefined;
 
   const handlePanelChange = useCallback(
-    (section: SettingsSectionType, panel: string) => {
-      setActiveSection(section);
-      applySubTab(section, panel);
-    },
-    [applySubTab]
+    (section: SettingsSectionType, panel: string) => applyDeepLink(section, panel),
+    [applyDeepLink]
   );
 
   return (
