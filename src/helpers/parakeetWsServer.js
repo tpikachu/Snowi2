@@ -386,7 +386,18 @@ class ParakeetWsServer {
     }
   }
 
-  createOnlineStream({ onUpdate, onError } = {}) {
+  /**
+   * @param {object} handlers
+   * @param {(text: string) => void} [handlers.onUpdate] - the whole accumulated
+   *   transcript, re-emitted whenever it changes. What dictation commits.
+   * @param {(result: {text: string, segment: string|number|null, isFinal: boolean}) => void} [handlers.onResult]
+   *   - one server message, before accumulation. Live captions need this rather
+   *   than `onUpdate`: the server refines a segment word by word and then marks
+   *   it final, and a caption UI has to show the refinement as it happens and
+   *   commit only on that final. Accumulated text cannot express either.
+   * @param {(error: Error) => void} [handlers.onError]
+   */
+  createOnlineStream({ onUpdate, onResult, onError } = {}) {
     if (!this.ready || !this.process) {
       throw new Error("parakeet-ws server is not running");
     }
@@ -479,6 +490,26 @@ class ParakeetWsServer {
         ws.close();
         return;
       }
+      // Raw first, accumulated second. A caption surface needs to know which
+      // segment moved and whether it just finalized; by the time the messages
+      // are folded into one string both facts are gone.
+      if (!closed && onResult) {
+        let parsed;
+        try {
+          parsed = JSON.parse(message);
+        } catch {
+          parsed = { text: message };
+        }
+        const resultText = String(parsed?.text ?? "").trim();
+        if (resultText) {
+          onResult({
+            text: resultText,
+            segment: parsed?.segment ?? null,
+            isFinal: parsed?.is_final === true,
+          });
+        }
+      }
+
       const text = results.push(message);
       if (!closed && text && text !== lastEmitted) {
         lastEmitted = text;

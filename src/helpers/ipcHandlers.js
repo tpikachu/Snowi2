@@ -57,6 +57,8 @@ const AudioStorageManager = require("./audioStorage");
 const liveSpeakerIdentifier = require("./liveSpeakerIdentifier");
 const { supportsLiveSpeakerIdentification } = require("./liveSpeakerIdPolicy");
 const { isSpeakerIdentificationEnabled } = require("./speakerIdentificationPolicy");
+const { LocalParakeetStreaming } = require("./localParakeetStreaming");
+const { getModelRuntime } = require("./parakeetModelInfo");
 const MeetingEchoLeakDetector = require("./meetingEchoLeakDetector");
 const { partitionPendingMicFinals, isWithinRetractWindow } = require("./meetingMicHoldback");
 const { applySmartSpacing } = require("./smartSpacing");
@@ -5743,6 +5745,83 @@ class IPCHandlers {
       !!this._meetingMicStreaming?.isConnected &&
       (systemAudioMode === "unsupported" || !!this._meetingSystemStreaming?.isConnected);
 
+    /**
+     * Live captions from a local streaming model, when the selected one is a
+     * streaming build.
+     *
+     * The alternative — and what every local meeting used to do — is
+     * `meetingLocalTimer`: buffer audio for five seconds, decode the buffer
+     * offline, emit the result as one finished segment. Nothing could reach the
+     * screen sooner than that by construction, which is why local captions
+     * arrived a sentence at a time.
+     *
+     * Deliberately *not* a parallel code path. Setting up the same
+     * `_meetingMicStreaming` / `_meetingSystemStreaming` slots the cloud
+     * providers use means the audio dispatch, echo-bleed gating, mic holdback,
+     * segment retraction and teardown all already apply — the local case just
+     * became another streaming client.
+     *
+     * Returns false rather than throwing when it cannot run (offline model,
+     * missing binary, model not downloaded), so the caller falls back to the
+     * batch path instead of failing the meeting.
+     */
+    const connectLocalStreaming = async (event, options, systemAudioMode) => {
+      if (options.localProvider !== "nvidia") return false;
+      const model = options.localModel;
+      if (!model || getModelRuntime(model) !== "online") return false;
+
+      const serverManager = this.parakeetManager?.serverManager;
+      if (!serverManager) return false;
+
+      const started = await serverManager.startServer(model);
+      if (!started?.success) {
+        debugLogger.warn("Local streaming captions unavailable; falling back to chunked decode", {
+          model,
+          reason: started?.reason,
+        });
+        return false;
+      }
+
+      if (this._meetingMicStreaming?.isConnected) await this._meetingMicStreaming.disconnect();
+      if (this._meetingSystemStreaming?.isConnected)
+        await this._meetingSystemStreaming.disconnect();
+      this._meetingMicStreaming = null;
+      this._meetingSystemStreaming = null;
+
+      const win = BrowserWindow.fromWebContents(event.sender);
+      const pairs =
+        systemAudioMode !== "unsupported"
+          ? [
+              { ref: "_meetingMicStreaming", source: "mic" },
+              { ref: "_meetingSystemStreaming", source: "system" },
+            ]
+          : [{ ref: "_meetingMicStreaming", source: "mic" }];
+
+      try {
+        for (const { ref, source } of pairs) {
+          this[ref] = new LocalParakeetStreaming(serverManager);
+          attachMeetingStreamingHandlers(this[ref], win, source);
+          await this[ref].connect({ source });
+        }
+        meetingConnectionKey = getMeetingConnectionKey(options);
+        debugLogger.debug("Meeting transcription started with local streaming captions", {
+          model,
+          streams: pairs.length,
+        });
+        return true;
+      } catch (error) {
+        debugLogger.warn("Local streaming captions failed to start; falling back", {
+          error: error.message,
+        });
+        for (const { ref } of pairs) {
+          this[ref]?.abort?.();
+          this[ref] = null;
+        }
+        meetingConnectionKey = null;
+        return false;
+      }
+    };
+
     const connectRealtimeStreaming = async (event, options) => {
       const connectionKey = getMeetingConnectionKey(options);
       const StreamingClass = getMeetingStreamingClient(options.provider);
@@ -6825,7 +6904,12 @@ class IPCHandlers {
         }
 
         if (options.provider === "local") {
-          meetingLocalMode = true;
+          // A streaming model gets the streaming path. `meetingLocalMode` stays
+          // false for it on purpose — that flag is what diverts audio into the
+          // five-second buffers instead of the streaming clients.
+          const streamingCaptions = await connectLocalStreaming(event, options, systemAudioMode);
+
+          meetingLocalMode = !streamingCaptions;
           meetingLocalProvider = options.localProvider || "whisper";
           meetingLocalModel = options.localModel || null;
           meetingLocalLanguage = options.language || null;
@@ -6836,9 +6920,11 @@ class IPCHandlers {
           await startLiveSpeakerIdentification(meetingLocalWin, systemAudioMode);
           await startMeetingAec(systemAudioMode);
 
-          meetingLocalTimer = setInterval(() => {
-            transcribeAllLocalBuffers();
-          }, LOCAL_MEETING_CHUNK_INTERVAL_MS);
+          if (meetingLocalMode) {
+            meetingLocalTimer = setInterval(() => {
+              transcribeAllLocalBuffers();
+            }, LOCAL_MEETING_CHUNK_INTERVAL_MS);
+          }
 
           ({ systemAudioMode, systemAudioStrategy } = await startMeetingSystemAudio(
             event,
@@ -6849,6 +6935,8 @@ class IPCHandlers {
 
           debugLogger.debug("Meeting transcription started in local mode", {
             provider: meetingLocalProvider,
+            model: meetingLocalModel,
+            captions: meetingLocalMode ? "chunked" : "streaming",
             systemAudioMode,
             systemAudioStrategy,
           });
