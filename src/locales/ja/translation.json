@@ -2360,7 +2360,8 @@
     },
     "sidebar": {
       "newNote": "新しいノート",
-      "searchNotes": "ノートを検索"
+      "searchNotes": "ノートを検索",
+      "actions": "アクション"
     },
     "spaces": {
       "privateSpaces": "プライベートスペース",

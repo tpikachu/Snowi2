@@ -64,8 +64,10 @@ listed there that are fixed are called out below.
   action as a peer of Chat. Settings are migrated on first launch. The one
   thing that does not carry over is a custom Actions endpoint's API key, which
   was stored under the old name and has to be entered once more.
-- Creating and editing actions moved out of the notes page and into that panel.
-  A configuration screen one click from a note read as something about the note.
+- Actions are managed from a list-and-editor screen reachable both from the
+  notes sidebar and from that Settings panel. Writing an action is a prompt
+  about your own notes and you think of one while reading a note; picking the
+  model it runs on is a different question, and that stays in Settings.
 - The action button no longer appears on a note when no model is configured.
   There was nothing for it to run, so it could only produce a setup prompt.
 - Notes no longer open onto a setup screen. A first visit used to be taken over

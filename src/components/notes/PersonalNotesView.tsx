@@ -7,6 +7,7 @@ import SpacesTree from "./SpacesTree";
 import ContextPaneSection from "../shell/ContextPaneSection";
 import { ContainerOverview } from "./overview/ContainerOverview";
 import ActionPicker from "./ActionPicker";
+import ActionManagerDialog from "./ActionManagerDialog";
 import AddNotesToFolderDialog from "./AddNotesToFolderDialog";
 import { useActionProcessing } from "../../hooks/useActionProcessing";
 import type { NoteMoveTarget } from "../../hooks/useNoteDragAndDrop";
@@ -177,6 +178,8 @@ export default function PersonalNotesView({
     [commitDraft, persistPendingWrites, takePendingSnapshots]
   );
   const { toast } = useToast();
+  const [showActionManager, setShowActionManager] = useState(false);
+
   const effectiveModelId = useSettingsStore((settings) => selectResolvedActions(settings).model);
 
   const isTranscribing = useMeetingRecordingStore((s) => s.isRecording);
@@ -627,6 +630,23 @@ export default function PersonalNotesView({
                 {t("notes.sidebar.searchNotes")}
               </button>
             )}
+            {/* Writing actions belongs next to the notes they run on — an
+                action is a prompt about your own writing, and you think of one
+                while reading a note, not while in Settings. What lives in
+                Settings is the *model* they run on, which is a different
+                question and a different screen. */}
+            <button
+              onClick={() => setShowActionManager(true)}
+              className={cn(
+                "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs",
+                "text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5",
+                "transition-colors duration-150",
+                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              )}
+            >
+              <Sparkles size={14} className="shrink-0" />
+              {t("notes.sidebar.actions")}
+            </button>
           </div>
 
           <SpacesTree
@@ -872,6 +892,8 @@ export default function PersonalNotesView({
           onNotesAdded={handleNotesAdded}
         />
       )}
+
+      <ActionManagerDialog open={showActionManager} onOpenChange={setShowActionManager} />
     </div>
   );
 }

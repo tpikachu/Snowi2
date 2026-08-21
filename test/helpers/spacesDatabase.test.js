@@ -1521,13 +1521,19 @@ test("folders rebuild succeeds on a legacy DB with notes referencing folders", (
     "legacy notes are backfilled into the private space"
   );
   const folders = db.db.prepare("SELECT id, name, space_id FROM folders ORDER BY id").all();
-  // init may seed additional defaults (e.g. "Videos"); the legacy folders
-  // must survive with their ids intact.
-  assert.deepEqual(
-    folders.filter((f) => ["Personal", "Projects"].includes(f.name)).map((f) => f.id),
-    [1, 2],
-    "both legacy folders survive with their ids"
+  // Matched by id, not by name: init also renames the containers this app
+  // inherited from the dictation build, so the default "Personal" folder comes
+  // out of a legacy database called "Notes". Asserting names here made this
+  // test a second, weaker copy of the rename's own tests, and it failed the
+  // moment that rename landed.
+  const byId = new Map(folders.map((f) => [f.id, f]));
+  assert.ok(byId.has(1) && byId.has(2), "both legacy folders survive with their ids");
+  assert.equal(
+    byId.get(1).name,
+    "Notes",
+    "the legacy default folder keeps its id through the rename"
   );
+  assert.equal(byId.get(2).name, "Projects", "a user's own folder is not renamed");
   assert.ok(
     folders.every((f) => f.space_id === privateId),
     "all folders are backfilled into the private space"

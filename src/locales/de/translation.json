@@ -2639,7 +2639,8 @@
     },
     "sidebar": {
       "newNote": "Neue Notiz",
-      "searchNotes": "Notizen suchen"
+      "searchNotes": "Notizen suchen",
+      "actions": "Aktionen"
     },
     "spaces": {
       "privateSpaces": "Private Bereiche",

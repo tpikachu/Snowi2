@@ -2432,7 +2432,8 @@
     },
     "sidebar": {
       "newNote": "Nuova nota",
-      "searchNotes": "Cerca note"
+      "searchNotes": "Cerca note",
+      "actions": "Azioni"
     },
     "spaces": {
       "privateSpaces": "Spazi privati",

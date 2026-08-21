@@ -2432,7 +2432,8 @@
     },
     "sidebar": {
       "newNote": "新建笔记",
-      "searchNotes": "搜索笔记"
+      "searchNotes": "搜索笔记",
+      "actions": "操作"
     },
     "spaces": {
       "privateSpaces": "私人空间",

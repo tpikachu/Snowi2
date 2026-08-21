@@ -2432,7 +2432,8 @@
     },
     "sidebar": {
       "newNote": "新增筆記",
-      "searchNotes": "搜尋筆記"
+      "searchNotes": "搜尋筆記",
+      "actions": "操作"
     },
     "spaces": {
       "privateSpaces": "私人空間",

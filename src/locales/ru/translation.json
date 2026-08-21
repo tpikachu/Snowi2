@@ -2446,7 +2446,8 @@
     },
     "sidebar": {
       "newNote": "Новая заметка",
-      "searchNotes": "Поиск заметок"
+      "searchNotes": "Поиск заметок",
+      "actions": "Действия"
     },
     "spaces": {
       "privateSpaces": "Личные пространства",
