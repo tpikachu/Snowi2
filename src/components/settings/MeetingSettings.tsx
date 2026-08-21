@@ -10,6 +10,7 @@ import {
 } from "../ui/SettingsSection";
 import type { InferenceModeOption } from "../ui/SettingsSection";
 import { Toggle } from "../ui/toggle";
+import { SPEAKER_IDENTIFICATION_ENABLED } from "../../helpers/speakerIdentificationPolicy";
 import TranscriptionModelPicker from "../TranscriptionModelPicker";
 import type { InferenceMode } from "../../types/electron";
 
@@ -17,6 +18,12 @@ export function MeetingSpeakerDetectionRow() {
   const { t } = useTranslation();
   const speakerDiarizationEnabled = useSettingsStore((s) => s.speakerDiarizationEnabled);
   const setSpeakerDiarizationEnabled = useSettingsStore((s) => s.setSpeakerDiarizationEnabled);
+
+  // While identification is off app-wide, this toggle controls nothing — the
+  // policy ignores the stored preference. Hiding the row beats leaving a switch
+  // that flips and changes no behaviour. The preference itself is untouched, so
+  // the row returns with the user's setting intact if the feature comes back.
+  if (!SPEAKER_IDENTIFICATION_ENABLED) return null;
 
   return (
     <SettingsRow

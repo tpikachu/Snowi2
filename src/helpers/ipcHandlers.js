@@ -56,6 +56,7 @@ const { transcribeWithTinfoil } = require("./tinfoilTranscription");
 const AudioStorageManager = require("./audioStorage");
 const liveSpeakerIdentifier = require("./liveSpeakerIdentifier");
 const { supportsLiveSpeakerIdentification } = require("./liveSpeakerIdPolicy");
+const { isSpeakerIdentificationEnabled } = require("./speakerIdentificationPolicy");
 const MeetingEchoLeakDetector = require("./meetingEchoLeakDetector");
 const { partitionPendingMicFinals, isWithinRetractWindow } = require("./meetingMicHoldback");
 const { applySmartSpacing } = require("./smartSpacing");
@@ -5857,7 +5858,9 @@ class IPCHandlers {
     };
 
     const resolveDiarizationEnabled = () =>
-      (this.activeMeetingSpeakerConfig?.enabled ?? this.speakerDiarizationEnabled) !== false;
+      isSpeakerIdentificationEnabled(
+        this.activeMeetingSpeakerConfig?.enabled ?? this.speakerDiarizationEnabled
+      );
 
     const resolveSessionMaxSpeakers = () => {
       const count = this.activeMeetingSpeakerConfig?.expectedCount;
@@ -6884,13 +6887,21 @@ class IPCHandlers {
           void liveSpeakerIdentifier.feedAudio(outboundBuffer);
         }
 
-        if (!meetingDiarizationStream) {
-          const os = require("os");
-          meetingDiarizationPath = path.join(os.tmpdir(), `ow-diarize-raw-${Date.now()}.pcm`);
-          meetingDiarizationStream = fs.createWriteStream(meetingDiarizationPath);
-          meetingDiarizationStartedAt = receivedAt;
+        // The raw mirror exists only so the post-stop clustering pass has audio
+        // to re-embed. With identification off nothing ever reads it, and
+        // writing it anyway would put an hour of unencrypted 24 kHz PCM
+        // (~170 MB) in the system temp directory for no one. Skipping it also
+        // leaves `meetingDiarizationPath` null, which is what makes
+        // runMeetingDiarization take its pass-through branch.
+        if (resolveDiarizationEnabled()) {
+          if (!meetingDiarizationStream) {
+            const os = require("os");
+            meetingDiarizationPath = path.join(os.tmpdir(), `ow-diarize-raw-${Date.now()}.pcm`);
+            meetingDiarizationStream = fs.createWriteStream(meetingDiarizationPath);
+            meetingDiarizationStartedAt = receivedAt;
+          }
+          meetingDiarizationStream.write(outboundBuffer);
         }
-        meetingDiarizationStream.write(outboundBuffer);
         dispatchMeetingAudioBuffer(outboundBuffer, "system");
         return;
       }
@@ -8811,7 +8822,9 @@ class IPCHandlers {
       }
     };
 
-    const diarizationEnabled = (sessionConfig?.enabled ?? this.speakerDiarizationEnabled) !== false;
+    const diarizationEnabled = isSpeakerIdentificationEnabled(
+      sessionConfig?.enabled ?? this.speakerDiarizationEnabled
+    );
 
     if (!diarizationEnabled || !this.diarizationManager?.isAvailable() || !rawPcmPath) {
       send({

@@ -17,6 +17,7 @@ import { MAX_SPEAKER_COUNT } from "../../constants/speakerDetection.json";
 import type { TranscriptSegment } from "../../stores/meetingRecordingStore";
 import type { LiveUtterance } from "../../utils/liveUtterances";
 import { windowTranscript } from "../../utils/transcriptWindow";
+import { SPEAKER_IDENTIFICATION_ENABLED } from "../../helpers/speakerIdentificationPolicy";
 import {
   isTranscriptSpeakerLocked,
   resolveSegmentSpeakerName,
@@ -757,7 +758,11 @@ export function MeetingTranscriptChat({
 
   return (
     <div className="h-full relative">
-      {(isRecording || isDiarizing) && !hintDismissed && (
+      {/* The speaker pill — expected-count stepper, per-session toggle,
+          "identifying…" status — is entirely about identification. With it off
+          none of those controls change anything, so the pill would just hover
+          over every meeting offering switches that do nothing. */}
+      {SPEAKER_IDENTIFICATION_ENABLED && (isRecording || isDiarizing) && !hintDismissed && (
         <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-2 py-1 rounded-lg border border-border-subtle bg-popover/95 backdrop-blur-xl shadow-elevated text-[11px] text-foreground">
           {isDiarizing ? (
             <Loader2 size={12} className="animate-spin text-muted-foreground" />
@@ -907,11 +912,16 @@ export function MeetingTranscriptChat({
               )}
               style={{ animation: "agent-message-in 200ms ease-out both" }}
             >
-              {/* Unlabelled mic runs still get a track caption, so "you" and
-                  "the room" never rely on alignment alone. */}
-              {!labelElement && selfSide && !sameSpeaker && (
+              {/* Unlabelled runs still get a track caption, so "you" and "the
+                  room" never rely on alignment alone. Both sides, not just the
+                  mic: with speaker identification off (the V1 default) no
+                  system segment carries a speaker, and captioning only one
+                  side leaves half the transcript anonymous. Same keys the
+                  export path resolves to, so the pane and the exported file
+                  call the two tracks the same thing. */}
+              {!labelElement && !sameSpeaker && (
                 <span className="mb-0.5 px-1 text-[11px] font-medium text-muted-foreground/60">
-                  {t("notes.speaker.you")}
+                  {t(selfSide ? "transcript.speaker.you" : "transcript.speaker.others")}
                 </span>
               )}
               {labelElement && !sameSpeaker && labelElement}
@@ -963,13 +973,17 @@ export function MeetingTranscriptChat({
             source, so two people talking at once each keep their own line
             instead of overwriting one another. */}
         {live.map((utterance) => {
+          // Falls back to the track name rather than to nothing: with speaker
+          // identification off there is no speakerId to number, and an
+          // unlabelled bubble makes the live pane read as less certain than
+          // the settled transcript above it, which says "Others".
           const speakerLabel =
             utterance.source === "system"
               ? (utterance.speakerName ??
                 (utterance.speakerId
                   ? t("notes.speaker.label", { n: getSpeakerNumber(utterance.speakerId) })
-                  : undefined))
-              : undefined;
+                  : t("transcript.speaker.others")))
+              : t("transcript.speaker.you");
           return (
             <PartialBubble
               key={utterance.key}
