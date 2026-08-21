@@ -3099,7 +3099,10 @@
       },
       "suggestion": {
         "label": "Suggested",
-        "pending": "Suggestions appear here once the assistant is set up."
+        "stale": "A moment ago",
+        "working": "Thinking…",
+        "empty": "A suggestion appears when the other side stops talking.",
+        "needsModel": "Set up an AI model to get live suggestions."
       },
       "transcript": {
         "label": "Transcript",
@@ -3109,10 +3112,16 @@
       },
       "ask": {
         "label": "Ask about this meeting",
-        "comingSoon": "Ask anything — coming soon",
         "send": "Send",
-        "empty": "Ask a question and the answer appears here."
-      }
+        "empty": "Ask a question and the answer appears here.",
+        "placeholder": "Ask about this meeting…",
+        "needsModel": "Set up an AI model to ask questions during a meeting.",
+        "needsModelPlaceholder": "Needs an AI model",
+        "noModel": "No AI model is set up yet.",
+        "failed": "Could not answer that. Try again.",
+        "noAnswer": "No answer came back."
+      },
+      "sourcesLabel": "From"
     },
     "transcript": {
       "showEarlier_one": "Show {{count}} earlier message",
@@ -3766,20 +3775,31 @@
       "more_one": "and {{count}} more",
       "more_other": "and {{count}} more"
     },
-    "aiSetup": {
-      "title": "Snowy can do more than transcribe",
-      "description": "Recording and transcription work on their own. These two need a language model before they can run.",
+    "capabilities": {
+      "title": "What Snowy can do right now",
+      "description": "Recording and transcription work on their own. These need a language model before they can run.",
+      "collapsedSummary_one": "{{count}} feature is still waiting on a language model.",
+      "collapsedSummary_other": "{{count}} features are still waiting on a language model.",
+      "ready": "Working",
+      "needsSetup": "Needs setup",
       "configure": "Set up",
-      "dismiss": "Dismiss",
+      "collapse": "Collapse",
+      "expand": "Show what needs setting up",
       "footnote": "Subscribe to use our service, or connect your own provider key.",
-      "capabilities": {
+      "items": {
+        "transcription": {
+          "title": "Recording and transcription",
+          "ready": "Meetings are captured and turned into text on this machine."
+        },
         "noteFormatting": {
           "title": "Written-up meetings",
-          "description": "Right now meetings are transcribed and left as raw text. With a model, each one ends with a summary, the decisions and who owes what."
+          "ready": "Each meeting ends with a summary, the decisions and who owes what.",
+          "missing": "Meetings are transcribed and left as raw text. With a model, each one ends with a summary, the decisions and who owes what."
         },
         "chatIntelligence": {
           "title": "Answers during the meeting",
-          "description": "Ask what was agreed last time, or what to say next, and get an answer drawn from your own past notes — without leaving the call."
+          "ready": "The meeting panel suggests what to say and answers questions from your notes.",
+          "missing": "The meeting panel can suggest what to say next and answer questions from your past notes — without leaving the call."
         }
       }
     }

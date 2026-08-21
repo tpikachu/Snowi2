@@ -11,6 +11,7 @@ import {
 } from "../stores/meetingRecordingStore";
 import { ConfirmDialog } from "./ui/dialog";
 import { useMeetingPanelBridge } from "../hooks/useMeetingPanelBridge";
+import { useMeetingAssist } from "../hooks/useMeetingAssist";
 import { autoGenerateMeetingNotes } from "../helpers/meetingNoteGeneration";
 import { generateMeetingMemory } from "../helpers/memoryGeneration";
 import { MEETING_TITLE_PLACEHOLDERS } from "../utils/meetingNoteInput";
@@ -124,7 +125,11 @@ export default function MeetingRecordingMount() {
   const micCaptureStatus = useMeetingRecordingStore((s) => s.micCaptureStatus);
   const wasMicUnavailable = useRef(false);
 
-  useMeetingPanelBridge();
+  // The assistant runs here, not in the panel: this is the renderer that owns
+  // the capture graph and the model clients, so a question typed in the panel
+  // and one asked in-app go through one implementation.
+  const assist = useMeetingAssist();
+  useMeetingPanelBridge({ onAsk: (question) => void assist.ask(question) });
 
   useEffect(() => {
     primeMeetingWorklet();

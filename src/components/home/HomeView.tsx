@@ -9,7 +9,7 @@ import NowCard from "./NowCard";
 import MeetingActivityCard from "./MeetingActivityCard";
 import CommitmentsCard from "./CommitmentsCard";
 import NeedsWriteUpCard from "./NeedsWriteUpCard";
-import AiSetupCard from "./AiSetupCard";
+import CapabilitiesCard from "./CapabilitiesCard";
 import StatusPanel from "./StatusPanel";
 import { useRecentMeetings } from "../../hooks/useRecentMeetings";
 import { useUpcomingEvents } from "../../hooks/useUpcomingEvents";
@@ -85,11 +85,13 @@ export default function HomeView({
 
         {/* All three hide themselves when there is nothing to say. Order is by
             how much they are asking of the user: commitments are a to-do list,
-            the write-up backlog is a repair job, and the AI setup is an offer
-            — so it goes last, where it cannot push real work down the page. */}
+            the write-up backlog is a repair job, and the capability card is an
+            offer — so it goes last, where it cannot push real work down the
+            page. It also collapses, which the other two do not: they describe
+            work the user already has, and this describes work they might. */}
         <CommitmentsCard onOpenNote={openNoteById} />
         <NeedsWriteUpCard onOpenNote={openNoteById} />
-        <AiSetupCard />
+        <CapabilitiesCard />
 
         <div className="mt-4 flex gap-6">
           <div className="min-w-0 flex-1">

@@ -2892,7 +2892,10 @@
       },
       "suggestion": {
         "label": "Suggerimento",
-        "pending": "I suggerimenti appariranno qui una volta configurato l'assistente."
+        "stale": "Poco fa",
+        "working": "Sto pensando…",
+        "empty": "Un suggerimento compare quando l'altra parte smette di parlare.",
+        "needsModel": "Configura un modello di IA per ricevere suggerimenti dal vivo."
       },
       "transcript": {
         "label": "Trascrizione",
@@ -2902,10 +2905,16 @@
       },
       "ask": {
         "label": "Chiedi di questa riunione",
-        "comingSoon": "Chiedi quello che vuoi — in arrivo",
         "send": "Invia",
-        "empty": "Fai una domanda e la risposta apparirà qui."
-      }
+        "empty": "Fai una domanda e la risposta apparirà qui.",
+        "placeholder": "Chiedi qualcosa su questa riunione…",
+        "needsModel": "Configura un modello di IA per fare domande durante una riunione.",
+        "needsModelPlaceholder": "Serve un modello di IA",
+        "noModel": "Non è ancora configurato nessun modello di IA.",
+        "failed": "Non è stato possibile rispondere. Riprova.",
+        "noAnswer": "Non è arrivata nessuna risposta."
+      },
+      "sourcesLabel": "Da"
     },
     "transcript": {
       "showEarlier_one": "Mostra {{count}} messaggio precedente",
@@ -3766,20 +3775,31 @@
       "more_one": "e {{count}} altra",
       "more_other": "e altre {{count}}"
     },
-    "aiSetup": {
-      "title": "Snowy può fare più che trascrivere",
-      "description": "Registrazione e trascrizione funzionano da sole. Queste due hanno bisogno di un modello linguistico.",
+    "capabilities": {
+      "title": "Cosa sa fare Snowy adesso",
+      "description": "Registrazione e trascrizione funzionano da sole. Questo richiede un modello linguistico.",
+      "collapsedSummary_one": "{{count}} funzione aspetta ancora un modello linguistico.",
+      "collapsedSummary_other": "{{count}} funzioni aspettano ancora un modello linguistico.",
+      "ready": "Attivo",
+      "needsSetup": "Da configurare",
       "configure": "Configura",
-      "dismiss": "Ignora",
+      "collapse": "Comprimi",
+      "expand": "Vedi cosa manca",
       "footnote": "Abbonati al nostro servizio, oppure collega la chiave del tuo provider.",
-      "capabilities": {
+      "items": {
+        "transcription": {
+          "title": "Registrazione e trascrizione",
+          "ready": "Le riunioni vengono catturate e trasformate in testo su questo computer."
+        },
         "noteFormatting": {
           "title": "Riunioni verbalizzate",
-          "description": "Adesso le riunioni vengono trascritte e restano testo grezzo. Con un modello, ognuna finisce con un riassunto, le decisioni e chi deve fare cosa."
+          "ready": "Ogni riunione finisce con un riassunto, le decisioni e chi deve fare cosa.",
+          "missing": "Le riunioni vengono trascritte e restano testo grezzo. Con un modello, ognuna finisce con un riassunto, le decisioni e chi deve fare cosa."
         },
         "chatIntelligence": {
           "title": "Risposte durante la riunione",
-          "description": "Chiedi cosa era stato deciso l'ultima volta, o cosa dire adesso, e ottieni una risposta presa dai tuoi appunti, senza uscire dalla chiamata."
+          "ready": "Il pannello suggerisce cosa dire e risponde partendo dai tuoi appunti.",
+          "missing": "Il pannello della riunione può suggerire cosa dire e rispondere alle tue domande partendo dagli appunti passati, senza uscire dalla chiamata."
         }
       }
     }

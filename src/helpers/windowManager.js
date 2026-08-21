@@ -38,6 +38,7 @@ class WindowManager {
     this.meetingPanelWindow = null;
     this._meetingPanelState = null;
     this._meetingPanelTranscript = null;
+    this._meetingPanelAssist = null;
     this._meetingPanelOpening = null;
     /** True only while a meeting is holding the control panel minimised. */
     this._minimizedForMeeting = false;
@@ -1493,6 +1494,33 @@ class WindowManager {
     return this._meetingPanelTranscript;
   }
 
+  /**
+   * The assistant's suggestion and streaming answer. Cached for the same reason
+   * the transcript is: the panel's renderer starts after the meeting, and a
+   * suggestion that was already prepared should be on screen when it opens
+   * rather than waiting for the conversation to move.
+   */
+  sendMeetingPanelAssist(assist) {
+    this._meetingPanelAssist = assist;
+    const win = this.meetingPanelWindow;
+    if (!win || win.isDestroyed() || win.webContents.isLoading()) return;
+    win.webContents.send("meeting-panel-assist", assist);
+  }
+
+  getMeetingPanelAssist() {
+    return this._meetingPanelAssist;
+  }
+
+  /**
+   * A question typed in the panel, routed to the renderer that owns the model
+   * client. Unlike the buttons this does not surface the control panel: the
+   * whole point is an answer without leaving the call.
+   */
+  sendMeetingPanelAsk(question) {
+    this.sendToControlPanel("meeting-panel-ask", question);
+    return { success: true };
+  }
+
   getMeetingPanelState() {
     return this._meetingPanelState;
   }
@@ -1596,8 +1624,9 @@ class WindowManager {
   closeMeetingPanel() {
     this._meetingPanelState = null;
     // Cleared with the panel, or the next meeting would open showing the last
-    // one's words until somebody spoke.
+    // one's words until somebody spoke — and, worse, the last one's advice.
     this._meetingPanelTranscript = null;
+    this._meetingPanelAssist = null;
     const win = this.meetingPanelWindow;
     this.meetingPanelWindow = null;
     if (win && !win.isDestroyed()) win.close();

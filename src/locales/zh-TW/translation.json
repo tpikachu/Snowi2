@@ -2892,7 +2892,10 @@
       },
       "suggestion": {
         "label": "建議",
-        "pending": "設定助理後，建議會顯示在這裡。"
+        "stale": "剛才的內容",
+        "working": "思考中…",
+        "empty": "對方說完後這裡會出現建議。",
+        "needsModel": "設定 AI 模型後即可獲得即時建議。"
       },
       "transcript": {
         "label": "轉錄",
@@ -2902,10 +2905,16 @@
       },
       "ask": {
         "label": "詢問這場會議",
-        "comingSoon": "有問題儘管問 — 即將推出",
         "send": "傳送",
-        "empty": "提問後，答案會顯示在這裡。"
-      }
+        "empty": "提問後，答案會顯示在這裡。",
+        "placeholder": "問問這場會議…",
+        "needsModel": "設定 AI 模型後即可在會議中提問。",
+        "needsModelPlaceholder": "需要 AI 模型",
+        "noModel": "還沒有設定 AI 模型。",
+        "failed": "沒能回答，請再試一次。",
+        "noAnswer": "沒有收到回答。"
+      },
+      "sourcesLabel": "來源"
     },
     "transcript": {
       "showEarlier_one": "顯示 {{count}} 則較早的訊息",
@@ -3766,20 +3775,31 @@
       "more_one": "還有 {{count}} 場",
       "more_other": "還有 {{count}} 場"
     },
-    "aiSetup": {
-      "title": "Snowy 不只是轉錄",
-      "description": "錄音和轉錄本身就能用。下面這兩項需要先設定語言模型。",
+    "capabilities": {
+      "title": "Snowy 現在能做什麼",
+      "description": "錄音和轉錄本身就能用。下面這些需要先設定語言模型。",
+      "collapsedSummary_one": "還有 {{count}} 項功能在等待語言模型。",
+      "collapsedSummary_other": "還有 {{count}} 項功能在等待語言模型。",
+      "ready": "已啟用",
+      "needsSetup": "待設定",
       "configure": "去設定",
-      "dismiss": "不再提示",
+      "collapse": "收合",
+      "expand": "查看還需設定的功能",
       "footnote": "訂閱我們的服務，或連接你自己的服務商金鑰。",
-      "capabilities": {
+      "items": {
+        "transcription": {
+          "title": "錄音與轉錄",
+          "ready": "會議會在這台電腦上錄下並轉成文字。"
+        },
         "noteFormatting": {
           "title": "整理好的會議紀錄",
-          "description": "現在會議只會被轉錄成原始文字。設定模型後，每場會議結束時都會有摘要、決議事項和負責人。"
+          "ready": "每場會議結束時都會有摘要、決議事項和負責人。",
+          "missing": "會議只會被轉錄成原始文字。設定模型後，每場會議結束時都會有摘要、決議事項和負責人。"
         },
         "chatIntelligence": {
           "title": "會議進行中就能得到答案",
-          "description": "問問上次決定了什麼，或者接下來該怎麼說，答案會從你自己的歷史筆記中給出——不用離開通話。"
+          "ready": "會議面板會提示該說什麼，並根據你的筆記回答問題。",
+          "missing": "會議面板可以提示你接下來該說什麼，並根據你的歷史筆記回答問題——不用離開通話。"
         }
       }
     }

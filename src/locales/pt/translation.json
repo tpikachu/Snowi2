@@ -2892,7 +2892,10 @@
       },
       "suggestion": {
         "label": "Sugestão",
-        "pending": "As sugestões aparecem aqui assim que o assistente for configurado."
+        "stale": "Há pouco",
+        "working": "Pensando…",
+        "empty": "Uma sugestão aparece quando o outro lado para de falar.",
+        "needsModel": "Configure um modelo de IA para receber sugestões ao vivo."
       },
       "transcript": {
         "label": "Transcrição",
@@ -2902,10 +2905,16 @@
       },
       "ask": {
         "label": "Pergunte sobre esta reunião",
-        "comingSoon": "Pergunte qualquer coisa — em breve",
         "send": "Enviar",
-        "empty": "Faça uma pergunta e a resposta aparece aqui."
-      }
+        "empty": "Faça uma pergunta e a resposta aparece aqui.",
+        "placeholder": "Pergunte sobre esta reunião…",
+        "needsModel": "Configure um modelo de IA para perguntar durante uma reunião.",
+        "needsModelPlaceholder": "Precisa de um modelo de IA",
+        "noModel": "Ainda não há um modelo de IA configurado.",
+        "failed": "Não foi possível responder. Tente de novo.",
+        "noAnswer": "Nenhuma resposta voltou."
+      },
+      "sourcesLabel": "De"
     },
     "transcript": {
       "showEarlier_one": "Mostrar {{count}} mensagem anterior",
@@ -3766,20 +3775,31 @@
       "more_one": "e mais {{count}}",
       "more_other": "e mais {{count}}"
     },
-    "aiSetup": {
-      "title": "O Snowy faz mais do que transcrever",
-      "description": "A gravação e a transcrição funcionam sozinhas. Estas duas precisam de um modelo de linguagem para funcionar.",
+    "capabilities": {
+      "title": "O que o Snowy já faz",
+      "description": "A gravação e a transcrição funcionam sozinhas. Isto precisa de um modelo de linguagem.",
+      "collapsedSummary_one": "{{count}} recurso ainda espera por um modelo de linguagem.",
+      "collapsedSummary_other": "{{count}} recursos ainda esperam por um modelo de linguagem.",
+      "ready": "Funcionando",
+      "needsSetup": "Falta configurar",
       "configure": "Configurar",
-      "dismiss": "Dispensar",
+      "collapse": "Recolher",
+      "expand": "Ver o que falta configurar",
       "footnote": "Assine nosso serviço ou conecte a chave do seu próprio provedor.",
-      "capabilities": {
+      "items": {
+        "transcription": {
+          "title": "Gravação e transcrição",
+          "ready": "As reuniões são capturadas e viram texto nesta máquina."
+        },
         "noteFormatting": {
           "title": "Reuniões redigidas",
-          "description": "Hoje as reuniões são transcritas e ficam só como texto bruto. Com um modelo, cada uma termina com um resumo, as decisões e quem ficou com o quê."
+          "ready": "Cada reunião termina com um resumo, as decisões e quem ficou com o quê.",
+          "missing": "As reuniões são transcritas e ficam só como texto bruto. Com um modelo, cada uma termina com um resumo, as decisões e quem ficou com o quê."
         },
         "chatIntelligence": {
           "title": "Respostas durante a reunião",
-          "description": "Pergunte o que foi combinado da última vez, ou o que dizer agora, e receba uma resposta tirada das suas próprias notas — sem sair da chamada."
+          "ready": "O painel sugere o que dizer e responde a partir das suas notas.",
+          "missing": "O painel da reunião pode sugerir o que dizer e responder a perguntas com base nas suas notas anteriores — sem sair da chamada."
         }
       }
     }

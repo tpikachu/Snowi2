@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   buildMeetingPanelSnapshot,
   snapshotsEqual,
@@ -15,6 +15,8 @@ import {
   panelTranscriptsEqual,
   type PanelTranscript,
 } from "../utils/meetingPanelTranscript";
+import { useMeetingAssistStore } from "../stores/meetingAssistStore";
+import { assistStatesEqual, type MeetingAssistState } from "../utils/meetingAssistState";
 import { isControlPanelWindow } from "../utils/windowContext";
 import type { MeetingPanelCommand } from "../types/electron";
 import logger from "../utils/logger";
@@ -27,6 +29,15 @@ import logger from "../utils/logger";
 const TRANSCRIPT_PUBLISH_MS = 250;
 
 /**
+ * The assistant's state on its own clock, and a faster one.
+ *
+ * An answer streams token by token and the whole point of streaming it is that
+ * the user starts reading before it finishes, so this is the one payload where
+ * a quarter-second of lag would be felt.
+ */
+const ASSIST_PUBLISH_MS = 120;
+
+/**
  * Connects the meeting store to the floating panel, which lives in its own
  * renderer and so cannot read the store directly.
  *
@@ -36,7 +47,12 @@ const TRANSCRIPT_PUBLISH_MS = 250;
  * drive the capture graph itself, so there is only one implementation of what
  * pause, resume and stop mean.
  */
-export function useMeetingPanelBridge(): void {
+export function useMeetingPanelBridge(options: { onAsk?: (question: string) => void } = {}): void {
+  // Held in a ref so binding the ask listener does not depend on the identity
+  // of a callback the caller rebuilds every render.
+  const onAskRef = useRef(options.onAsk);
+  onAskRef.current = options.onAsk;
+
   useEffect(() => {
     // The bridge belongs to whichever renderer owns the capture graph. The
     // panel's own window must never publish back to itself.
@@ -67,10 +83,25 @@ export function useMeetingPanelBridge(): void {
       window.electronAPI?.meetingPanelTranscript?.(transcript);
     };
 
+    let lastAssist: MeetingAssistState | null = null;
+
+    const publishAssist = () => {
+      const assist = useMeetingAssistStore.getState();
+      if (assistStatesEqual(lastAssist, assist)) return;
+      lastAssist = assist;
+      window.electronAPI?.meetingPanelAssist?.(assist);
+    };
+
     publish(true);
     publishTranscript();
+    publishAssist();
     const unsubscribe = useMeetingRecordingStore.subscribe(() => publish());
     const transcriptTimer = setInterval(publishTranscript, TRANSCRIPT_PUBLISH_MS);
+    const assistTimer = setInterval(publishAssist, ASSIST_PUBLISH_MS);
+
+    const unbindAsk = window.electronAPI?.onMeetingPanelAsk?.((question: string) => {
+      onAskRef.current?.(question);
+    });
 
     const unbindCommand = window.electronAPI?.onMeetingPanelCommand?.(
       (command: MeetingPanelCommand) => {
@@ -94,7 +125,9 @@ export function useMeetingPanelBridge(): void {
     return () => {
       unsubscribe();
       clearInterval(transcriptTimer);
+      clearInterval(assistTimer);
       unbindCommand?.();
+      unbindAsk?.();
       // Tells main the meeting is no longer being published, so the panel does
       // not outlive the renderer that was driving it.
       window.electronAPI?.meetingPanelPublish?.(null);

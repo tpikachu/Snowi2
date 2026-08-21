@@ -186,8 +186,8 @@ const MEETING_PANEL_CONFIG = {
   alwaysOnTop: true,
   skipTaskbar: true,
   resizable: true,
-  // Unlike the other overlays this one takes clicks and, once the context
-  // panel lands, typed questions — so it must be able to hold focus.
+  // Unlike the other overlays this one takes clicks and typed questions, so it
+  // must be able to hold focus.
   focusable: true,
   hasShadow: false,
   show: false,

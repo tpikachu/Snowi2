@@ -11,6 +11,11 @@ import {
 } from "lucide-react";
 import { capturedMsAt, type MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
 import type { PanelTranscript } from "../utils/meetingPanelTranscript";
+import {
+  IDLE_ASSIST,
+  type AssistNoteRef,
+  type MeetingAssistState,
+} from "../utils/meetingAssistState";
 import type { MeetingPanelCommand } from "../types/electron";
 import { formatMmSs } from "../utils/formatDuration";
 import { cn } from "./lib/utils";
@@ -67,10 +72,48 @@ const computeBarHeight = (level: number, index: number) => {
 const truncateTitle = (title: string) =>
   title.length > 28 ? `${title.slice(0, 27).trimEnd()}…` : title;
 
+/** How many past notes are named under a suggestion or an answer. */
+const MAX_VISIBLE_SOURCES = 3;
+
+/**
+ * Which past notes this was built from.
+ *
+ * Named rather than cited inline: mid-call there is no time to follow a
+ * citation, but seeing "Acme kickoff" under a claim is enough to know whether
+ * to trust it — and enough to catch the assistant answering about the wrong
+ * meeting, which is the failure mode retrieval actually has.
+ */
+function SourceList({ sources }: { sources: readonly AssistNoteRef[] }) {
+  const { t } = useTranslation();
+  if (sources.length === 0) return null;
+
+  const shown = sources.slice(0, MAX_VISIBLE_SOURCES);
+  const extra = sources.length - shown.length;
+
+  return (
+    <div className="mt-1.5 flex flex-wrap items-center gap-1">
+      <span className="text-[9px] uppercase tracking-[0.06em] text-hud-muted/45">
+        {t("notes.meetingPanel.sourcesLabel")}
+      </span>
+      {shown.map((source) => (
+        <span
+          key={source.noteId}
+          title={source.title}
+          className="max-w-[9rem] truncate rounded border border-hud-border px-1 py-px text-[9px] text-hud-muted/70"
+        >
+          {source.title}
+        </span>
+      ))}
+      {extra > 0 && <span className="text-[9px] text-hud-muted/45">+{extra}</span>}
+    </div>
+  );
+}
+
 export default function MeetingPanelOverlay() {
   const { t } = useTranslation();
   const [snapshot, setSnapshot] = useState<MeetingPanelSnapshot | null>(null);
   const [transcript, setTranscript] = useState<PanelTranscript | null>(null);
+  const [assist, setAssist] = useState<MeetingAssistState>(IDLE_ASSIST);
   const [level, setLevel] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isBusy, setIsBusy] = useState(false);
@@ -78,6 +121,7 @@ export default function MeetingPanelOverlay() {
   const [isCompact, setIsCompact] = useState(false);
 
   const transcriptRef = useRef<HTMLDivElement | null>(null);
+  const answerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     // The window loads after the meeting has already started, so the state it
@@ -88,14 +132,19 @@ export default function MeetingPanelOverlay() {
     void window.electronAPI?.meetingPanelGetTranscript?.().then((initial) => {
       if (initial) setTranscript(initial);
     });
+    void window.electronAPI?.meetingPanelGetAssist?.().then((initial) => {
+      if (initial) setAssist(initial);
+    });
 
     const unbindState = window.electronAPI?.onMeetingPanelState?.(setSnapshot);
     const unbindLevel = window.electronAPI?.onMeetingPanelLevel?.(setLevel);
     const unbindTranscript = window.electronAPI?.onMeetingPanelTranscript?.(setTranscript);
+    const unbindAssist = window.electronAPI?.onMeetingPanelAssist?.(setAssist);
     return () => {
       unbindState?.();
       unbindLevel?.();
       unbindTranscript?.();
+      unbindAssist?.();
     };
   }, []);
 
@@ -127,6 +176,13 @@ export default function MeetingPanelOverlay() {
     if (element) element.scrollTop = element.scrollHeight;
   }, [transcript]);
 
+  // An answer streams in from the bottom, so the newest sentence stays visible
+  // without the user reaching for a scrollbar mid-call.
+  useEffect(() => {
+    const element = answerRef.current;
+    if (element) element.scrollTop = element.scrollHeight;
+  }, [assist.answer?.text]);
+
   const send = useCallback(async (command: MeetingPanelCommand) => {
     setIsBusy(true);
     try {
@@ -135,6 +191,16 @@ export default function MeetingPanelOverlay() {
       setIsBusy(false);
     }
   }, []);
+
+  const submitQuestion = useCallback(() => {
+    const trimmed = question.trim();
+    if (!trimmed) return;
+    // Cleared optimistically. The answer replaces it on screen, and leaving the
+    // question in the box invites a second identical send while the first
+    // streams.
+    setQuestion("");
+    void window.electronAPI?.meetingPanelAsk?.(trimmed);
+  }, [question]);
 
   if (!snapshot?.isRecording) return null;
 
@@ -160,6 +226,8 @@ export default function MeetingPanelOverlay() {
         : t("notes.meetingPanel.sources.micOnly");
 
   const lines = transcript?.lines ?? [];
+  const suggestion = assist.suggestion;
+  const answer = assist.answer;
 
   return (
     <div
@@ -284,18 +352,45 @@ export default function MeetingPanelOverlay() {
           >
             {/* Suggestion. The hero of this window: the one thing worth
                 reading mid sentence, so it gets the visible weight — a tinted
-                ground and the accent rule down its edge. Not yet wired to a
-                model; the placeholder says so rather than pretending to think. */}
+                ground and the accent rule down its edge. Already computed by
+                the time it appears; see useMeetingAssist for why. */}
             <section className="shrink-0 rounded-[9px] border border-hud-accent/25 border-l-2 border-l-hud-accent bg-hud-accent/[0.07] px-2.5 py-2">
               <div className="mb-1 flex items-center gap-1.5">
                 <Lightbulb size={10} className="text-hud-accent" />
                 <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-hud-accent/90">
                   {t("notes.meetingPanel.suggestion.label")}
                 </span>
+                {suggestion?.stale && (
+                  <span className="ml-auto shrink-0 text-[9px] text-hud-muted/50">
+                    {t("notes.meetingPanel.suggestion.stale")}
+                  </span>
+                )}
               </div>
-              <p className="text-xs leading-relaxed text-hud-muted/80">
-                {t("notes.meetingPanel.suggestion.pending")}
-              </p>
+
+              {suggestion ? (
+                <>
+                  {/* Dimmed rather than hidden once the conversation moves on:
+                      slightly old advice still beats a blank box when someone
+                      is waiting for you to speak. */}
+                  <p
+                    className={cn(
+                      "text-xs leading-relaxed",
+                      suggestion.stale ? "text-hud-foreground/45" : "text-hud-foreground"
+                    )}
+                  >
+                    {suggestion.text}
+                  </p>
+                  <SourceList sources={suggestion.sources} />
+                </>
+              ) : (
+                <p className="text-xs leading-relaxed text-hud-muted/70">
+                  {!assist.configured
+                    ? t("notes.meetingPanel.suggestion.needsModel")
+                    : assist.suggestionPending
+                      ? t("notes.meetingPanel.suggestion.working")
+                      : t("notes.meetingPanel.suggestion.empty")}
+                </p>
+              )}
             </section>
 
             {/* Transcript. Capped, never grows — see TRANSCRIPT_MAX_HEIGHT_PX. */}
@@ -348,24 +443,54 @@ export default function MeetingPanelOverlay() {
                 it is the reason to keep the panel open — a question you need
                 answered now, and the room to read the answer. */}
             <section className="flex min-h-0 flex-1 flex-col rounded-[9px] border border-hud-border bg-white/[0.04]">
-              <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 px-3 py-3 text-center">
-                <MessageSquareText size={14} className="text-hud-muted/40" />
-                <p className="text-[11px] leading-relaxed text-hud-muted/60">
-                  {t("notes.meetingPanel.ask.empty")}
-                </p>
-              </div>
+              {answer ? (
+                <div ref={answerRef} className="min-h-0 flex-1 overflow-y-auto px-2.5 py-2">
+                  <p className="text-[10px] font-medium leading-snug text-hud-muted/60">
+                    {answer.question}
+                  </p>
+                  {answer.errorKey ? (
+                    <p className="mt-1.5 text-[11px] leading-relaxed text-hud-warning">
+                      {t(answer.errorKey)}
+                    </p>
+                  ) : (
+                    <p className="mt-1.5 whitespace-pre-wrap text-xs leading-relaxed text-hud-foreground">
+                      {answer.text}
+                      {/* The caret is the only "it is working" signal an
+                          answer needs: the text itself is the progress bar. */}
+                      {answer.streaming && (
+                        <span className="ml-0.5 inline-block h-3 w-[2px] translate-y-[2px] animate-pulse bg-hud-accent" />
+                      )}
+                    </p>
+                  )}
+                  {!answer.streaming && <SourceList sources={answer.sources} />}
+                </div>
+              ) : (
+                <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 px-3 py-3 text-center">
+                  <MessageSquareText size={14} className="text-hud-muted/40" />
+                  <p className="text-[11px] leading-relaxed text-hud-muted/60">
+                    {assist.configured
+                      ? t("notes.meetingPanel.ask.empty")
+                      : t("notes.meetingPanel.ask.needsModel")}
+                  </p>
+                </div>
+              )}
 
-              {/* Disabled, and it says why. A box that swallows what you type
-                  is worse than one that admits it is not ready. */}
               <form
                 className="flex shrink-0 items-center gap-1.5 border-t border-hud-border px-2 py-1.5"
-                onSubmit={(event) => event.preventDefault()}
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  submitQuestion();
+                }}
               >
                 <input
                   value={question}
                   onChange={(event) => setQuestion(event.target.value)}
-                  disabled
-                  placeholder={t("notes.meetingPanel.ask.comingSoon")}
+                  disabled={!assist.configured}
+                  placeholder={
+                    assist.configured
+                      ? t("notes.meetingPanel.ask.placeholder")
+                      : t("notes.meetingPanel.ask.needsModelPlaceholder")
+                  }
                   aria-label={t("notes.meetingPanel.ask.label")}
                   className={cn(
                     "min-w-0 flex-1 bg-transparent text-[11px] text-hud-foreground outline-none",
@@ -374,9 +499,14 @@ export default function MeetingPanelOverlay() {
                 />
                 <button
                   type="submit"
-                  disabled
+                  disabled={!assist.configured || !question.trim()}
                   aria-label={t("notes.meetingPanel.ask.send")}
-                  className="flex size-5 shrink-0 items-center justify-center rounded text-hud-muted disabled:opacity-40"
+                  className={cn(
+                    "flex size-5 shrink-0 items-center justify-center rounded",
+                    "text-hud-accent transition-colors duration-150 hover:bg-white/10",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+                    "disabled:text-hud-muted disabled:opacity-40 disabled:hover:bg-transparent"
+                  )}
                 >
                   <SendHorizontal size={11} />
                 </button>

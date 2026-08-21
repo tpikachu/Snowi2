@@ -107,6 +107,8 @@ const MEETING_RECONNECT_BUFFER_MAX_BYTES = MEETING_STREAM_SAMPLE_RATE * 2 * 30;
 // and an unchecked command channel is a way to reach the control panel from
 // anywhere that can talk to this one.
 const MEETING_PANEL_COMMANDS = new Set(["pause", "resume", "stop", "open"]);
+/** Long enough for any question worth asking mid-meeting; short enough not to be a paste channel. */
+const MEETING_PANEL_QUESTION_MAX = 2000;
 
 // Passage-vector backfill for notes that predate chunking. Bounded per launch
 // so a large library is caught up over a few sessions rather than in one long
@@ -7211,6 +7213,29 @@ class IPCHandlers {
 
     ipcMain.handle("meeting-panel-get-transcript", () => {
       return this.windowManager?.getMeetingPanelTranscript() ?? null;
+    });
+
+    // `send` again: an answer streams, so this fires once per token batch and a
+    // chunk that arrives late has already been superseded by a longer one.
+    ipcMain.on("meeting-panel-assist", (_event, assist) => {
+      this.windowManager?.sendMeetingPanelAssist(assist);
+    });
+
+    ipcMain.handle("meeting-panel-get-assist", () => {
+      return this.windowManager?.getMeetingPanelAssist() ?? null;
+    });
+
+    // Unlike the commands, this carries free text, so it is length-capped here
+    // rather than checked against an allow-list.
+    ipcMain.handle("meeting-panel-ask", (_event, question) => {
+      if (typeof question !== "string" || !question.trim()) {
+        return { success: false, error: "Empty question" };
+      }
+      return (
+        this.windowManager?.sendMeetingPanelAsk(question.slice(0, MEETING_PANEL_QUESTION_MAX)) ?? {
+          success: false,
+        }
+      );
     });
 
     ipcMain.handle("meeting-panel-command", (_event, command) => {

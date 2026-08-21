@@ -1,0 +1,98 @@
+/**
+ * What the meeting assistant has to say, as it crosses into the panel's window.
+ *
+ * A third payload alongside the snapshot and the transcript, on its own
+ * channel, for the same reason those are separate from each other: this changes
+ * on every token of a streaming answer, while the snapshot changes a handful of
+ * times an hour. Folding them together would publish the whole meeting status
+ * on every word.
+ *
+ * Errors travel as i18n keys rather than sentences. The renderer that produces
+ * them is the control panel and the one that shows them is the panel, and only
+ * the second one knows which language its user is reading.
+ *
+ * Pure — no store, no Electron, no i18n. Both ends agree on this definition.
+ */
+
+/** A past note an answer or suggestion was built on. */
+export interface AssistNoteRef {
+  noteId: number;
+  title: string;
+}
+
+export interface AssistSuggestion {
+  text: string;
+  sources: AssistNoteRef[];
+  /**
+   * True once the conversation has moved past what this was built from. The
+   * panel dims rather than hides it: slightly old advice still beats a blank
+   * box when someone is waiting for you to say something.
+   */
+  stale: boolean;
+}
+
+export interface AssistAnswer {
+  question: string;
+  text: string;
+  streaming: boolean;
+  sources: AssistNoteRef[];
+  /** i18n key, resolved by whichever window renders it. */
+  errorKey: string | null;
+}
+
+export interface MeetingAssistState {
+  /**
+   * Whether a model is configured for this at all. False makes the panel
+   * explain what is missing instead of waiting for an answer that never comes.
+   */
+  configured: boolean;
+  suggestion: AssistSuggestion | null;
+  /** A suggestion is being prepared. Shown only when there is nothing to replace. */
+  suggestionPending: boolean;
+  answer: AssistAnswer | null;
+}
+
+export const IDLE_ASSIST: MeetingAssistState = {
+  configured: false,
+  suggestion: null,
+  suggestionPending: false,
+  answer: null,
+};
+
+const noteRefsEqual = (a: readonly AssistNoteRef[], b: readonly AssistNoteRef[]): boolean =>
+  a.length === b.length && a.every((note, index) => note.noteId === b[index].noteId);
+
+/**
+ * Whether a rebuilt state is worth another IPC hop.
+ *
+ * Compared by content, not identity: the bridge rebuilds this on a timer, so
+ * every publish would otherwise look new even when nothing has been said for a
+ * minute.
+ */
+export function assistStatesEqual(
+  a: MeetingAssistState | null,
+  b: MeetingAssistState | null
+): boolean {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (a.configured !== b.configured) return false;
+  if (a.suggestionPending !== b.suggestionPending) return false;
+
+  if (!!a.suggestion !== !!b.suggestion) return false;
+  if (a.suggestion && b.suggestion) {
+    if (a.suggestion.text !== b.suggestion.text) return false;
+    if (a.suggestion.stale !== b.suggestion.stale) return false;
+    if (!noteRefsEqual(a.suggestion.sources, b.suggestion.sources)) return false;
+  }
+
+  if (!!a.answer !== !!b.answer) return false;
+  if (a.answer && b.answer) {
+    if (a.answer.question !== b.answer.question) return false;
+    if (a.answer.text !== b.answer.text) return false;
+    if (a.answer.streaming !== b.answer.streaming) return false;
+    if (a.answer.errorKey !== b.answer.errorKey) return false;
+    if (!noteRefsEqual(a.answer.sources, b.answer.sources)) return false;
+  }
+
+  return true;
+}

@@ -3099,7 +3099,10 @@
       },
       "suggestion": {
         "label": "Vorschlag",
-        "pending": "Vorschläge erscheinen hier, sobald der Assistent eingerichtet ist."
+        "stale": "Vor einem Moment",
+        "working": "Denkt nach…",
+        "empty": "Ein Vorschlag erscheint, sobald die andere Seite aufhört zu sprechen.",
+        "needsModel": "Richten Sie ein KI-Modell ein, um Live-Vorschläge zu erhalten."
       },
       "transcript": {
         "label": "Transkript",
@@ -3109,10 +3112,16 @@
       },
       "ask": {
         "label": "Frage zu diesem Meeting",
-        "comingSoon": "Fragen Sie etwas — demnächst",
         "send": "Senden",
-        "empty": "Stellen Sie eine Frage, die Antwort erscheint hier."
-      }
+        "empty": "Stellen Sie eine Frage, die Antwort erscheint hier.",
+        "placeholder": "Frage zu diesem Meeting…",
+        "needsModel": "Richten Sie ein KI-Modell ein, um während eines Meetings zu fragen.",
+        "needsModelPlaceholder": "Benötigt ein KI-Modell",
+        "noModel": "Es ist noch kein KI-Modell eingerichtet.",
+        "failed": "Das ließ sich nicht beantworten. Bitte erneut versuchen.",
+        "noAnswer": "Es kam keine Antwort zurück."
+      },
+      "sourcesLabel": "Aus"
     },
     "transcript": {
       "showEarlier_one": "{{count}} frühere Nachricht anzeigen",
@@ -3766,20 +3775,31 @@
       "more_one": "und {{count}} weiteres",
       "more_other": "und {{count}} weitere"
     },
-    "aiSetup": {
-      "title": "Snowy kann mehr als transkribieren",
-      "description": "Aufnahme und Transkription laufen von allein. Diese beiden brauchen dafür ein Sprachmodell.",
+    "capabilities": {
+      "title": "Was Snowy im Moment kann",
+      "description": "Aufnahme und Transkription laufen von allein. Dafür wird ein Sprachmodell benötigt.",
+      "collapsedSummary_one": "{{count}} Funktion wartet noch auf ein Sprachmodell.",
+      "collapsedSummary_other": "{{count}} Funktionen warten noch auf ein Sprachmodell.",
+      "ready": "Aktiv",
+      "needsSetup": "Einrichtung nötig",
       "configure": "Einrichten",
-      "dismiss": "Ausblenden",
+      "collapse": "Einklappen",
+      "expand": "Zeigen, was noch fehlt",
       "footnote": "Abonnieren Sie unseren Dienst oder verbinden Sie Ihren eigenen Anbieterschlüssel.",
-      "capabilities": {
+      "items": {
+        "transcription": {
+          "title": "Aufnahme und Transkription",
+          "ready": "Meetings werden auf diesem Rechner aufgezeichnet und in Text umgewandelt."
+        },
         "noteFormatting": {
           "title": "Ausformulierte Meetings",
-          "description": "Derzeit werden Meetings transkribiert und bleiben Rohtext. Mit einem Modell endet jedes mit einer Zusammenfassung, den Entscheidungen und den Zuständigkeiten."
+          "ready": "Jedes Meeting endet mit Zusammenfassung, Entscheidungen und Zuständigkeiten.",
+          "missing": "Meetings werden transkribiert und bleiben Rohtext. Mit einem Modell endet jedes mit einer Zusammenfassung, den Entscheidungen und den Zuständigkeiten."
         },
         "chatIntelligence": {
           "title": "Antworten während des Meetings",
-          "description": "Fragen Sie, was letztes Mal vereinbart wurde oder was Sie als Nächstes sagen sollten — beantwortet aus Ihren eigenen Notizen, ohne den Call zu verlassen."
+          "ready": "Das Meeting-Panel schlägt vor, was Sie sagen können, und antwortet aus Ihren Notizen.",
+          "missing": "Das Meeting-Panel kann vorschlagen, was Sie als Nächstes sagen, und Fragen aus Ihren früheren Notizen beantworten — ohne den Call zu verlassen."
         }
       }
     }

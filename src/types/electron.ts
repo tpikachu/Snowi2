@@ -2,6 +2,7 @@ import type { ModelDefinition } from "../models/ModelRegistry";
 import type { TinfoilCatalogModel } from "../models/tinfoilModels";
 import type { MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
 import type { PanelTranscript } from "../utils/meetingPanelTranscript";
+import type { MeetingAssistState } from "../utils/meetingAssistState";
 
 /** What the floating meeting panel can ask the control panel to do. */
 export type MeetingPanelCommand = "pause" | "resume" | "stop" | "open";
@@ -2098,12 +2099,19 @@ declare global {
       /** Transcript tail, on its own throttled channel. */
       meetingPanelTranscript?: (transcript: PanelTranscript) => void;
       meetingPanelGetTranscript?: () => Promise<PanelTranscript | null>;
+      /** The assistant's suggestion and streaming answer, on its own channel. */
+      meetingPanelAssist?: (assist: MeetingAssistState) => void;
+      meetingPanelGetAssist?: () => Promise<MeetingAssistState | null>;
+      /** A question typed in the panel, answered by the renderer that owns the model client. */
+      meetingPanelAsk?: (question: string) => Promise<{ success: boolean; error?: string }>;
       meetingPanelCommand?: (
         command: MeetingPanelCommand
       ) => Promise<{ success: boolean; error?: string }>;
       onMeetingPanelState?: (callback: (snapshot: MeetingPanelSnapshot) => void) => () => void;
       onMeetingPanelLevel?: (callback: (level: number) => void) => () => void;
       onMeetingPanelTranscript?: (callback: (transcript: PanelTranscript) => void) => () => void;
+      onMeetingPanelAssist?: (callback: (assist: MeetingAssistState) => void) => () => void;
+      onMeetingPanelAsk?: (callback: (question: string) => void) => () => void;
       onMeetingPanelCommand?: (callback: (command: MeetingPanelCommand) => void) => () => void;
 
       /** Meeting pre-roll: buffer while a detection prompt is up, or drop it. */

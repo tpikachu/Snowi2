@@ -683,6 +683,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // second while a snapshot changes a handful of times an hour.
   meetingPanelTranscript: (transcript) => ipcRenderer.send("meeting-panel-transcript", transcript),
   meetingPanelGetTranscript: () => ipcRenderer.invoke("meeting-panel-get-transcript"),
+  // The assistant's suggestion and streaming answer. Its own channel again:
+  // this changes on every token of an answer.
+  meetingPanelAssist: (assist) => ipcRenderer.send("meeting-panel-assist", assist),
+  meetingPanelGetAssist: () => ipcRenderer.invoke("meeting-panel-get-assist"),
+  meetingPanelAsk: (question) => ipcRenderer.invoke("meeting-panel-ask", question),
   meetingPanelCommand: (command) => ipcRenderer.invoke("meeting-panel-command", command),
   onMeetingPanelState: registerListener(
     "meeting-panel-state",
@@ -695,6 +700,14 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onMeetingPanelTranscript: registerListener(
     "meeting-panel-transcript",
     (callback) => (_event, transcript) => callback(transcript)
+  ),
+  onMeetingPanelAssist: registerListener(
+    "meeting-panel-assist",
+    (callback) => (_event, assist) => callback(assist)
+  ),
+  onMeetingPanelAsk: registerListener(
+    "meeting-panel-ask",
+    (callback) => (_event, question) => callback(question)
   ),
   onMeetingPanelCommand: registerListener(
     "meeting-panel-command",

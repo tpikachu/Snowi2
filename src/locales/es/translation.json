@@ -2940,7 +2940,10 @@
       },
       "suggestion": {
         "label": "Sugerencia",
-        "pending": "Las sugerencias aparecerán aquí cuando configures el asistente."
+        "stale": "Hace un momento",
+        "working": "Pensando…",
+        "empty": "Aparecerá una sugerencia cuando el otro lado deje de hablar.",
+        "needsModel": "Configura un modelo de IA para recibir sugerencias en directo."
       },
       "transcript": {
         "label": "Transcripción",
@@ -2950,10 +2953,16 @@
       },
       "ask": {
         "label": "Pregunta sobre esta reunión",
-        "comingSoon": "Pregunta lo que quieras — próximamente",
         "send": "Enviar",
-        "empty": "Haz una pregunta y la respuesta aparecerá aquí."
-      }
+        "empty": "Haz una pregunta y la respuesta aparecerá aquí.",
+        "placeholder": "Pregunta sobre esta reunión…",
+        "needsModel": "Configura un modelo de IA para hacer preguntas durante una reunión.",
+        "needsModelPlaceholder": "Necesita un modelo de IA",
+        "noModel": "Todavía no hay ningún modelo de IA configurado.",
+        "failed": "No se pudo responder. Inténtalo de nuevo.",
+        "noAnswer": "No llegó ninguna respuesta."
+      },
+      "sourcesLabel": "De"
     },
     "transcript": {
       "showEarlier_one": "Mostrar {{count}} mensaje anterior",
@@ -3766,20 +3775,31 @@
       "more_one": "y {{count}} más",
       "more_other": "y {{count}} más"
     },
-    "aiSetup": {
-      "title": "Snowy puede hacer más que transcribir",
-      "description": "La grabación y la transcripción funcionan solas. Estas dos necesitan un modelo de lenguaje para poder ejecutarse.",
+    "capabilities": {
+      "title": "Lo que Snowy puede hacer ahora mismo",
+      "description": "La grabación y la transcripción funcionan solas. Esto necesita un modelo de lenguaje para poder ejecutarse.",
+      "collapsedSummary_one": "{{count}} función sigue esperando un modelo de lenguaje.",
+      "collapsedSummary_other": "{{count}} funciones siguen esperando un modelo de lenguaje.",
+      "ready": "Funcionando",
+      "needsSetup": "Falta configurar",
       "configure": "Configurar",
-      "dismiss": "Descartar",
+      "collapse": "Contraer",
+      "expand": "Ver lo que falta configurar",
       "footnote": "Suscríbete para usar nuestro servicio o conecta la clave de tu proveedor.",
-      "capabilities": {
+      "items": {
+        "transcription": {
+          "title": "Grabación y transcripción",
+          "ready": "Las reuniones se capturan y se convierten en texto en este equipo."
+        },
         "noteFormatting": {
           "title": "Reuniones redactadas",
-          "description": "Ahora las reuniones se transcriben y se quedan en texto sin más. Con un modelo, cada una termina con un resumen, las decisiones y quién debe qué."
+          "ready": "Cada reunión termina con un resumen, las decisiones y quién debe qué.",
+          "missing": "Las reuniones se transcriben y se quedan en texto sin más. Con un modelo, cada una termina con un resumen, las decisiones y quién debe qué."
         },
         "chatIntelligence": {
           "title": "Respuestas durante la reunión",
-          "description": "Pregunta qué se acordó la última vez, o qué decir a continuación, y recibe una respuesta basada en tus propias notas, sin salir de la llamada."
+          "ready": "El panel sugiere qué decir y responde preguntas a partir de tus notas.",
+          "missing": "El panel de reunión puede sugerir qué decir y responder preguntas basándose en tus notas anteriores, sin salir de la llamada."
         }
       }
     }
