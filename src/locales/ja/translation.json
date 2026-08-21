@@ -2823,7 +2823,8 @@
         "stale": "少し前の内容",
         "working": "考えています…",
         "empty": "相手が話し終えると提案が表示されます。",
-        "needsModel": "ライブ提案を受け取るには AI モデルを設定してください。"
+        "needsModel": "ライブ提案を受け取るには AI モデルを設定してください。",
+        "connecting": "アシスタントに接続しています…"
       },
       "transcript": {
         "label": "文字起こし",
@@ -2840,7 +2841,9 @@
         "needsModelPlaceholder": "AI モデルが必要です",
         "noModel": "AI モデルがまだ設定されていません。",
         "failed": "答えられませんでした。もう一度お試しください。",
-        "noAnswer": "回答が返りませんでした。"
+        "noAnswer": "回答が返りませんでした。",
+        "connecting": "準備しています…",
+        "connectingPlaceholder": "接続中…"
       },
       "sourcesLabel": "出典"
     },

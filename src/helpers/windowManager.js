@@ -1502,9 +1502,11 @@ class WindowManager {
    */
   sendMeetingPanelAssist(assist) {
     this._meetingPanelAssist = assist;
-    const win = this.meetingPanelWindow;
-    if (!win || win.isDestroyed() || win.webContents.isLoading()) return;
-    win.webContents.send("meeting-panel-assist", assist);
+    // Deferred rather than dropped while the panel loads, unlike the level and
+    // the transcript. Those are superseded within a frame or two, so a dropped
+    // one costs nothing; whether a model is configured may not change again for
+    // the rest of the meeting, so dropping that one strands the panel.
+    this.sendToMeetingPanel("meeting-panel-assist", assist);
   }
 
   getMeetingPanelAssist() {

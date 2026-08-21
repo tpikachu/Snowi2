@@ -3102,7 +3102,8 @@
         "stale": "Vor einem Moment",
         "working": "Denkt nach…",
         "empty": "Ein Vorschlag erscheint, sobald die andere Seite aufhört zu sprechen.",
-        "needsModel": "Richten Sie ein KI-Modell ein, um Live-Vorschläge zu erhalten."
+        "needsModel": "Richten Sie ein KI-Modell ein, um Live-Vorschläge zu erhalten.",
+        "connecting": "Verbindung zum Assistenten…"
       },
       "transcript": {
         "label": "Transkript",
@@ -3119,7 +3120,9 @@
         "needsModelPlaceholder": "Benötigt ein KI-Modell",
         "noModel": "Es ist noch kein KI-Modell eingerichtet.",
         "failed": "Das ließ sich nicht beantworten. Bitte erneut versuchen.",
-        "noAnswer": "Es kam keine Antwort zurück."
+        "noAnswer": "Es kam keine Antwort zurück.",
+        "connecting": "Wird vorbereitet…",
+        "connectingPlaceholder": "Verbinden…"
       },
       "sourcesLabel": "Aus"
     },

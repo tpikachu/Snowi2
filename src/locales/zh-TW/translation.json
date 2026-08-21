@@ -2895,7 +2895,8 @@
         "stale": "剛才的內容",
         "working": "思考中…",
         "empty": "對方說完後這裡會出現建議。",
-        "needsModel": "設定 AI 模型後即可獲得即時建議。"
+        "needsModel": "設定 AI 模型後即可獲得即時建議。",
+        "connecting": "正在連接助手…"
       },
       "transcript": {
         "label": "轉錄",
@@ -2912,7 +2913,9 @@
         "needsModelPlaceholder": "需要 AI 模型",
         "noModel": "還沒有設定 AI 模型。",
         "failed": "沒能回答，請再試一次。",
-        "noAnswer": "沒有收到回答。"
+        "noAnswer": "沒有收到回答。",
+        "connecting": "準備中…",
+        "connectingPlaceholder": "連接中…"
       },
       "sourcesLabel": "來源"
     },

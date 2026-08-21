@@ -2895,7 +2895,8 @@
         "stale": "Há pouco",
         "working": "Pensando…",
         "empty": "Uma sugestão aparece quando o outro lado para de falar.",
-        "needsModel": "Configure um modelo de IA para receber sugestões ao vivo."
+        "needsModel": "Configure um modelo de IA para receber sugestões ao vivo.",
+        "connecting": "Conectando ao assistente…"
       },
       "transcript": {
         "label": "Transcrição",
@@ -2912,7 +2913,9 @@
         "needsModelPlaceholder": "Precisa de um modelo de IA",
         "noModel": "Ainda não há um modelo de IA configurado.",
         "failed": "Não foi possível responder. Tente de novo.",
-        "noAnswer": "Nenhuma resposta voltou."
+        "noAnswer": "Nenhuma resposta voltou.",
+        "connecting": "Preparando…",
+        "connectingPlaceholder": "Conectando…"
       },
       "sourcesLabel": "De"
     },

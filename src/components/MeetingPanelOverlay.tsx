@@ -11,11 +11,7 @@ import {
 } from "lucide-react";
 import { capturedMsAt, type MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
 import type { PanelTranscript } from "../utils/meetingPanelTranscript";
-import {
-  IDLE_ASSIST,
-  type AssistNoteRef,
-  type MeetingAssistState,
-} from "../utils/meetingAssistState";
+import type { AssistNoteRef, MeetingAssistState } from "../utils/meetingAssistState";
 import type { MeetingPanelCommand } from "../types/electron";
 import { formatMmSs } from "../utils/formatDuration";
 import { cn } from "./lib/utils";
@@ -113,7 +109,16 @@ export default function MeetingPanelOverlay() {
   const { t } = useTranslation();
   const [snapshot, setSnapshot] = useState<MeetingPanelSnapshot | null>(null);
   const [transcript, setTranscript] = useState<PanelTranscript | null>(null);
-  const [assist, setAssist] = useState<MeetingAssistState>(IDLE_ASSIST);
+  /**
+   * Null until the control panel has actually said something.
+   *
+   * Defaulting to an idle state instead made "no model is configured" and "I
+   * have not heard from the assistant yet" the same value, and the panel
+   * rendered the harsher of the two — telling people to go set up a model they
+   * had already set up. The two are now distinct, and an unheard-from
+   * assistant says so.
+   */
+  const [assist, setAssist] = useState<MeetingAssistState | null>(null);
   const [level, setLevel] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isBusy, setIsBusy] = useState(false);
@@ -132,9 +137,15 @@ export default function MeetingPanelOverlay() {
     void window.electronAPI?.meetingPanelGetTranscript?.().then((initial) => {
       if (initial) setTranscript(initial);
     });
-    void window.electronAPI?.meetingPanelGetAssist?.().then((initial) => {
-      if (initial) setAssist(initial);
-    });
+    // Caught rather than left dangling: on a dev run where the main process
+    // predates this channel the invoke rejects, and an unhandled rejection is
+    // a worse way to learn that than an honest "connecting" pane.
+    void window.electronAPI
+      ?.meetingPanelGetAssist?.()
+      .then((initial) => {
+        if (initial) setAssist(initial);
+      })
+      .catch(() => {});
 
     const unbindState = window.electronAPI?.onMeetingPanelState?.(setSnapshot);
     const unbindLevel = window.electronAPI?.onMeetingPanelLevel?.(setLevel);
@@ -226,8 +237,12 @@ export default function MeetingPanelOverlay() {
         : t("notes.meetingPanel.sources.micOnly");
 
   const lines = transcript?.lines ?? [];
-  const suggestion = assist.suggestion;
-  const answer = assist.answer;
+  const suggestion = assist?.suggestion ?? null;
+  const answer = assist?.answer ?? null;
+  // Three states, not two: configured, known to need a model, and not yet
+  // heard from. Only the middle one may accuse the user of skipping setup.
+  const assistReady = assist?.configured === true;
+  const assistNeedsModel = assist?.configured === false;
 
   return (
     <div
@@ -384,11 +399,13 @@ export default function MeetingPanelOverlay() {
                 </>
               ) : (
                 <p className="text-xs leading-relaxed text-hud-muted/70">
-                  {!assist.configured
+                  {assistNeedsModel
                     ? t("notes.meetingPanel.suggestion.needsModel")
-                    : assist.suggestionPending
-                      ? t("notes.meetingPanel.suggestion.working")
-                      : t("notes.meetingPanel.suggestion.empty")}
+                    : !assistReady
+                      ? t("notes.meetingPanel.suggestion.connecting")
+                      : assist.suggestionPending
+                        ? t("notes.meetingPanel.suggestion.working")
+                        : t("notes.meetingPanel.suggestion.empty")}
                 </p>
               )}
             </section>
@@ -468,9 +485,11 @@ export default function MeetingPanelOverlay() {
                 <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 px-3 py-3 text-center">
                   <MessageSquareText size={14} className="text-hud-muted/40" />
                   <p className="text-[11px] leading-relaxed text-hud-muted/60">
-                    {assist.configured
-                      ? t("notes.meetingPanel.ask.empty")
-                      : t("notes.meetingPanel.ask.needsModel")}
+                    {assistNeedsModel
+                      ? t("notes.meetingPanel.ask.needsModel")
+                      : !assistReady
+                        ? t("notes.meetingPanel.ask.connecting")
+                        : t("notes.meetingPanel.ask.empty")}
                   </p>
                 </div>
               )}
@@ -485,11 +504,13 @@ export default function MeetingPanelOverlay() {
                 <input
                   value={question}
                   onChange={(event) => setQuestion(event.target.value)}
-                  disabled={!assist.configured}
+                  disabled={!assistReady}
                   placeholder={
-                    assist.configured
+                    assistReady
                       ? t("notes.meetingPanel.ask.placeholder")
-                      : t("notes.meetingPanel.ask.needsModelPlaceholder")
+                      : assistNeedsModel
+                        ? t("notes.meetingPanel.ask.needsModelPlaceholder")
+                        : t("notes.meetingPanel.ask.connectingPlaceholder")
                   }
                   aria-label={t("notes.meetingPanel.ask.label")}
                   className={cn(
@@ -499,7 +520,7 @@ export default function MeetingPanelOverlay() {
                 />
                 <button
                   type="submit"
-                  disabled={!assist.configured || !question.trim()}
+                  disabled={!assistReady || !question.trim()}
                   aria-label={t("notes.meetingPanel.ask.send")}
                   className={cn(
                     "flex size-5 shrink-0 items-center justify-center rounded",

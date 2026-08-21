@@ -3102,7 +3102,8 @@
         "stale": "A moment ago",
         "working": "Thinking…",
         "empty": "A suggestion appears when the other side stops talking.",
-        "needsModel": "Set up an AI model to get live suggestions."
+        "needsModel": "Set up an AI model to get live suggestions.",
+        "connecting": "Connecting to the assistant…"
       },
       "transcript": {
         "label": "Transcript",
@@ -3119,7 +3120,9 @@
         "needsModelPlaceholder": "Needs an AI model",
         "noModel": "No AI model is set up yet.",
         "failed": "Could not answer that. Try again.",
-        "noAnswer": "No answer came back."
+        "noAnswer": "No answer came back.",
+        "connecting": "Getting ready…",
+        "connectingPlaceholder": "Connecting…"
       },
       "sourcesLabel": "From"
     },

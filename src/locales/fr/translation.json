@@ -3102,7 +3102,8 @@
         "stale": "Il y a un instant",
         "working": "Réflexion…",
         "empty": "Une suggestion apparaît quand l'autre partie s'arrête de parler.",
-        "needsModel": "Configurez un modèle d'IA pour recevoir des suggestions en direct."
+        "needsModel": "Configurez un modèle d'IA pour recevoir des suggestions en direct.",
+        "connecting": "Connexion à l'assistant…"
       },
       "transcript": {
         "label": "Transcription",
@@ -3119,7 +3120,9 @@
         "needsModelPlaceholder": "Nécessite un modèle d'IA",
         "noModel": "Aucun modèle d'IA n'est encore configuré.",
         "failed": "Impossible de répondre. Réessayez.",
-        "noAnswer": "Aucune réponse n'est arrivée."
+        "noAnswer": "Aucune réponse n'est arrivée.",
+        "connecting": "Préparation…",
+        "connectingPlaceholder": "Connexion…"
       },
       "sourcesLabel": "D'après"
     },
