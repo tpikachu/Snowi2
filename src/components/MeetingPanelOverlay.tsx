@@ -192,7 +192,7 @@ export default function MeetingPanelOverlay() {
   useEffect(() => {
     const element = answerRef.current;
     if (element) element.scrollTop = element.scrollHeight;
-  }, [assist.answer?.text]);
+  }, [assist?.answer?.text]);
 
   const send = useCallback(async (command: MeetingPanelCommand) => {
     setIsBusy(true);
@@ -403,7 +403,7 @@ export default function MeetingPanelOverlay() {
                     ? t("notes.meetingPanel.suggestion.needsModel")
                     : !assistReady
                       ? t("notes.meetingPanel.suggestion.connecting")
-                      : assist.suggestionPending
+                      : assist?.suggestionPending
                         ? t("notes.meetingPanel.suggestion.working")
                         : t("notes.meetingPanel.suggestion.empty")}
                 </p>
