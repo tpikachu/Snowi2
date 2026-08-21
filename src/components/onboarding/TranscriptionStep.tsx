@@ -4,6 +4,7 @@ import TranscriptionModelPicker from "../TranscriptionModelPicker";
 import TranscriptionAutoSetup from "../TranscriptionAutoSetup";
 import LanguageSelector from "../ui/LanguageSelector";
 import StepShell, { StepSection } from "./StepShell";
+import { useSettingsStore } from "../../stores/settingsStore";
 
 interface TranscriptionStepProps {
   eyebrow?: string;
@@ -48,13 +49,47 @@ export default function TranscriptionStep({
   // once. Advanced stays one click away and unchanged.
   const [advanced, setAdvanced] = useState(false);
 
+  const updateTranscriptionSettings = useSettingsStore((s) => s.updateTranscriptionSettings);
+  const setMeetingTranscriptionMode = useSettingsStore((s) => s.setMeetingTranscriptionMode);
+  const setMeetingUseLocalWhisper = useSettingsStore((s) => s.setMeetingUseLocalWhisper);
+  const setMeetingLocalTranscriptionProvider = useSettingsStore(
+    (s) => s.setMeetingLocalTranscriptionProvider
+  );
+  const setMeetingParakeetModel = useSettingsStore((s) => s.setMeetingParakeetModel);
+  const setMeetingWhisperModel = useSettingsStore((s) => s.setMeetingWhisperModel);
+
   const applyRecommendation = useCallback(
     ({ provider, modelId }: { provider: "whisper" | "nvidia"; modelId: string }) => {
-      onModeChange(true);
-      onLocalProviderSelect(provider);
-      onLocalModelSelect(modelId);
+      // One atomic write rather than the provider-then-model prop callbacks the
+      // manual picker uses. Those decide which field to write from the provider
+      // captured at render time, so setting both in a single tick would file a
+      // Parakeet model name under `whisperModel`. The picker gets away with it
+      // because switching engine tabs is a separate click; this is not.
+      updateTranscriptionSettings({
+        useLocalWhisper: true,
+        localTranscriptionProvider: provider,
+        ...(provider === "nvidia" ? { parakeetModel: modelId } : { whisperModel: modelId }),
+      });
+
+      // Meetings resolve transcription from their own scope, and
+      // `localTranscriptionProvider` is the one field in it with no fallback to
+      // the general setting (see selectResolvedMeetingTranscription). Writing
+      // only the general scope would download the streaming model and then have
+      // every meeting reach for Whisper anyway.
+      setMeetingTranscriptionMode("local");
+      setMeetingUseLocalWhisper(true);
+      setMeetingLocalTranscriptionProvider(provider);
+      if (provider === "nvidia") setMeetingParakeetModel(modelId);
+      else setMeetingWhisperModel(modelId);
     },
-    [onModeChange, onLocalProviderSelect, onLocalModelSelect]
+    [
+      updateTranscriptionSettings,
+      setMeetingTranscriptionMode,
+      setMeetingUseLocalWhisper,
+      setMeetingLocalTranscriptionProvider,
+      setMeetingParakeetModel,
+      setMeetingWhisperModel,
+    ]
   );
 
   const languageFamily = preferredLanguage === "en" ? "en" : "multilingual";
