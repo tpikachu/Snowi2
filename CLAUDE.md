@@ -26,7 +26,7 @@ Snowy is an Electron-based desktop dictation application that uses whisper.cpp f
    - Both use same React codebase with URL-based routing
    - Overlay windows (meeting panel, meeting notification, transcription preview, update notification) are the same bundle selected by a query flag in `AppRouter.jsx`
 
-   **Meeting panel** (`?meeting-panel=true`, spec §12.1): a floating always-on-top status bar shown while a meeting records, content-protected so it stays out of screen shares. The capture graph lives in the control panel's renderer, so the panel is a *view*: `useMeetingPanelBridge` publishes `MeetingPanelSnapshot`s (`src/utils/meetingPanelSnapshot.ts`, pure + unit-tested) to main, which owns whether the window exists and forwards state; the panel's buttons send allow-listed commands (`pause`/`resume`/`stop`/`open`) back through main to the same store functions the in-app controls call. Mic level rides a separate throttled channel. The panel hides while the control panel has focus, driven by `focus`/`blur` only — never `show`/`hide`, which are occlusion events on macOS.
+   **Meeting panel** (`?meeting-panel=true`, spec §12.1): a floating always-on-top status bar shown while a meeting records, content-protected so it stays out of screen shares. The capture graph lives in the control panel's renderer, so the panel is a _view_: `useMeetingPanelBridge` publishes `MeetingPanelSnapshot`s (`src/utils/meetingPanelSnapshot.ts`, pure + unit-tested) to main, which owns whether the window exists and forwards state; the panel's buttons send allow-listed commands (`pause`/`resume`/`stop`/`open`) back through main to the same store functions the in-app controls call. Mic level rides a separate throttled channel. The panel hides while the control panel has focus, driven by `focus`/`blur` only — never `show`/`hide`, which are occlusion events on macOS.
 
 2. **Process Separation**:
    - Main Process: Electron main, IPC handlers, database operations
@@ -231,7 +231,7 @@ Always-on offline semantic search that finds notes by meaning, not just keywords
 - **Vector index**: Qdrant collection management (`vectorIndex.js`), cosine distance
 - **Two note collections**:
   - `notes` — one vector per note over `title + content/enhanced` truncated to 1500 chars. Ranks whole notes.
-  - `note_chunks` — one vector per ~900-char overlapping passage over `enhanced_content + content + transcript` (`noteChunker.js`, pure + unit-tested). The transcript is only indexed here, so meeting substance is reachable at all; and because passages carry their text in the payload, a hit returns *what* matched rather than the note's opening paragraph. Point id is `noteId * 1000 + chunkIndex`, which is why `MAX_CHUNKS_PER_NOTE` must stay under 1000.
+  - `note_chunks` — one vector per ~900-char overlapping passage over `enhanced_content + content + transcript` (`noteChunker.js`, pure + unit-tested). The transcript is only indexed here, so meeting substance is reachable at all; and because passages carry their text in the payload, a hit returns _what_ matched rather than the note's opening paragraph. Point id is `noteId * 1000 + chunkIndex`, which is why `MAX_CHUNKS_PER_NOTE` must stay under 1000.
 - **Hybrid search**: FTS5 + `note_chunks` + `notes` in parallel → Reciprocal Rank Fusion (K=60) with 0.3 cosine score threshold. Chunk hits collapse to one per note (best passage wins) and attach `matched_snippet` to the result, which chat RAG and the `search_notes` tool prefer over truncating the note.
 - **Backfill**: `ipcHandlers.backfillNoteChunks()` runs on launch and gives passage vectors to notes that predate chunking, bounded per session so a large library catches up over a few launches rather than stalling startup.
 
@@ -757,6 +757,9 @@ const { t } = useTranslation();
    - Use `npm run download:whisper-cpp:all` for multi-platform packaging
    - afterSign.js automatically skips signing when CSC_IDENTITY_AUTO_DISCOVERY=false
    - **Lockfile**: Always use Node 24 when running `npm install` (matches CI). If your local Node version differs, use `nvm exec 24 npm install`. Running `npm install` with a different major version will produce an incompatible `package-lock.json` that breaks `npm ci` in CI.
+   - **Never run bare `npm rebuild better-sqlite3` in a working tree you also run the app from.** It compiles the binding against the _system_ Node ABI, and the app then dies at startup with `NODE_MODULE_VERSION 137 … requires 145` — Electron has its own ABI. CI does exactly this on purpose (it never launches the app), which is why the release workflow pairs it with `REQUIRE_DB_TESTS=1`. To recover: `npx prebuild-install --runtime=electron --target=<electron version> --arch=x64 --force` from inside `node_modules/better-sqlite3`, or `npm run postinstall`. Verify with `ELECTRON_RUN_AS_NODE=1 npx electron -p "require('better-sqlite3') && 'ok'"`.
+
+   **DB-backed tests skip silently without a loadable binding.** `test/helpers/spacesDatabase.test.js` and friends call `t.skip()` when `require("better-sqlite3")` throws, so a whole class of failures is invisible locally while CI (which rebuilds, and sets `REQUIRE_DB_TESTS=1` to turn a skip into a failure) catches them. If you are changing anything under `src/helpers/database.js`, run those tests for real rather than trusting a green local suite.
 
 5. **Windows Push-to-Talk Binary**:
    - Prebuilt binary downloaded automatically on Windows during build
