@@ -3804,7 +3804,11 @@
           "ready": "El panel sugiere qué decir y responde preguntas a partir de tus notas.",
           "missing": "El panel de reunión puede sugerir qué decir y responder preguntas basándose en tus notas anteriores, sin salir de la llamada."
         }
-      }
+      },
+      "descriptionAllSet": "Todo está configurado. Esto es lo que usa cada parte.",
+      "collapsedSummaryAllSet": "Todo está configurado.",
+      "change": "Cambiar",
+      "onThisMachine": "En este equipo"
     }
   },
   "tour": {

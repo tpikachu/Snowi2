@@ -3804,7 +3804,11 @@
           "ready": "O painel sugere o que dizer e responde a partir das suas notas.",
           "missing": "O painel da reunião pode sugerir o que dizer e responder a perguntas com base nas suas notas anteriores — sem sair da chamada."
         }
-      }
+      },
+      "descriptionAllSet": "Tudo configurado. Veja o que cada parte está usando.",
+      "collapsedSummaryAllSet": "Tudo configurado.",
+      "change": "Alterar",
+      "onThisMachine": "Nesta máquina"
     }
   },
   "tour": {

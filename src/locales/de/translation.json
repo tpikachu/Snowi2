@@ -3804,7 +3804,11 @@
           "ready": "Das Meeting-Panel schlägt vor, was Sie sagen können, und antwortet aus Ihren Notizen.",
           "missing": "Das Meeting-Panel kann vorschlagen, was Sie als Nächstes sagen, und Fragen aus Ihren früheren Notizen beantworten — ohne den Call zu verlassen."
         }
-      }
+      },
+      "descriptionAllSet": "Alles ist eingerichtet. Das läuft jeweils darunter.",
+      "collapsedSummaryAllSet": "Alles ist eingerichtet.",
+      "change": "Ändern",
+      "onThisMachine": "Auf diesem Rechner"
     }
   },
   "tour": {

@@ -3804,7 +3804,11 @@
           "ready": "Il pannello suggerisce cosa dire e risponde partendo dai tuoi appunti.",
           "missing": "Il pannello della riunione può suggerire cosa dire e rispondere alle tue domande partendo dagli appunti passati, senza uscire dalla chiamata."
         }
-      }
+      },
+      "descriptionAllSet": "È tutto configurato. Ecco cosa usa ogni parte.",
+      "collapsedSummaryAllSet": "È tutto configurato.",
+      "change": "Cambia",
+      "onThisMachine": "Su questo computer"
     }
   },
   "tour": {

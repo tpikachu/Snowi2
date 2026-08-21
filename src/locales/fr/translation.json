@@ -3804,7 +3804,11 @@
           "ready": "Le panneau suggère quoi dire et répond à partir de vos notes.",
           "missing": "Le panneau de réunion peut suggérer quoi dire et répondre à vos questions à partir de vos notes passées, sans quitter l'appel."
         }
-      }
+      },
+      "descriptionAllSet": "Tout est configuré. Voici ce que chaque partie utilise.",
+      "collapsedSummaryAllSet": "Tout est configuré.",
+      "change": "Modifier",
+      "onThisMachine": "Sur cet appareil"
     }
   },
   "tour": {

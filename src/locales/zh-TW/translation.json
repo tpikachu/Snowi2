@@ -3804,7 +3804,11 @@
           "ready": "會議面板會提示該說什麼，並根據你的筆記回答問題。",
           "missing": "會議面板可以提示你接下來該說什麼，並根據你的歷史筆記回答問題——不用離開通話。"
         }
-      }
+      },
+      "descriptionAllSet": "都已設定完成。以下是各部分正在使用的模型。",
+      "collapsedSummaryAllSet": "都已設定完成。",
+      "change": "變更",
+      "onThisMachine": "在本機執行"
     }
   },
   "tour": {

@@ -3804,7 +3804,11 @@
           "ready": "The meeting panel suggests what to say and answers questions from your notes.",
           "missing": "The meeting panel can suggest what to say next and answer questions from your past notes — without leaving the call."
         }
-      }
+      },
+      "descriptionAllSet": "Everything is set up. Here is what each part is running on.",
+      "collapsedSummaryAllSet": "Everything is set up.",
+      "change": "Change",
+      "onThisMachine": "On this machine"
     }
   },
   "tour": {
