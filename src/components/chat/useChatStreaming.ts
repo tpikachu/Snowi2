@@ -4,7 +4,12 @@ import ReasoningService, { type AgentStreamChunk } from "../../services/Reasonin
 import { isEnterpriseProvider } from "../../models/ModelRegistry";
 import { getSettings, selectResolvedLLMConfig } from "../../stores/settingsStore";
 import { getAgentPromptSections, renderAgentPromptSections } from "../../config/prompts";
-import { formatOpenCommitments } from "../../utils/memoryPrompt";
+import {
+  buildNoteAnchorText,
+  dedupeAgainstAnchor,
+  fetchPinnedMemory,
+  type NoteAnchor,
+} from "../../services/chatContext";
 import { createToolRegistry } from "../../services/tools";
 import type { ToolRegistry } from "../../services/tools/ToolRegistry";
 import type { Message, AgentState, ToolCallInfo } from "./types";
@@ -103,8 +108,14 @@ async function retrieveNotes(
 interface UseChatStreamingOptions {
   messages: Message[];
   setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
-  /** Optional note context to prepend to the system prompt (used by embedded note chat). */
+  /** Optional pinned context string (the container overview's summary). */
   noteContext?: string;
+  /**
+   * The note this chat is embedded in. Structured rather than pre-rendered so
+   * the anchor can be budgeted here (a transcript is pinned as a tail, not
+   * whole) and so retrieval and memory can be scoped to the note's id.
+   */
+  noteAnchor?: NoteAnchor;
   /** Optional container scope applied to RAG and the search_notes tool (container overview chat). */
   searchScope?: ContainerScope;
   /**
@@ -133,6 +144,7 @@ export function useChatStreaming({
   messages,
   setMessages,
   noteContext: externalNoteContext,
+  noteAnchor,
   searchScope,
   surface = "chat",
   onStreamComplete,
@@ -145,6 +157,8 @@ export function useChatStreaming({
   const messagesRef = useRef<Message[]>([]);
   const noteContextRef = useRef(externalNoteContext);
   noteContextRef.current = externalNoteContext;
+  const noteAnchorRef = useRef(noteAnchor);
+  noteAnchorRef.current = noteAnchor;
   // Grounding from earlier turns of this conversation. Without it, a follow-up
   // that retrieves poorly silently drops the notes the answer had been built
   // on, and the assistant reads as having forgotten the last two exchanges.
@@ -261,36 +275,51 @@ export function useChatStreaming({
         .find((m) => m.role === "user" && m.content !== userText)?.content;
       const retrievalQuery = buildRetrievalQuery(userText, previousUserText);
 
+      // The anchor is budgeted here, not at the mount site: a note's transcript
+      // is pinned as a tail rather than whole, with the rest reachable through
+      // the same passage retrieval every other chat uses.
+      const anchor = noteAnchorRef.current;
+      const builtAnchor = anchor ? buildNoteAnchorText(anchor) : null;
+      const anchorText = builtAnchor?.text ?? noteContextRef.current;
+
       const retrievalStart = performance.now();
       const fresh = await retrieveNotes(retrievalQuery, scope);
       const retrievalMs = Math.round(performance.now() - retrievalStart);
-      const freshIds = new Set(fresh.notes.map((note) => note.noteId));
-      const grounding = mergeGrounding(fresh.notes, carriedGroundingRef.current);
+      // A hit on the anchored note is duplication while the anchor is whole,
+      // and the missing pages when it is not.
+      const freshNotes = dedupeAgainstAnchor(
+        fresh.notes,
+        anchor?.noteId,
+        builtAnchor?.truncated ?? false
+      );
+      const freshIds = new Set(freshNotes.map((note) => note.noteId));
+      const grounding = mergeGrounding(freshNotes, carriedGroundingRef.current);
       carriedGroundingRef.current = grounding;
 
-      const combinedContext = [noteContextRef.current, formatGroundingContext(grounding)]
+      const combinedContext = [anchorText, formatGroundingContext(grounding)]
         .filter(Boolean)
         .join("\n\n");
+      // The memory slices this surface pins, per its contract (chatContext.ts).
       // Fetched per turn rather than cached: a meeting that just ended can add
-      // to it, and it is one indexed read over a capped row set.
+      // to every one of them, and each is an indexed read over a capped set.
       const memoryStart = performance.now();
-      const [memoryProfile, openActions] = await Promise.all([
-        window.electronAPI?.getMemoryProfile?.().catch(() => "") ?? "",
-        // Indexed read over a capped row set, like the profile beside it: the
-        // status and due date live outside the sealed document precisely so
-        // this does not have to decrypt the user's whole history.
-        window.electronAPI?.listOpenMemoryActions?.("user", 40).catch(() => []) ?? [],
-      ]);
-      const memoryMs = Math.round(performance.now() - memoryStart);
       const today = new Date().toISOString().slice(0, 10);
+      const pinnedMemory = await fetchPinnedMemory({
+        surface: surfaceRef.current,
+        scope,
+        anchorNoteId: anchor?.noteId,
+        today,
+      });
+      const memoryMs = Math.round(performance.now() - memoryStart);
       const availableTools = registry?.getAll().map((t) => t.name) ?? [];
       // Sections first, prompt second. The record is built from these same
       // objects, so it cannot describe a prompt other than the one sent.
       const sections = getAgentPromptSections({
         availableTools,
         noteContext: combinedContext || undefined,
-        memoryProfile: memoryProfile || undefined,
-        openCommitments: formatOpenCommitments(openActions, today) || undefined,
+        memoryProfile: pinnedMemory.profile || undefined,
+        openCommitments: pinnedMemory.openCommitments || undefined,
+        noteClaims: pinnedMemory.noteClaims || undefined,
         focusNote: focusNoteRef.current,
       });
       const systemPrompt = renderAgentPromptSections(sections);

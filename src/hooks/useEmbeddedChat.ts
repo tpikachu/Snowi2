@@ -50,24 +50,27 @@ export function useEmbeddedChat({
     },
   });
 
-  const noteContext = useMemo(
+  // Structured rather than pre-rendered: the streaming hook budgets the anchor
+  // (a long transcript is pinned as a tail, not whole) and scopes the pinned
+  // memory to this note — neither is possible with an opaque string.
+  const noteAnchor = useMemo(
     () =>
-      [
-        `Note ID: ${noteId}`,
-        folderId != null ? `Folder ID: ${folderId}` : "",
-        `Title: ${noteTitle}`,
-        `Content:\n${noteContent}`,
-        noteTranscript ? `\nTranscript:\n${noteTranscript}` : "",
-      ]
-        .filter(Boolean)
-        .join("\n"),
+      noteId != null
+        ? {
+            noteId,
+            folderId,
+            title: noteTitle,
+            content: noteContent,
+            transcript: noteTranscript,
+          }
+        : undefined,
     [folderId, noteContent, noteId, noteTitle, noteTranscript]
   );
 
   const streaming = useChatStreaming({
     messages: persistence.messages,
     setMessages: persistence.setMessages,
-    noteContext,
+    noteAnchor,
     surface: "note-chat",
     onStreamComplete: (_id, content, toolCalls, sources) => {
       persistence.saveAssistantMessage(content, toolCalls, sources);

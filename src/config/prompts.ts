@@ -55,6 +55,8 @@ export interface AgentPromptContext {
   memoryProfile?: string;
   /** Open commitments and deadlines, pinned on every message (§19, §20). */
   openCommitments?: string;
+  /** Claims extracted from the anchored note, with current statuses (note chat). */
+  noteClaims?: string;
   /** The note a bare "this meeting" refers to, when the conversation has one. */
   focusNote?: { id: number; title: string };
 }
@@ -71,6 +73,7 @@ export type AgentPromptSectionName =
   | "assistantRole"
   | "userProfile"
   | "openCommitments"
+  | "noteClaims"
   | "focusNote"
   | "toolInstructions"
   | "retrievedNotes";
@@ -84,7 +87,8 @@ export interface AgentPromptSection {
 export const AGENT_PROMPT_SECTION_SEPARATOR = "\n\n";
 
 export function getAgentPromptSections(context: AgentPromptContext = {}): AgentPromptSection[] {
-  const { availableTools, noteContext, memoryProfile, openCommitments, focusNote } = context;
+  const { availableTools, noteContext, memoryProfile, openCommitments, noteClaims, focusNote } =
+    context;
   const sections: AgentPromptSection[] = [
     { name: "assistantRole", text: resolvePrompt("chatAgent", { agentName: null }) },
   ];
@@ -115,6 +119,21 @@ export function getAgentPromptSections(context: AgentPromptContext = {}): AgentP
         "outstanding, and do not recite them otherwise. For anything beyond this " +
         "list, use search_memory:\n" +
         openCommitments.trim(),
+    });
+  }
+
+  // The correction channel for a note's own chat. The note's text is frozen at
+  // the moment it was written; these rows know what happened since — an item
+  // closed, a number renegotiated. Pinned because the model would otherwise
+  // trust the pinned document over anything it might retrieve.
+  if (noteClaims?.trim()) {
+    sections.push({
+      name: "noteClaims",
+      text:
+        "Claims extracted from this note's meeting, with their CURRENT status. " +
+        "Where a claim is marked superseded or done, that status is newer than the " +
+        "note's own text — trust the status over the wording in the note:\n" +
+        noteClaims.trim(),
     });
   }
 

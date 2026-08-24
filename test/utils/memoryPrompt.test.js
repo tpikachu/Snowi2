@@ -112,3 +112,47 @@ test("no open commitments renders nothing at all", async (t) => {
   assert.equal(formatOpenCommitments([], TODAY), "");
   assert.equal(formatOpenCommitments([claim({ content: "   " })], TODAY), "");
 });
+
+test("note claims keep corrections and label them, live claims first", async (t) => {
+  const { formatNoteClaims } = await load(t);
+
+  const text = formatNoteClaims(
+    [
+      claim({
+        id: "old",
+        type: "decision",
+        content: "Pricing set at $40k",
+        status: "superseded",
+        updated_at: "2026-08-05T00:00:00.000Z",
+      }),
+      claim({ id: "done", type: "action_item", content: "Send the SOW", status: "done" }),
+      claim({ id: "open", type: "deadline", content: "Sign by month end", due_at: "2026-08-31" }),
+    ],
+    TODAY
+  );
+  const lines = text.split("\n");
+
+  // The whole point of pinning these into the note's chat: the note says $40k
+  // forever, and only this row can say that stopped being true.
+  assert.match(text, /\[decision\] Pricing set at \$40k — SUPERSEDED, no longer true/);
+  assert.match(text, /\[action_item\] Send the SOW — done/);
+  assert.match(lines[0], /Sign by month end — due 2026-08-31/, "open claims lead");
+  assert.match(lines.at(-1), /SUPERSEDED/, "corrections trail");
+});
+
+test("note claims overflow names the remainder like the commitments slice", async (t) => {
+  const { formatNoteClaims, MAX_PINNED_NOTE_CLAIMS } = await load(t);
+
+  const many = Array.from({ length: MAX_PINNED_NOTE_CLAIMS + 3 }, (_, i) =>
+    claim({ id: `m${i}`, content: `Claim number ${i}` })
+  );
+  const lines = formatNoteClaims(many, TODAY).split("\n");
+
+  assert.equal(lines.length, MAX_PINNED_NOTE_CLAIMS + 1);
+  assert.match(lines.at(-1), /3 more — call search_memory/);
+});
+
+test("note claims render nothing when the note produced none", async (t) => {
+  const { formatNoteClaims } = await load(t);
+  assert.equal(formatNoteClaims([], TODAY), "");
+});

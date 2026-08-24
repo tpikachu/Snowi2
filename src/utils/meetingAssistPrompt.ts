@@ -26,6 +26,18 @@ export interface AssistNote {
   noteId: number;
   title: string;
   snippet: string;
+  /**
+   * The claims extracted from this note, pre-formatted with current statuses.
+   * Attached so a passage saying "$40k" arrives beside the row that knows the
+   * price was renegotiated — the correction the passage itself cannot carry.
+   */
+  claims?: string;
+}
+
+/** The durable-memory slice a thinking-grade request pins beside the notes. */
+export interface AssistMemoryContext {
+  profile?: string;
+  openCommitments?: string;
 }
 
 export interface AssistSpeakerLabels {
@@ -91,7 +103,9 @@ const THINKING_ANSWER_SYSTEM_PROMPT = [
   "meeting is almost always about that meeting. The user's past notes are",
   "supporting material: reach for them when the question goes beyond what has",
   "been said today, and prefer a concrete number, date, or commitment from a",
-  "note over a vague summary of one.",
+  "note over a vague summary of one. Where a note's passage carries claims with",
+  "a current status, the status is newer than the passage — never quote a claim",
+  "marked superseded as if it still holds.",
   "",
   "If the answer is not in either, say so in one line rather than guessing. If",
   "the user asks what to say, reply with the line itself, ready to speak.",
@@ -151,12 +165,13 @@ export function formatAssistNotes(
   maxSnippetChars = ASSIST_NOTE_SNIPPET_CHARS
 ): string {
   return notes
-    .map(
-      (note) =>
-        `<note id="${note.noteId}" title="${note.title}">\n${note.snippet
-          .trim()
-          .slice(0, maxSnippetChars)}\n</note>`
-    )
+    .map((note) => {
+      const snippet = note.snippet.trim().slice(0, maxSnippetChars);
+      const claims = note.claims?.trim()
+        ? `\nClaims from this note, with current status:\n${note.claims.trim()}`
+        : "";
+      return `<note id="${note.noteId}" title="${note.title}">\n${snippet}${claims}\n</note>`;
+    })
     .join("\n\n");
 }
 
@@ -164,6 +179,8 @@ export interface AssistMessagesInput {
   meetingTitle: string | null;
   segments: readonly AssistSegment[];
   notes: readonly AssistNote[];
+  /** Durable memory. Absent on the fast path, which is transcript-only. */
+  memory?: AssistMemoryContext;
   /** Absent for a suggestion, present for an answer. */
   question?: string;
   labels?: AssistSpeakerLabels;
@@ -177,12 +194,21 @@ export interface AssistMessages {
 function buildContext(input: AssistMessagesInput): string {
   const transcript = formatAssistTranscript(input.segments, input.labels);
   const notes = formatAssistNotes(input.notes);
+  const profile = input.memory?.profile?.trim() ?? "";
+  const commitments = input.memory?.openCommitments?.trim() ?? "";
 
+  // Transcript first (the meeting is the primary context), then durable memory
+  // (small, exact, current), then retrieved passages (recall, may be stale —
+  // which is why each carries its claims).
   return [
     input.meetingTitle ? `Meeting: ${input.meetingTitle}` : "",
     "",
     "Live transcript (most recent last):",
     transcript || "(nothing said yet)",
+    profile ? "\nAbout the user, from their past meetings:" : "",
+    profile,
+    commitments ? "\nOpen commitments (current, exact — trust these over recollection):" : "",
+    commitments,
     notes ? "\nFrom the user's past notes:" : "",
     notes,
   ]

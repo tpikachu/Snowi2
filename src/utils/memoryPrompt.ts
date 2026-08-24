@@ -31,6 +31,53 @@ function dueLabel(dueAt: string | null, today: string): string {
   return ` — due ${date}`;
 }
 
+/** Claims pinned into a note's own chat. Same budget philosophy as above. */
+export const MAX_PINNED_NOTE_CLAIMS = 16;
+
+/**
+ * The claims extracted from one note, with their *current* truth values.
+ *
+ * This is the correction channel for the anchored document: the note's text
+ * says "$40k" forever, but the claim row knows it was superseded two meetings
+ * later. Superseded and dismissed claims are therefore kept and labeled rather
+ * than filtered — inside this note's chat, "no longer true" is exactly the
+ * information the note itself cannot carry.
+ */
+export function formatNoteClaims(
+  rows: readonly MemoryObjectRow[],
+  today: string,
+  limit: number = MAX_PINNED_NOTE_CLAIMS
+): string {
+  const usable = rows.filter((row) => row.content?.trim());
+  if (usable.length === 0) return "";
+
+  // Live claims first, corrections after them, newest first within each.
+  const rank = (row: MemoryObjectRow) =>
+    row.status === "open" ? 0 : row.status === "done" ? 1 : 2;
+  const sorted = [...usable].sort(
+    (a, b) => rank(a) - rank(b) || (b.updated_at ?? "").localeCompare(a.updated_at ?? "")
+  );
+  const shown = sorted.slice(0, Math.max(1, limit));
+
+  const lines = shown.map((row) => {
+    const status =
+      row.status === "superseded"
+        ? " — SUPERSEDED, no longer true"
+        : row.status === "dismissed"
+          ? " — dismissed"
+          : row.status === "done"
+            ? " — done"
+            : dueLabel(row.due_at, today);
+    return `- [${row.type}] ${row.content!.trim()}${status}`;
+  });
+
+  if (sorted.length > shown.length) {
+    lines.push(`- (${sorted.length - shown.length} more — call search_memory to see the rest)`);
+  }
+
+  return lines.join("\n");
+}
+
 /**
  * @param rows   Open action items, commitments and deadlines, already hydrated.
  * @param today  ISO date (YYYY-MM-DD) used to decide what reads as overdue.

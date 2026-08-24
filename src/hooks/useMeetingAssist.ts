@@ -29,8 +29,10 @@ import {
   buildSuggestionMessages,
   parseSuggestion,
   toAssistSegments,
+  type AssistMemoryContext,
   type AssistNote,
 } from "../utils/meetingAssistPrompt";
+import { formatNoteClaims, formatOpenCommitments } from "../utils/memoryPrompt";
 import { filterGrounding } from "../utils/chatRetrieval";
 import type { AssistMode, AssistNoteRef } from "../utils/meetingAssistState";
 import logger from "../utils/logger";
@@ -150,6 +152,47 @@ async function retrieveAssistNotes(query: string, limit: number): Promise<Assist
 const toRefs = (notes: readonly AssistNote[]): AssistNoteRef[] =>
   notes.map((note) => ({ noteId: note.noteId, title: note.title }));
 
+/** Claims per retrieved note. Small: they ride inside an already-budgeted block. */
+const ASSIST_NOTE_CLAIMS_LIMIT = 6;
+
+/**
+ * The durable-memory slice for a thinking-grade request, and the retrieved
+ * notes with their claims attached.
+ *
+ * All indexed reads — this is the cheap layer, which is why the *thinking*
+ * path affords it while the fast path affords nothing. Both directions of the
+ * commitment slate are fetched: mid-meeting, "what did they promise us" is
+ * worth at least as much as "what do I owe them". Failures degrade to a
+ * memory-less request rather than a failed one.
+ */
+async function retrieveAssistMemory(
+  notes: readonly AssistNote[]
+): Promise<{ memory: AssistMemoryContext; notes: AssistNote[] }> {
+  const api = window.electronAPI;
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const [profile, mine, theirs, ...claimRows] = await Promise.all([
+      api?.getMemoryProfile?.().catch(() => "") ?? "",
+      api?.listOpenMemoryActions?.("user", 40).catch(() => []) ?? [],
+      api?.listOpenMemoryActions?.("other", 40).catch(() => []) ?? [],
+      ...notes.map((note) => api?.listNoteMemory?.(note.noteId).catch(() => []) ?? []),
+    ]);
+
+    return {
+      memory: {
+        profile: profile || undefined,
+        openCommitments: formatOpenCommitments([...mine, ...theirs], today) || undefined,
+      },
+      notes: notes.map((note, index) => {
+        const claims = formatNoteClaims(claimRows[index] ?? [], today, ASSIST_NOTE_CLAIMS_LIMIT);
+        return claims ? { ...note, claims } : note;
+      }),
+    };
+  } catch {
+    return { memory: {}, notes: [...notes] };
+  }
+}
+
 async function collectStream(
   stream: AsyncGenerator<AgentStreamChunk>,
   onText?: (full: string) => void
@@ -244,14 +287,20 @@ export function useMeetingAssist(): MeetingAssist {
       const segments = selectAssistWindow(readSegments(now), now);
       // The retrieval round trip is the fast mode's entire savings: it runs
       // before the model call, so in fast mode it does not run at all, and the
-      // first token is as early as the provider allows.
-      const notes =
-        mode === "thinking"
-          ? await retrieveAssistNotes(
-              buildAssistRetrievalQuery(segments, trimmed),
-              ANSWER_NOTE_LIMIT
-            )
-          : [];
+      // first token is as early as the provider allows. Thinking then adds the
+      // cheap layer on top — durable memory, and each note's claims — because
+      // a mode already paying for retrieval gets the truth values for free.
+      let notes: AssistNote[] = [];
+      let memory: AssistMemoryContext | undefined;
+      if (mode === "thinking") {
+        const retrieved = await retrieveAssistNotes(
+          buildAssistRetrievalQuery(segments, trimmed),
+          ANSWER_NOTE_LIMIT
+        );
+        const enriched = await retrieveAssistMemory(retrieved);
+        notes = enriched.notes;
+        memory = enriched.memory;
+      }
       if (!isCurrent()) return;
       updateAnswer({ sources: toRefs(notes) });
 
@@ -259,6 +308,7 @@ export function useMeetingAssist(): MeetingAssist {
         meetingTitle: state.recordingNoteTitle,
         segments,
         notes,
+        memory,
         question: trimmed,
         mode,
       });
@@ -326,16 +376,21 @@ export function useMeetingAssist(): MeetingAssist {
 
     try {
       const state = useMeetingRecordingStore.getState();
-      const notes = await retrieveAssistNotes(
+      const retrieved = await retrieveAssistNotes(
         buildAssistRetrievalQuery(segments),
         ASSIST_NOTE_LIMIT
       );
+      // Suggestions are thinking-grade: precomputed while nobody is waiting,
+      // so the memory layer is free here — and the prompt already asks for "a
+      // commitment from the user's past notes", which is exactly what it adds.
+      const { memory, notes } = await retrieveAssistMemory(retrieved);
       if (!stillOurs()) return;
 
       const { systemPrompt, messages } = buildSuggestionMessages({
         meetingTitle: state.recordingNoteTitle,
         segments,
         notes,
+        memory,
       });
 
       const resolved = resolveAssistModel(systemPrompt);

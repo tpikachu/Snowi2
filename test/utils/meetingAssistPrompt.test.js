@@ -101,6 +101,54 @@ test("an answer prompt carries the question last", () => {
   assert.ok(built.messages[1].content.endsWith("My question: what should I say?"));
 });
 
+test("memory sits between the transcript and the notes, and claims ride inside their note", () => {
+  const input = {
+    meetingTitle: "Acme weekly",
+    segments: [seg("what about the discount", "system", NOW)],
+    notes: [
+      {
+        noteId: 3,
+        title: "Acme pricing",
+        snippet: "agreed 15% through Q3",
+        claims: "- [decision] Discount set at 12% — SUPERSEDED, no longer true",
+      },
+    ],
+    memory: {
+      profile: "- Works in enterprise sales",
+      openCommitments: "- Send the revised quote — due today",
+    },
+    question: "what did we agree?",
+    mode: "thinking",
+  };
+  const user = buildAnswerMessages(input).messages[1].content;
+
+  // Transcript (primary) → durable memory (exact, current) → notes (recall).
+  const transcriptAt = user.indexOf("Others: what about the discount");
+  const profileAt = user.indexOf("Works in enterprise sales");
+  const commitmentsAt = user.indexOf("Send the revised quote");
+  const notesAt = user.indexOf("agreed 15% through Q3");
+  assert.ok(transcriptAt < profileAt && profileAt < commitmentsAt && commitmentsAt < notesAt);
+
+  // The correction arrives with the passage it corrects, not in a distant
+  // section the model has to cross-reference mid-answer.
+  const noteBlock = user.slice(user.indexOf('<note id="3"'), user.indexOf("</note>"));
+  assert.match(noteBlock, /SUPERSEDED, no longer true/);
+});
+
+test("a fast answer carries no memory block even if one is passed", () => {
+  // The fast path never fetches memory; this guards the prompt side of that
+  // promise — buildContext renders only what the caller supplies.
+  const user = buildAnswerMessages({
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    question: "what did we agree?",
+    mode: "fast",
+  }).messages[1].content;
+  assert.ok(!user.includes("Open commitments"));
+  assert.ok(!user.includes("About the user"));
+});
+
 test("the two answer modes get different prompts, and only thinking mentions notes", () => {
   const input = {
     meetingTitle: null,
