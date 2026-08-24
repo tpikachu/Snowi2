@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  Brain,
   ExternalLink,
   Lightbulb,
   MessageSquareText,
@@ -8,10 +9,11 @@ import {
   Play,
   SendHorizontal,
   Square,
+  Zap,
 } from "lucide-react";
 import { capturedMsAt, type MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
 import type { PanelTranscript } from "../utils/meetingPanelTranscript";
-import type { AssistNoteRef, MeetingAssistState } from "../utils/meetingAssistState";
+import type { AssistMode, AssistNoteRef, MeetingAssistState } from "../utils/meetingAssistState";
 import type { MeetingPanelCommand } from "../types/electron";
 import { formatMmSs } from "../utils/formatDuration";
 import { cn } from "./lib/utils";
@@ -72,6 +74,73 @@ const truncateTitle = (title: string) =>
 const MAX_VISIBLE_SOURCES = 3;
 
 /**
+ * The two speeds of an answer, as a two-button segment in the ask row.
+ *
+ * Fast is the default and re-defaults every meeting: mid-call the person on
+ * the other end is already waiting, so the instant mode has to be the one a
+ * hurried click gets. Thinking is the deliberate choice — the label and the
+ * tooltip say what the extra seconds buy, because a mode switch nobody can
+ * explain is a mode switch nobody uses.
+ */
+function ModeToggle({
+  mode,
+  onChange,
+  disabled,
+}: {
+  mode: AssistMode;
+  onChange: (mode: AssistMode) => void;
+  disabled: boolean;
+}) {
+  const { t } = useTranslation();
+  const options: Array<{ id: AssistMode; icon: typeof Zap; label: string; hint: string }> = [
+    {
+      id: "fast",
+      icon: Zap,
+      label: t("notes.meetingPanel.mode.fast"),
+      hint: t("notes.meetingPanel.mode.fastHint"),
+    },
+    {
+      id: "thinking",
+      icon: Brain,
+      label: t("notes.meetingPanel.mode.thinking"),
+      hint: t("notes.meetingPanel.mode.thinkingHint"),
+    },
+  ];
+
+  return (
+    <div
+      role="radiogroup"
+      aria-label={t("notes.meetingPanel.mode.label")}
+      className="flex shrink-0 items-center gap-px rounded-md border border-hud-border p-px"
+    >
+      {options.map(({ id, icon: Icon, label, hint }) => (
+        <button
+          key={id}
+          type="button"
+          role="radio"
+          aria-checked={mode === id}
+          disabled={disabled}
+          onClick={() => onChange(id)}
+          title={hint}
+          className={cn(
+            "flex h-5 items-center gap-1 rounded-[5px] px-1.5 text-[9px] font-medium",
+            "transition-colors duration-150",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+            "disabled:cursor-not-allowed disabled:opacity-40",
+            mode === id
+              ? "bg-hud-accent/15 text-hud-accent"
+              : "text-hud-muted/70 hover:bg-white/5 hover:text-hud-foreground"
+          )}
+        >
+          <Icon size={9} />
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
  * Which past notes this was built from.
  *
  * Named rather than cited inline: mid-call there is no time to follow a
@@ -123,6 +192,10 @@ export default function MeetingPanelOverlay() {
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isBusy, setIsBusy] = useState(false);
   const [question, setQuestion] = useState("");
+  // Per-meeting, not persisted: fast has to be what the next meeting opens on,
+  // or the "instant by default" promise only holds until someone tries thinking
+  // once and forgets to switch back.
+  const [mode, setMode] = useState<AssistMode>("fast");
   const [isCompact, setIsCompact] = useState(false);
 
   const transcriptRef = useRef<HTMLDivElement | null>(null);
@@ -210,8 +283,16 @@ export default function MeetingPanelOverlay() {
     // question in the box invites a second identical send while the first
     // streams.
     setQuestion("");
-    void window.electronAPI?.meetingPanelAsk?.(trimmed);
-  }, [question]);
+    void window.electronAPI?.meetingPanelAsk?.(trimmed, mode);
+  }, [question, mode]);
+
+  // The escalation: the same question again, this time over past notes. One
+  // click, because the moment someone wants it is the moment a fast answer
+  // just said "that is not in this meeting". Deliberately does not move the
+  // toggle — it escalates this question, not the default.
+  const askAgainWithNotes = useCallback((text: string) => {
+    void window.electronAPI?.meetingPanelAsk?.(text, "thinking");
+  }, []);
 
   if (!snapshot?.isRecording) return null;
 
@@ -462,12 +543,26 @@ export default function MeetingPanelOverlay() {
             <section className="flex min-h-0 flex-1 flex-col rounded-[9px] border border-hud-border bg-white/[0.04]">
               {answer ? (
                 <div ref={answerRef} className="min-h-0 flex-1 overflow-y-auto px-2.5 py-2">
-                  <p className="text-[10px] font-medium leading-snug text-hud-muted/60">
-                    {answer.question}
+                  <p className="flex items-baseline gap-1.5 text-[10px] font-medium leading-snug text-hud-muted/60">
+                    <span className="min-w-0">{answer.question}</span>
+                    {/* Which speed produced this — so a transcript-only answer
+                        is never mistaken for one that checked the notes. */}
+                    <span className="shrink-0 text-[9px] font-normal uppercase tracking-[0.06em] text-hud-muted/40">
+                      {answer.mode === "thinking"
+                        ? t("notes.meetingPanel.mode.thinking")
+                        : t("notes.meetingPanel.mode.fast")}
+                    </span>
                   </p>
                   {answer.errorKey ? (
                     <p className="mt-1.5 text-[11px] leading-relaxed text-hud-warning">
                       {t(answer.errorKey)}
+                    </p>
+                  ) : answer.streaming && !answer.text && answer.mode === "thinking" ? (
+                    /* Thinking pays its latency up front, in retrieval, before
+                       a single token exists to stream. Saying what the wait is
+                       makes it deliberate instead of broken. */
+                    <p className="mt-1.5 animate-pulse text-[11px] leading-relaxed text-hud-muted/60">
+                      {t("notes.meetingPanel.ask.searchingNotes")}
                     </p>
                   ) : (
                     <p className="mt-1.5 whitespace-pre-wrap text-xs leading-relaxed text-hud-foreground">
@@ -480,6 +575,27 @@ export default function MeetingPanelOverlay() {
                     </p>
                   )}
                   {!answer.streaming && <SourceList sources={answer.sources} />}
+                  {/* The escalation. Only on a settled fast answer: it is the
+                      "that was not in this meeting" next step, and offering to
+                      re-check the notes under an answer that already checked
+                      them would be a button that does nothing. */}
+                  {!answer.streaming && !answer.errorKey && answer.mode === "fast" && (
+                    <button
+                      type="button"
+                      onClick={() => askAgainWithNotes(answer.question)}
+                      disabled={!assistReady}
+                      className={cn(
+                        "mt-1.5 flex items-center gap-1 rounded-md border border-hud-border px-1.5 py-0.5",
+                        "text-[10px] text-hud-muted transition-colors duration-150",
+                        "hover:bg-white/10 hover:text-hud-foreground",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+                        "disabled:cursor-not-allowed disabled:opacity-40"
+                      )}
+                    >
+                      <Brain size={9} />
+                      {t("notes.meetingPanel.ask.checkNotes")}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 px-3 py-3 text-center">
@@ -491,6 +607,14 @@ export default function MeetingPanelOverlay() {
                         ? t("notes.meetingPanel.ask.connecting")
                         : t("notes.meetingPanel.ask.empty")}
                   </p>
+                  {/* The one place the two modes are explained in a sentence,
+                      shown before the first question — the moment the choice
+                      first exists. */}
+                  {assistReady && (
+                    <p className="text-[10px] leading-relaxed text-hud-muted/40">
+                      {t("notes.meetingPanel.ask.modesHint")}
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -501,13 +625,16 @@ export default function MeetingPanelOverlay() {
                   submitQuestion();
                 }}
               >
+                <ModeToggle mode={mode} onChange={setMode} disabled={!assistReady} />
                 <input
                   value={question}
                   onChange={(event) => setQuestion(event.target.value)}
                   disabled={!assistReady}
                   placeholder={
                     assistReady
-                      ? t("notes.meetingPanel.ask.placeholder")
+                      ? mode === "thinking"
+                        ? t("notes.meetingPanel.ask.placeholderThinking")
+                        : t("notes.meetingPanel.ask.placeholder")
                       : assistNeedsModel
                         ? t("notes.meetingPanel.ask.needsModelPlaceholder")
                         : t("notes.meetingPanel.ask.connectingPlaceholder")

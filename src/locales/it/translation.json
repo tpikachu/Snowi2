@@ -2886,11 +2886,22 @@
         "earlier_one": "{{count}} riga precedente",
         "earlier_other": "{{count}} righe precedenti"
       },
+      "mode": {
+        "label": "Modalità di risposta",
+        "fast": "Veloce",
+        "thinking": "Riflessione",
+        "fastHint": "Veloce — risposte immediate solo da questa riunione",
+        "thinkingHint": "Riflessione — più lenta, cerca anche nelle tue note passate"
+      },
       "ask": {
         "label": "Chiedi di questa riunione",
         "send": "Invia",
         "empty": "Fai una domanda e la risposta apparirà qui.",
+        "modesHint": "Veloce risponde subito da questa riunione. Riflessione cerca anche nelle tue note passate.",
         "placeholder": "Chiedi qualcosa su questa riunione…",
+        "placeholderThinking": "Chiedi su questa riunione e sulle tue note…",
+        "searchingNotes": "Ricerca nelle tue note passate…",
+        "checkNotes": "Controlla le note passate",
         "needsModel": "Configura un modello di IA per fare domande durante una riunione.",
         "needsModelPlaceholder": "Serve un modello di IA",
         "noModel": "Non è ancora configurato nessun modello di IA.",

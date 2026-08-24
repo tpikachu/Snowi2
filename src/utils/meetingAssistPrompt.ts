@@ -19,6 +19,7 @@
  */
 
 import type { AssistSegment } from "./meetingAssistPolicy";
+import type { AssistMode } from "./meetingAssistState";
 
 /** A retrieved passage, in the shape the hook hands over. */
 export interface AssistNote {
@@ -62,7 +63,26 @@ const SUGGESTION_SYSTEM_PROMPT = [
   `If nothing useful can be said right now, reply with exactly ${NO_SUGGESTION}.`,
 ].join("\n");
 
-const ANSWER_SYSTEM_PROMPT = [
+/**
+ * The fast answer works from the live transcript alone. It is told so
+ * explicitly: a model that suspects there is a note library will hedge with
+ * "I don't have access to…" preambles, and the one thing a fast answer must
+ * never spend tokens on is an apology for being fast.
+ */
+const FAST_ANSWER_SYSTEM_PROMPT = [
+  "You are the user's assistant during a live meeting. They are on a call and",
+  "reading your answer while someone waits, so answer in at most two short",
+  "sentences. Lead with the answer; no preamble, no caveats.",
+  "",
+  "The live transcript below is everything you have, and it is enough — a",
+  "question asked during a meeting is almost always about that meeting. Answer",
+  "from what was said. If the transcript does not contain the answer, say so in",
+  "one short line; do not guess and do not apologize.",
+  "",
+  "If the user asks what to say, reply with the line itself, ready to speak.",
+].join("\n");
+
+const THINKING_ANSWER_SYSTEM_PROMPT = [
   "You are the user's assistant during a live meeting. They are on a call and",
   "reading your answer while someone waits, so answer in at most three short",
   "sentences. Lead with the answer; leave out the preamble and the caveats.",
@@ -70,7 +90,8 @@ const ANSWER_SYSTEM_PROMPT = [
   "The live transcript below is the primary context — a question asked during a",
   "meeting is almost always about that meeting. The user's past notes are",
   "supporting material: reach for them when the question goes beyond what has",
-  "been said today.",
+  "been said today, and prefer a concrete number, date, or commitment from a",
+  "note over a vague summary of one.",
   "",
   "If the answer is not in either, say so in one line rather than guessing. If",
   "the user asks what to say, reply with the line itself, ready to speak.",
@@ -185,9 +206,10 @@ export function buildSuggestionMessages(input: AssistMessagesInput): AssistMessa
 }
 
 export function buildAnswerMessages(
-  input: AssistMessagesInput & { question: string }
+  input: AssistMessagesInput & { question: string; mode: AssistMode }
 ): AssistMessages {
-  const systemPrompt = ANSWER_SYSTEM_PROMPT;
+  const systemPrompt =
+    input.mode === "fast" ? FAST_ANSWER_SYSTEM_PROMPT : THINKING_ANSWER_SYSTEM_PROMPT;
   return {
     systemPrompt,
     messages: [

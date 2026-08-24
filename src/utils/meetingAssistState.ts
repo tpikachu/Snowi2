@@ -20,6 +20,17 @@ export interface AssistNoteRef {
   title: string;
 }
 
+/**
+ * How much work an answer is allowed to do before it starts talking.
+ *
+ * `fast` answers from the live transcript alone — no retrieval round trip, no
+ * provider thinking — because mid-call the person on the other end is already
+ * waiting. `thinking` also searches the user's past notes and grounds the
+ * answer on what it finds, which is worth seconds when the question reaches
+ * beyond today's meeting. Fast is the default; thinking is the escalation.
+ */
+export type AssistMode = "fast" | "thinking";
+
 export interface AssistSuggestion {
   text: string;
   sources: AssistNoteRef[];
@@ -33,6 +44,12 @@ export interface AssistSuggestion {
 
 export interface AssistAnswer {
   question: string;
+  /**
+   * Which mode produced this. The panel labels the answer with it, and offers
+   * "check past notes" only on a fast answer — escalating a thinking answer to
+   * itself would be a button that does nothing.
+   */
+  mode: AssistMode;
   text: string;
   streaming: boolean;
   sources: AssistNoteRef[];
@@ -88,6 +105,7 @@ export function assistStatesEqual(
   if (!!a.answer !== !!b.answer) return false;
   if (a.answer && b.answer) {
     if (a.answer.question !== b.answer.question) return false;
+    if (a.answer.mode !== b.answer.mode) return false;
     if (a.answer.text !== b.answer.text) return false;
     if (a.answer.streaming !== b.answer.streaming) return false;
     if (a.answer.errorKey !== b.answer.errorKey) return false;

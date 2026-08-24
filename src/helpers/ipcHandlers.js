@@ -109,6 +109,8 @@ const MEETING_RECONNECT_BUFFER_MAX_BYTES = MEETING_STREAM_SAMPLE_RATE * 2 * 30;
 const MEETING_PANEL_COMMANDS = new Set(["pause", "resume", "stop", "open"]);
 /** Long enough for any question worth asking mid-meeting; short enough not to be a paste channel. */
 const MEETING_PANEL_QUESTION_MAX = 2000;
+/** AssistMode values (meetingAssistState.ts). Anything else falls back to "fast". */
+const MEETING_PANEL_ASK_MODES = new Set(["fast", "thinking"]);
 
 // Passage-vector backfill for notes that predate chunking. Bounded per launch
 // so a large library is caught up over a few sessions rather than in one long
@@ -7226,15 +7228,18 @@ class IPCHandlers {
     });
 
     // Unlike the commands, this carries free text, so it is length-capped here
-    // rather than checked against an allow-list.
-    ipcMain.handle("meeting-panel-ask", (_event, question) => {
+    // rather than checked against an allow-list. The mode IS allow-listed:
+    // anything unrecognized becomes "fast", the cheapest thing this can do.
+    ipcMain.handle("meeting-panel-ask", (_event, question, mode) => {
       if (typeof question !== "string" || !question.trim()) {
         return { success: false, error: "Empty question" };
       }
+      const safeMode = MEETING_PANEL_ASK_MODES.has(mode) ? mode : "fast";
       return (
-        this.windowManager?.sendMeetingPanelAsk(question.slice(0, MEETING_PANEL_QUESTION_MAX)) ?? {
-          success: false,
-        }
+        this.windowManager?.sendMeetingPanelAsk(
+          question.slice(0, MEETING_PANEL_QUESTION_MAX),
+          safeMode
+        ) ?? { success: false }
       );
     });
 

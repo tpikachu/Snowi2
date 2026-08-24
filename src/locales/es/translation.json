@@ -2934,11 +2934,22 @@
         "earlier_one": "{{count}} línea anterior",
         "earlier_other": "{{count}} líneas anteriores"
       },
+      "mode": {
+        "label": "Modo de respuesta",
+        "fast": "Rápido",
+        "thinking": "Pensar",
+        "fastHint": "Rápido: respuestas instantáneas solo de esta reunión",
+        "thinkingHint": "Pensar: tarda más y también busca en tus notas anteriores"
+      },
       "ask": {
         "label": "Pregunta sobre esta reunión",
         "send": "Enviar",
         "empty": "Haz una pregunta y la respuesta aparecerá aquí.",
+        "modesHint": "Rápido responde al instante con esta reunión. Pensar también busca en tus notas anteriores.",
         "placeholder": "Pregunta sobre esta reunión…",
+        "placeholderThinking": "Pregunta sobre esta reunión y tus notas…",
+        "searchingNotes": "Buscando en tus notas anteriores…",
+        "checkNotes": "Consultar notas anteriores",
         "needsModel": "Configura un modelo de IA para hacer preguntas durante una reunión.",
         "needsModelPlaceholder": "Necesita un modelo de IA",
         "noModel": "Todavía no hay ningún modelo de IA configurado.",

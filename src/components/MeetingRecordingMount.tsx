@@ -129,7 +129,7 @@ export default function MeetingRecordingMount() {
   // the capture graph and the model clients, so a question typed in the panel
   // and one asked in-app go through one implementation.
   const assist = useMeetingAssist();
-  useMeetingPanelBridge({ onAsk: (question) => void assist.ask(question) });
+  useMeetingPanelBridge({ onAsk: (question, mode) => void assist.ask(question, mode) });
 
   useEffect(() => {
     primeMeetingWorklet();

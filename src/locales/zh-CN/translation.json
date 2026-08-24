@@ -2886,11 +2886,22 @@
         "earlier_one": "更早的 {{count}} 行",
         "earlier_other": "更早的 {{count}} 行"
       },
+      "mode": {
+        "label": "回答模式",
+        "fast": "快速",
+        "thinking": "思考",
+        "fastHint": "快速 — 仅根据本次会议即时回答",
+        "thinkingHint": "思考 — 较慢，还会搜索你过去的笔记"
+      },
       "ask": {
         "label": "询问这场会议",
         "send": "发送",
         "empty": "提问后，答案会显示在这里。",
+        "modesHint": "快速根据本次会议即时回答。思考还会搜索你过去的笔记。",
         "placeholder": "问问这场会议…",
+        "placeholderThinking": "询问本次会议和你的笔记…",
+        "searchingNotes": "正在搜索过去的笔记…",
+        "checkNotes": "查看过去的笔记",
         "needsModel": "配置 AI 模型后即可在会议中提问。",
         "needsModelPlaceholder": "需要 AI 模型",
         "noModel": "还没有配置 AI 模型。",

@@ -3093,11 +3093,22 @@
         "earlier_one": "{{count}} earlier line",
         "earlier_other": "{{count}} earlier lines"
       },
+      "mode": {
+        "label": "Answer mode",
+        "fast": "Fast",
+        "thinking": "Thinking",
+        "fastHint": "Fast — instant answers from this meeting only",
+        "thinkingHint": "Thinking — takes longer, also searches your past notes"
+      },
       "ask": {
         "label": "Ask about this meeting",
         "send": "Send",
         "empty": "Ask a question and the answer appears here.",
+        "modesHint": "Fast answers instantly from this meeting. Thinking also searches your past notes.",
         "placeholder": "Ask about this meeting…",
+        "placeholderThinking": "Ask across this meeting and your notes…",
+        "searchingNotes": "Searching your past notes…",
+        "checkNotes": "Check past notes",
         "needsModel": "Set up an AI model to ask questions during a meeting.",
         "needsModelPlaceholder": "Needs an AI model",
         "noModel": "No AI model is set up yet.",

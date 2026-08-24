@@ -3093,11 +3093,22 @@
         "earlier_one": "{{count}} frühere Zeile",
         "earlier_other": "{{count}} frühere Zeilen"
       },
+      "mode": {
+        "label": "Antwortmodus",
+        "fast": "Schnell",
+        "thinking": "Denken",
+        "fastHint": "Schnell — sofortige Antworten nur aus diesem Meeting",
+        "thinkingHint": "Denken — dauert länger, durchsucht auch Ihre früheren Notizen"
+      },
       "ask": {
         "label": "Frage zu diesem Meeting",
         "send": "Senden",
         "empty": "Stellen Sie eine Frage, die Antwort erscheint hier.",
+        "modesHint": "Schnell antwortet sofort aus diesem Meeting. Denken durchsucht zusätzlich Ihre früheren Notizen.",
         "placeholder": "Frage zu diesem Meeting…",
+        "placeholderThinking": "Fragen Sie zu diesem Meeting und Ihren Notizen…",
+        "searchingNotes": "Ihre früheren Notizen werden durchsucht…",
+        "checkNotes": "Frühere Notizen prüfen",
         "needsModel": "Richten Sie ein KI-Modell ein, um während eines Meetings zu fragen.",
         "needsModelPlaceholder": "Benötigt ein KI-Modell",
         "noModel": "Es ist noch kein KI-Modell eingerichtet.",

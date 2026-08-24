@@ -16,7 +16,11 @@ import {
   type PanelTranscript,
 } from "../utils/meetingPanelTranscript";
 import { useMeetingAssistStore } from "../stores/meetingAssistStore";
-import { assistStatesEqual, type MeetingAssistState } from "../utils/meetingAssistState";
+import {
+  assistStatesEqual,
+  type AssistMode,
+  type MeetingAssistState,
+} from "../utils/meetingAssistState";
 import { isControlPanelWindow } from "../utils/windowContext";
 import type { MeetingPanelCommand } from "../types/electron";
 import logger from "../utils/logger";
@@ -47,7 +51,9 @@ const ASSIST_PUBLISH_MS = 120;
  * drive the capture graph itself, so there is only one implementation of what
  * pause, resume and stop mean.
  */
-export function useMeetingPanelBridge(options: { onAsk?: (question: string) => void } = {}): void {
+export function useMeetingPanelBridge(
+  options: { onAsk?: (question: string, mode: AssistMode) => void } = {}
+): void {
   // Held in a ref so binding the ask listener does not depend on the identity
   // of a callback the caller rebuilds every render.
   const onAskRef = useRef(options.onAsk);
@@ -99,9 +105,13 @@ export function useMeetingPanelBridge(options: { onAsk?: (question: string) => v
     const transcriptTimer = setInterval(publishTranscript, TRANSCRIPT_PUBLISH_MS);
     const assistTimer = setInterval(publishAssist, ASSIST_PUBLISH_MS);
 
-    const unbindAsk = window.electronAPI?.onMeetingPanelAsk?.((question: string) => {
-      onAskRef.current?.(question);
-    });
+    const unbindAsk = window.electronAPI?.onMeetingPanelAsk?.(
+      (question: string, mode?: AssistMode) => {
+        // Main allow-lists the mode, but this listener can outlive a main
+        // process that predates it in dev — default rather than trust.
+        onAskRef.current?.(question, mode === "thinking" ? "thinking" : "fast");
+      }
+    );
 
     const unbindCommand = window.electronAPI?.onMeetingPanelCommand?.(
       (command: MeetingPanelCommand) => {

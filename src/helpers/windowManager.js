@@ -1517,9 +1517,11 @@ class WindowManager {
    * A question typed in the panel, routed to the renderer that owns the model
    * client. Unlike the buttons this does not surface the control panel: the
    * whole point is an answer without leaving the call.
+   *
+   * The mode rides along already validated — ipcHandlers allow-lists it.
    */
-  sendMeetingPanelAsk(question) {
-    this.sendToControlPanel("meeting-panel-ask", question);
+  sendMeetingPanelAsk(question, mode) {
+    this.sendToControlPanel("meeting-panel-ask", question, mode);
     return { success: true };
   }
 
@@ -1725,15 +1727,15 @@ class WindowManager {
     this.updateNotificationWindow = null;
   }
 
-  sendToControlPanel(channel, data) {
+  sendToControlPanel(channel, ...args) {
     const win = this.controlPanelWindow;
     if (!win || win.isDestroyed()) return;
     if (win.webContents.isLoading()) {
       win.webContents.once("did-finish-load", () => {
-        if (!win.isDestroyed()) win.webContents.send(channel, data);
+        if (!win.isDestroyed()) win.webContents.send(channel, ...args);
       });
     } else {
-      win.webContents.send(channel, data);
+      win.webContents.send(channel, ...args);
     }
   }
 

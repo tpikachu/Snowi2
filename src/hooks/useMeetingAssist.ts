@@ -32,7 +32,7 @@ import {
   type AssistNote,
 } from "../utils/meetingAssistPrompt";
 import { filterGrounding } from "../utils/chatRetrieval";
-import type { AssistNoteRef } from "../utils/meetingAssistState";
+import type { AssistMode, AssistNoteRef } from "../utils/meetingAssistState";
 import logger from "../utils/logger";
 
 /**
@@ -77,7 +77,10 @@ interface ResolvedAssistModel {
  * setup step that buys nothing they can perceive. If time-to-first-token ever
  * needs its own small fast model, this is the single seam to change.
  */
-function resolveAssistModel(systemPrompt: string): ResolvedAssistModel | null {
+function resolveAssistModel(
+  systemPrompt: string,
+  options: { forceDisableThinking?: boolean } = {}
+): ResolvedAssistModel | null {
   const settings = getSettings();
   const chat = selectResolvedLLMConfig(settings, "chatIntelligence");
   if (!chat.model) return null;
@@ -95,7 +98,11 @@ function resolveAssistModel(systemPrompt: string): ResolvedAssistModel | null {
       lanUrl: isLan ? chat.remoteUrl : undefined,
       baseUrl: isCustom ? chat.cloudBaseUrl || undefined : undefined,
       customApiKey: isCustom || isLan ? chat.customApiKey || undefined : undefined,
-      disableThinking: chat.disableThinking,
+      // A fast answer overrides the configured setting rather than reading it:
+      // the mode's whole promise is the first token now, and a reasoning model
+      // spending eight seconds thinking about two sentences breaks exactly
+      // that promise. Thinking mode leaves the user's choice alone.
+      disableThinking: options.forceDisableThinking ? true : chat.disableThinking,
     },
   };
 }
@@ -158,8 +165,13 @@ async function collectStream(
 }
 
 export interface MeetingAssist {
-  /** Ask a question about the meeting. Preempts any suggestion being prepared. */
-  ask: (question: string) => Promise<void>;
+  /**
+   * Ask a question about the meeting. Preempts any suggestion being prepared.
+   *
+   * `fast` (the default) answers from the live transcript alone; `thinking`
+   * first searches the user's past notes and grounds the answer on them.
+   */
+  ask: (question: string, mode?: AssistMode) => Promise<void>;
   clear: () => void;
 }
 
@@ -211,7 +223,7 @@ export function useMeetingAssist(): MeetingAssist {
   }, []);
 
   const ask = useCallback(
-    async (question: string) => {
+    async (question: string, mode: AssistMode = "fast") => {
       const trimmed = question.trim();
       if (!trimmed) return;
 
@@ -225,15 +237,21 @@ export function useMeetingAssist(): MeetingAssist {
       const seq = ++askSeqRef.current;
       const isCurrent = () => mountedRef.current && askSeqRef.current === seq;
       activityRef.current = "answer";
-      startAnswer(trimmed);
+      startAnswer(trimmed, mode);
 
       const now = Date.now();
       const state = useMeetingRecordingStore.getState();
       const segments = selectAssistWindow(readSegments(now), now);
-      const notes = await retrieveAssistNotes(
-        buildAssistRetrievalQuery(segments, trimmed),
-        ANSWER_NOTE_LIMIT
-      );
+      // The retrieval round trip is the fast mode's entire savings: it runs
+      // before the model call, so in fast mode it does not run at all, and the
+      // first token is as early as the provider allows.
+      const notes =
+        mode === "thinking"
+          ? await retrieveAssistNotes(
+              buildAssistRetrievalQuery(segments, trimmed),
+              ANSWER_NOTE_LIMIT
+            )
+          : [];
       if (!isCurrent()) return;
       updateAnswer({ sources: toRefs(notes) });
 
@@ -242,9 +260,12 @@ export function useMeetingAssist(): MeetingAssist {
         segments,
         notes,
         question: trimmed,
+        mode,
       });
 
-      const resolved = resolveAssistModel(systemPrompt);
+      const resolved = resolveAssistModel(systemPrompt, {
+        forceDisableThinking: mode === "fast",
+      });
       if (!resolved) {
         setAssistConfigured(false);
         updateAnswer({ streaming: false, errorKey: "notes.meetingPanel.ask.noModel" });

@@ -2886,11 +2886,22 @@
         "earlier_one": "更早的 {{count}} 行",
         "earlier_other": "更早的 {{count}} 行"
       },
+      "mode": {
+        "label": "回答模式",
+        "fast": "快速",
+        "thinking": "思考",
+        "fastHint": "快速 — 僅根據本次會議即時回答",
+        "thinkingHint": "思考 — 較慢，還會搜尋你過去的筆記"
+      },
       "ask": {
         "label": "詢問這場會議",
         "send": "傳送",
         "empty": "提問後，答案會顯示在這裡。",
+        "modesHint": "快速根據本次會議即時回答。思考還會搜尋你過去的筆記。",
         "placeholder": "問問這場會議…",
+        "placeholderThinking": "詢問本次會議和你的筆記…",
+        "searchingNotes": "正在搜尋過去的筆記…",
+        "checkNotes": "查看過去的筆記",
         "needsModel": "設定 AI 模型後即可在會議中提問。",
         "needsModelPlaceholder": "需要 AI 模型",
         "noModel": "還沒有設定 AI 模型。",

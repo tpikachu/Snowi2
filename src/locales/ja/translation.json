@@ -2814,11 +2814,22 @@
         "earlier_one": "以前の {{count}} 行",
         "earlier_other": "以前の {{count}} 行"
       },
+      "mode": {
+        "label": "回答モード",
+        "fast": "高速",
+        "thinking": "思考",
+        "fastHint": "高速 — この会議の内容だけから即座に回答",
+        "thinkingHint": "思考 — 時間はかかるが、過去のノートも検索"
+      },
       "ask": {
         "label": "この会議について質問する",
         "send": "送信",
         "empty": "質問すると、ここに答えが表示されます。",
+        "modesHint": "高速はこの会議から即座に回答します。思考は過去のノートも検索します。",
         "placeholder": "この会議について質問…",
+        "placeholderThinking": "この会議とノートについて質問…",
+        "searchingNotes": "過去のノートを検索中…",
+        "checkNotes": "過去のノートを確認",
         "needsModel": "会議中に質問するには AI モデルを設定してください。",
         "needsModelPlaceholder": "AI モデルが必要です",
         "noModel": "AI モデルがまだ設定されていません。",

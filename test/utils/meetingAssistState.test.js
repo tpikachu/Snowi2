@@ -14,6 +14,7 @@ const withAnswer = (patch = {}) => ({
   configured: true,
   answer: {
     question: "what did we agree?",
+    mode: "fast",
     text: "15% through Q3.",
     streaming: false,
     sources: [],
@@ -29,6 +30,19 @@ test("a rebuilt but identical state is not worth an IPC hop", () => {
 
 test("one more streamed token counts as a change", () => {
   assert.equal(assistStatesEqual(withAnswer(), withAnswer({ text: "15% through Q3. " })), false);
+});
+
+test("the same question re-asked in the other mode counts as a change", () => {
+  // "Check past notes" re-asks the identical question, so the mode is the
+  // only field that moves at first — if it compared equal, the panel would
+  // never learn the escalation started.
+  assert.equal(
+    assistStatesEqual(
+      withAnswer({ mode: "fast", streaming: true, text: "" }),
+      withAnswer({ mode: "thinking", streaming: true, text: "" })
+    ),
+    false
+  );
 });
 
 test("an answer finishing counts as a change even with the same text", () => {

@@ -3093,11 +3093,22 @@
         "earlier_one": "{{count}} ligne précédente",
         "earlier_other": "{{count}} lignes précédentes"
       },
+      "mode": {
+        "label": "Mode de réponse",
+        "fast": "Rapide",
+        "thinking": "Réflexion",
+        "fastHint": "Rapide — réponses instantanées à partir de cette réunion uniquement",
+        "thinkingHint": "Réflexion — plus lent, recherche aussi dans vos notes passées"
+      },
       "ask": {
         "label": "Poser une question sur cette réunion",
         "send": "Envoyer",
         "empty": "Posez une question et la réponse apparaîtra ici.",
+        "modesHint": "Rapide répond instantanément à partir de cette réunion. Réflexion cherche aussi dans vos notes passées.",
         "placeholder": "Posez une question sur cette réunion…",
+        "placeholderThinking": "Posez une question sur cette réunion et vos notes…",
+        "searchingNotes": "Recherche dans vos notes passées…",
+        "checkNotes": "Consulter les notes passées",
         "needsModel": "Configurez un modèle d'IA pour poser des questions pendant une réunion.",
         "needsModelPlaceholder": "Nécessite un modèle d'IA",
         "noModel": "Aucun modèle d'IA n'est encore configuré.",

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   IDLE_ASSIST,
   type AssistAnswer,
+  type AssistMode,
   type AssistSuggestion,
   type MeetingAssistState,
 } from "../utils/meetingAssistState";
@@ -49,9 +50,9 @@ export function markSuggestionStale(stale: boolean): void {
   useMeetingAssistStore.setState({ suggestion: { ...current, stale } });
 }
 
-export function startAnswer(question: string): void {
+export function startAnswer(question: string, mode: AssistMode): void {
   useMeetingAssistStore.setState({
-    answer: { question, text: "", streaming: true, sources: [], errorKey: null },
+    answer: { question, mode, text: "", streaming: true, sources: [], errorKey: null },
   });
 }
 

@@ -687,7 +687,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // this changes on every token of an answer.
   meetingPanelAssist: (assist) => ipcRenderer.send("meeting-panel-assist", assist),
   meetingPanelGetAssist: () => ipcRenderer.invoke("meeting-panel-get-assist"),
-  meetingPanelAsk: (question) => ipcRenderer.invoke("meeting-panel-ask", question),
+  meetingPanelAsk: (question, mode) => ipcRenderer.invoke("meeting-panel-ask", question, mode),
   meetingPanelCommand: (command) => ipcRenderer.invoke("meeting-panel-command", command),
   onMeetingPanelState: registerListener(
     "meeting-panel-state",
@@ -707,7 +707,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   ),
   onMeetingPanelAsk: registerListener(
     "meeting-panel-ask",
-    (callback) => (_event, question) => callback(question)
+    (callback) => (_event, question, mode) => callback(question, mode)
   ),
   onMeetingPanelCommand: registerListener(
     "meeting-panel-command",

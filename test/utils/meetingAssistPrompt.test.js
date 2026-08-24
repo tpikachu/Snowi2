@@ -77,7 +77,7 @@ test("both prompts lead with the live meeting and follow with the notes", () => 
 
   for (const built of [
     buildSuggestionMessages(input),
-    buildAnswerMessages({ ...input, question: "what did we say?" }),
+    buildAnswerMessages({ ...input, question: "what did we say?", mode: "thinking" }),
   ]) {
     const user = built.messages[1].content;
     assert.equal(built.messages[0].role, "system");
@@ -96,8 +96,26 @@ test("an answer prompt carries the question last", () => {
     segments: [seg("hello", "system", NOW)],
     notes: [],
     question: "  what should I say?  ",
+    mode: "fast",
   });
   assert.ok(built.messages[1].content.endsWith("My question: what should I say?"));
+});
+
+test("the two answer modes get different prompts, and only thinking mentions notes", () => {
+  const input = {
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    question: "what did we agree?",
+  };
+  const fast = buildAnswerMessages({ ...input, mode: "fast" });
+  const thinking = buildAnswerMessages({ ...input, mode: "thinking" });
+
+  assert.notEqual(fast.systemPrompt, thinking.systemPrompt);
+  // The fast prompt must not tempt the model into hedging about a note
+  // library it was never given — its instruction is the transcript is enough.
+  assert.ok(!fast.systemPrompt.includes("past notes"));
+  assert.ok(thinking.systemPrompt.includes("past notes"));
 });
 
 test("a meeting with nothing said yet still produces a usable prompt", () => {
