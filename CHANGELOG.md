@@ -5,6 +5,56 @@ All notable changes to Snowy are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-rc3] — 2026-08-24
+
+Third release candidate. The meeting assistant gets two speeds, every chat
+learns exactly what it should know, and answers stop quoting facts that are no
+longer true.
+
+**Still a release candidate.** See _Known limitations_ under 0.1.0-rc1.
+
+### Ask during the meeting: Fast and Thinking
+
+- The panel's question box now has two modes. **Fast** — the default — answers
+  instantly from the meeting itself: no note search, no model deliberation,
+  first word as soon as the model can produce one. **Thinking** takes longer
+  and also searches your past notes, naming the ones it used.
+- They work together: a Fast answer offers **Check past notes**, which asks the
+  same question again in Thinking mode. Instant first; depth one click away.
+- The modes explain themselves — toggle tooltips, a one-line explainer before
+  the first question, and a "Searching your past notes…" line while Thinking
+  does the part that makes it slower. Every answer is labeled with the mode
+  that produced it.
+
+### Every chat knows exactly what it should
+
+- Snowy has several chats — the global chat, a chat per space or folder, one
+  inside each note, and the meeting panel. Each now has a defined contract:
+  what it is about is pinned, the memory that matters to it rides along, and
+  anything beyond its scope is reached by a visible search rather than a
+  silent read.
+- A note's chat pins the claims extracted from that note with their **current**
+  status. The note says "$40k" forever; if the price was renegotiated two
+  meetings later, the chat now knows — and says so instead of quoting it.
+- The global chat now carries both sides of the table: what you owe people
+  **and what they promised you**. "What is Acme supposed to send us?" finally
+  has its data in reach.
+- A space or folder chat pins the open items filed under _its_ notes, not your
+  entire slate.
+- The meeting assistant's Thinking mode (and the precomputed suggestions) now
+  draw on durable memory too: your open commitments, both directions, and the
+  claims behind every note they retrieve.
+- Chatting inside a very long meeting note no longer re-sends the entire
+  transcript with every message. The recent part stays pinned; the rest is
+  found by search exactly when a question needs it.
+
+### Fixed
+
+- On macOS, the window buttons no longer sit on top of the section title. The
+  top row of every layout now clears them.
+- Buttons that open Settings on a particular panel land on that panel (this
+  also shipped in the re-cut rc2).
+
 ## [0.1.0-rc2] — 2026-08-21
 
 Second release candidate. The meeting panel stops being a status bar and starts
