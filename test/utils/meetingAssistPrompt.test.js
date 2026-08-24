@@ -149,6 +149,26 @@ test("a fast answer carries no memory block even if one is passed", () => {
   assert.ok(!user.includes("About the user"));
 });
 
+test("both answer prompts authorize advice instead of abstaining on it", () => {
+  // The regression this guards: the abstain rule ("say so if it is not in the
+  // transcript") was unscoped, so "what should I say next?" — an advisory
+  // question whose answer is never IN the transcript — got "there is no such
+  // context" instead of a recommendation.
+  const input = {
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    question: "what should I say next?",
+  };
+  for (const mode of ["fast", "thinking"]) {
+    const prompt = buildAnswerMessages({ ...input, mode }).systemPrompt;
+    assert.match(prompt, /NEVER answered with/, `${mode}: advice is never an abstain`);
+    assert.match(prompt, /your input, not where the answer lives/, `${mode}: input vs location`);
+    // The abstain rule survives, scoped to questions about the record.
+    assert.match(prompt, /Asked what happened/, `${mode}: factual abstain still present`);
+  }
+});
+
 test("the two answer modes get different prompts, and only thinking mentions notes", () => {
   const input = {
     meetingTitle: null,
