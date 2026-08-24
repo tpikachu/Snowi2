@@ -36,6 +36,41 @@ const { installElectronStub, setUserDataDir } = require("./electronStub.js");
 installElectronStub();
 const DatabaseManager = require("../../../src/helpers/database.js");
 
+// Everything one test opened, so it can all be released in one hook.
+const openedByTest = new WeakMap();
+
+/**
+ * One cleanup hook per test: close every handle it opened, then remove the
+ * directory they lived in.
+ *
+ * Deliberately not two hooks. Node runs `after` callbacks in the order they
+ * were registered, so a directory removal registered by `createDb` would run
+ * before a later `reopenDb`'s close — and on Windows, deleting a file SQLite
+ * still has open fails with EPERM rather than being tolerated.
+ */
+function tracked(t) {
+  const existing = openedByTest.get(t);
+  if (existing) return existing;
+
+  const entry = { dir: null, dbs: [] };
+  openedByTest.set(t, entry);
+  t.after(() => {
+    for (const db of entry.dbs) {
+      try {
+        db.db?.close();
+      } catch {
+        // an already-closed handle must not mask the test's own failure
+      }
+    }
+    if (entry.dir) {
+      // Retries because a WAL sidecar can outlive close() by a moment on
+      // Windows; without them this is a rare, confusing failure in teardown.
+      fs.rmSync(entry.dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 50 });
+    }
+  });
+  return entry;
+}
+
 // A real DatabaseManager over a private tmpdir. Returns null when the caller
 // must bail because skipOrFail marked the test skipped.
 function createDb(t) {
@@ -63,16 +98,37 @@ function createDb(t) {
     return null;
   }
 
-  t.after(() => {
-    try {
-      db.db?.close();
-    } catch {
-      // an already-closed handle must not mask the test's own failure
-    }
-    fs.rmSync(userDataDir, { recursive: true, force: true });
-  });
-
+  const entry = tracked(t);
+  entry.dir = userDataDir;
+  entry.dbs.push(db);
   return db;
 }
 
-module.exports = { isNativeBindingUnavailable, skipOrFail, createDb };
+// A private userData dir with no database in it yet, for tests that lay down a
+// legacy schema by hand and then let DatabaseManager migrate it. Tracked for
+// cleanup like createDb's, so the hand-built database goes with it.
+function createUserDataDir(t) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-sync-harness-"));
+  setUserDataDir(dir);
+  tracked(t).dir = dir;
+  return dir;
+}
+
+// A second connection to the same userData dir, for tests that prove something
+// survives a relaunch — a migration being idempotent, a rollback still being
+// there after a restart. Registered for close like the first one, so "reopen"
+// never quietly means "leak"; the caller is expected to have closed the
+// previous handle first.
+function reopenDb(t) {
+  const db = new DatabaseManager();
+  tracked(t).dbs.push(db);
+  return db;
+}
+
+module.exports = {
+  isNativeBindingUnavailable,
+  skipOrFail,
+  createDb,
+  createUserDataDir,
+  reopenDb,
+};

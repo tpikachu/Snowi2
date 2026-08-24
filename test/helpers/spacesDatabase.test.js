@@ -1,63 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const os = require("node:os");
 const path = require("node:path");
-const Module = require("node:module");
-
-let userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-spaces-db-"));
-const originalLoad = Module._load;
-
-Module._load = function patchedLoad(request, parent, isMain) {
-  if (request === "electron") {
-    return {
-      app: {
-        getPath: () => userDataDir,
-        getAppPath: () => process.cwd(),
-        isReady: () => false,
-      },
-    };
-  }
-  return originalLoad.call(this, request, parent, isMain);
-};
-
-process.env.NODE_ENV = "test";
-
-const DatabaseManager = require("../../src/helpers/database.js");
-
-function isNativeBindingUnavailable(error) {
-  const message = String(error?.message || error);
-  return (
-    message.includes("NODE_MODULE_VERSION") ||
-    message.includes("Could not locate the bindings file")
-  );
-}
-
-function createDb(t) {
-  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-spaces-db-"));
-  try {
-    const BetterSqlite = require("better-sqlite3");
-    const probe = new BetterSqlite(path.join(userDataDir, "probe.db"));
-    probe.close();
-    fs.rmSync(path.join(userDataDir, "probe.db"), { force: true });
-  } catch (error) {
-    if (isNativeBindingUnavailable(error)) {
-      t.skip("better-sqlite3 native binding is not available for this Node runtime");
-      return null;
-    }
-    throw error;
-  }
-
-  try {
-    return new DatabaseManager();
-  } catch (error) {
-    if (isNativeBindingUnavailable(error)) {
-      t.skip("better-sqlite3 native binding is not available for this Node runtime");
-      return null;
-    }
-    throw error;
-  }
-}
+const { createDb, createUserDataDir, reopenDb, skipOrFail } = require("./harness/db.js");
 
 let nextTestTeamSpaceId = 0;
 
@@ -84,7 +28,7 @@ test("spaces migration is idempotent across launches", (t) => {
   );
   db.db.close();
 
-  const db2 = new DatabaseManager();
+  const db2 = reopenDb(t);
   const rerunSql = db2.db
     .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'folders'")
     .get().sql;
@@ -132,7 +76,7 @@ test("pre-migration rows are backfilled into the private space", (t) => {
     .run();
   db.db.close();
 
-  const db2 = new DatabaseManager();
+  const db2 = reopenDb(t);
   const legacyFolder = db2.db
     .prepare("SELECT * FROM folders WHERE client_folder_id = 'legacy-folder'")
     .get();
@@ -576,7 +520,7 @@ test("space-root notes keep folder_id NULL across relaunches", (t) => {
     .all(teamRoot.id, privateRoot.id);
   db.db.close();
 
-  const db2 = new DatabaseManager();
+  const db2 = reopenDb(t);
   const relaunched = db2.db
     .prepare(
       "SELECT id, folder_id, space_id, sync_status, updated_at FROM notes WHERE id IN (?, ?) ORDER BY id"
@@ -687,7 +631,7 @@ test("pending vector purges persist across relaunches until cleared", (t) => {
   );
   db.db.close();
 
-  const db2 = new DatabaseManager();
+  const db2 = reopenDb(t);
   assert.equal(db2.getPendingVectorPurges().length, 2, "queue must survive a relaunch");
   db2.clearPendingVectorPurge(42);
   assert.deepEqual(
@@ -1452,17 +1396,14 @@ test("getFolderNoteCounts attributes space-root notes per space", (t) => {
 });
 
 test("folders rebuild succeeds on a legacy DB with notes referencing folders", (t) => {
-  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-spaces-db-"));
+  const userDataDir = createUserDataDir(t);
   let legacy;
   try {
     const BetterSqlite = require("better-sqlite3");
     legacy = new BetterSqlite(path.join(userDataDir, "transcriptions.db"));
   } catch (error) {
-    if (isNativeBindingUnavailable(error)) {
-      t.skip("better-sqlite3 native binding is not available for this Node runtime");
-      return;
-    }
-    throw error;
+    skipOrFail(t, error);
+    return;
   }
 
   // Pre-migration shape: folders still carries the table-level UNIQUE(name)
@@ -1496,7 +1437,7 @@ test("folders rebuild succeeds on a legacy DB with notes referencing folders", (
   `);
   legacy.close();
 
-  const db = new DatabaseManager();
+  const db = reopenDb(t);
 
   const foldersSql = db.db
     .prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'folders'")

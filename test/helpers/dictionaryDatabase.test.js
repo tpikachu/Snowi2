@@ -1,64 +1,8 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const os = require("node:os");
-const path = require("node:path");
-const Module = require("node:module");
+const { createDb } = require("./harness/db.js");
 
-let userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-dict-db-"));
-const originalLoad = Module._load;
-
-Module._load = function patchedLoad(request, parent, isMain) {
-  if (request === "electron") {
-    return {
-      app: {
-        getPath: () => userDataDir,
-        getAppPath: () => process.cwd(),
-        isReady: () => false,
-      },
-    };
-  }
-  return originalLoad.call(this, request, parent, isMain);
-};
-
-process.env.NODE_ENV = "test";
-
-const DatabaseManager = require("../../src/helpers/database.js");
 const loadStartup = () => import("../../src/helpers/dictionaryStartup.js");
-
-function isNativeBindingUnavailable(error) {
-  const message = String(error?.message || error);
-  return (
-    message.includes("NODE_MODULE_VERSION") ||
-    message.includes("Could not locate the bindings file")
-  );
-}
-
-function createDb(t) {
-  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-dict-db-"));
-  try {
-    const BetterSqlite = require("better-sqlite3");
-    const probe = new BetterSqlite(path.join(userDataDir, "probe.db"));
-    probe.close();
-    fs.rmSync(path.join(userDataDir, "probe.db"), { force: true });
-  } catch (error) {
-    if (isNativeBindingUnavailable(error)) {
-      t.skip("better-sqlite3 native binding is not available for this Node runtime");
-      return null;
-    }
-    throw error;
-  }
-
-  try {
-    return new DatabaseManager();
-  } catch (error) {
-    if (isNativeBindingUnavailable(error)) {
-      t.skip("better-sqlite3 native binding is not available for this Node runtime");
-      return null;
-    }
-    throw error;
-  }
-}
 
 test("setDictionary replaces the full dictionary (why a stale cache wipe was destructive)", (t) => {
   const db = createDb(t);

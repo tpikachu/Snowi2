@@ -1,50 +1,6 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const fs = require("node:fs");
-const os = require("node:os");
-const path = require("node:path");
-const Module = require("node:module");
-
-let userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-note-sync-db-"));
-const originalLoad = Module._load;
-
-Module._load = function patchedLoad(request, parent, isMain) {
-  if (request === "electron") {
-    return {
-      app: {
-        getPath: () => userDataDir,
-        getAppPath: () => process.cwd(),
-        isReady: () => false,
-      },
-    };
-  }
-  return originalLoad.call(this, request, parent, isMain);
-};
-
-process.env.NODE_ENV = "test";
-
-const DatabaseManager = require("../../src/helpers/database.js");
-const { skipOrFail } = require("./harness/db.js");
-
-function createDb(t) {
-  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "snowy-note-sync-db-"));
-  try {
-    const BetterSqlite = require("better-sqlite3");
-    const probe = new BetterSqlite(path.join(userDataDir, "probe.db"));
-    probe.close();
-    fs.rmSync(path.join(userDataDir, "probe.db"), { force: true });
-  } catch (error) {
-    skipOrFail(t, error);
-    return null;
-  }
-
-  try {
-    return new DatabaseManager();
-  } catch (error) {
-    skipOrFail(t, error);
-    return null;
-  }
-}
+const { createDb } = require("./harness/db.js");
 
 // Regression for #1290 (db half): an empty cloud copy of a note must never
 // destroy non-empty local content when upserted. The client-side pull gate
