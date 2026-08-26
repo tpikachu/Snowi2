@@ -6697,6 +6697,7 @@ class IPCHandlers {
     };
 
     const rollbackMeetingTranscriptionStart = async () => {
+      meetingSystemAudioSession += 1;
       if (this.audioTapManager) {
         await this.audioTapManager.stop().catch(() => {});
       }
@@ -6886,6 +6887,7 @@ class IPCHandlers {
       }
 
       meetingTranscriptionStartInProgress = true;
+      meetingSystemAudioSession += 1;
       meetingPaused = false;
       meetingStartedAt = Date.now();
       meetingConnectionOptions = options;
@@ -7090,16 +7092,36 @@ class IPCHandlers {
       }
     };
 
+    /**
+     * Guards the restart loop below. Bumped on every meeting start, stop and
+     * rollback, so a restart scheduled for a helper that died in one meeting
+     * can never fire into the next one — or into no meeting at all.
+     */
+    let meetingSystemAudioSession = 0;
+    // Spread across ~15s because the likeliest cause of a mid-meeting helper
+    // death is sleep/wake or an audio-stack reset, and right after wake the
+    // stack stays unready for several seconds — two quick attempts would both
+    // land in that window and lose.
+    const MEETING_SYSTEM_AUDIO_RESTART_DELAYS_MS = [1_000, 4_000, 10_000];
+
+    // Across one whole meeting, not one incident: a laptop that sleeps twice
+    // in a long meeting deserves a fresh recovery each time, but a helper
+    // crash-looping every few seconds must eventually be allowed to stay dead.
+    const MEETING_SYSTEM_AUDIO_RESTART_TOTAL_MAX = 6;
+
     const startManagedMeetingSystemAudio = (event, manager, warningLabel) => {
       const win = BrowserWindow.fromWebContents(event.sender);
-      return manager.start({
+      const session = meetingSystemAudioSession;
+      let restartDelays = [...MEETING_SYSTEM_AUDIO_RESTART_DELAYS_MS];
+      let totalRestarts = 0;
+      let recovering = false;
+
+      const callbacks = {
         onChunk: (chunk) => {
           sendMeetingAudio(chunk, "system");
         },
         onError: (error) => {
-          if (win && !win.isDestroyed()) {
-            win.webContents.send("meeting-transcription-error", error.message);
-          }
+          void handleCaptureLoss(error);
         },
         onWarning: (warning) => {
           debugLogger.warn(
@@ -7108,7 +7130,54 @@ class IPCHandlers {
             "meeting"
           );
         },
-      });
+      };
+
+      // The helper dying mid-meeting silences the entire other side of the
+      // conversation, so it gets the same treatment as a dropped microphone:
+      // bounded restart attempts first, honesty second. Only when restarting
+      // is exhausted does the renderer hear about it — as a *loss*, so the
+      // status line stops claiming system audio it no longer has.
+      const handleCaptureLoss = async (error) => {
+        if (session !== meetingSystemAudioSession || recovering) return;
+        recovering = true;
+        debugLogger.warn(
+          `${warningLabel}: capture lost mid-meeting`,
+          { error: error.message },
+          "meeting"
+        );
+        try {
+          while (restartDelays.length > 0) {
+            const delay = restartDelays.shift();
+            await new Promise((resolve) => setTimeout(resolve, delay));
+            if (session !== meetingSystemAudioSession) return;
+            try {
+              await manager.start(callbacks);
+              totalRestarts += 1;
+              // A later, separate incident gets its own attempts — unless this
+              // meeting has already spent its lifetime budget.
+              if (totalRestarts < MEETING_SYSTEM_AUDIO_RESTART_TOTAL_MAX) {
+                restartDelays = [...MEETING_SYSTEM_AUDIO_RESTART_DELAYS_MS];
+              }
+              debugLogger.info(`${warningLabel}: capture restarted`, { totalRestarts }, "meeting");
+              return;
+            } catch (restartError) {
+              debugLogger.warn(
+                `${warningLabel}: restart failed`,
+                { error: restartError.message, attemptsLeft: restartDelays.length },
+                "meeting"
+              );
+            }
+          }
+          if (session !== meetingSystemAudioSession) return;
+          if (win && !win.isDestroyed()) {
+            win.webContents.send("meeting-system-audio-lost", error.message);
+          }
+        } finally {
+          recovering = false;
+        }
+      };
+
+      return manager.start(callbacks);
     };
 
     const fallBackToMicOnly = async (context) => {
@@ -7286,6 +7355,7 @@ class IPCHandlers {
     });
 
     ipcMain.handle("meeting-transcription-stop", async () => {
+      meetingSystemAudioSession += 1;
       meetingPaused = false;
       this.meetingDetectionEngine?.setUserRecording(false);
       try {

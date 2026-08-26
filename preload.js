@@ -746,6 +746,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
     "meeting-transcription-fatal-error",
     (callback) => (_event, data) => callback(data)
   ),
+  onMeetingSystemAudioLost: registerListener(
+    "meeting-system-audio-lost",
+    (callback) => (_event, data) => callback(data)
+  ),
 
   // Dictation realtime streaming
   dictationRealtimeWarmup: (options) => ipcRenderer.invoke("dictation-realtime-warmup", options),

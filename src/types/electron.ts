@@ -2165,6 +2165,8 @@ declare global {
         callback: (config: { enabled: boolean; expectedCount: number }) => void
       ) => () => void;
       onMeetingTranscriptionError?: (callback: (error: string) => void) => () => void;
+      /** System audio capture died mid-meeting and could not be restarted. */
+      onMeetingSystemAudioLost?: (callback: (error: string) => void) => () => void;
       onMeetingTranscriptionFatalError?: (callback: (error: string) => void) => () => void;
 
       // Speaker diarization

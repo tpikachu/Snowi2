@@ -1356,6 +1356,17 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
     });
     if (errorCleanup) ipcCleanups.push(errorCleanup);
 
+    // Main only sends this after its restart attempts are exhausted, so it is
+    // a settled fact, not a hiccup. The flag flip is what matters: the panel's
+    // source line reads from systemCaptureActive, and a meeting captioning one
+    // side of the call must not keep claiming both.
+    const systemAudioLostCleanup = window.electronAPI?.onMeetingSystemAudioLost?.((err) => {
+      useMeetingRecordingStore.setState({ systemCaptureActive: false });
+      reportMeetingError("System audio capture stopped. Continuing with microphone only.");
+      logger.error("Meeting system audio lost mid-meeting", { error: err }, "meeting");
+    });
+    if (systemAudioLostCleanup) ipcCleanups.push(systemAudioLostCleanup);
+
     const fatalErrorCleanup = window.electronAPI?.onMeetingTranscriptionFatalError?.((err) => {
       reportMeetingError(err);
       logger.error(
