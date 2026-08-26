@@ -8,6 +8,7 @@ import {
   markSuggestionStale,
   resetMeetingAssist,
   setAssistConfigured,
+  setAssistLastTime,
   setSuggestion,
   setSuggestionPending,
   startAnswer,
@@ -34,7 +35,7 @@ import {
 } from "../utils/meetingAssistPrompt";
 import { formatNoteClaims, formatOpenCommitments } from "../utils/memoryPrompt";
 import { filterGrounding } from "../utils/chatRetrieval";
-import type { AssistMode, AssistNoteRef } from "../utils/meetingAssistState";
+import type { AssistLastTime, AssistMode, AssistNoteRef } from "../utils/meetingAssistState";
 import logger from "../utils/logger";
 
 /**
@@ -199,6 +200,57 @@ function warmAssistDependencies(): void {
 /** Claims per retrieved note. Small: they ride inside an already-budgeted block. */
 const ASSIST_NOTE_CLAIMS_LIMIT = 6;
 
+/** Claims pinned from the previous occurrence of a recurring meeting. */
+const SERIES_CLAIMS_LIMIT = 10;
+
+/** The previous-occurrence slice, in the shape the prompt builder pins. */
+type SeriesContext = NonNullable<AssistMemoryContext["previousMeeting"]>;
+
+/**
+ * What happened last time this meeting met, or null when it never has.
+ *
+ * Resolved once per meeting, at start: series membership cannot change
+ * mid-meeting, and the lookup is indexed SQLite plus one decrypt — cheap
+ * enough to finish before anyone has said anything. Returns both shapes the
+ * result takes — the prompt slice for the model and the one-liner for the
+ * panel — and touches nothing itself, so the caller can drop the whole thing
+ * if the meeting ended while it was resolving.
+ */
+async function resolveSeriesContext(
+  noteId: number | null
+): Promise<{ previousMeeting: SeriesContext | null; lastTime: AssistLastTime } | null> {
+  if (noteId == null || !window.electronAPI?.getMeetingSeriesBrief) return null;
+  try {
+    const brief = await window.electronAPI.getMeetingSeriesBrief(noteId);
+    if (!brief) return null;
+
+    const today = new Date().toISOString().slice(0, 10);
+    // Sliced before formatting: the formatter's overflow line offers
+    // search_memory, a tool the meeting assistant does not have.
+    const claims = formatNoteClaims(
+      brief.claims.slice(0, SERIES_CLAIMS_LIMIT),
+      today,
+      SERIES_CLAIMS_LIMIT
+    );
+
+    logger.info(
+      "Meeting recognized as a series occurrence",
+      { lastNoteId: brief.lastNoteId, occurrences: brief.occurrences, claims: brief.claims.length },
+      "meeting"
+    );
+    return {
+      previousMeeting: claims ? { date: brief.lastDate.slice(0, 10), claims } : null,
+      lastTime: {
+        noteId: brief.lastNoteId,
+        date: brief.lastDate,
+        openClaims: brief.claims.filter((claim) => claim.status === "open").length,
+      },
+    };
+  } catch {
+    return null;
+  }
+}
+
 /**
  * The durable-memory slice for a thinking-grade request, and the retrieved
  * notes with their claims attached.
@@ -285,6 +337,8 @@ export function useMeetingAssist(): MeetingAssist {
   const schedulerRef = useRef<AssistSchedulerState>(IDLE_SCHEDULER);
   const activityRef = useRef<Activity | null>(null);
   const mountedRef = useRef(true);
+  /** Pinned previous-occurrence context, resolved once per meeting at start. */
+  const seriesRef = useRef<SeriesContext | null>(null);
   /**
    * Which question is current. Two questions in a row share one model client,
    * so the first one's stream is cancelled — and without this, its `finally`
@@ -343,7 +397,7 @@ export function useMeetingAssist(): MeetingAssist {
         );
         const enriched = await retrieveAssistMemory(retrieved);
         notes = enriched.notes;
-        memory = enriched.memory;
+        memory = { ...enriched.memory, previousMeeting: seriesRef.current ?? undefined };
       }
       if (!isCurrent()) return;
       updateAnswer({ sources: toRefs(notes) });
@@ -434,7 +488,7 @@ export function useMeetingAssist(): MeetingAssist {
         meetingTitle: state.recordingNoteTitle,
         segments,
         notes,
-        memory,
+        memory: { ...memory, previousMeeting: seriesRef.current ?? undefined },
       });
 
       const resolved = resolveAssistModel(systemPrompt);
@@ -482,6 +536,7 @@ export function useMeetingAssist(): MeetingAssist {
   useEffect(() => {
     if (isRecording) return undefined;
     schedulerRef.current = IDLE_SCHEDULER;
+    seriesRef.current = null;
     resetMeetingAssist();
     return undefined;
   }, [isRecording]);
@@ -492,6 +547,19 @@ export function useMeetingAssist(): MeetingAssist {
     // The user just declared they will need the assistant; load its lazy
     // dependencies now rather than under the first question.
     warmAssistDependencies();
+
+    // Was there a last time? Resolved once — series membership cannot change
+    // mid-meeting — and pinned for every suggestion and thinking answer. The
+    // result is dropped if the meeting ended while it resolved, so a stale
+    // brief can never outlive its meeting on the panel.
+    const startedNoteId = useMeetingRecordingStore.getState().recordingNoteId;
+    void resolveSeriesContext(startedNoteId).then((resolved) => {
+      if (!resolved || !mountedRef.current) return;
+      const state = useMeetingRecordingStore.getState();
+      if (!state.isRecording || state.recordingNoteId !== startedNoteId) return;
+      seriesRef.current = resolved.previousMeeting;
+      setAssistLastTime(resolved.lastTime);
+    });
 
     const tick = () => {
       // Re-read rather than captured: someone can configure a model from

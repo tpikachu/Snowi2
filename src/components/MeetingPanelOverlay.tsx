@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import {
   Brain,
   ExternalLink,
+  History,
   Lightbulb,
   MessageSquareText,
   Pause,
@@ -13,7 +14,12 @@ import {
 } from "lucide-react";
 import { capturedMsAt, type MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
 import type { PanelTranscript } from "../utils/meetingPanelTranscript";
-import type { AssistMode, AssistNoteRef, MeetingAssistState } from "../utils/meetingAssistState";
+import type {
+  AssistLastTime,
+  AssistMode,
+  AssistNoteRef,
+  MeetingAssistState,
+} from "../utils/meetingAssistState";
 import type { MeetingPanelCommand } from "../types/electron";
 import { formatMmSs } from "../utils/formatDuration";
 import { cn } from "./lib/utils";
@@ -137,6 +143,63 @@ function ModeToggle({
         </button>
       ))}
     </div>
+  );
+}
+
+/**
+ * "This meeting has met before" — the pre-meeting brief's visible edge.
+ *
+ * One quiet row, not a card: what it earns the user is the knowledge that the
+ * assistant already holds last occurrence's claims, and one click to hear
+ * them. The click asks a real question in thinking mode; the button label *is*
+ * the question, so what the user pressed and what the assistant was asked can
+ * never disagree.
+ */
+function LastTimeStrip({
+  lastTime,
+  ready,
+  onAsk,
+}: {
+  lastTime: AssistLastTime;
+  ready: boolean;
+  onAsk: (question: string) => void;
+}) {
+  const { t, i18n } = useTranslation();
+
+  const parsed = new Date(lastTime.date);
+  const date = Number.isNaN(parsed.getTime())
+    ? lastTime.date.slice(0, 10)
+    : parsed.toLocaleDateString(i18n.language, { month: "short", day: "numeric" });
+  const askLabel = t("notes.meetingPanel.lastTime.ask");
+
+  return (
+    <section className="flex shrink-0 items-center gap-1.5 rounded-[9px] border border-hud-border bg-white/[0.03] px-2.5 py-1">
+      <History size={10} className="shrink-0 text-hud-muted/60" />
+      <span className="min-w-0 flex-1 truncate text-[10px] text-hud-muted">
+        {t("notes.meetingPanel.lastTime.summary", { date })}
+        {lastTime.openClaims > 0 && (
+          <span className="text-hud-foreground/75">
+            {" · "}
+            {t("notes.meetingPanel.lastTime.open", { count: lastTime.openClaims })}
+          </span>
+        )}
+      </span>
+      <button
+        type="button"
+        onClick={() => onAsk(askLabel)}
+        disabled={!ready}
+        className={cn(
+          "flex shrink-0 items-center gap-1 rounded-md border border-hud-border px-1.5 py-0.5",
+          "text-[10px] text-hud-muted transition-colors duration-150",
+          "hover:bg-white/10 hover:text-hud-foreground",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+          "disabled:cursor-not-allowed disabled:opacity-40"
+        )}
+      >
+        <Brain size={9} />
+        {askLabel}
+      </button>
+    </section>
   );
 }
 
@@ -446,6 +509,17 @@ export default function MeetingPanelOverlay() {
             className="flex min-h-0 flex-1 flex-col gap-1.5 px-1.5 pb-1.5"
             style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
           >
+            {/* Last time this meeting met — present only for a recognized
+                recurring meeting, on screen from the first second, before
+                anything has been said. */}
+            {assist?.lastTime && (
+              <LastTimeStrip
+                lastTime={assist.lastTime}
+                ready={assistReady}
+                onAsk={askAgainWithNotes}
+              />
+            )}
+
             {/* Suggestion. The hero of this window: the one thing worth
                 reading mid sentence, so it gets the visible weight — a tinted
                 ground and the accent rule down its edge. Already computed by

@@ -57,12 +57,30 @@ export interface AssistAnswer {
   errorKey: string | null;
 }
 
+/**
+ * The previous occurrence of a recurring meeting, as the panel shows it.
+ *
+ * Resolved once when recording starts (title + attendee matching over past
+ * meeting notes) and pinned for the whole meeting. `openClaims` is a count,
+ * not the claims — the substance rides inside the assistant's prompts, and
+ * the panel only has to say there is something worth asking about.
+ */
+export interface AssistLastTime {
+  noteId: number;
+  /** ISO datetime of the last occurrence; the panel formats it locally. */
+  date: string;
+  /** Claims still open from last time. Zero still shows the line. */
+  openClaims: number;
+}
+
 export interface MeetingAssistState {
   /**
    * Whether a model is configured for this at all. False makes the panel
    * explain what is missing instead of waiting for an answer that never comes.
    */
   configured: boolean;
+  /** Null when this meeting is not a recognized occurrence of a series. */
+  lastTime: AssistLastTime | null;
   suggestion: AssistSuggestion | null;
   /** A suggestion is being prepared. Shown only when there is nothing to replace. */
   suggestionPending: boolean;
@@ -71,6 +89,7 @@ export interface MeetingAssistState {
 
 export const IDLE_ASSIST: MeetingAssistState = {
   configured: false,
+  lastTime: null,
   suggestion: null,
   suggestionPending: false,
   answer: null,
@@ -94,6 +113,13 @@ export function assistStatesEqual(
   if (!a || !b) return false;
   if (a.configured !== b.configured) return false;
   if (a.suggestionPending !== b.suggestionPending) return false;
+
+  if (!!a.lastTime !== !!b.lastTime) return false;
+  if (a.lastTime && b.lastTime) {
+    if (a.lastTime.noteId !== b.lastTime.noteId) return false;
+    if (a.lastTime.date !== b.lastTime.date) return false;
+    if (a.lastTime.openClaims !== b.lastTime.openClaims) return false;
+  }
 
   if (!!a.suggestion !== !!b.suggestion) return false;
   if (a.suggestion && b.suggestion) {

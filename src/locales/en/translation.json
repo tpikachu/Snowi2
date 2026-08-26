@@ -3117,7 +3117,12 @@
         "connecting": "Getting ready…",
         "connectingPlaceholder": "Connecting…"
       },
-      "sourcesLabel": "From"
+      "sourcesLabel": "From",
+      "lastTime": {
+        "summary": "Recurring · last met {{date}}",
+        "open": "{{n}} open from last time",
+        "ask": "What's still open?"
+      }
     },
     "transcript": {
       "showEarlier_one": "Show {{count}} earlier message",

@@ -38,6 +38,19 @@ export interface AssistNote {
 export interface AssistMemoryContext {
   profile?: string;
   openCommitments?: string;
+  /**
+   * What happened last time this meeting met, when the meeting is an
+   * occurrence of a series. Known at meeting start and pinned rather than
+   * retrieved: "as discussed last week" is the single most likely reference
+   * in a recurring meeting, and retrieval only finds it when someone phrases
+   * a question the way the note happens to read.
+   */
+  previousMeeting?: {
+    /** ISO date of the last occurrence, shown in the heading. */
+    date: string;
+    /** Pre-formatted claim lines with current statuses (formatNoteClaims). */
+    claims: string;
+  };
 }
 
 export interface AssistSpeakerLabels {
@@ -207,17 +220,24 @@ export interface AssistMessages {
 function buildContext(input: AssistMessagesInput): string {
   const transcript = formatAssistTranscript(input.segments, input.labels);
   const notes = formatAssistNotes(input.notes);
+  const previous = input.memory?.previousMeeting;
+  const previousClaims = previous?.claims?.trim() ?? "";
   const profile = input.memory?.profile?.trim() ?? "";
   const commitments = input.memory?.openCommitments?.trim() ?? "";
 
-  // Transcript first (the meeting is the primary context), then durable memory
-  // (small, exact, current), then retrieved passages (recall, may be stale —
-  // which is why each carries its claims).
+  // Transcript first (the meeting is the primary context), then the previous
+  // occurrence (specific to exactly this meeting, so it outranks the general
+  // memory), then durable memory (small, exact, current), then retrieved
+  // passages (recall, may be stale — which is why each carries its claims).
   return [
     input.meetingTitle ? `Meeting: ${input.meetingTitle}` : "",
     "",
     "Live transcript (most recent last):",
     transcript || "(nothing said yet)",
+    previousClaims
+      ? `\nLast time this meeting met (${previous!.date}), with current statuses:`
+      : "",
+    previousClaims,
     profile ? "\nAbout the user, from their past meetings:" : "",
     profile,
     commitments ? "\nOpen commitments (current, exact — trust these over recollection):" : "",

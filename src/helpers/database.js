@@ -2265,6 +2265,30 @@ class DatabaseManager {
   }
 
   /**
+   * Past meeting notes whose title says they might be earlier occurrences of
+   * the meeting `title` names. Loose on purpose — case-insensitive equality
+   * after trimming — because the real decision (generic titles, attendee
+   * overlap) belongs to `meetingSeries.findSeriesOccurrences`, which can
+   * normalize in ways SQL cannot.
+   */
+  getMeetingSeriesCandidates(title, excludeNoteId = null, limit = 8) {
+    if (!this.db || !title?.trim()) return [];
+    try {
+      return this.db
+        .prepare(
+          `SELECT id, title, created_at, participants FROM notes
+           WHERE note_type = 'meeting' AND deleted_at IS NULL
+             AND id != ? AND LOWER(TRIM(title)) = LOWER(TRIM(?))
+           ORDER BY created_at DESC LIMIT ?`
+        )
+        .all(excludeNoteId ?? -1, title, limit);
+    } catch (error) {
+      debugLogger.error("Error finding series candidates", { error: error.message }, "notes");
+      return [];
+    }
+  }
+
+  /**
    * Meetings per local day for the home page chart, plus the headline figures
    * beside it.
    *

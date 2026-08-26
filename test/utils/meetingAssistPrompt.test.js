@@ -135,6 +135,41 @@ test("memory sits between the transcript and the notes, and claims ride inside t
   assert.match(noteBlock, /SUPERSEDED, no longer true/);
 });
 
+test("the previous occurrence sits between the transcript and the general memory", () => {
+  // A recurring meeting's own history is more specific than the profile or
+  // the global commitment slate, so it outranks them — but never the live
+  // transcript.
+  const user = buildAnswerMessages({
+    meetingTitle: "Acme weekly",
+    segments: [seg("shall we start", "system", NOW)],
+    notes: [],
+    memory: {
+      previousMeeting: { date: "2026-08-19", claims: "- [decision] Ship on Friday" },
+      profile: "- Works in enterprise sales",
+    },
+    question: "what did we agree last time?",
+    mode: "thinking",
+  }).messages[1].content;
+
+  assert.ok(user.includes("Last time this meeting met (2026-08-19)"));
+  const transcriptAt = user.indexOf("Others: shall we start");
+  const previousAt = user.indexOf("Ship on Friday");
+  const profileAt = user.indexOf("Works in enterprise sales");
+  assert.ok(transcriptAt < previousAt && previousAt < profileAt);
+});
+
+test("an empty previous occurrence renders no heading", () => {
+  const user = buildAnswerMessages({
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    memory: { previousMeeting: { date: "2026-08-19", claims: "  " } },
+    question: "hi?",
+    mode: "thinking",
+  }).messages[1].content;
+  assert.ok(!user.includes("Last time this meeting met"));
+});
+
 test("a fast answer carries no memory block even if one is passed", () => {
   // The fast path never fetches memory; this guards the prompt side of that
   // promise — buildContext renders only what the caller supplies.

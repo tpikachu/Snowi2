@@ -2938,7 +2938,12 @@
         "connecting": "Готовимся…",
         "connectingPlaceholder": "Подключение…"
       },
-      "sourcesLabel": "Источник"
+      "sourcesLabel": "Источник",
+      "lastTime": {
+        "summary": "Повторяющаяся · прошлая встреча {{date}}",
+        "open": "Открытых с прошлого раза: {{n}}",
+        "ask": "Что ещё не закрыто?"
+      }
     },
     "transcript": {
       "showEarlier_one": "Показать {{count}} предыдущее сообщение",

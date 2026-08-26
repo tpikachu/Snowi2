@@ -3117,7 +3117,12 @@
         "connecting": "Préparation…",
         "connectingPlaceholder": "Connexion…"
       },
-      "sourcesLabel": "D'après"
+      "sourcesLabel": "D'après",
+      "lastTime": {
+        "summary": "Récurrente · dernière fois {{date}}",
+        "open": "{{n}} en cours depuis la dernière fois",
+        "ask": "Qu'est-ce qui reste ouvert ?"
+      }
     },
     "transcript": {
       "showEarlier_one": "Afficher {{count}} message précédent",

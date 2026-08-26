@@ -2910,7 +2910,12 @@
         "connecting": "Preparazione…",
         "connectingPlaceholder": "Connessione…"
       },
-      "sourcesLabel": "Da"
+      "sourcesLabel": "Da",
+      "lastTime": {
+        "summary": "Ricorrente · ultima volta {{date}}",
+        "open": "{{n}} aperti dalla volta scorsa",
+        "ask": "Cosa è ancora aperto?"
+      }
     },
     "transcript": {
       "showEarlier_one": "Mostra {{count}} messaggio precedente",

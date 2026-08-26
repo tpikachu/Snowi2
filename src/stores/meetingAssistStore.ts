@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   IDLE_ASSIST,
   type AssistAnswer,
+  type AssistLastTime,
   type AssistMode,
   type AssistSuggestion,
   type MeetingAssistState,
@@ -26,6 +27,11 @@ export const getMeetingAssist = (): MeetingAssistState => useMeetingAssistStore.
 export function setAssistConfigured(configured: boolean): void {
   if (useMeetingAssistStore.getState().configured === configured) return;
   useMeetingAssistStore.setState({ configured });
+}
+
+/** Set once when a meeting starts as an occurrence of a series; null otherwise. */
+export function setAssistLastTime(lastTime: AssistLastTime | null): void {
+  useMeetingAssistStore.setState({ lastTime });
 }
 
 export function setSuggestionPending(pending: boolean): void {

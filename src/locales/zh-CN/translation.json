@@ -2910,7 +2910,12 @@
         "connecting": "准备中…",
         "connectingPlaceholder": "连接中…"
       },
-      "sourcesLabel": "来源"
+      "sourcesLabel": "来源",
+      "lastTime": {
+        "summary": "例会 · 上次 {{date}}",
+        "open": "上次遗留 {{n}} 项待办",
+        "ask": "还有哪些未完成？"
+      }
     },
     "transcript": {
       "showEarlier_one": "显示 {{count}} 条更早的消息",

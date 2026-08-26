@@ -82,3 +82,21 @@ test("configuring a model mid-meeting reaches the panel", () => {
 test("a suggestion being prepared is distinct from none at all", () => {
   assert.equal(assistStatesEqual(IDLE_ASSIST, { ...IDLE_ASSIST, suggestionPending: true }), false);
 });
+
+test("the last-time strip appearing, and its open count moving, reach the panel", () => {
+  const lastTime = { noteId: 7, date: "2026-08-19T10:00:00.000Z", openClaims: 3 };
+  const withLastTime = { ...IDLE_ASSIST, lastTime };
+
+  assert.equal(assistStatesEqual(IDLE_ASSIST, withLastTime), false);
+  assert.equal(
+    assistStatesEqual(withLastTime, { ...IDLE_ASSIST, lastTime: { ...lastTime } }),
+    true
+  );
+  assert.equal(
+    assistStatesEqual(withLastTime, {
+      ...IDLE_ASSIST,
+      lastTime: { ...lastTime, openClaims: 2 },
+    }),
+    false
+  );
+});

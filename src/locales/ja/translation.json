@@ -2838,7 +2838,12 @@
         "connecting": "準備しています…",
         "connectingPlaceholder": "接続中…"
       },
-      "sourcesLabel": "出典"
+      "sourcesLabel": "出典",
+      "lastTime": {
+        "summary": "定例 · 前回 {{date}}",
+        "open": "前回からの未完了 {{n}} 件",
+        "ask": "未完了の項目は？"
+      }
     },
     "transcript": {
       "showEarlier_one": "以前のメッセージを{{count}}件表示",

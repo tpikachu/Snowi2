@@ -3117,7 +3117,12 @@
         "connecting": "Wird vorbereitet…",
         "connectingPlaceholder": "Verbinden…"
       },
-      "sourcesLabel": "Aus"
+      "sourcesLabel": "Aus",
+      "lastTime": {
+        "summary": "Wiederkehrend · zuletzt am {{date}}",
+        "open": "{{n}} offen vom letzten Mal",
+        "ask": "Was ist noch offen?"
+      }
     },
     "transcript": {
       "showEarlier_one": "{{count}} frühere Nachricht anzeigen",

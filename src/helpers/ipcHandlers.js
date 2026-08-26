@@ -1518,6 +1518,41 @@ class IPCHandlers {
       return this.databaseManager.listMeetings(options ?? {});
     });
 
+    // The pre-meeting brief: what happened last time this meeting met.
+    // Occurrences are matched by title + attendee overlap (see meetingSeries.js
+    // for why there is no series id to use instead). Null means "not a
+    // recurring meeting as far as we can tell", which every caller treats as
+    // "no brief" rather than an error.
+    ipcMain.handle("meeting-series-brief", async (event, noteId) => {
+      try {
+        const note = this.databaseManager.getNote(noteId);
+        if (!note?.title) return null;
+
+        const { findSeriesOccurrences } = require("./meetingSeries");
+        const candidates = this.databaseManager.getMeetingSeriesCandidates(note.title, note.id);
+        const occurrences = findSeriesOccurrences(note, candidates);
+        const last = occurrences[0];
+        if (!last) return null;
+
+        const memoryStore = this._getMemoryStore();
+        const claims = memoryStore ? memoryStore.listForNote(last.id).slice(0, 24) : [];
+        // created_at is SQLite CURRENT_TIMESTAMP — UTC with no suffix. Crossing
+        // the boundary as real ISO means the renderer never has to know that.
+        const { parseNoteDate } = require("./transcriptFormatter");
+        const parsed = parseNoteDate(last.created_at);
+        return {
+          lastNoteId: last.id,
+          lastTitle: last.title,
+          lastDate: Number.isNaN(parsed.getTime()) ? last.created_at : parsed.toISOString(),
+          occurrences: occurrences.length,
+          claims,
+        };
+      } catch (error) {
+        debugLogger.error("Meeting series brief failed", { error: error.message }, "meeting");
+        return null;
+      }
+    });
+
     // Backs the home page activity chart.
     ipcMain.handle("db-meeting-activity", async (event, options = {}) => {
       return this.databaseManager.getMeetingActivity(options ?? {});

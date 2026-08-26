@@ -2910,7 +2910,12 @@
         "connecting": "Preparando…",
         "connectingPlaceholder": "Conectando…"
       },
-      "sourcesLabel": "De"
+      "sourcesLabel": "De",
+      "lastTime": {
+        "summary": "Recorrente · última vez {{date}}",
+        "open": "{{n}} pendentes da última vez",
+        "ask": "O que ainda está pendente?"
+      }
     },
     "transcript": {
       "showEarlier_one": "Mostrar {{count}} mensagem anterior",

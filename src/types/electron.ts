@@ -289,6 +289,21 @@ export interface MemorySearchResult {
   objects: MemoryObjectRow[];
 }
 
+/**
+ * What happened last time this meeting met. Null when the meeting is not a
+ * recognizable occurrence of a series — see meetingSeries.js for the matching.
+ */
+export interface MeetingSeriesBrief {
+  lastNoteId: number;
+  lastTitle: string;
+  /** `created_at` of the last occurrence, as stored (UTC datetime string). */
+  lastDate: string;
+  /** How many earlier occurrences were found, including `lastNoteId`. */
+  occurrences: number;
+  /** The last occurrence's memory claims, hydrated, current statuses. */
+  claims: MemoryObjectRow[];
+}
+
 export interface NoteItem {
   id: number;
   title: string;
@@ -1091,6 +1106,7 @@ declare global {
       ) => Promise<NoteItem[]>;
       getSpaceNotes: (spaceId: number, limit?: number) => Promise<NoteItem[]>;
       listMeetings: (options?: MeetingListOptions) => Promise<MeetingListResult>;
+      getMeetingSeriesBrief: (noteId: number) => Promise<MeetingSeriesBrief | null>;
       getMeetingActivity: (options?: {
         days?: number;
         spaceId?: number | null;
