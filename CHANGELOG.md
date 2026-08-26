@@ -5,6 +5,64 @@ All notable changes to Snowy are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-rc4] — 2026-08-26
+
+Fourth release candidate. Snowy learns that your meetings repeat: a recurring
+meeting starts already briefed on last time, remembers how you like it written
+up, and the pipeline underneath survives the things that kill long meetings.
+
+**Still a release candidate.** See _Known limitations_ under 0.1.0-rc1.
+
+### Recurring meetings know their history
+
+- When a meeting that has met before starts, the panel shows it — _"Recurring ·
+  last met Aug 19 · 3 open from last time"_ — with a one-click **What's still
+  open?** that asks the assistant over your past notes. No series id from the
+  calendar is needed: occurrences are matched by title and shared attendees, so
+  it also works retroactively on every meeting you already recorded, and "1:1"
+  with two different people never gets mixed up.
+- The assistant is briefed before anyone speaks: last occurrence's decisions and
+  commitments — with their **current** statuses — are pinned into every
+  suggestion and Thinking answer. "As discussed last week" now lands without
+  anyone having to phrase a search. Meetings whose notes you typed by hand are
+  briefed from the notes themselves, labeled as possibly out of date.
+- **Write-up templates.** A 1:1, a standup and a sales call produce different
+  notes; pick the shape once per meeting — 1:1, Standup, Sales call, Interview,
+  Planning, or the standard notes — and every future occurrence of that meeting
+  inherits it automatically. All three write-up paths honor it, including the
+  automatic one at Stop.
+
+### The write-up is for sharing
+
+- **Copy recap for sharing** on any written-up meeting: title, date, attendees,
+  then the notes — formatted to paste cleanly into Slack or an email.
+
+### Search finds meaning, not just words
+
+- The command palette's note search now uses the same hybrid semantic ranking
+  the AI assistant uses. Searching "financial forecast" finds the note about
+  quarterly revenue projections — and each result shows the passage that
+  matched instead of the note's first line.
+
+### Sturdier under real conditions
+
+- The meeting assistant's model and search index now load the moment a meeting
+  starts, during the "can everyone hear me" minute — not underneath the
+  meeting's first question.
+- System audio capture that dies mid-meeting (laptop sleep is the usual
+  culprit) now restarts itself, with attempts spread across the seconds an
+  audio stack needs to come back after wake. Only when it truly cannot recover
+  does the panel say so — and it then honestly reads "Microphone only" instead
+  of continuing to claim both sources.
+- On Windows, a corrupted binary or model download no longer reports a
+  successful extraction and fails later as a mysteriously missing file.
+
+### Fixed
+
+- The test suite now passes on Windows machines, not only in CI — two
+  host-dependent tests and the real extraction bug above were behind the
+  failures a contributor reported.
+
 ## [0.1.0-rc3] — 2026-08-24
 
 Third release candidate. The meeting assistant gets two speeds, every chat
