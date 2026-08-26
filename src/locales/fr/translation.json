@@ -3129,6 +3129,21 @@
       "showEarlier_other": "Afficher {{count}} messages précédents",
       "jumpToLive": "Aller au direct",
       "jumpToLatest": "Aller au plus récent"
+    },
+    "templates": {
+      "default": "Notes standard",
+      "oneOnOne": "1:1",
+      "standup": "Standup",
+      "sales": "Appel commercial",
+      "interview": "Entretien",
+      "planning": "Planification",
+      "hint": "Modèle de compte rendu — les réunions récurrentes retiennent ce choix"
+    },
+    "recap": {
+      "copy": "Copier le compte rendu à partager",
+      "copied": "Compte rendu copié — prêt à coller dans Slack ou un e-mail",
+      "copyFailed": "Impossible de copier le compte rendu",
+      "attendees": "Participants"
     }
   },
   "dictionary": {

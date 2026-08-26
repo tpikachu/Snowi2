@@ -216,11 +216,25 @@ export default function CommandSearch({
         return;
       }
       searchTimerRef.current = setTimeout(async () => {
+        // Meaning-aware search, same hybrid ranking the AI agent uses:
+        // passages + whole notes + keyword, fused, with the matched passage
+        // attached so the row can show *why* a note matched. Main degrades it
+        // to keyword-only while the vector index is still starting, and the
+        // keyword path stays as the fallback for anything else.
         try {
-          const results = await window.electronAPI.searchNotes(query, undefined, scopeSpaceId);
-          setNotes(results);
+          const results =
+            (await window.electronAPI.semanticSearchNotes?.(query, 20, scopeSpaceId, null)) ??
+            (await window.electronAPI.searchNotes(query, undefined, scopeSpaceId));
+          // Semantic latency varies with the embedder, so an older in-flight
+          // search can finish after a newer one — drop it, don't show it.
+          if (searchVersionRef.current === version) setNotes(results);
         } catch {
-          /* keep current */
+          try {
+            const results = await window.electronAPI.searchNotes(query, undefined, scopeSpaceId);
+            if (searchVersionRef.current === version) setNotes(results);
+          } catch {
+            /* keep current */
+          }
         }
       }, 200);
     }
@@ -656,7 +670,10 @@ function NoteRow({
   onHover: () => void;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
-  const preview = stripMarkdownPreview(note.content).slice(0, 90);
+  // The passage that matched beats the note's opening line: for a long
+  // meeting note, the opening tells you nothing about why it is in the list.
+  const matched = note.matched_snippet?.replace(/\s+/g, " ").trim();
+  const preview = (matched || stripMarkdownPreview(note.content)).slice(0, 90);
   const NoteIcon =
     note.note_type === "meeting" ? Users : note.note_type === "upload" ? Upload : FileText;
   return (

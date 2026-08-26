@@ -49,7 +49,14 @@ export interface AssistMemoryContext {
     /** ISO date of the last occurrence, shown in the heading. */
     date: string;
     /** Pre-formatted claim lines with current statuses (formatNoteClaims). */
-    claims: string;
+    claims?: string;
+    /**
+     * An excerpt of the occurrence's own notes, for meetings whose notes were
+     * typed by hand and never went through extraction. Rendered under a
+     * heading that says it may be out of date — unlike claims, raw note text
+     * carries no statuses to correct itself with.
+     */
+    notes?: string;
   };
 }
 
@@ -222,6 +229,10 @@ function buildContext(input: AssistMessagesInput): string {
   const notes = formatAssistNotes(input.notes);
   const previous = input.memory?.previousMeeting;
   const previousClaims = previous?.claims?.trim() ?? "";
+  // Claims win when both exist: they carry current statuses, the raw text
+  // cannot, and rendering both would put the stale wording beside its
+  // correction as if they were peers.
+  const previousNotes = previousClaims ? "" : (previous?.notes?.trim() ?? "");
   const profile = input.memory?.profile?.trim() ?? "";
   const commitments = input.memory?.openCommitments?.trim() ?? "";
 
@@ -238,6 +249,10 @@ function buildContext(input: AssistMessagesInput): string {
       ? `\nLast time this meeting met (${previous!.date}), with current statuses:`
       : "",
     previousClaims,
+    previousNotes
+      ? `\nFrom the user's own notes last time this meeting met (${previous!.date}) — may be out of date:`
+      : "",
+    previousNotes,
     profile ? "\nAbout the user, from their past meetings:" : "",
     profile,
     commitments ? "\nOpen commitments (current, exact — trust these over recollection):" : "",

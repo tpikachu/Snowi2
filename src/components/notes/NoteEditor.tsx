@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback, type ComponentProps } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  ClipboardCopy,
   Download,
   Loader2,
   FileText,
@@ -8,6 +9,7 @@ import {
   AlignLeft,
   MessageSquareText,
   Calendar,
+  LayoutTemplate,
   LinkIcon,
   FolderOpen,
   Search,
@@ -15,6 +17,9 @@ import {
   Check,
   Users,
 } from "lucide-react";
+import { MEETING_TEMPLATES, meetingTemplateById } from "../../config/meetingTemplates";
+import { buildMeetingRecap } from "../../utils/meetingRecap";
+import { useToast } from "../ui/useToast";
 import { useSpaces, navigateToContainer } from "../../stores/noteStore";
 import { RichTextEditor } from "../ui/RichTextEditor";
 import type { Editor } from "@tiptap/react";
@@ -162,6 +167,8 @@ interface NoteEditorProps {
   folders?: FolderItem[];
   onMoveToFolder?: (noteId: number, folderId: number) => void;
   onCreateFolderAndMove?: (noteId: number, folderName: string) => void;
+  /** Sets the meeting's write-up template; future series occurrences inherit it. */
+  onMeetingTemplateChange?: (noteId: number, templateId: string) => void;
 }
 
 export default function NoteEditor({
@@ -191,8 +198,10 @@ export default function NoteEditor({
   folders,
   onMoveToFolder,
   onCreateFolderAndMove,
+  onMeetingTemplateChange,
 }: NoteEditorProps) {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [viewMode, setViewMode] = useState<MeetingViewMode>("raw");
   const [chatMode, setChatMode] = useState<EmbeddedChatMode>("hidden");
   const [folderSearch, setFolderSearch] = useState("");
@@ -592,6 +601,26 @@ export default function NoteEditor({
   const noteDate = formatNoteDate(note.created_at);
   const shortDate = formatShortDate(note.created_at);
 
+  // The recap someone else reads: title, date, attendees, then the write-up —
+  // ready to paste into Slack or an email without hand-trimming the app out.
+  const canCopyRecap = note.note_type === "meeting" && !!enhancement?.content?.trim();
+  const handleCopyRecap = useCallback(async () => {
+    const recap = buildMeetingRecap({
+      title: note.title,
+      formattedDate: shortDate,
+      participants: note.participants,
+      enhancedContent: enhancement?.content ?? "",
+      labels: { attendees: t("notes.recap.attendees") },
+    });
+    if (!recap) return;
+    try {
+      await navigator.clipboard.writeText(recap);
+      toast({ description: t("notes.recap.copied") });
+    } catch {
+      toast({ description: t("notes.recap.copyFailed"), variant: "destructive" });
+    }
+  }, [note.title, note.participants, shortDate, enhancement?.content, t, toast]);
+
   return (
     <div className="flex h-full min-h-0">
       <div className="flex-1 min-w-0 flex flex-col">
@@ -750,6 +779,37 @@ export default function NoteEditor({
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
+            {/* The write-up template. A chip like the folder: a quiet fact
+                about the note that opens into a choice. Only meetings have a
+                write-up shape, so only meetings get the chip — and a series
+                remembers the choice, so for a recurring meeting this is
+                usually already right before it is ever touched. */}
+            {note.note_type === "meeting" && onMeetingTemplateChange && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className={CHIP_BUTTON_CLASS} title={t("notes.templates.hint")}>
+                    <LayoutTemplate size={11} className="shrink-0" />
+                    {t(meetingTemplateById(note.meeting_template).labelKey)}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" sideOffset={6} className="min-w-44 p-1">
+                  {MEETING_TEMPLATES.map((template) => {
+                    const isCurrent = template.id === meetingTemplateById(note.meeting_template).id;
+                    return (
+                      <DropdownMenuItem
+                        key={template.id}
+                        onClick={() => onMeetingTemplateChange(note.id, template.id)}
+                        className="text-xs gap-2 rounded-md px-2 py-1.5"
+                      >
+                        <LayoutTemplate size={11} className="text-foreground/30 shrink-0" />
+                        <span className="truncate flex-1">{t(template.labelKey)}</span>
+                        {isCurrent && <Check size={9} className="text-primary shrink-0" />}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
             {isSaving && (
               <span className="inline-flex h-5 items-center gap-1.5 text-[11px] text-muted-foreground">
                 <Loader2 size={9} className="animate-spin" />
@@ -835,7 +895,7 @@ export default function NoteEditor({
                   </div>
                 </div>
               )}
-              {(onExportNote || onExportTranscript) && (
+              {(onExportNote || onExportTranscript || canCopyRecap) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -879,6 +939,18 @@ export default function NoteEditor({
                       </>
                     ) : (
                       <>
+                        {canCopyRecap && (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => void handleCopyRecap()}
+                              className="text-xs gap-2"
+                            >
+                              <ClipboardCopy size={13} className="text-foreground/40" />
+                              {t("notes.recap.copy")}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
                         <DropdownMenuItem
                           onClick={() => onExportNote?.("md")}
                           className="text-xs gap-2"

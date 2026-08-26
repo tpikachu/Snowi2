@@ -2922,6 +2922,21 @@
       "showEarlier_other": "Mostra {{count}} messaggi precedenti",
       "jumpToLive": "Vai al live",
       "jumpToLatest": "Vai al più recente"
+    },
+    "templates": {
+      "default": "Note standard",
+      "oneOnOne": "1:1",
+      "standup": "Standup",
+      "sales": "Chiamata commerciale",
+      "interview": "Colloquio",
+      "planning": "Pianificazione",
+      "hint": "Modello di verbale — le riunioni ricorrenti ricordano questa scelta"
+    },
+    "recap": {
+      "copy": "Copia riepilogo da condividere",
+      "copied": "Riepilogo copiato — pronto da incollare in Slack o email",
+      "copyFailed": "Impossibile copiare il riepilogo",
+      "attendees": "Partecipanti"
     }
   },
   "dictionary": {

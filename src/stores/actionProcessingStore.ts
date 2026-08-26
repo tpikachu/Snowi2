@@ -79,7 +79,7 @@ FORMAT RULES (strict):
 
 Instructions: `;
 
-const MEETING_SYSTEM_PROMPT = `You are a professional meeting notes assistant. You will receive a dual-speaker transcript where "You:" marks the user's speech and "Them:" marks the other participant(s), along with any manual notes the user took.
+const MEETING_SYSTEM_PROMPT_BODY = `You are a professional meeting notes assistant. You will receive a dual-speaker transcript where "You:" marks the user's speech and "Them:" marks the other participant(s), along with any manual notes the user took.
 
 Your job is to produce clean, actionable meeting notes in markdown. Follow these rules:
 
@@ -97,12 +97,30 @@ CONTENT RULES:
 - Where speakers refer to the same topic across multiple turns, consolidate into a coherent point rather than listing every utterance.
 - If the user included manual notes alongside the transcript, integrate them — they represent the user's emphasis on what matters most.
 - Keep the tone professional and concise. Bias toward brevity.
+`;
 
-Instructions: `;
+/**
+ * The meeting prompt, with an optional template addendum.
+ *
+ * The addendum sits between the base rules and the action's own instructions
+ * so its section structure overrides the default headings above while the
+ * strict format rules still hold.
+ */
+export function meetingSystemPrompt(templatePrompt?: string): string {
+  const template = templatePrompt?.trim()
+    ? `\nTEMPLATE — the user chose this write-up shape for this meeting. Its section structure replaces the default headings above; every other rule still applies:\n${templatePrompt.trim()}\n`
+    : "";
+  return `${MEETING_SYSTEM_PROMPT_BODY}${template}\nInstructions: `;
+}
 
 export interface RunActionOptions {
   modelId: string;
   isMeetingNote?: boolean;
+  /**
+   * The meeting template's prompt addendum (templatePromptFor). Only read for
+   * meeting notes; empty or absent means the default write-up shape.
+   */
+  templatePrompt?: string;
   /** Opt-in so enhancement never renames a note the user has titled. */
   allowTitleGeneration?: boolean;
 }
@@ -147,7 +165,9 @@ export function runBackgroundAction(
 
   (async () => {
     try {
-      const basePrompt = options.isMeetingNote ? MEETING_SYSTEM_PROMPT : BASE_SYSTEM_PROMPT;
+      const basePrompt = options.isMeetingNote
+        ? meetingSystemPrompt(options.templatePrompt)
+        : BASE_SYSTEM_PROMPT;
       const providerOverrides = buildActionsOverrides(actions);
       const systemPrompt = appendDictionarySuffix(
         basePrompt + action.prompt,

@@ -232,14 +232,18 @@ async function resolveSeriesContext(
       today,
       SERIES_CLAIMS_LIMIT
     );
+    // A claim-less occurrence — notes typed by hand, never extracted — still
+    // pins its substance, as an excerpt the prompt labels possibly stale.
+    const notes = !claims && brief.excerpt?.trim() ? brief.excerpt.trim() : "";
 
     logger.info(
       "Meeting recognized as a series occurrence",
       { lastNoteId: brief.lastNoteId, occurrences: brief.occurrences, claims: brief.claims.length },
       "meeting"
     );
+    const date = brief.lastDate.slice(0, 10);
     return {
-      previousMeeting: claims ? { date: brief.lastDate.slice(0, 10), claims } : null,
+      previousMeeting: claims ? { date, claims } : notes ? { date, notes } : null,
       lastTime: {
         noteId: brief.lastNoteId,
         date: brief.lastDate,

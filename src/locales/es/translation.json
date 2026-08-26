@@ -2970,6 +2970,21 @@
       "showEarlier_other": "Mostrar {{count}} mensajes anteriores",
       "jumpToLive": "Ir al directo",
       "jumpToLatest": "Ir a lo último"
+    },
+    "templates": {
+      "default": "Notas estándar",
+      "oneOnOne": "1:1",
+      "standup": "Daily",
+      "sales": "Llamada de ventas",
+      "interview": "Entrevista",
+      "planning": "Planificación",
+      "hint": "Plantilla de notas: las reuniones periódicas recuerdan esta elección"
+    },
+    "recap": {
+      "copy": "Copiar resumen para compartir",
+      "copied": "Resumen copiado: listo para pegar en Slack o correo",
+      "copyFailed": "No se pudo copiar el resumen",
+      "attendees": "Asistentes"
     }
   },
   "dictionary": {

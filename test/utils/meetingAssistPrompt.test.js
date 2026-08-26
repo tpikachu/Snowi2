@@ -158,6 +158,45 @@ test("the previous occurrence sits between the transcript and the general memory
   assert.ok(transcriptAt < previousAt && previousAt < profileAt);
 });
 
+test("a claim-less previous occurrence falls back to its own notes, labeled stale", () => {
+  // Hand-typed notes never went through extraction; their substance still
+  // reaches the assistant, under a heading that says it may be out of date.
+  const user = buildAnswerMessages({
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    memory: {
+      previousMeeting: { date: "2026-08-19", notes: "Dana wants the quote by Friday" },
+    },
+    question: "what did we agree?",
+    mode: "thinking",
+  }).messages[1].content;
+  assert.ok(user.includes("own notes last time this meeting met (2026-08-19)"));
+  assert.ok(user.includes("may be out of date"));
+  assert.ok(user.includes("Dana wants the quote by Friday"));
+});
+
+test("claims win over the notes excerpt when both are present", () => {
+  // Claims carry current statuses; rendering the raw text beside them would
+  // put stale wording next to its own correction as a peer.
+  const user = buildAnswerMessages({
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    memory: {
+      previousMeeting: {
+        date: "2026-08-19",
+        claims: "- [decision] Quote due Friday",
+        notes: "old free-text version",
+      },
+    },
+    question: "what did we agree?",
+    mode: "thinking",
+  }).messages[1].content;
+  assert.ok(user.includes("Quote due Friday"));
+  assert.ok(!user.includes("old free-text version"));
+});
+
 test("an empty previous occurrence renders no heading", () => {
   const user = buildAnswerMessages({
     meetingTitle: null,

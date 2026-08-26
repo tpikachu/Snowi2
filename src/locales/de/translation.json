@@ -3129,6 +3129,21 @@
       "showEarlier_other": "{{count}} frühere Nachrichten anzeigen",
       "jumpToLive": "Zum Live-Verlauf",
       "jumpToLatest": "Zum Neuesten"
+    },
+    "templates": {
+      "default": "Standardnotizen",
+      "oneOnOne": "1:1",
+      "standup": "Standup",
+      "sales": "Vertriebsgespräch",
+      "interview": "Interview",
+      "planning": "Planung",
+      "hint": "Protokollvorlage — wiederkehrende Meetings merken sich diese Wahl"
+    },
+    "recap": {
+      "copy": "Zusammenfassung zum Teilen kopieren",
+      "copied": "Zusammenfassung kopiert — bereit zum Einfügen in Slack oder E-Mail",
+      "copyFailed": "Zusammenfassung konnte nicht kopiert werden",
+      "attendees": "Teilnehmer"
     }
   },
   "dictionary": {

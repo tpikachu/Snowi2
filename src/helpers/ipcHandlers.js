@@ -124,6 +124,10 @@ const NOTE_CHUNK_BACKFILL_PAUSE_MS = 25;
 const SEGMENT_BACKFILL_LIMIT = 500;
 const SEGMENT_BACKFILL_PAUSE_MS = 5;
 
+// The fallback slice of a claim-less previous occurrence carried into the
+// pre-meeting brief. Prompt prefill is the cost, so it stays modest.
+const SERIES_BRIEF_EXCERPT_CHARS = 700;
+
 const MISTRAL_TRANSCRIPTION_URL = "https://api.mistral.ai/v1/audio/transcriptions";
 
 const XAI_STT_URL = "https://api.x.ai/v1/stt";
@@ -1536,6 +1540,19 @@ class IPCHandlers {
 
         const memoryStore = this._getMemoryStore();
         const claims = memoryStore ? memoryStore.listForNote(last.id).slice(0, 24) : [];
+
+        // Hand-typed notes never went through memory extraction, so they have
+        // no claims — but they are still what happened last time. When there
+        // is nothing better, an excerpt of the note itself rides along; the
+        // renderer labels it as possibly out of date, which claims (which
+        // carry current statuses) never need.
+        let excerpt = null;
+        if (claims.length === 0) {
+          const lastNote = this.databaseManager.getNote(last.id);
+          const body = (lastNote?.enhanced_content || lastNote?.content || "").trim();
+          if (body) excerpt = body.slice(0, SERIES_BRIEF_EXCERPT_CHARS);
+        }
+
         // created_at is SQLite CURRENT_TIMESTAMP — UTC with no suffix. Crossing
         // the boundary as real ISO means the renderer never has to know that.
         const { parseNoteDate } = require("./transcriptFormatter");
@@ -1546,6 +1563,7 @@ class IPCHandlers {
           lastDate: Number.isNaN(parsed.getTime()) ? last.created_at : parsed.toISOString(),
           occurrences: occurrences.length,
           claims,
+          excerpt,
         };
       } catch (error) {
         debugLogger.error("Meeting series brief failed", { error: error.message }, "meeting");

@@ -3129,6 +3129,21 @@
       "showEarlier_other": "Show {{count}} earlier messages",
       "jumpToLive": "Jump to live",
       "jumpToLatest": "Jump to latest"
+    },
+    "templates": {
+      "default": "Standard notes",
+      "oneOnOne": "1:1",
+      "standup": "Standup",
+      "sales": "Sales call",
+      "interview": "Interview",
+      "planning": "Planning",
+      "hint": "Write-up template — recurring meetings remember this choice"
+    },
+    "recap": {
+      "copy": "Copy recap for sharing",
+      "copied": "Recap copied — ready to paste into Slack or email",
+      "copyFailed": "Could not copy the recap",
+      "attendees": "Attendees"
     }
   },
   "dictionary": {

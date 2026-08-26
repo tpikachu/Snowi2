@@ -2850,6 +2850,21 @@
       "showEarlier_other": "以前のメッセージを{{count}}件表示",
       "jumpToLive": "ライブに移動",
       "jumpToLatest": "最新に移動"
+    },
+    "templates": {
+      "default": "標準ノート",
+      "oneOnOne": "1on1",
+      "standup": "朝会",
+      "sales": "商談",
+      "interview": "面接",
+      "planning": "企画会議",
+      "hint": "議事録テンプレート — 定例会議はこの選択を記憶します"
+    },
+    "recap": {
+      "copy": "共有用の要約をコピー",
+      "copied": "要約をコピーしました — Slackやメールに貼り付けられます",
+      "copyFailed": "要約をコピーできませんでした",
+      "attendees": "参加者"
     }
   },
   "dictionary": {
