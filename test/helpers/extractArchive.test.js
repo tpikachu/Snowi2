@@ -180,7 +180,7 @@ test("extractArchive falls back to PowerShell when Windows tar rejects a zip arc
         args: [
           "-NoProfile",
           "-Command",
-          "Expand-Archive -Force -Path 'C:\\cache\\binary.zip' -DestinationPath 'C:\\cache\\extract'",
+          "try { Expand-Archive -Force -ErrorAction Stop -Path 'C:\\cache\\binary.zip' -DestinationPath 'C:\\cache\\extract' } catch { Write-Error $_; exit 1 }",
         ],
       },
     ]);

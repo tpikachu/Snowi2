@@ -85,6 +85,10 @@ test("derives tar flags from the archive extension", async () => {
   }
 });
 
+// killImpl is stubbed in the timeout tests: the real killProcess is
+// platform-dependent (on Windows it spawns taskkill against child.pid, which a
+// mock must not fake with a real-looking number). These tests cover
+// runSystemTar's timeout wiring; killProcess is its own unit.
 test("kills and rejects a tar process that does not exit before the timeout", async () => {
   const child = makeChild();
 
@@ -93,6 +97,7 @@ test("kills and rejects a tar process that does not exit before the timeout", as
       platform: "linux",
       timeoutMs: 10,
       spawnImpl: () => child,
+      killImpl: (proc) => proc.kill(),
     }),
     /tar extraction timed out after 10ms/
   );
@@ -108,6 +113,7 @@ test("rejects after the kill grace period when the killed process never closes",
       timeoutMs: 10,
       killGraceMs: 20,
       spawnImpl: () => child,
+      killImpl: (proc) => proc.kill(),
     }),
     /tar extraction timed out after 10ms/
   );

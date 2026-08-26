@@ -19,6 +19,10 @@ require.cache[require.resolve("../../src/helpers/safeTempDir.js")] = {
   exports: { getSafeTempDir: () => tempDir },
 };
 
+// What the host really is, read before the pin below hides it — assertions
+// about real filesystem behavior (exec bits) must consult this, not the pin.
+const REAL_PLATFORM = process.platform;
+
 // Pin to linux-x64 so asset-config resolution behaves identically on any host
 Object.defineProperty(process, "platform", { value: "linux" });
 Object.defineProperty(process, "arch", { value: "x64" });
@@ -139,7 +143,12 @@ test("CUDA: resolves its exact asset from the pinned tag and installs binary + c
   const binDir = path.join(userDataDir, "bin", "whisper-cuda");
   const binaryPath = path.join(binDir, "whisper-server-linux-x64-cuda");
   assert.ok(fs.existsSync(binaryPath));
-  assert.ok(fs.statSync(binaryPath).mode & 0o100, "binary is executable");
+  // Exec bits only exist on POSIX. On Windows chmod is a no-op and stat
+  // reports no exec bit for an extensionless file, so this assertion can only
+  // ever hold where the bit is real — the host's platform, not the pinned one.
+  if (REAL_PLATFORM !== "win32") {
+    assert.ok(fs.statSync(binaryPath).mode & 0o100, "binary is executable");
+  }
   assert.ok(fs.existsSync(path.join(binDir, "libggml-cuda.so")), "companion lib copied");
   assert.ok(!fs.existsSync(path.join(binDir, "README.md")), "unrelated files not copied");
   assert.equal(manager.getCudaBinaryPath(), binaryPath);

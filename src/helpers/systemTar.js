@@ -37,6 +37,11 @@ function runSystemTar(
     timeoutMs = TIMEOUTS.INSTALL,
     killGraceMs = TAR_KILL_GRACE_MS,
     spawnImpl = spawn,
+    // Injectable because the real one is platform-dependent in a way a mock
+    // child cannot satisfy: on Windows it spawns an actual `taskkill` against
+    // the child's pid, which a test double does not have — and must not fake,
+    // or the suite force-kills whatever real process owns that number.
+    killImpl = killProcess,
   } = {}
 ) {
   return new Promise((resolve, reject) => {
@@ -81,7 +86,7 @@ function runSystemTar(
 
     const timeoutTimer = setTimeout(() => {
       timedOut = true;
-      killProcess(tarProcess, "SIGKILL");
+      killImpl(tarProcess, "SIGKILL");
 
       // Normally close follows kill immediately. Do not let a broken process
       // implementation turn the safety timeout into another indefinite wait.

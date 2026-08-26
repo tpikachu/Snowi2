@@ -441,12 +441,17 @@ async function extractZipWindows(zipPath, destDir) {
   }
 
   return new Promise((resolve, reject) => {
+    // Wrapped in try/catch with -ErrorAction Stop because Expand-Archive
+    // reports a corrupt archive as a NON-terminating error: powershell.exe
+    // exits 0, execFile sees no error, and a corrupted download would
+    // "extract" successfully — with the failure surfacing much later as a
+    // missing binary. The wrapper turns any archive error into exit 1.
     execFile(
       "powershell",
       [
         "-NoProfile",
         "-Command",
-        `Expand-Archive -Force -Path '${zipPath}' -DestinationPath '${destDir}'`,
+        `try { Expand-Archive -Force -ErrorAction Stop -Path '${zipPath}' -DestinationPath '${destDir}' } catch { Write-Error $_; exit 1 }`,
       ],
       (psError) => {
         if (psError) reject(new Error(`Zip extraction failed: ${psError.message}`));
