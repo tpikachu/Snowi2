@@ -152,6 +152,50 @@ async function retrieveAssistNotes(query: string, limit: number): Promise<Assist
 const toRefs = (notes: readonly AssistNote[]): AssistNoteRef[] =>
   notes.map((note) => ({ noteId: note.noteId, title: note.title }));
 
+/**
+ * Loads the assistant's dependencies while nobody is waiting on them.
+ *
+ * Both are lazy by design and expensive on first use: a local GGUF model is
+ * loaded by the first inference call (tens of seconds for a large one), and
+ * the embedding worker is spawned by the first retrieval. Left alone, both
+ * bills come due under the meeting's first suggestion or question — the exact
+ * moment this feature is supposed to feel instant. A meeting starting is the
+ * user declaring they will need the assistant, so the loading happens during
+ * the "can everyone hear me" minute instead.
+ *
+ * Fire-and-forget and quiet on failure: a warmup that cannot run changes
+ * nothing — the first real request pays the old price and reports its own
+ * errors.
+ */
+function warmAssistDependencies(): void {
+  try {
+    const chat = selectResolvedLLMConfig(getSettings(), "chatIntelligence");
+    // Only the local runtime needs loading. Cloud providers have no warmup,
+    // and a LAN server is someone else's process.
+    if ((chat.mode || "local") === "local" && chat.model) {
+      const startedAt = Date.now();
+      void window.electronAPI
+        ?.llamaServerStart?.(chat.model)
+        .then((result) => {
+          if (result?.success) {
+            logger.info(
+              "Warmed local assist model at meeting start",
+              { model: chat.model, ms: Date.now() - startedAt },
+              "meeting"
+            );
+          }
+        })
+        .catch(() => {});
+    }
+
+    // One tiny search spins up the ONNX worker and the embedding model, so the
+    // first Thinking retrieval starts warm. The query text is irrelevant.
+    void window.electronAPI?.semanticSearchNotes?.("meeting", 1, null, null).catch(() => {});
+  } catch {
+    // Warming is an optimization; the assistant works without it.
+  }
+}
+
 /** Claims per retrieved note. Small: they ride inside an already-budgeted block. */
 const ASSIST_NOTE_CLAIMS_LIMIT = 6;
 
@@ -444,6 +488,10 @@ export function useMeetingAssist(): MeetingAssist {
 
   useEffect(() => {
     if (!isRecording) return undefined;
+
+    // The user just declared they will need the assistant; load its lazy
+    // dependencies now rather than under the first question.
+    warmAssistDependencies();
 
     const tick = () => {
       // Re-read rather than captured: someone can configure a model from
