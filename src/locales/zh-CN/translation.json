@@ -2936,6 +2936,11 @@
         "summary": "例会 · 上次 {{date}}",
         "open": "上次遗留 {{n}} 项待办",
         "ask": "还有哪些未完成？"
+      },
+      "quickActions": {
+        "whatToSay": "我该说什么？",
+        "recap": "到目前为止的回顾",
+        "stillOpen": "还有什么未解决？"
       }
     },
     "transcript": {

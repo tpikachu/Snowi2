@@ -3143,6 +3143,11 @@
         "summary": "Recurring · last met {{date}}",
         "open": "{{n}} open from last time",
         "ask": "What's still open?"
+      },
+      "quickActions": {
+        "whatToSay": "What should I say?",
+        "recap": "Recap so far",
+        "stillOpen": "What's still open?"
       }
     },
     "transcript": {

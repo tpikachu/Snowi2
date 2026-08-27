@@ -2936,6 +2936,11 @@
         "summary": "Recorrente · última vez {{date}}",
         "open": "{{n}} pendentes da última vez",
         "ask": "O que ainda está pendente?"
+      },
+      "quickActions": {
+        "whatToSay": "O que devo dizer?",
+        "recap": "Resumo até agora",
+        "stillOpen": "O que ainda está pendente?"
       }
     },
     "transcript": {

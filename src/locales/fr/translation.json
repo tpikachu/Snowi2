@@ -3143,6 +3143,11 @@
         "summary": "Récurrente · dernière fois {{date}}",
         "open": "{{n}} en cours depuis la dernière fois",
         "ask": "Qu'est-ce qui reste ouvert ?"
+      },
+      "quickActions": {
+        "whatToSay": "Que devrais-je dire ?",
+        "recap": "Résumé jusqu'ici",
+        "stillOpen": "Qu'est-ce qui reste ouvert ?"
       }
     },
     "transcript": {

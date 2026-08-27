@@ -2936,6 +2936,11 @@
         "summary": "Ricorrente · ultima volta {{date}}",
         "open": "{{n}} aperti dalla volta scorsa",
         "ask": "Cosa è ancora aperto?"
+      },
+      "quickActions": {
+        "whatToSay": "Cosa dovrei dire?",
+        "recap": "Riepilogo finora",
+        "stillOpen": "Cosa resta aperto?"
       }
     },
     "transcript": {

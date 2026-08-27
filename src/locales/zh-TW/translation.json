@@ -2936,6 +2936,11 @@
         "summary": "例會 · 上次 {{date}}",
         "open": "上次遺留 {{n}} 項待辦",
         "ask": "還有哪些未完成？"
+      },
+      "quickActions": {
+        "whatToSay": "我該說什麼？",
+        "recap": "到目前為止的回顧",
+        "stillOpen": "還有什麼未解決？"
       }
     },
     "transcript": {

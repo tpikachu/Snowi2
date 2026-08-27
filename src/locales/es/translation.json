@@ -2984,6 +2984,11 @@
         "summary": "Periódica · última vez {{date}}",
         "open": "{{n}} pendientes de la última vez",
         "ask": "¿Qué sigue pendiente?"
+      },
+      "quickActions": {
+        "whatToSay": "¿Qué debería decir?",
+        "recap": "Resumen hasta ahora",
+        "stillOpen": "¿Qué sigue pendiente?"
       }
     },
     "transcript": {

@@ -3143,6 +3143,11 @@
         "summary": "Wiederkehrend · zuletzt am {{date}}",
         "open": "{{n}} offen vom letzten Mal",
         "ask": "Was ist noch offen?"
+      },
+      "quickActions": {
+        "whatToSay": "Was soll ich sagen?",
+        "recap": "Zusammenfassung bisher",
+        "stillOpen": "Was ist noch offen?"
       }
     },
     "transcript": {

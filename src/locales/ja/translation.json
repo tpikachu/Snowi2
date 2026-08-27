@@ -2864,6 +2864,11 @@
         "summary": "定例 · 前回 {{date}}",
         "open": "前回からの未完了 {{n}} 件",
         "ask": "未完了の項目は？"
+      },
+      "quickActions": {
+        "whatToSay": "何と言えばいい？",
+        "recap": "ここまでの要約",
+        "stillOpen": "まだ残っていることは？"
       }
     },
     "transcript": {

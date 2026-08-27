@@ -204,6 +204,65 @@ function LastTimeStrip({
 }
 
 /**
+ * The three questions every meeting eventually asks, as one-click chips.
+ *
+ * The machinery existed before the buttons did — fast assist, thinking
+ * retrieval, the series brief — but a text box is an empty prompt, and
+ * mid-call nobody composes. Each label IS the question sent, LastTimeStrip's
+ * rule: what the user pressed and what the assistant was asked cannot
+ * disagree. "What's still open?" appears only for a recognized recurring
+ * meeting, because without a previous occurrence it is a question about
+ * nothing.
+ */
+function QuickActions({
+  ready,
+  hasSeries,
+  onAsk,
+}: {
+  ready: boolean;
+  hasSeries: boolean;
+  onAsk: (question: string, mode: AssistMode) => void;
+}) {
+  const { t } = useTranslation();
+  const actions: Array<{ label: string; mode: AssistMode; icon: typeof Zap }> = [
+    { label: t("notes.meetingPanel.quickActions.whatToSay"), mode: "fast", icon: Zap },
+    { label: t("notes.meetingPanel.quickActions.recap"), mode: "thinking", icon: Brain },
+    ...(hasSeries
+      ? [
+          {
+            label: t("notes.meetingPanel.quickActions.stillOpen"),
+            mode: "thinking" as AssistMode,
+            icon: History,
+          },
+        ]
+      : []),
+  ];
+
+  return (
+    <div className="flex shrink-0 flex-wrap items-center gap-1">
+      {actions.map(({ label, mode, icon: Icon }) => (
+        <button
+          key={label}
+          type="button"
+          onClick={() => onAsk(label, mode)}
+          disabled={!ready}
+          className={cn(
+            "flex items-center gap-1 rounded-md border border-hud-border px-1.5 py-0.5",
+            "text-[10px] text-hud-muted transition-colors duration-150",
+            "hover:bg-white/10 hover:text-hud-foreground",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+            "disabled:cursor-not-allowed disabled:opacity-40"
+          )}
+        >
+          <Icon size={9} />
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
  * Which past notes this was built from.
  *
  * Named rather than cited inline: mid-call there is no time to follow a
@@ -610,6 +669,13 @@ export default function MeetingPanelOverlay() {
                 )}
               </div>
             </section>
+
+            {/* The named verbs, one row above the assistant they feed. */}
+            <QuickActions
+              ready={assistReady}
+              hasSeries={!!assist?.lastTime}
+              onAsk={(text, askMode) => void window.electronAPI?.meetingPanelAsk?.(text, askMode)}
+            />
 
             {/* The assistant. This is what the leftover height goes to, because
                 it is the reason to keep the panel open — a question you need
