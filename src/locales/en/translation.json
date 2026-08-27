@@ -1945,7 +1945,9 @@
         "updates": "App updates",
         "updatesDescription": "Notify when a new version is available",
         "meetingPreRoll": "Catch the start of detected meetings",
-        "meetingPreRollDescription": "While a meeting prompt is on screen, keep the last 45 seconds of microphone audio in memory so accepting it does not start mid-sentence. The audio is never written to disk and is destroyed the moment you dismiss the prompt or let it expire."
+        "meetingPreRollDescription": "While a meeting prompt is on screen, keep the last 45 seconds of microphone audio in memory so accepting it does not start mid-sentence. The audio is never written to disk and is destroyed the moment you dismiss the prompt or let it expire.",
+        "autoStart": "Start recording automatically",
+        "autoStartDescription": "If a detected meeting goes unanswered for a few seconds, recording starts on its own. You can always discard it afterward."
       },
       "clipboard": {
         "title": "Clipboard",
@@ -2917,7 +2919,9 @@
         "save": "Save",
         "title": "Save this meeting?",
         "titleEmpty": "Nothing was recorded",
-        "untitled": "This meeting"
+        "untitled": "This meeting",
+        "saveCountdown": "Save ({{seconds}}s)",
+        "autoSaveHint": "Saves automatically in {{seconds}} seconds if you don't choose."
       }
     },
     "meetingPill": {
@@ -3663,7 +3667,8 @@
       "underway": "It sounds like your meeting is underway. Want to take notes?"
     },
     "start": "Take notes",
-    "join": "Join & transcribe"
+    "join": "Join & transcribe",
+    "autoStart": "Recording starts in {{seconds}}s — dismiss to skip"
   },
   "capture": {
     "dictate": "Dictate",

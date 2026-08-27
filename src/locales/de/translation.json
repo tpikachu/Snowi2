@@ -1945,7 +1945,9 @@
         "updates": "App-Updates",
         "updatesDescription": "Benachrichtigen, wenn eine neue Version verfügbar ist",
         "meetingPreRoll": "Beginn erkannter Meetings mitschneiden",
-        "meetingPreRollDescription": "Solange eine Meeting-Abfrage angezeigt wird, werden die letzten 45 Sekunden Mikrofonaudio im Arbeitsspeicher gehalten, damit eine Zusage nicht mitten im Satz beginnt. Das Audio wird nie auf die Festplatte geschrieben und sofort gelöscht, wenn Sie die Abfrage ablehnen oder ablaufen lassen."
+        "meetingPreRollDescription": "Solange eine Meeting-Abfrage angezeigt wird, werden die letzten 45 Sekunden Mikrofonaudio im Arbeitsspeicher gehalten, damit eine Zusage nicht mitten im Satz beginnt. Das Audio wird nie auf die Festplatte geschrieben und sofort gelöscht, wenn Sie die Abfrage ablehnen oder ablaufen lassen.",
+        "autoStart": "Aufnahme automatisch starten",
+        "autoStartDescription": "Bleibt ein erkanntes Meeting einige Sekunden unbeantwortet, startet die Aufnahme von selbst. Sie können sie danach jederzeit verwerfen."
       },
       "clipboard": {
         "title": "Zwischenablage",
@@ -2917,7 +2919,9 @@
         "save": "Speichern",
         "title": "Dieses Meeting speichern?",
         "titleEmpty": "Es wurde nichts aufgezeichnet",
-        "untitled": "Dieses Meeting"
+        "untitled": "Dieses Meeting",
+        "saveCountdown": "Speichern ({{seconds}} s)",
+        "autoSaveHint": "Wird in {{seconds}} Sekunden automatisch gespeichert, wenn Sie nichts wählen."
       }
     },
     "meetingPill": {
@@ -3663,7 +3667,8 @@
       "underway": "Es klingt, als wäre dein Meeting schon im Gange. Notizen aufnehmen?"
     },
     "start": "Notizen aufnehmen",
-    "join": "Beitreten & transkribieren"
+    "join": "Beitreten & transkribieren",
+    "autoStart": "Aufnahme startet in {{seconds}} s — schließen zum Überspringen"
   },
   "capture": {
     "dictate": "Diktieren",

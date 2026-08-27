@@ -8,7 +8,7 @@ const DevServerManager = require("./devServerManager");
 const dockManager = require("./dockManager");
 const { i18nMain } = require("./i18nMain");
 const { DICTATION_ENABLED } = require("../config/features");
-const { NotificationDismissTimer, getNotificationTimeoutMs } = require("./notificationTimer");
+const { NotificationDismissTimer, resolvePromptTimeout } = require("./notificationTimer");
 const { DEV_SERVER_PORT } = DevServerManager;
 const {
   MAIN_WINDOW_CONFIG,
@@ -28,7 +28,21 @@ class WindowManager {
     this.controlPanelWindow = null;
     this.agentWindow = null;
     this.notificationWindow = null;
+    /** Set while the visible prompt times out into recording, not dismissal. */
+    this._notificationAutoStart = null;
     this._notificationDismissTimer = new NotificationDismissTimer(() => {
+      const autoStart = this._notificationAutoStart;
+      this._notificationAutoStart = null;
+      if (autoStart && this.meetingDetectionEngine) {
+        // The prompt announced this countdown; going unanswered is the
+        // consent path here, not the refusal. "start" — never "join": an
+        // unattended timeout must not open a browser tab on its own. The
+        // response handler dismisses the notification itself.
+        void this.meetingDetectionEngine
+          .handleNotificationResponse(autoStart.detectionId, "start")
+          .catch(() => {});
+        return;
+      }
       if (this.meetingDetectionEngine) {
         this.meetingDetectionEngine.handleNotificationTimeout();
       }
@@ -49,6 +63,10 @@ class WindowManager {
       notifyMeetingDetection: true,
       notifyCalendarReminders: true,
       notifyUpdates: true,
+      // An unanswered "meeting detected" prompt starts recording instead of
+      // vanishing. The prompt shows the countdown and Dismiss stays one
+      // click away; this is the opt-out.
+      autoStartDetectedMeetings: true,
     };
     this.tray = null;
     this.hotkeyManager = new HotkeyManager();
@@ -1302,6 +1320,21 @@ class WindowManager {
 
     WindowPositionUtil.setupAlwaysOnTop(win);
 
+    // How this prompt ends if nobody answers it: auto-start for a meeting
+    // that is happening now (when enabled), plain dismissal otherwise. The
+    // renderer gets the countdown so the card can say what is about to
+    // happen — an unannounced auto-start would be indistinguishable from a
+    // bug.
+    const timeout = resolvePromptTimeout({
+      source: promptData.source,
+      variant: promptData.variant,
+      autoStartEnabled: this.notificationPrefs.autoStartDetectedMeetings,
+    });
+    promptData = { ...promptData, autoStartMs: timeout.autoStart ? timeout.ms : null };
+    this._notificationAutoStart = timeout.autoStart
+      ? { detectionId: promptData.detectionId }
+      : null;
+
     this._pendingNotificationData = promptData;
 
     // Everything past the load addresses `win` directly: a replacement taking
@@ -1331,13 +1364,14 @@ class WindowManager {
       }
     }, 3000);
 
-    this._notificationDismissTimer.start(getNotificationTimeoutMs(promptData.source));
+    this._notificationDismissTimer.start(timeout.ms);
 
     // "closed" fires asynchronously, so a replaced prompt's window emits it
     // after the replacement already took over the reference and the countdown.
     win.on("closed", () => {
       if (this.notificationWindow !== win) return;
       this.notificationWindow = null;
+      this._notificationAutoStart = null;
       this._notificationDismissTimer.cancel();
     });
   }
@@ -1367,6 +1401,7 @@ class WindowManager {
 
   dismissMeetingNotification() {
     this._pendingNotificationData = null;
+    this._notificationAutoStart = null;
     if (this._notificationReadyFallback) {
       clearTimeout(this._notificationReadyFallback);
       this._notificationReadyFallback = null;

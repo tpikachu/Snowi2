@@ -1710,7 +1710,9 @@
         "updates": "Actualizaciones",
         "updatesDescription": "Notificar cuando hay una nueva versión disponible",
         "meetingPreRoll": "Capturar el inicio de las reuniones detectadas",
-        "meetingPreRollDescription": "Mientras haya un aviso de reunión en pantalla, se mantienen en memoria los últimos 45 segundos de audio del micrófono para que aceptarlo no empiece a mitad de una frase. El audio nunca se guarda en disco y se destruye en cuanto descartas el aviso o dejas que caduque."
+        "meetingPreRollDescription": "Mientras haya un aviso de reunión en pantalla, se mantienen en memoria los últimos 45 segundos de audio del micrófono para que aceptarlo no empiece a mitad de una frase. El audio nunca se guarda en disco y se destruye en cuanto descartas el aviso o dejas que caduque.",
+        "autoStart": "Iniciar la grabación automáticamente",
+        "autoStartDescription": "Si no respondes a una reunión detectada en unos segundos, la grabación empieza sola. Siempre puedes descartarla después."
       },
       "clipboard": {
         "title": "Portapapeles",
@@ -2758,7 +2760,9 @@
         "save": "Guardar",
         "title": "¿Guardar esta reunión?",
         "titleEmpty": "No se grabó nada",
-        "untitled": "Esta reunión"
+        "untitled": "Esta reunión",
+        "saveCountdown": "Guardar ({{seconds}} s)",
+        "autoSaveHint": "Se guardará automáticamente en {{seconds}} segundos si no eliges."
       }
     },
     "meetingPill": {
@@ -3663,7 +3667,8 @@
       "underway": "Parece que tu reunión ya está en curso. ¿Quieres tomar notas?"
     },
     "start": "Tomar notas",
-    "join": "Unirse y transcribir"
+    "join": "Unirse y transcribir",
+    "autoStart": "La grabación empieza en {{seconds}} s — descarta para omitir"
   },
   "capture": {
     "dictate": "Dictar",

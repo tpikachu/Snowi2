@@ -1662,7 +1662,9 @@
         "updates": "应用更新",
         "updatesDescription": "有新版本可用时通知您",
         "meetingPreRoll": "捕捉检测到的会议开头",
-        "meetingPreRollDescription": "会议提示显示期间，在内存中保留最近 45 秒的麦克风音频，这样接受时不会从半句话开始。音频绝不写入磁盘，你关闭提示或让它超时后会立即销毁。"
+        "meetingPreRollDescription": "会议提示显示期间，在内存中保留最近 45 秒的麦克风音频，这样接受时不会从半句话开始。音频绝不写入磁盘，你关闭提示或让它超时后会立即销毁。",
+        "autoStart": "自动开始录制",
+        "autoStartDescription": "检测到会议后若几秒内无响应，将自动开始录制。之后随时可以丢弃。"
       },
       "clipboard": {
         "title": "剪贴板",
@@ -2710,7 +2712,9 @@
         "save": "保存",
         "title": "保存这次会议吗？",
         "titleEmpty": "没有录到任何内容",
-        "untitled": "这次会议"
+        "untitled": "这次会议",
+        "saveCountdown": "保存（{{seconds}} 秒）",
+        "autoSaveHint": "若不选择，将在 {{seconds}} 秒后自动保存。"
       }
     },
     "meetingPill": {
@@ -3663,7 +3667,8 @@
       "underway": "你的会议似乎已在进行中。要开始记录吗？"
     },
     "start": "开始记录",
-    "join": "加入并转录"
+    "join": "加入并转录",
+    "autoStart": "{{seconds}} 秒后开始录制 — 关闭以跳过"
   },
   "capture": {
     "dictate": "听写",

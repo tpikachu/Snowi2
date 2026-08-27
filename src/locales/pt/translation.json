@@ -1641,7 +1641,9 @@
         "updates": "Atualizações do app",
         "updatesDescription": "Notificar quando uma nova versão estiver disponível",
         "meetingPreRoll": "Capturar o início das reuniões detectadas",
-        "meetingPreRollDescription": "Enquanto um aviso de reunião estiver na tela, os últimos 45 segundos de áudio do microfone ficam na memória para que aceitar não comece no meio de uma frase. O áudio nunca é gravado em disco e é destruído assim que você dispensa o aviso ou o deixa expirar."
+        "meetingPreRollDescription": "Enquanto um aviso de reunião estiver na tela, os últimos 45 segundos de áudio do microfone ficam na memória para que aceitar não comece no meio de uma frase. O áudio nunca é gravado em disco e é destruído assim que você dispensa o aviso ou o deixa expirar.",
+        "autoStart": "Iniciar gravação automaticamente",
+        "autoStartDescription": "Se uma reunião detectada ficar sem resposta por alguns segundos, a gravação começa sozinha. Você sempre pode descartá-la depois."
       },
       "clipboard": {
         "title": "Área de transferência",
@@ -2710,7 +2712,9 @@
         "save": "Salvar",
         "title": "Salvar esta reunião?",
         "titleEmpty": "Nada foi gravado",
-        "untitled": "Esta reunião"
+        "untitled": "Esta reunião",
+        "saveCountdown": "Salvar ({{seconds}} s)",
+        "autoSaveHint": "Salva automaticamente em {{seconds}} segundos se você não escolher."
       }
     },
     "meetingPill": {
@@ -3663,7 +3667,8 @@
       "underway": "Parece que sua reunião já está em andamento. Quer fazer anotações?"
     },
     "start": "Fazer anotações",
-    "join": "Entrar e transcrever"
+    "join": "Entrar e transcrever",
+    "autoStart": "A gravação começa em {{seconds}} s — dispense para pular"
   },
   "capture": {
     "dictate": "Ditar",

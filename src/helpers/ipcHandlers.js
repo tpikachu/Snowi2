@@ -8509,6 +8509,7 @@ class IPCHandlers {
       "notifyMeetingDetection",
       "notifyCalendarReminders",
       "notifyUpdates",
+      "autoStartDetectedMeetings",
     ]);
 
     ipcMain.handle("sync-notification-preferences", async (_event, prefs) => {

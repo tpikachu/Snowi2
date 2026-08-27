@@ -4,6 +4,8 @@ import { SnowyAppIcon } from "./ui/BrandMark";
 interface MeetingNotificationCardProps {
   title: string;
   body: string;
+  /** What happens if nobody answers — e.g. "Recording starts in 8s". */
+  subtext?: string | null;
   startLabel: string;
   onStart?: () => void;
   onDismiss?: () => void;
@@ -23,6 +25,7 @@ interface MeetingNotificationCardProps {
 export function MeetingNotificationCard({
   title,
   body,
+  subtext,
   startLabel,
   onStart,
   onDismiss,
@@ -69,6 +72,9 @@ export function MeetingNotificationCard({
             {title}
           </p>
           <p className="text-[11px] text-muted-foreground leading-tight mt-0.5">{body}</p>
+          {subtext && (
+            <p className="text-[11px] font-medium text-primary leading-tight mt-0.5">{subtext}</p>
+          )}
         </div>
 
         <button

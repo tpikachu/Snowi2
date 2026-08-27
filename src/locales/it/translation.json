@@ -1662,7 +1662,9 @@
         "updates": "Aggiornamenti app",
         "updatesDescription": "Avvisa quando è disponibile una nuova versione",
         "meetingPreRoll": "Cattura l'inizio delle riunioni rilevate",
-        "meetingPreRollDescription": "Mentre un avviso di riunione è sullo schermo, gli ultimi 45 secondi di audio del microfono restano in memoria così accettare non inizia a metà frase. L'audio non viene mai scritto su disco e viene distrutto appena chiudi l'avviso o lo lasci scadere."
+        "meetingPreRollDescription": "Mentre un avviso di riunione è sullo schermo, gli ultimi 45 secondi di audio del microfono restano in memoria così accettare non inizia a metà frase. L'audio non viene mai scritto su disco e viene distrutto appena chiudi l'avviso o lo lasci scadere.",
+        "autoStart": "Avvia la registrazione automaticamente",
+        "autoStartDescription": "Se una riunione rilevata resta senza risposta per qualche secondo, la registrazione parte da sola. Puoi sempre scartarla dopo."
       },
       "clipboard": {
         "title": "Appunti",
@@ -2710,7 +2712,9 @@
         "save": "Salva",
         "title": "Salvare questa riunione?",
         "titleEmpty": "Non è stato registrato nulla",
-        "untitled": "Questa riunione"
+        "untitled": "Questa riunione",
+        "saveCountdown": "Salva ({{seconds}} s)",
+        "autoSaveHint": "Salvataggio automatico tra {{seconds}} secondi se non scegli."
       }
     },
     "meetingPill": {
@@ -3663,7 +3667,8 @@
       "underway": "Sembra che la tua riunione sia già in corso. Vuoi prendere appunti?"
     },
     "start": "Prendi appunti",
-    "join": "Partecipa e trascrivi"
+    "join": "Partecipa e trascrivi",
+    "autoStart": "La registrazione inizia tra {{seconds}} s — chiudi per saltare"
   },
   "capture": {
     "dictate": "Detta",

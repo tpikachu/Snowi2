@@ -11,6 +11,8 @@ interface NotificationData {
   event: { summary?: string | null } | null;
   variant: PromptVariant;
   joinUrl: string | null;
+  /** Main starts recording this long after showing the card, unless answered. */
+  autoStartMs?: number | null;
 }
 
 export default function MeetingNotificationOverlay() {
@@ -18,6 +20,7 @@ export default function MeetingNotificationOverlay() {
   const [data, setData] = useState<NotificationData | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
 
   useEffect(() => {
     let shown = false;
@@ -26,6 +29,7 @@ export default function MeetingNotificationOverlay() {
       if (shown) return;
       shown = true;
       setData(d);
+      if (d.autoStartMs) setSecondsLeft(Math.max(1, Math.round(d.autoStartMs / 1000)));
       setTimeout(() => {
         setIsVisible(true);
         window.electronAPI?.meetingNotificationReady?.();
@@ -42,6 +46,19 @@ export default function MeetingNotificationOverlay() {
 
     return () => cleanup?.();
   }, []);
+
+  // The display half of the auto-start countdown. Main owns the real timer —
+  // and pauses it while the card is hovered — so this mirrors that rule:
+  // frozen under the pointer, ticking otherwise, floored at 1 rather than
+  // announcing a zero that main's clock may not have reached yet.
+  const countdownArmed = secondsLeft !== null;
+  useEffect(() => {
+    if (!countdownArmed || isHovered) return undefined;
+    const timer = setInterval(() => {
+      setSecondsLeft((prev) => (prev === null || prev <= 1 ? prev : prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdownArmed, isHovered]);
 
   const respond = useCallback(
     async (action: string) => {
@@ -71,6 +88,9 @@ export default function MeetingNotificationOverlay() {
       <MeetingNotificationCard
         title={title}
         body={t(`meetingNotification.body.${variant}`)}
+        subtext={
+          secondsLeft !== null ? t("meetingNotification.autoStart", { seconds: secondsLeft }) : null
+        }
         startLabel={data?.joinUrl ? t("meetingNotification.join") : t("meetingNotification.start")}
         onStart={() => respond(data?.joinUrl ? "join" : "start")}
         onDismiss={() => respond("dismiss")}

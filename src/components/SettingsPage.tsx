@@ -615,6 +615,8 @@ export default function SettingsPage({
     setNotificationsEnabled,
     notifyMeetingDetection,
     setNotifyMeetingDetection,
+    autoStartDetectedMeetings,
+    setAutoStartDetectedMeetings,
     meetingPreRollEnabled,
     setMeetingPreRollEnabled,
     notifyCalendarReminders,
@@ -947,8 +949,15 @@ export default function SettingsPage({
       notifyMeetingDetection,
       notifyCalendarReminders,
       notifyUpdates,
+      autoStartDetectedMeetings,
     });
-  }, [notificationsEnabled, notifyMeetingDetection, notifyCalendarReminders, notifyUpdates]);
+  }, [
+    notificationsEnabled,
+    notifyMeetingDetection,
+    notifyCalendarReminders,
+    notifyUpdates,
+    autoStartDetectedMeetings,
+  ]);
 
   const handleAutoStartChange = async (enabled: boolean) => {
     if (!window.electronAPI?.setAutoStartEnabled) return;
@@ -1412,6 +1421,18 @@ export default function SettingsPage({
                       checked={notifyMeetingDetection}
                       onChange={setNotifyMeetingDetection}
                       disabled={!notificationsEnabled}
+                    />
+                  </SettingsRow>
+                </SettingsPanelRow>
+                <SettingsPanelRow>
+                  <SettingsRow
+                    label={t("settingsPage.general.notifications.autoStart")}
+                    description={t("settingsPage.general.notifications.autoStartDescription")}
+                  >
+                    <Toggle
+                      checked={autoStartDetectedMeetings}
+                      onChange={setAutoStartDetectedMeetings}
+                      disabled={!notificationsEnabled || !notifyMeetingDetection}
                     />
                   </SettingsRow>
                 </SettingsPanelRow>

@@ -1945,7 +1945,9 @@
         "updates": "Mises à jour",
         "updatesDescription": "Prévenir quand une nouvelle version est disponible",
         "meetingPreRoll": "Capter le début des réunions détectées",
-        "meetingPreRollDescription": "Tant qu'une invite de réunion est affichée, les 45 dernières secondes d'audio du micro sont conservées en mémoire pour qu'accepter ne commence pas au milieu d'une phrase. L'audio n'est jamais écrit sur le disque et est détruit dès que vous ignorez l'invite ou la laissez expirer."
+        "meetingPreRollDescription": "Tant qu'une invite de réunion est affichée, les 45 dernières secondes d'audio du micro sont conservées en mémoire pour qu'accepter ne commence pas au milieu d'une phrase. L'audio n'est jamais écrit sur le disque et est détruit dès que vous ignorez l'invite ou la laissez expirer.",
+        "autoStart": "Démarrer l'enregistrement automatiquement",
+        "autoStartDescription": "Si une réunion détectée reste sans réponse quelques secondes, l'enregistrement démarre tout seul. Vous pouvez toujours le supprimer ensuite."
       },
       "clipboard": {
         "title": "Presse-papiers",
@@ -2917,7 +2919,9 @@
         "save": "Enregistrer",
         "title": "Enregistrer cette réunion ?",
         "titleEmpty": "Rien n'a été enregistré",
-        "untitled": "Cette réunion"
+        "untitled": "Cette réunion",
+        "saveCountdown": "Enregistrer ({{seconds}} s)",
+        "autoSaveHint": "Enregistrement automatique dans {{seconds}} secondes si vous ne choisissez pas."
       }
     },
     "meetingPill": {
@@ -3663,7 +3667,8 @@
       "underway": "On dirait que votre réunion est déjà en cours. Vous voulez prendre des notes ?"
     },
     "start": "Prendre des notes",
-    "join": "Rejoindre et transcrire"
+    "join": "Rejoindre et transcrire",
+    "autoStart": "L'enregistrement démarre dans {{seconds}} s — fermez pour ignorer"
   },
   "capture": {
     "dictate": "Dicter",

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useToast } from "./ui/useToast";
 import {
@@ -29,6 +29,17 @@ const PANEL_LEVEL_INTERVAL_MS = 80;
 const MEETING_ERROR_KEYS: Record<string, string> = {};
 
 /**
+ * How long an unanswered keep-or-discard prompt waits before keeping.
+ *
+ * The prompt appears in the control panel window, which a meeting holds
+ * minimised — so "unanswered" is not rare carelessness, it is the normal
+ * outcome of stopping from the floating panel and moving on. Long enough to
+ * choose Discard deliberately; short enough that the write-up is ready before
+ * anyone comes looking for it.
+ */
+const STOP_AUTO_SAVE_SECONDS = 30;
+
+/**
  * The keep-or-discard prompt shown after Stop.
  *
  * Lives here, on the single global mount, rather than beside either Stop
@@ -38,10 +49,18 @@ const MEETING_ERROR_KEYS: Record<string, string> = {};
  * Save is the confirm action even when nothing was recorded, so the keyboard
  * default can never be the destructive one — a stray Enter must not delete a
  * meeting.
+ *
+ * Unanswered, it saves: after a visible countdown the meeting is kept and
+ * written up, exactly as if Save had been clicked. A recorded meeting must
+ * never evaporate — or sit unwritten-up — because a dialog in a minimised
+ * window went unseen. Only a meeting with content arms the countdown; an
+ * empty one auto-saving would manufacture blank notes out of false-positive
+ * detections.
  */
 function MeetingStopDialog() {
   const { t } = useTranslation();
   const pendingStop = useMeetingRecordingStore((s) => s.pendingStop);
+  const [autoSaveLeft, setAutoSaveLeft] = useState<number | null>(null);
 
   /**
    * Write the notes, once the user has said to keep the meeting.
@@ -85,6 +104,26 @@ function MeetingStopDialog() {
     void generateMeetingMemory({ noteId, speakerLabels });
   }, [t]);
 
+  const hasPending = Boolean(pendingStop);
+  const hasContent = Boolean(pendingStop?.hasContent);
+  useEffect(() => {
+    if (!hasPending || !hasContent) {
+      setAutoSaveLeft(null);
+      return undefined;
+    }
+    setAutoSaveLeft(STOP_AUTO_SAVE_SECONDS);
+    const timer = setInterval(() => {
+      setAutoSaveLeft((prev) => (prev === null ? null : Math.max(0, prev - 1)));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [hasPending, hasContent]);
+
+  useEffect(() => {
+    if (autoSaveLeft !== 0) return;
+    setAutoSaveLeft(null);
+    if (useMeetingRecordingStore.getState().pendingStop) keepMeeting();
+  }, [autoSaveLeft, keepMeeting]);
+
   if (!pendingStop) return null;
 
   const isEmpty = !pendingStop.hasContent;
@@ -108,11 +147,21 @@ function MeetingStopDialog() {
               title: pendingStop.noteTitle || t("notes.meeting.stopDialog.untitled"),
             })
       }
-      confirmText={t("notes.meeting.stopDialog.save")}
+      confirmText={
+        autoSaveLeft !== null
+          ? t("notes.meeting.stopDialog.saveCountdown", { seconds: autoSaveLeft })
+          : t("notes.meeting.stopDialog.save")
+      }
       cancelText={t("notes.meeting.stopDialog.discard")}
       onConfirm={keepMeeting}
       onCancel={() => void resolvePendingStop(false)}
-    />
+    >
+      {autoSaveLeft !== null && (
+        <p className="text-xs text-muted-foreground">
+          {t("notes.meeting.stopDialog.autoSaveHint", { seconds: autoSaveLeft })}
+        </p>
+      )}
+    </ConfirmDialog>
   );
 }
 

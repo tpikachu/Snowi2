@@ -1662,7 +1662,9 @@
         "updates": "應用程式更新",
         "updatesDescription": "有新版本可用時通知您",
         "meetingPreRoll": "捕捉偵測到的會議開頭",
-        "meetingPreRollDescription": "會議提示顯示期間，在記憶體中保留最近 45 秒的麥克風音訊，這樣接受時不會從半句話開始。音訊絕不寫入磁碟，你關閉提示或讓它逾時後會立即銷毀。"
+        "meetingPreRollDescription": "會議提示顯示期間，在記憶體中保留最近 45 秒的麥克風音訊，這樣接受時不會從半句話開始。音訊絕不寫入磁碟，你關閉提示或讓它逾時後會立即銷毀。",
+        "autoStart": "自動開始錄製",
+        "autoStartDescription": "偵測到會議後若幾秒內無回應，將自動開始錄製。之後隨時可以捨棄。"
       },
       "clipboard": {
         "title": "剪貼簿",
@@ -2710,7 +2712,9 @@
         "save": "儲存",
         "title": "要儲存這場會議嗎？",
         "titleEmpty": "沒有錄到任何內容",
-        "untitled": "這場會議"
+        "untitled": "這場會議",
+        "saveCountdown": "儲存（{{seconds}} 秒）",
+        "autoSaveHint": "若不選擇，將在 {{seconds}} 秒後自動儲存。"
       }
     },
     "meetingPill": {
@@ -3663,7 +3667,8 @@
       "underway": "你的會議似乎已在進行中。要開始記錄嗎？"
     },
     "start": "開始記錄",
-    "join": "加入並轉錄"
+    "join": "加入並轉錄",
+    "autoStart": "{{seconds}} 秒後開始錄製 — 關閉以略過"
   },
   "capture": {
     "dictate": "聽寫",
