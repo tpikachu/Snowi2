@@ -224,7 +224,23 @@
       "title": "Configuration de la transcription",
       "description": "Choisissez votre mode et fournisseur",
       "preferredLanguage": "Langue préférée",
-      "automaticDescription": "Snowy choisit un modèle adapté à votre matériel"
+      "automaticDescription": "Snowy choisit un modèle adapté à votre matériel",
+      "path": {
+        "question": "Comment Snowy doit-il transformer la parole en texte ?",
+        "localTitle": "Privé, sur cet ordinateur",
+        "localDescription": "Gratuit. Rien de ce que vous dites ne quitte votre ordinateur. Nécessite un téléchargement unique.",
+        "cloudTitle": "Service en ligne",
+        "cloudDescription": "Utilise un service comme OpenAI via internet. Nécessite une clé de compte."
+      },
+      "localChoice": {
+        "question": "Voulez-vous que Snowy s'en charge pour vous ?",
+        "autoTitle": "Configurer pour moi",
+        "autoDescription": "Snowy choisit le bon modèle pour cet ordinateur et le télécharge maintenant.",
+        "manualTitle": "Je choisirai moi-même",
+        "manualDescription": "Voir les modèles et en choisir un à télécharger."
+      },
+      "changeChoice": "Changer de choix",
+      "advancedLink": "Options avancées"
     },
     "activation": {
       "title": "Configuration de la dictée",
@@ -327,7 +343,8 @@
         "step1": "Inscrivez-vous sur corti.ai",
         "step2": "Ouvrez la console Corti et créez des identifiants API",
         "step3": "Collez votre Client ID et votre Secret ci-dessous"
-      }
+      },
+      "downloadStillRunning": "Votre modèle vocal ({{model}}) est encore en téléchargement — {{percent}} % terminé. Snowy le finira en arrière-plan."
     }
   },
   "streaming": {
@@ -3904,6 +3921,27 @@
       "onDevice": "Votre audio est traité ici et n'est jamais envoyé ailleurs.",
       "oneTime": "Il se télécharge une seule fois. On ne vous le redemandera pas.",
       "offline": "Ensuite, les réunions fonctionnent sans aucune connexion internet."
+    },
+    "recommendedBadge": "Recommandé",
+    "cloud": {
+      "openai": {
+        "description": "Excellente précision, convient à la plupart des gens."
+      },
+      "groq": {
+        "description": "Très rapide et économique."
+      },
+      "mistral": {
+        "description": "Bonne précision, entreprise européenne."
+      },
+      "xai": {
+        "description": "Transcription rapide par xAI (Grok)."
+      },
+      "corti": {
+        "description": "Conçu pour la santé — notes de niveau clinique."
+      },
+      "tinfoil": {
+        "description": "S'exécute dans un environnement scellé et privé."
+      }
     }
   }
 }

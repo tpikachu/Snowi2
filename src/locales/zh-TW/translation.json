@@ -224,7 +224,23 @@
       "title": "轉錄設定",
       "description": "選擇模式和服務供應商",
       "preferredLanguage": "偏好語言",
-      "automaticDescription": "Snowy 會根據你的硬體挑選模型"
+      "automaticDescription": "Snowy 會根據你的硬體挑選模型",
+      "path": {
+        "question": "Snowy 應如何把語音轉成文字？",
+        "localTitle": "本機私密處理",
+        "localDescription": "免費。您說的內容不會離開這台電腦。需要一次性下載。",
+        "cloudTitle": "線上服務",
+        "cloudDescription": "透過網際網路使用 OpenAI 等服務。需要帳戶金鑰。"
+      },
+      "localChoice": {
+        "question": "要讓 Snowy 幫您完成設定嗎？",
+        "autoTitle": "幫我設定",
+        "autoDescription": "Snowy 會為這台電腦挑選合適的模型並立即下載。",
+        "manualTitle": "我自己選",
+        "manualDescription": "檢視模型清單並選擇要下載的模型。"
+      },
+      "changeChoice": "更改選擇",
+      "advancedLink": "進階選項"
     },
     "activation": {
       "title": "聽寫設定",
@@ -327,7 +343,8 @@
         "step1": "在 corti.ai 註冊",
         "step2": "開啟 Corti 控制台並建立 API 憑證",
         "step3": "在下方貼上 Client ID 和 Secret"
-      }
+      },
+      "downloadStillRunning": "語音模型（{{model}}）仍在下載 — 已完成 {{percent}}%。Snowy 會在背景完成下載。"
     }
   },
   "streaming": {
@@ -3904,6 +3921,27 @@
       "onDevice": "音訊在本機處理，不會傳送到任何地方。",
       "oneTime": "只需下載一次，之後不會再問你。",
       "offline": "下載之後，完全沒有網路也能記錄會議。"
+    },
+    "recommendedBadge": "推薦",
+    "cloud": {
+      "openai": {
+        "description": "準確率高，適合大多數人。"
+      },
+      "groq": {
+        "description": "非常快，價格實惠。"
+      },
+      "mistral": {
+        "description": "來自歐洲公司的良好準確率。"
+      },
+      "xai": {
+        "description": "xAI（Grok）的快速轉寫。"
+      },
+      "corti": {
+        "description": "為醫療打造 — 臨床級筆記。"
+      },
+      "tinfoil": {
+        "description": "在封閉的私密環境中執行。"
+      }
     }
   }
 }

@@ -224,7 +224,23 @@
       "title": "Configurazione trascrizione",
       "description": "Scegli modalità e provider",
       "preferredLanguage": "Lingua preferita",
-      "automaticDescription": "Snowy sceglie un modello adatto al tuo hardware"
+      "automaticDescription": "Snowy sceglie un modello adatto al tuo hardware",
+      "path": {
+        "question": "Come dovrebbe Snowy trasformare la voce in testo?",
+        "localTitle": "Privato, su questo computer",
+        "localDescription": "Gratuito. Nulla di ciò che dici lascia il tuo computer. Richiede un download una tantum.",
+        "cloudTitle": "Servizio online",
+        "cloudDescription": "Usa un servizio come OpenAI via internet. Serve una chiave dell'account."
+      },
+      "localChoice": {
+        "question": "Vuoi che Snowy configuri tutto per te?",
+        "autoTitle": "Configura per me",
+        "autoDescription": "Snowy sceglie il modello giusto per questo computer e lo scarica subito.",
+        "manualTitle": "Scelgo io",
+        "manualDescription": "Vedi i modelli e scegline uno da scaricare."
+      },
+      "changeChoice": "Cambia scelta",
+      "advancedLink": "Opzioni avanzate"
     },
     "activation": {
       "title": "Configurazione dettatura",
@@ -327,7 +343,8 @@
         "step1": "Registrati su corti.ai",
         "step2": "Apri la console Corti e crea le credenziali API",
         "step3": "Incolla qui sotto Client ID e Secret"
-      }
+      },
+      "downloadStillRunning": "Il tuo modello vocale ({{model}}) è ancora in download — {{percent}}% completato. Snowy lo finirà in background."
     }
   },
   "streaming": {
@@ -3904,6 +3921,27 @@
       "onDevice": "Il tuo audio viene elaborato qui e non viene mai inviato altrove.",
       "oneTime": "Si scarica una sola volta. Non te lo chiederemo di nuovo.",
       "offline": "Dopodiché le riunioni funzionano senza alcuna connessione."
+    },
+    "recommendedBadge": "Consigliato",
+    "cloud": {
+      "openai": {
+        "description": "Ottima precisione, va bene per la maggior parte delle persone."
+      },
+      "groq": {
+        "description": "Molto veloce ed economico."
+      },
+      "mistral": {
+        "description": "Buona precisione da un'azienda europea."
+      },
+      "xai": {
+        "description": "Trascrizione rapida di xAI (Grok)."
+      },
+      "corti": {
+        "description": "Pensato per la sanità — note di livello clinico."
+      },
+      "tinfoil": {
+        "description": "Gira in un ambiente sigillato e privato."
+      }
     }
   }
 }

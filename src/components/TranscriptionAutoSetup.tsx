@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Check,
@@ -11,48 +11,25 @@ import {
   TriangleAlert,
   WifiOff,
 } from "lucide-react";
-import modelRegistryData from "../models/modelRegistryData.json";
-import { useTranscriptionRecommendation } from "../hooks/useTranscriptionRecommendation";
-import { useModelDownload } from "../hooks/useModelDownload";
+import {
+  displayNameOfRecommended,
+  sizeOfRecommended,
+  type OnboardingTranscriptionSetup,
+} from "../hooks/useOnboardingTranscriptionSetup";
 import { DownloadProgressBar } from "./ui/DownloadProgressBar";
 import { Button } from "./ui/button";
 import { cn } from "./lib/utils";
-import type { RecommendedModel } from "../types/electron";
-
-interface RegistryEntry {
-  name?: string;
-  size?: string;
-  sizeMb?: number;
-}
-
-const registry = modelRegistryData as unknown as {
-  parakeetModels: Record<string, RegistryEntry>;
-  whisperModels: Record<string, RegistryEntry>;
-};
-
-const entryFor = (model: RecommendedModel): RegistryEntry | undefined =>
-  model.runtime === "whisper"
-    ? registry.whisperModels[model.name]
-    : registry.parakeetModels[model.name];
-
-/**
- * The registry's own size string is preferred over the tier's rounded GB: it is
- * the number the download will actually report, and a "0.63 GB" that turns into
- * "632MB" mid-download reads as a bug.
- */
-const sizeOf = (model: RecommendedModel): string =>
-  entryFor(model)?.size ?? `${Math.round(model.diskGb * 1000)}MB`;
-
-const displayNameOf = (model: RecommendedModel): string => entryFor(model)?.name ?? model.name;
-
-/** The tiering's runtimes collapse to the two engines the app can download for. */
-const providerOf = (model: RecommendedModel): "whisper" | "nvidia" =>
-  model.runtime === "whisper" ? "whisper" : "nvidia";
 
 interface TranscriptionAutoSetupProps {
-  language?: "en" | "multilingual";
-  /** Called once the live model is on disk, to persist the selection. */
-  onApply: (selection: { provider: "whisper" | "nvidia"; modelId: string }) => void;
+  /** Flow-owned recommendation + download state (see useOnboardingTranscriptionSetup). */
+  setup: OnboardingTranscriptionSetup;
+  /**
+   * Start the download as soon as the recommendation is known. Passed by the
+   * "Set it up for me" path, where choosing that card *was* the consent to
+   * spend the bandwidth — the size stays visible and Cancel stays one click
+   * away. A cancelled download is never restarted automatically.
+   */
+  autoStart?: boolean;
 }
 
 /**
@@ -99,96 +76,45 @@ function WhyDownload({ t }: { t: (key: string) => string }) {
  * that decide it (RTF, resident memory, AVX2) are ones we measured and they
  * cannot.
  *
- * The download is one deliberate click rather than automatic on mount. The
- * selection is what we promised to make for them; spending most of a gigabyte
- * of someone's connection is still theirs to start, and there is no reliable
- * way to detect a metered link from Electron.
+ * This is a view: the recommendation and the downloads are owned by
+ * OnboardingFlow (useOnboardingTranscriptionSetup), so leaving the step does
+ * not orphan a running download or the re-check that unblocks Next.
  */
 export default function TranscriptionAutoSetup({
-  language = "en",
-  onApply,
+  setup,
+  autoStart = false,
 }: TranscriptionAutoSetupProps) {
   const { t } = useTranslation();
-  const { recommendation, capability, probeFailed, loading, refresh } =
-    useTranscriptionRecommendation(language);
+  const {
+    recommendation,
+    capability,
+    probeFailed,
+    probing,
+    checking,
+    refresh,
+    models,
+    installed,
+    missing,
+    isDownloading,
+    activeDownload,
+    startDownloads,
+  } = setup;
 
-  const [installed, setInstalled] = useState<Set<string>>(new Set());
-  const [checking, setChecking] = useState(true);
-
-  const refreshInstalled = useCallback(async () => {
-    setChecking(true);
-    try {
-      const [parakeet, whisper] = await Promise.all([
-        window.electronAPI?.listParakeetModels?.(),
-        window.electronAPI?.listWhisperModels?.(),
-      ]);
-      const present = new Set<string>();
-      for (const list of [parakeet?.models, whisper?.models]) {
-        for (const entry of list ?? []) {
-          if (entry?.downloaded && entry.model) present.add(entry.model);
-        }
-      }
-      setInstalled(present);
-    } finally {
-      setChecking(false);
-    }
-  }, []);
-
+  // One shot per mount: choosing the auto card again after a cancel re-arms
+  // it, but progress events must never resurrect a download the user stopped.
+  const autoStartedRef = useRef(false);
   useEffect(() => {
-    void refreshInstalled();
-  }, [refreshInstalled]);
-
-  // Two download hooks rather than one parameterised by the recommendation:
-  // a GPU or Apple tier pairs a Parakeet live model with a Whisper archive
-  // model, so both engines can be needed in the same run.
-  const parakeetDownload = useModelDownload({
-    modelType: "parakeet",
-    onDownloadComplete: refreshInstalled,
-  });
-  const whisperDownload = useModelDownload({
-    modelType: "whisper",
-    onDownloadComplete: refreshInstalled,
-  });
-
-  const active = parakeetDownload.isDownloading ? parakeetDownload : whisperDownload;
-  const isDownloading = parakeetDownload.isDownloading || whisperDownload.isDownloading;
-
-  const models = useMemo(() => {
-    if (!recommendation) return [] as Array<{ model: RecommendedModel; role: "live" | "archive" }>;
-    const list: Array<{ model: RecommendedModel; role: "live" | "archive" }> = [
-      { model: recommendation.live, role: "live" },
-    ];
-    if (recommendation.archive) list.push({ model: recommendation.archive, role: "archive" });
-    return list;
-  }, [recommendation]);
-
-  const missing = models.filter(({ model }) => !installed.has(model.name));
-  const liveReady = recommendation ? installed.has(recommendation.live.name) : false;
-
-  // Persist as soon as the live model is on disk, including when it was already
-  // there from a previous run — otherwise a returning user sees "Ready" while
-  // the app still points at whatever it was using before.
-  useEffect(() => {
-    if (!recommendation || !liveReady) return;
-    onApply({
-      provider: providerOf(recommendation.live),
-      modelId: recommendation.live.name,
-    });
-    // onApply is a parent callback that is not guaranteed to be stable, and
-    // re-running this on its identity would re-persist on every parent render.
-  }, [recommendation, liveReady]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const startDownloads = useCallback(async () => {
-    for (const { model } of missing) {
-      const hook = model.runtime === "whisper" ? whisperDownload : parakeetDownload;
-      await hook.downloadModel(model.name);
-    }
-  }, [missing, parakeetDownload, whisperDownload]);
+    if (!autoStart || autoStartedRef.current) return;
+    if (probing || checking || !recommendation) return;
+    autoStartedRef.current = true;
+    if (missing.length === 0 || isDownloading) return;
+    void startDownloads();
+  }, [autoStart, probing, checking, recommendation, missing, isDownloading, startDownloads]);
 
   // The explainer renders immediately rather than behind the probe's spinner:
   // it is the answer to "why is this asking me to download something", and
   // that question arrives before the probe finishes.
-  if (loading || checking) {
+  if (probing || checking) {
     return (
       <div className="space-y-3">
         <WhyDownload t={t} />
@@ -212,7 +138,7 @@ export default function TranscriptionAutoSetup({
     );
   }
 
-  const totalSize = missing.map(({ model }) => sizeOf(model)).join(" + ");
+  const totalSize = missing.map(({ model }) => sizeOfRecommended(model)).join(" + ");
 
   return (
     <div className="space-y-3">
@@ -240,7 +166,7 @@ export default function TranscriptionAutoSetup({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-xs font-medium text-foreground">
-                  {displayNameOf(model)}
+                  {displayNameOfRecommended(model)}
                 </p>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
                   {role === "live"
@@ -251,17 +177,17 @@ export default function TranscriptionAutoSetup({
                 </p>
               </div>
               <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
-                {ready ? t("transcriptionSetup.ready") : sizeOf(model)}
+                {ready ? t("transcriptionSetup.ready") : sizeOfRecommended(model)}
               </span>
             </div>
           );
         })}
 
-        {isDownloading && active.downloadingModel && (
+        {isDownloading && activeDownload.model && (
           <DownloadProgressBar
-            modelName={active.downloadingModel}
-            progress={active.downloadProgress}
-            isInstalling={active.isInstalling}
+            modelName={activeDownload.model}
+            progress={activeDownload.progress}
+            isInstalling={activeDownload.isInstalling}
           />
         )}
       </div>
@@ -290,18 +216,14 @@ export default function TranscriptionAutoSetup({
       ))}
 
       <div className="flex flex-wrap items-center gap-2">
-        {missing.length > 0 && (
-          <Button size="sm" onClick={startDownloads} disabled={isDownloading}>
-            {isDownloading ? (
-              <Loader2 className="size-3.5 animate-spin" strokeWidth={1.75} />
-            ) : (
-              <Download className="size-3.5" strokeWidth={1.75} />
-            )}
+        {missing.length > 0 && !isDownloading && (
+          <Button size="sm" onClick={() => void startDownloads()}>
+            <Download className="size-3.5" strokeWidth={1.75} />
             {t("transcriptionSetup.download", { size: totalSize })}
           </Button>
         )}
         {isDownloading && (
-          <Button variant="outline" size="sm" onClick={active.cancelDownload}>
+          <Button variant="outline" size="sm" onClick={activeDownload.cancel}>
             {t("transcriptionSetup.cancel")}
           </Button>
         )}

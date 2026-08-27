@@ -1,14 +1,30 @@
-import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ArrowLeft, Cloud, Lock, SlidersHorizontal, Sparkles } from "lucide-react";
 import TranscriptionModelPicker from "../TranscriptionModelPicker";
 import TranscriptionAutoSetup from "../TranscriptionAutoSetup";
+import CloudProviderSetup from "./CloudProviderSetup";
 import LanguageSelector from "../ui/LanguageSelector";
+import OptionCard from "../ui/OptionCard";
 import StepShell, { StepSection } from "./StepShell";
-import { useSettingsStore } from "../../stores/settingsStore";
-import { cn } from "../lib/utils";
+import type { OnboardingTranscriptionSetup } from "../../hooks/useOnboardingTranscriptionSetup";
+
+/**
+ * Where the user is inside the setup step's own little flow.
+ *
+ * "fork" is the local-or-cloud question, "localChoice" the pick-for-me-or-not
+ * question, and the rest are the detail screens those answers land on. Owned
+ * by OnboardingFlow rather than this component so Back/Next navigation does
+ * not reset a choice mid-download.
+ */
+export type TranscriptionSetupStage =
+  "fork" | "localChoice" | "auto" | "manual" | "cloud" | "advanced";
 
 interface TranscriptionStepProps {
   eyebrow?: string;
+  setup: OnboardingTranscriptionSetup;
+  stage: TranscriptionSetupStage;
+  onStageChange: (stage: TranscriptionSetupStage) => void;
+  useCases: string[];
   cloudTranscriptionProvider: string;
   onCloudProviderSelect: (provider: string) => void;
   cloudTranscriptionModel: string;
@@ -27,6 +43,10 @@ interface TranscriptionStepProps {
 
 export default function TranscriptionStep({
   eyebrow,
+  setup,
+  stage,
+  onStageChange,
+  useCases,
   cloudTranscriptionProvider,
   onCloudProviderSelect,
   cloudTranscriptionModel,
@@ -44,117 +64,150 @@ export default function TranscriptionStep({
 }: TranscriptionStepProps) {
   const { t } = useTranslation();
 
-  // Automatic by default. Someone arriving here for the first time has no way
-  // to rank four 630 MB ASR models against their own hardware, and the manual
-  // picker asked them to do exactly that before they had heard the app speak
-  // once. Advanced stays one click away and unchanged.
-  const [advanced, setAdvanced] = useState(false);
+  const questionLabel =
+    stage === "fork"
+      ? t("onboarding.transcription.path.question")
+      : stage === "localChoice"
+        ? t("onboarding.transcription.localChoice.question")
+        : null;
 
-  const updateTranscriptionSettings = useSettingsStore((s) => s.updateTranscriptionSettings);
-  const setMeetingTranscriptionMode = useSettingsStore((s) => s.setMeetingTranscriptionMode);
-  const setMeetingUseLocalWhisper = useSettingsStore((s) => s.setMeetingUseLocalWhisper);
-  const setMeetingLocalTranscriptionProvider = useSettingsStore(
-    (s) => s.setMeetingLocalTranscriptionProvider
-  );
-  const setMeetingParakeetModel = useSettingsStore((s) => s.setMeetingParakeetModel);
-  const setMeetingWhisperModel = useSettingsStore((s) => s.setMeetingWhisperModel);
+  const renderStage = () => {
+    switch (stage) {
+      case "fork":
+        return (
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <OptionCard
+              icon={Lock}
+              title={t("onboarding.transcription.path.localTitle")}
+              description={t("onboarding.transcription.path.localDescription")}
+              selected={useLocalWhisper}
+              onSelect={() => {
+                onModeChange(true);
+                onStageChange("localChoice");
+              }}
+            />
+            <OptionCard
+              icon={Cloud}
+              title={t("onboarding.transcription.path.cloudTitle")}
+              description={t("onboarding.transcription.path.cloudDescription")}
+              selected={!useLocalWhisper}
+              onSelect={() => {
+                onModeChange(false);
+                onStageChange("cloud");
+              }}
+            />
+          </div>
+        );
 
-  const applyRecommendation = useCallback(
-    ({ provider, modelId }: { provider: "whisper" | "nvidia"; modelId: string }) => {
-      // One atomic write rather than the provider-then-model prop callbacks the
-      // manual picker uses. Those decide which field to write from the provider
-      // captured at render time, so setting both in a single tick would file a
-      // Parakeet model name under `whisperModel`. The picker gets away with it
-      // because switching engine tabs is a separate click; this is not.
-      updateTranscriptionSettings({
-        useLocalWhisper: true,
-        localTranscriptionProvider: provider,
-        ...(provider === "nvidia" ? { parakeetModel: modelId } : { whisperModel: modelId }),
-      });
+      case "localChoice":
+        return (
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <OptionCard
+              icon={Sparkles}
+              title={t("onboarding.transcription.localChoice.autoTitle")}
+              description={t("onboarding.transcription.localChoice.autoDescription")}
+              selected={false}
+              onSelect={() => onStageChange("auto")}
+            />
+            <OptionCard
+              icon={SlidersHorizontal}
+              title={t("onboarding.transcription.localChoice.manualTitle")}
+              description={t("onboarding.transcription.localChoice.manualDescription")}
+              selected={false}
+              onSelect={() => onStageChange("manual")}
+            />
+          </div>
+        );
 
-      // Meetings resolve transcription from their own scope, and
-      // `localTranscriptionProvider` is the one field in it with no fallback to
-      // the general setting (see selectResolvedMeetingTranscription). Writing
-      // only the general scope would download the streaming model and then have
-      // every meeting reach for Whisper anyway.
-      setMeetingTranscriptionMode("local");
-      setMeetingUseLocalWhisper(true);
-      setMeetingLocalTranscriptionProvider(provider);
-      if (provider === "nvidia") setMeetingParakeetModel(modelId);
-      else setMeetingWhisperModel(modelId);
-    },
-    [
-      updateTranscriptionSettings,
-      setMeetingTranscriptionMode,
-      setMeetingUseLocalWhisper,
-      setMeetingLocalTranscriptionProvider,
-      setMeetingParakeetModel,
-      setMeetingWhisperModel,
-    ]
-  );
+      case "auto":
+        return <TranscriptionAutoSetup setup={setup} autoStart />;
 
-  const languageFamily = preferredLanguage === "en" ? "en" : "multilingual";
+      case "manual":
+        return (
+          <TranscriptionModelPicker
+            selectedCloudProvider={cloudTranscriptionProvider}
+            onCloudProviderSelect={onCloudProviderSelect}
+            selectedCloudModel={cloudTranscriptionModel}
+            onCloudModelSelect={onCloudModelSelect}
+            selectedLocalModel={selectedLocalModel}
+            onLocalModelSelect={onLocalModelSelect}
+            selectedLocalProvider={localTranscriptionProvider}
+            onLocalProviderSelect={onLocalProviderSelect}
+            useLocalWhisper={useLocalWhisper}
+            onModeChange={onModeChange}
+            cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
+            setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
+            variant="onboarding"
+            mode="local"
+          />
+        );
+
+      case "cloud":
+        return <CloudProviderSetup useCases={useCases} />;
+
+      case "advanced":
+        return (
+          <TranscriptionModelPicker
+            selectedCloudProvider={cloudTranscriptionProvider}
+            onCloudProviderSelect={onCloudProviderSelect}
+            selectedCloudModel={cloudTranscriptionModel}
+            onCloudModelSelect={onCloudModelSelect}
+            selectedLocalModel={selectedLocalModel}
+            onLocalModelSelect={onLocalModelSelect}
+            selectedLocalProvider={localTranscriptionProvider}
+            onLocalProviderSelect={onLocalProviderSelect}
+            useLocalWhisper={useLocalWhisper}
+            onModeChange={onModeChange}
+            cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
+            setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
+            variant="onboarding"
+          />
+        );
+    }
+  };
 
   return (
     <StepShell
       eyebrow={eyebrow}
       title={t("onboarding.transcription.title")}
       description={t(
-        advanced
-          ? "onboarding.transcription.description"
-          : "onboarding.transcription.automaticDescription"
+        stage === "auto"
+          ? "onboarding.transcription.automaticDescription"
+          : "onboarding.transcription.description"
       )}
     >
-      {/* A switch that sits above the content and is present in both modes.
-          The way back used to be a small text link *below* the manual picker,
-          which is a tall control — so on any normal window the only exit was
-          off-screen, and Advanced read as a one-way door. */}
-      <div
-        role="radiogroup"
-        aria-label={t("transcriptionSetup.modeLabel")}
-        className="inline-flex rounded-control border border-border-subtle bg-surface-2 p-0.5 shadow-(--shadow-control)"
-      >
-        {[
-          { id: "basic", label: t("transcriptionSetup.modeBasic"), value: false },
-          { id: "advanced", label: t("transcriptionSetup.modeAdvanced"), value: true },
-        ].map((mode) => (
-          <button
-            key={mode.id}
-            type="button"
-            role="radio"
-            aria-checked={advanced === mode.value}
-            onClick={() => setAdvanced(mode.value)}
-            className={cn(
-              "rounded-control px-3 py-1 text-xs font-medium outline-none transition-colors",
-              "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-              advanced === mode.value
-                ? "bg-surface-1 text-foreground shadow-(--shadow-control)"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {mode.label}
-          </button>
-        ))}
-      </div>
+      {stage !== "fork" && (
+        <button
+          type="button"
+          onClick={() =>
+            onStageChange(stage === "auto" || stage === "manual" ? "localChoice" : "fork")
+          }
+          className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-ring rounded-control"
+        >
+          <ArrowLeft className="size-3" strokeWidth={1.75} />
+          {t("onboarding.transcription.changeChoice")}
+        </button>
+      )}
 
-      {advanced ? (
-        <TranscriptionModelPicker
-          selectedCloudProvider={cloudTranscriptionProvider}
-          onCloudProviderSelect={onCloudProviderSelect}
-          selectedCloudModel={cloudTranscriptionModel}
-          onCloudModelSelect={onCloudModelSelect}
-          selectedLocalModel={selectedLocalModel}
-          onLocalModelSelect={onLocalModelSelect}
-          selectedLocalProvider={localTranscriptionProvider}
-          onLocalProviderSelect={onLocalProviderSelect}
-          useLocalWhisper={useLocalWhisper}
-          onModeChange={onModeChange}
-          cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
-          setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
-          variant="onboarding"
-        />
-      ) : (
-        <TranscriptionAutoSetup language={languageFamily} onApply={applyRecommendation} />
+      {questionLabel && (
+        <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+          {questionLabel}
+        </p>
+      )}
+
+      {renderStage()}
+
+      {/* The full picker — every provider, every model, the base-URL field —
+          for the person who knows exactly what they want. One quiet link so
+          the wizard never reads as a locked door. */}
+      {stage !== "advanced" && stage !== "manual" && (
+        <button
+          type="button"
+          onClick={() => onStageChange("advanced")}
+          className="block text-left text-[11px] text-muted-foreground underline decoration-border hover:text-foreground focus-ring rounded-control"
+        >
+          {t("onboarding.transcription.advancedLink")}
+        </button>
       )}
 
       <StepSection label={t("onboarding.transcription.preferredLanguage")}>

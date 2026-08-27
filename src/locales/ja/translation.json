@@ -224,7 +224,23 @@
       "title": "文字起こし設定",
       "description": "モードとプロバイダーを選択してください",
       "preferredLanguage": "優先言語",
-      "automaticDescription": "Snowy がハードウェアに合ったモデルを選びます"
+      "automaticDescription": "Snowy がハードウェアに合ったモデルを選びます",
+      "path": {
+        "question": "Snowy はどのように音声を文字にしますか？",
+        "localTitle": "このパソコンだけで（プライベート）",
+        "localDescription": "無料。話した内容はパソコンの外に出ません。初回に一度だけダウンロードが必要です。",
+        "cloudTitle": "オンラインサービス",
+        "cloudDescription": "OpenAI などのサービスをインターネット経由で使います。アカウントキーが必要です。"
+      },
+      "localChoice": {
+        "question": "セットアップを Snowy に任せますか？",
+        "autoTitle": "おまかせで設定",
+        "autoDescription": "Snowy がこのパソコンに合ったモデルを選び、今すぐダウンロードします。",
+        "manualTitle": "自分で選ぶ",
+        "manualDescription": "モデルの一覧から選んでダウンロードします。"
+      },
+      "changeChoice": "選択を変更",
+      "advancedLink": "詳細オプション"
     },
     "activation": {
       "title": "ディクテーション設定",
@@ -327,7 +343,8 @@
         "step1": "corti.ai でアカウントを作成",
         "step2": "Corti コンソールで API 認証情報を作成",
         "step3": "Client ID と Secret を下に貼り付け"
-      }
+      },
+      "downloadStillRunning": "音声モデル（{{model}}）はまだダウンロード中です — {{percent}}% 完了。残りは Snowy がバックグラウンドで進めます。"
     }
   },
   "streaming": {
@@ -3904,6 +3921,27 @@
       "onDevice": "音声はこの端末で処理され、どこにも送信されません。",
       "oneTime": "ダウンロードは一度だけです。次回から聞かれません。",
       "offline": "その後は、インターネットがなくても会議を記録できます。"
+    },
+    "recommendedBadge": "おすすめ",
+    "cloud": {
+      "openai": {
+        "description": "高精度で、ほとんどの人に合います。"
+      },
+      "groq": {
+        "description": "とても速く、低コスト。"
+      },
+      "mistral": {
+        "description": "ヨーロッパ企業の高精度なサービス。"
+      },
+      "xai": {
+        "description": "xAI（Grok）の高速文字起こし。"
+      },
+      "corti": {
+        "description": "医療向け — 臨床レベルのノート。"
+      },
+      "tinfoil": {
+        "description": "密閉されたプライベート環境で動作。"
+      }
     }
   }
 }

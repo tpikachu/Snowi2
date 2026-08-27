@@ -40,7 +40,13 @@ import logger from "../utils/logger";
 import { ACCESSIBILITY_SKIPPED_KEY, areRequiredPermissionsMet } from "../utils/permissions";
 import OnboardingRail from "./onboarding/OnboardingRail";
 import UseCaseStep from "./onboarding/UseCaseStep";
-import TranscriptionStep from "./onboarding/TranscriptionStep";
+import TranscriptionStep, { type TranscriptionSetupStage } from "./onboarding/TranscriptionStep";
+import { canProceedSetup } from "./onboarding/transcriptionSetupGating";
+import {
+  displayNameForModelId,
+  providerOfRecommended,
+  useOnboardingTranscriptionSetup,
+} from "../hooks/useOnboardingTranscriptionSetup";
 import PermissionsStep from "./onboarding/PermissionsStep";
 import ActivationStep from "./onboarding/ActivationStep";
 import VoiceAgentStep from "./onboarding/VoiceAgentStep";
@@ -115,6 +121,89 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
 
   const cortiClientId = useSettingsStore((s) => s.cortiClientId);
   const cortiClientSecret = useSettingsStore((s) => s.cortiClientSecret);
+  const setMeetingTranscriptionMode = useSettingsStore((s) => s.setMeetingTranscriptionMode);
+  const setMeetingUseLocalWhisper = useSettingsStore((s) => s.setMeetingUseLocalWhisper);
+  const setMeetingLocalTranscriptionProvider = useSettingsStore(
+    (s) => s.setMeetingLocalTranscriptionProvider
+  );
+  const setMeetingParakeetModel = useSettingsStore((s) => s.setMeetingParakeetModel);
+  const setMeetingWhisperModel = useSettingsStore((s) => s.setMeetingWhisperModel);
+
+  // The setup step's own little flow (local-or-cloud, then pick-for-me-or-not)
+  // lives up here so Back/Next — which unmount the step — cannot reset it
+  // while a download it started is still running.
+  const [setupStage, setSetupStage] = useState<TranscriptionSetupStage>("fork");
+
+  // Owns the hardware recommendation and the model downloads for the whole
+  // flow: the step that starts a download is not the component that has to
+  // survive it. `installed` updating on completion is what re-opens the Next
+  // button after the user walked ahead mid-download.
+  const transcriptionSetup = useOnboardingTranscriptionSetup(
+    preferredLanguage === "en" ? "en" : "multilingual"
+  );
+
+  const applyRecommendation = useCallback(
+    ({ provider, modelId }: { provider: "whisper" | "nvidia"; modelId: string }) => {
+      // One atomic write rather than the provider-then-model prop callbacks the
+      // manual picker uses. Those decide which field to write from the provider
+      // captured at render time, so setting both in a single tick would file a
+      // Parakeet model name under `whisperModel`. The picker gets away with it
+      // because switching engine tabs is a separate click; this is not.
+      updateTranscriptionSettings({
+        useLocalWhisper: true,
+        localTranscriptionProvider: provider,
+        ...(provider === "nvidia" ? { parakeetModel: modelId } : { whisperModel: modelId }),
+      });
+
+      // Meetings resolve transcription from their own scope, and
+      // `localTranscriptionProvider` is the one field in it with no fallback to
+      // the general setting (see selectResolvedMeetingTranscription). Writing
+      // only the general scope would download the streaming model and then have
+      // every meeting reach for Whisper anyway.
+      setMeetingTranscriptionMode("local");
+      setMeetingUseLocalWhisper(true);
+      setMeetingLocalTranscriptionProvider(provider);
+      if (provider === "nvidia") setMeetingParakeetModel(modelId);
+      else setMeetingWhisperModel(modelId);
+    },
+    [
+      updateTranscriptionSettings,
+      setMeetingTranscriptionMode,
+      setMeetingUseLocalWhisper,
+      setMeetingLocalTranscriptionProvider,
+      setMeetingParakeetModel,
+      setMeetingWhisperModel,
+    ]
+  );
+
+  // Persist at choice time, not at download completion: the moment the user is
+  // on the "set it up for me" path and the recommendation is known, the
+  // selection is written (idempotently). Nothing is left to lose if the step
+  // unmounts while the download runs — the old persist-on-complete effect
+  // only fired while its component stayed mounted.
+  useEffect(() => {
+    if (setupStage !== "auto") return;
+    const recommendation = transcriptionSetup.recommendation;
+    if (!recommendation) return;
+    applyRecommendation({
+      provider: providerOfRecommended(recommendation.live),
+      modelId: recommendation.live.name,
+    });
+  }, [setupStage, transcriptionSetup.recommendation, applyRecommendation]);
+
+  const handleSetupStageChange = useCallback(
+    (stage: TranscriptionSetupStage) => {
+      // Choosing the cloud path supersedes a running local download — cancel
+      // quietly rather than spending the rest of someone's bandwidth on a
+      // model they just walked away from. Going back to the fork alone keeps
+      // it: they may only be double-checking the other card.
+      if (stage === "cloud" && transcriptionSetup.isDownloading) {
+        transcriptionSetup.activeDownload.cancel();
+      }
+      setSetupStage(stage);
+    },
+    [transcriptionSetup]
+  );
 
   // Onboarding edits only the primary dictation hotkey; extra bindings are
   // preserved via withExtraDictationHotkeys.
@@ -456,6 +545,10 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
         return (
           <TranscriptionStep
             eyebrow={stepTitle}
+            setup={transcriptionSetup}
+            stage={setupStage}
+            onStageChange={handleSetupStageChange}
+            useCases={onboardingUseCases}
             cloudTranscriptionProvider={cloudTranscriptionProvider}
             onCloudProviderSelect={(provider) =>
               updateTranscriptionSettings({ cloudTranscriptionProvider: provider })
@@ -569,6 +662,16 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
             eyebrow={stepTitle}
             useCases={onboardingUseCases}
             hotkey={readableHotkey}
+            download={
+              transcriptionSetup.isDownloading && transcriptionSetup.activeDownload.model
+                ? {
+                    modelName: displayNameForModelId(transcriptionSetup.activeDownload.model),
+                    percentage: Math.round(
+                      transcriptionSetup.activeDownload.progress?.percentage ?? 0
+                    ),
+                  }
+                : null
+            }
             onFinish={(openSettings) => void finishOnboarding(openSettings)}
             isFinishing={isFinishing}
           />
@@ -583,32 +686,31 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     switch (currentStepId) {
       case "usecase":
         return true; // Selection is optional — Next doubles as skip
-      case "setup":
-        // Setup — check if configuration is complete
-        if (useLocalWhisper) {
-          const modelToCheck =
-            localTranscriptionProvider === "nvidia" ? parakeetModel : whisperModel;
-          return modelToCheck !== "" && isModelDownloaded;
-        } else {
-          // For cloud mode, check if appropriate API key is set
-          if (cloudTranscriptionProvider === "openai") {
-            return openaiApiKey.trim().length > 0;
-          } else if (cloudTranscriptionProvider === "groq") {
-            return groqApiKey.trim().length > 0;
-          } else if (cloudTranscriptionProvider === "xai") {
-            return xaiApiKey.trim().length > 0;
-          } else if (cloudTranscriptionProvider === "mistral") {
-            return mistralApiKey.trim().length > 0;
-          } else if (cloudTranscriptionProvider === "corti") {
-            return cortiClientId.trim().length > 0 && cortiClientSecret.trim().length > 0;
-          } else if (cloudTranscriptionProvider === "tinfoil") {
-            return tinfoilApiKey.trim().length > 0;
-          } else if (cloudTranscriptionProvider === "custom") {
-            // Custom can work without API key for local endpoints
-            return true;
-          }
-          return openaiApiKey.trim().length > 0; // Default to OpenAI
-        }
+      case "setup": {
+        const modelToCheck = localTranscriptionProvider === "nvidia" ? parakeetModel : whisperModel;
+        return canProceedSetup({
+          useLocalWhisper,
+          localTranscriptionProvider,
+          whisperModel,
+          parakeetModel,
+          // Two sources: the targeted status check this component runs, and
+          // the flow-level installed set that refreshes when a background
+          // download completes — the latter is what re-opens Next after the
+          // user walked ahead mid-download.
+          modelDownloaded: isModelDownloaded || transcriptionSetup.installed.has(modelToCheck),
+          downloadActive: transcriptionSetup.isDownloading,
+          cloudTranscriptionProvider,
+          keys: {
+            openaiApiKey,
+            groqApiKey,
+            xaiApiKey,
+            mistralApiKey,
+            cortiClientId,
+            cortiClientSecret,
+            tinfoilApiKey,
+          },
+        });
+      }
       case "permissions":
         return areRequiredPermissionsMet(permissionsHook.micPermissionGranted);
       case "activation":

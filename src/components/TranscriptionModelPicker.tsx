@@ -33,6 +33,10 @@ import { GetApiKeyLink } from "./ui/GetApiKeyLink";
 import { getCachedPlatform } from "../utils/platform";
 import logger from "../utils/logger";
 import { cn } from "./lib/utils";
+import {
+  PROVIDER_CREDENTIALS,
+  type ProviderCredentialField,
+} from "./transcription/providerCredentials";
 
 interface LocalModel {
   model: string;
@@ -397,71 +401,6 @@ const CLOUD_PROVIDER_TABS = [
   { id: "tinfoil", name: "Tinfoil" },
   { id: "custom", name: "Custom" },
 ];
-
-interface ProviderCredentialField {
-  key:
-    | "openaiApiKey"
-    | "groqApiKey"
-    | "xaiApiKey"
-    | "mistralApiKey"
-    | "cortiClientId"
-    | "cortiClientSecret"
-    | "cortiEnvironment"
-    | "cortiTenant"
-    | "tinfoilApiKey";
-  input: "secret" | "text" | "select";
-  labelKey?: string;
-  placeholder?: string;
-  options?: Array<{ value: string; label: string }>;
-}
-
-const PROVIDER_CREDENTIALS: Record<
-  string,
-  { consoleUrl: string; fields: ProviderCredentialField[] }
-> = {
-  openai: {
-    consoleUrl: "https://platform.openai.com/api-keys",
-    fields: [{ key: "openaiApiKey", input: "secret" }],
-  },
-  groq: {
-    consoleUrl: "https://console.groq.com/keys",
-    fields: [{ key: "groqApiKey", input: "secret" }],
-  },
-  xai: {
-    consoleUrl: "https://console.x.ai",
-    fields: [{ key: "xaiApiKey", input: "secret" }],
-  },
-  mistral: {
-    consoleUrl: "https://console.mistral.ai/api-keys",
-    fields: [{ key: "mistralApiKey", input: "secret" }],
-  },
-  corti: {
-    consoleUrl: "https://www.corti.ai/",
-    fields: [
-      { key: "cortiClientId", input: "secret", labelKey: "transcription.corti.clientId" },
-      { key: "cortiClientSecret", input: "secret", labelKey: "transcription.corti.clientSecret" },
-      {
-        key: "cortiEnvironment",
-        input: "select",
-        labelKey: "transcription.corti.environment",
-        options: [
-          { value: "us", label: "US" },
-          { value: "eu", label: "EU" },
-        ],
-      },
-      {
-        key: "cortiTenant",
-        input: "text",
-        labelKey: "transcription.corti.tenant",
-        placeholder: "base",
-      },
-    ],
-  },
-  tinfoil: {
-    consoleUrl: "https://tinfoil.sh/inference",
-    fields: [{ key: "tinfoilApiKey", input: "secret" }],
-  },
-};
 
 const TINFOIL_AUDIO_DOCS_URL = "https://docs.tinfoil.sh/models/audio";
 

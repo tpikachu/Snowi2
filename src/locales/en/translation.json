@@ -224,7 +224,23 @@
       "title": "Transcription Setup",
       "description": "Choose your mode and provider",
       "preferredLanguage": "Preferred Language",
-      "automaticDescription": "Snowy picks a model to match your hardware"
+      "automaticDescription": "Snowy picks a model to match your hardware",
+      "path": {
+        "question": "How should Snowy turn speech into text?",
+        "localTitle": "Private, on this computer",
+        "localDescription": "Free. Nothing you say leaves your computer. Needs a one-time download.",
+        "cloudTitle": "Online service",
+        "cloudDescription": "Uses a service like OpenAI over the internet. Needs an account key."
+      },
+      "localChoice": {
+        "question": "Want Snowy to set it up for you?",
+        "autoTitle": "Set it up for me",
+        "autoDescription": "Snowy picks the right model for this computer and downloads it now.",
+        "manualTitle": "I'll choose myself",
+        "manualDescription": "See the models and pick one to download."
+      },
+      "changeChoice": "Change choice",
+      "advancedLink": "Advanced options"
     },
     "activation": {
       "title": "Dictation Setup",
@@ -327,7 +343,8 @@
         "step1": "Sign up on corti.ai",
         "step2": "Open the Corti console and create API credentials",
         "step3": "Paste your Client ID and Secret below"
-      }
+      },
+      "downloadStillRunning": "Your speech model ({{model}}) is still downloading — {{percent}}% done. Snowy will finish it in the background."
     }
   },
   "streaming": {
@@ -3904,6 +3921,27 @@
       "onDevice": "Your audio is processed here, and never sent anywhere.",
       "oneTime": "It downloads once. You won't be asked again.",
       "offline": "After that, meetings work with no internet at all."
+    },
+    "recommendedBadge": "Recommended",
+    "cloud": {
+      "openai": {
+        "description": "Great accuracy, works for most people."
+      },
+      "groq": {
+        "description": "Very fast and budget-friendly."
+      },
+      "mistral": {
+        "description": "Good accuracy from a European company."
+      },
+      "xai": {
+        "description": "Fast transcription from xAI (Grok)."
+      },
+      "corti": {
+        "description": "Built for healthcare — clinical-grade notes."
+      },
+      "tinfoil": {
+        "description": "Runs in a sealed, private environment."
+      }
     }
   }
 }

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, Settings, Stethoscope } from "lucide-react";
+import { Check, Loader2, Settings, Stethoscope } from "lucide-react";
 import { Button } from "../ui/button";
 import ApiKeyInput from "../ui/ApiKeyInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
@@ -16,6 +16,8 @@ interface FinishStepProps {
   useCases: string[];
   /** Readable dictation hotkey, echoed back as the one thing to remember. */
   hotkey?: string;
+  /** A speech-model download still running from the setup step, if any. */
+  download?: { modelName: string; percentage: number } | null;
   onFinish: (openSettings: boolean) => void;
   isFinishing: boolean;
 }
@@ -24,6 +26,7 @@ export default function FinishStep({
   eyebrow,
   useCases,
   hotkey,
+  download = null,
   onFinish,
   isFinishing,
 }: FinishStepProps) {
@@ -180,6 +183,22 @@ export default function FinishStep({
           <kbd className="rounded-sm border border-border bg-surface-raised px-2 py-1 text-xs font-semibold text-foreground">
             {hotkey}
           </kbd>
+        </div>
+      )}
+
+      {/* Finishing never waits on the download — it is main-process-owned and
+          keeps running after this window is gone. The line exists so the user
+          knows the app is not broken if their first meeting starts before the
+          model lands. */}
+      {download && (
+        <div className="flex items-center gap-2.5 rounded-lg border border-border-subtle bg-surface-1 px-4 py-3">
+          <Loader2 className="size-3.5 shrink-0 animate-spin text-primary" strokeWidth={1.75} />
+          <p className="min-w-0 flex-1 text-xs leading-relaxed text-muted-foreground">
+            {t("onboarding.finish.downloadStillRunning", {
+              model: download.modelName,
+              percent: download.percentage,
+            })}
+          </p>
         </div>
       )}
 

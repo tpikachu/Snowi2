@@ -224,7 +224,23 @@
       "title": "Transkriptions-Einrichtung",
       "description": "Wählen Sie Modus und Anbieter",
       "preferredLanguage": "Bevorzugte Sprache",
-      "automaticDescription": "Snowy wählt ein Modell passend zu Ihrer Hardware"
+      "automaticDescription": "Snowy wählt ein Modell passend zu Ihrer Hardware",
+      "path": {
+        "question": "Wie soll Snowy Sprache in Text umwandeln?",
+        "localTitle": "Privat, auf diesem Computer",
+        "localDescription": "Kostenlos. Nichts, was Sie sagen, verlässt Ihren Computer. Erfordert einen einmaligen Download.",
+        "cloudTitle": "Online-Dienst",
+        "cloudDescription": "Nutzt einen Dienst wie OpenAI über das Internet. Benötigt einen Konto-Schlüssel."
+      },
+      "localChoice": {
+        "question": "Soll Snowy das für Sie einrichten?",
+        "autoTitle": "Für mich einrichten",
+        "autoDescription": "Snowy wählt das passende Modell für diesen Computer und lädt es jetzt herunter.",
+        "manualTitle": "Ich wähle selbst",
+        "manualDescription": "Modelle ansehen und eines zum Herunterladen auswählen."
+      },
+      "changeChoice": "Auswahl ändern",
+      "advancedLink": "Erweiterte Optionen"
     },
     "activation": {
       "title": "Diktat-Einrichtung",
@@ -327,7 +343,8 @@
         "step1": "Registriere dich auf corti.ai",
         "step2": "Öffne die Corti-Konsole und erstelle API-Zugangsdaten",
         "step3": "Füge Client-ID und Secret unten ein"
-      }
+      },
+      "downloadStillRunning": "Ihr Sprachmodell ({{model}}) wird noch heruntergeladen — {{percent}} % fertig. Snowy schließt es im Hintergrund ab."
     }
   },
   "streaming": {
@@ -3904,6 +3921,27 @@
       "onDevice": "Ihr Audio wird hier verarbeitet und nirgendwohin gesendet.",
       "oneTime": "Es wird einmal heruntergeladen. Wir fragen nicht noch einmal.",
       "offline": "Danach funktionieren Meetings ganz ohne Internet."
+    },
+    "recommendedBadge": "Empfohlen",
+    "cloud": {
+      "openai": {
+        "description": "Hohe Genauigkeit, passt für die meisten."
+      },
+      "groq": {
+        "description": "Sehr schnell und günstig."
+      },
+      "mistral": {
+        "description": "Gute Genauigkeit von einem europäischen Unternehmen."
+      },
+      "xai": {
+        "description": "Schnelle Transkription von xAI (Grok)."
+      },
+      "corti": {
+        "description": "Für das Gesundheitswesen — Notizen in klinischer Qualität."
+      },
+      "tinfoil": {
+        "description": "Läuft in einer versiegelten, privaten Umgebung."
+      }
     }
   }
 }
