@@ -25,6 +25,7 @@ import {
 import { renderCitations } from "../../utils/chatCitations";
 import { recordChatTurn, updateChatTurn, type ChatTurnRecord } from "../../utils/chatTurnRecord";
 import logger from "../../utils/logger";
+import type { ScreenContextImage } from "../../types/electron";
 
 // Raised from 5 now that a hit returns the passage that matched rather than
 // the note's opening paragraph — the context is both smaller per note and
@@ -136,7 +137,11 @@ export interface ChatStreaming {
   agentState: AgentState;
   toolStatus: string;
   activeToolName: string;
-  sendToAI: (userText: string, allMessages: Message[]) => Promise<void>;
+  sendToAI: (
+    userText: string,
+    allMessages: Message[],
+    options?: { screenContext?: ScreenContextImage }
+  ) => Promise<void>;
   cancelStream: () => void;
 }
 
@@ -208,7 +213,11 @@ export function useChatStreaming({
   }, []);
 
   const sendToAI = useCallback(
-    async (userText: string, allMessages: Message[]) => {
+    async (
+      userText: string,
+      allMessages: Message[],
+      options?: { screenContext?: ScreenContextImage }
+    ) => {
       const settings = getSettings();
       const chatConfig = selectResolvedLLMConfig(settings, "chatIntelligence");
       const chatAgentMode = chatConfig.mode || "local";
@@ -411,6 +420,10 @@ export function useChatStreaming({
             customApiKey:
               isCustomAgent || isLanAgent ? chatConfig.customApiKey || undefined : undefined,
             disableThinking: chatConfig.disableThinking,
+            // The bar's opt-in screenshot. Lives in renderer memory for this
+            // one request; ReasoningService drops it on routes that cannot
+            // carry an image and retries text-only if a provider rejects it.
+            screenContext: options?.screenContext,
           },
           aiTools
         );

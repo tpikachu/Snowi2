@@ -864,6 +864,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   ),
   toggleAgentOverlay: () => ipcRenderer.invoke("toggle-agent-overlay"),
   hideAgentOverlay: () => ipcRenderer.invoke("hide-agent-overlay"),
+  startManualMeeting: () => ipcRenderer.invoke("start-manual-meeting"),
   resizeAgentWindow: (width, height) => ipcRenderer.invoke("resize-agent-window", width, height),
   getAgentWindowBounds: () => ipcRenderer.invoke("get-agent-window-bounds"),
   setAgentWindowBounds: (x, y, width, height) =>

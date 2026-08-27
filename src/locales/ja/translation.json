@@ -3246,6 +3246,17 @@
       "error": "ツールエラー",
       "unknownTool": "不明なツール: {{name}}",
       "invalidArgs": "{{name}} のツール引数が無効です"
+    },
+    "bar": {
+      "placeholder": "画面や会議について何でも聞いてください…",
+      "listen": "リッスン",
+      "send": "送信",
+      "voice": "話す"
+    },
+    "screenConsent": {
+      "question": "回答のために Snowy が画面を見てもいいですか？保存は一切されません。",
+      "allow": "許可",
+      "deny": "今はしない"
     }
   },
   "integrations": {

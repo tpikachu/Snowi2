@@ -3246,6 +3246,17 @@
       "error": "Errore dello strumento",
       "unknownTool": "Strumento sconosciuto: {{name}}",
       "invalidArgs": "Argomenti dello strumento non validi per {{name}}"
+    },
+    "bar": {
+      "placeholder": "Chiedi qualsiasi cosa sul tuo schermo o sulle tue riunioni…",
+      "listen": "Ascolta",
+      "send": "Invia",
+      "voice": "Parla"
+    },
+    "screenConsent": {
+      "question": "Snowy può guardare il tuo schermo per aiutarti a rispondere? Non viene mai salvato.",
+      "allow": "Consenti",
+      "deny": "Non ora"
     }
   },
   "integrations": {

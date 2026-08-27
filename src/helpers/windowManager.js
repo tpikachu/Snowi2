@@ -16,11 +16,13 @@ const {
   AGENT_OVERLAY_CONFIG,
   NOTIFICATION_WINDOW_CONFIG,
   MEETING_PANEL_CONFIG,
+  MEETING_PANEL_SIZE_LIMITS,
   TRANSCRIPTION_PREVIEW_CONFIG,
   TRANSCRIPTION_PREVIEW_SIZE_LIMITS,
   WINDOW_SIZES,
   WindowPositionUtil,
 } = require("./windowConfig");
+const { resolvePanelBoundsFromAnchor } = require("./barPanelHandoff");
 
 class WindowManager {
   constructor() {
@@ -832,6 +834,11 @@ class WindowManager {
 
     this.agentWindow = new BrowserWindow(AGENT_OVERLAY_CONFIG);
 
+    // The bar sits on screen during meetings the user is sharing, and can hold
+    // a conversation about that meeting — same rule as the meeting panel: on
+    // the user's screen, absent from the share.
+    this.agentWindow.setContentProtection(true);
+
     this.agentWindow.once("ready-to-show", () => {
       WindowPositionUtil.setupAlwaysOnTop(this.agentWindow);
     });
@@ -862,29 +869,36 @@ class WindowManager {
 
     this._clearAgentAnimation();
 
-    // Get work area to fill full screen height
-    const mainBounds =
-      this.mainWindow && !this.mainWindow.isDestroyed() ? this.mainWindow.getBounds() : null;
-    const refPoint = mainBounds || { x: 0, y: 0 };
-    const display = screen.getDisplayNearestPoint({ x: refPoint.x, y: refPoint.y });
-    const workArea = display.workArea || display.bounds;
+    if (!this._agentShownOnce) {
+      // First summon: a bar, centred on the display the cursor is on, in the
+      // upper part of the screen where a command bar is expected. After that
+      // the window keeps whatever place and size the user gave it — a
+      // re-summoned bar that jumps home reads as broken, not tidy.
+      this._agentShownOnce = true;
+      const cursorPos = screen.getCursorScreenPoint();
+      const display = screen.getDisplayNearestPoint(cursorPos);
+      const workArea = display.workArea || display.bounds;
 
-    const width = AGENT_OVERLAY_CONFIG.width;
-    const height = workArea.height;
+      const width = AGENT_OVERLAY_CONFIG.width;
+      const height = AGENT_OVERLAY_CONFIG.height;
+      const x = Math.round(workArea.x + (workArea.width - width) / 2);
+      const y = Math.round(workArea.y + workArea.height * 0.2);
 
-    // Center horizontally relative to main window, fill work area height
-    let x = workArea.x;
-    if (mainBounds) {
-      x = mainBounds.x + Math.round((mainBounds.width - width) / 2);
-      x = Math.max(workArea.x, Math.min(x, workArea.x + workArea.width - width));
+      this.agentWindow.setBounds({
+        ...WindowPositionUtil.clampToWorkArea({ x, y, width, height }, display),
+        width,
+        height,
+      });
+    } else {
+      // Keep the remembered spot, but never let a monitor change strand the
+      // bar off-screen.
+      const bounds = this.agentWindow.getBounds();
+      const display = screen.getDisplayNearestPoint({ x: bounds.x, y: bounds.y });
+      const clamped = WindowPositionUtil.clampToWorkArea(bounds, display);
+      if (clamped.x !== bounds.x || clamped.y !== bounds.y) {
+        this.agentWindow.setBounds({ ...bounds, ...clamped });
+      }
     }
-
-    this.agentWindow.setBounds({
-      x,
-      y: workArea.y,
-      width,
-      height,
-    });
 
     WindowPositionUtil.setupAlwaysOnTop(this.agentWindow);
 
@@ -893,6 +907,9 @@ class WindowManager {
     } else {
       this.agentWindow.show();
     }
+    // The bar exists to be typed into; showInactive keeps the window server
+    // happy on macOS, then focus moves deliberately.
+    this.agentWindow.focus();
   }
 
   hideAgentOverlay() {
@@ -1440,6 +1457,14 @@ class WindowManager {
     this._meetingPanelState = snapshot;
 
     if (!this.meetingPanelWindow || this.meetingPanelWindow.isDestroyed()) {
+      // A visible bar hands its place to the panel: the meeting the bar's
+      // Listen button just started should look like the bar becoming the
+      // panel, not a second window appearing while the first lingers. The
+      // bar itself is hidden by main, never by its renderer — one owner.
+      if (this.agentWindow && !this.agentWindow.isDestroyed() && this.agentWindow.isVisible()) {
+        this._meetingPanelAnchor = this.agentWindow.getBounds();
+        this.hideAgentOverlay();
+      }
       // Awaited nowhere: the snapshot is already cached, and the panel asks for
       // it once its renderer is up, so an in-flight open loses nothing.
       this.createMeetingPanelWindow().catch((error) => {
@@ -1597,9 +1622,21 @@ class WindowManager {
     if (this._meetingPanelOpening) return this._meetingPanelOpening;
 
     this._meetingPanelOpening = (async () => {
-      const cursorPos = screen.getCursorScreenPoint();
-      const display = screen.getDisplayNearestPoint(cursorPos);
-      const position = WindowPositionUtil.getMeetingPanelPosition(display);
+      // When the bar handed off (see updateMeetingPanel), the panel opens in
+      // the bar's place; otherwise it docks to the right edge as always.
+      let position;
+      if (this._meetingPanelAnchor) {
+        const anchor = this._meetingPanelAnchor;
+        const display = screen.getDisplayNearestPoint({ x: anchor.x, y: anchor.y });
+        position = resolvePanelBoundsFromAnchor(anchor, display.workArea || display.bounds, {
+          width: MEETING_PANEL_SIZE_LIMITS.defaultWidth,
+          height: MEETING_PANEL_SIZE_LIMITS.defaultHeight,
+        });
+      } else {
+        const cursorPos = screen.getCursorScreenPoint();
+        const display = screen.getDisplayNearestPoint(cursorPos);
+        position = WindowPositionUtil.getMeetingPanelPosition(display);
+      }
 
       const win = new BrowserWindow({ ...MEETING_PANEL_CONFIG, ...position });
       this.meetingPanelWindow = win;
@@ -1661,6 +1698,12 @@ class WindowManager {
   }
 
   closeMeetingPanel() {
+    // The anchor described one handoff; the next meeting decides its own
+    // position. The bar is deliberately not re-shown here — the stop flow
+    // surfaces the control panel with the keep-or-discard prompt, and a bar
+    // reappearing beside it would compete for the same attention. The hotkey
+    // re-summons it.
+    this._meetingPanelAnchor = null;
     this._meetingPanelState = null;
     // Cleared with the panel, or the next meeting would open showing the last
     // one's words until somebody spoke — and, worse, the last one's advice.

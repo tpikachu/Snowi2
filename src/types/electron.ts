@@ -2032,6 +2032,7 @@ declare global {
       } | null>;
       setAgentWindowBounds?: (x: number, y: number, width: number, height: number) => Promise<void>;
       hideAgentOverlay?: () => Promise<void>;
+      startManualMeeting?: () => Promise<{ success: boolean; error?: string }>;
       onAgentStartRecording?: (callback: () => void) => () => void;
       onAgentStopRecording?: (callback: () => void) => () => void;
       onAgentToggleRecording?: (callback: () => void) => () => void;

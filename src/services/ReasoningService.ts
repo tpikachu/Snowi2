@@ -749,87 +749,126 @@ class ReasoningService extends BaseReasoningService {
     };
     const hasProviderOptions = Object.keys(providerOptions).length > 0;
 
+    // A screenshot rides only routes whose client can carry an image; local
+    // and LAN paths drop it. Logged as a boolean, never the payload.
+    const screenContext = !isLocalProvider && !isLanChat ? config.screenContext : undefined;
+    const lastUserIndex = screenContext
+      ? messages.reduce((last, m, i) => (m.role === "user" ? i : last), -1)
+      : -1;
+
+    const buildMessages = (withImage: boolean): import("ai").ModelMessage[] =>
+      messages.map((m, i) =>
+        withImage && screenContext && i === lastUserIndex
+          ? {
+              role: "user" as const,
+              content: [
+                { type: "text" as const, text: m.content },
+                {
+                  type: "image" as const,
+                  image: `data:${screenContext.mediaType};base64,${screenContext.data}`,
+                },
+              ],
+            }
+          : {
+              role: m.role as "system" | "user" | "assistant",
+              content: m.content,
+            }
+      ) as import("ai").ModelMessage[];
+
     logger.logReasoning("AGENT_AI_SDK_STREAM_REQUEST", {
       model,
       provider,
       hasTools: !!tools,
       toolCount: tools ? Object.keys(tools).length : 0,
       messageCount: messages.length,
+      hasScreenContext: !!screenContext,
     });
 
     const useTemperature = isLocalProvider || isLanChat || apiConfig.supportsTemperature;
 
-    // cancelActiveStream() aborts this controller; streamText propagates it
-    // into doStream, cancelling the enterprise IPC proxy's request in main.
-    const abortController = new AbortController();
-    this.streamAbortController = abortController;
+    // Two attempts only when a screenshot is attached: a provider that rejects
+    // the image must not cost the user their question, so the second pass
+    // resends text-only — but never after content has already streamed, which
+    // would duplicate the answer.
+    const attempts = screenContext && lastUserIndex !== -1 ? [true, false] : [false];
+    for (let attempt = 0; attempt < attempts.length; attempt++) {
+      // cancelActiveStream() aborts this controller; streamText propagates it
+      // into doStream, cancelling the enterprise IPC proxy's request in main.
+      const abortController = new AbortController();
+      this.streamAbortController = abortController;
 
-    const result = streamText({
-      model: aiModel,
-      messages: messages.map((m) => ({
-        role: m.role as "system" | "user" | "assistant",
-        content: m.content,
-      })),
-      tools: tools || undefined,
-      stopWhen: stepCountIs(tools ? ReasoningService.MAX_TOOL_STEPS : 1),
-      abortSignal: abortController.signal,
-      ...(useTemperature ? { temperature: config.temperature ?? 0.3 } : {}),
-      maxOutputTokens: config.maxTokens || 4096,
-      ...(hasProviderOptions ? { providerOptions } : {}),
-    });
+      const result = streamText({
+        model: aiModel,
+        messages: buildMessages(attempts[attempt]),
+        tools: tools || undefined,
+        stopWhen: stepCountIs(tools ? ReasoningService.MAX_TOOL_STEPS : 1),
+        abortSignal: abortController.signal,
+        ...(useTemperature ? { temperature: config.temperature ?? 0.3 } : {}),
+        maxOutputTokens: config.maxTokens || 4096,
+        ...(hasProviderOptions ? { providerOptions } : {}),
+      });
 
-    try {
-      for await (const chunk of result.fullStream) {
-        if (chunk.type === "text-delta") {
-          yield { type: "content", text: chunk.text };
-        } else if (chunk.type === "tool-call") {
-          yield {
-            type: "tool_calls",
-            calls: [
-              {
-                id: chunk.toolCallId,
-                name: chunk.toolName,
-                arguments: JSON.stringify(chunk.input),
-              },
-            ],
-          };
-        } else if (chunk.type === "tool-result") {
-          const output = chunk.output as
-            string | { displayText?: unknown; error?: unknown; success?: unknown } | undefined;
-          // Tools return { success, data, displayText } (see ToolRegistry) and
-          // already phrase their own summary — "Found 3 notes for X". Only a
-          // string output was being read before, so every structured result
-          // collapsed to "Done", including failures.
-          let displayText: string;
-          if (typeof output === "string") {
-            displayText = output;
-          } else if (typeof output?.displayText === "string" && output.displayText) {
-            displayText = output.displayText;
-          } else if (output?.error) {
-            displayText = String(output.error);
-          } else {
-            displayText = chunk.toolName;
+      let yieldedAny = false;
+      try {
+        for await (const chunk of result.fullStream) {
+          if (chunk.type === "text-delta") {
+            yieldedAny = true;
+            yield { type: "content", text: chunk.text };
+          } else if (chunk.type === "tool-call") {
+            yieldedAny = true;
+            yield {
+              type: "tool_calls",
+              calls: [
+                {
+                  id: chunk.toolCallId,
+                  name: chunk.toolName,
+                  arguments: JSON.stringify(chunk.input),
+                },
+              ],
+            };
+          } else if (chunk.type === "tool-result") {
+            const output = chunk.output as
+              string | { displayText?: unknown; error?: unknown; success?: unknown } | undefined;
+            // Tools return { success, data, displayText } (see ToolRegistry) and
+            // already phrase their own summary — "Found 3 notes for X". Only a
+            // string output was being read before, so every structured result
+            // collapsed to "Done", including failures.
+            let displayText: string;
+            if (typeof output === "string") {
+              displayText = output;
+            } else if (typeof output?.displayText === "string" && output.displayText) {
+              displayText = output.displayText;
+            } else if (output?.error) {
+              displayText = String(output.error);
+            } else {
+              displayText = chunk.toolName;
+            }
+            yield {
+              type: "tool_result",
+              callId: chunk.toolCallId,
+              toolName: chunk.toolName,
+              displayText,
+              failed: typeof output === "object" && output?.success === false,
+            };
+          } else if (chunk.type === "finish") {
+            yield { type: "done", finishReason: chunk.finishReason };
           }
-          yield {
-            type: "tool_result",
-            callId: chunk.toolCallId,
-            toolName: chunk.toolName,
-            displayText,
-            failed: typeof output === "object" && output?.success === false,
-          };
-        } else if (chunk.type === "finish") {
-          yield { type: "done", finishReason: chunk.finishReason };
         }
-      }
-    } catch (error) {
-      if (abortController.signal.aborted) {
-        yield { type: "done", finishReason: "stop" };
         return;
-      }
-      throw error;
-    } finally {
-      if (this.streamAbortController === abortController) {
-        this.streamAbortController = null;
+      } catch (error) {
+        if (abortController.signal.aborted) {
+          yield { type: "done", finishReason: "stop" };
+          return;
+        }
+        if (attempts[attempt] && !yieldedAny && attempt < attempts.length - 1) {
+          logger.logReasoning("AGENT_SCREEN_CONTEXT_RETRY_TEXT_ONLY", { model, provider });
+          continue;
+        }
+        throw error;
+      } finally {
+        if (this.streamAbortController === abortController) {
+          this.streamAbortController = null;
+        }
       }
     }
   }

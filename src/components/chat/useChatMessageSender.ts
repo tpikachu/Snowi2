@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import type { ChatPersistence } from "./useChatPersistence";
 import type { ChatStreaming } from "./useChatStreaming";
 import type { Message } from "./types";
+import type { ScreenContextImage } from "../../types/electron";
 
 interface PersistedMessageContext {
   conversationId: number;
@@ -25,9 +26,12 @@ export function useChatMessageSender({
   createConversation,
   onBeforeSend,
   onMessagePersisted,
-}: UseChatMessageSenderOptions): (text: string) => Promise<void> {
+}: UseChatMessageSenderOptions): (
+  text: string,
+  options?: { screenContext?: ScreenContextImage }
+) => Promise<void> {
   return useCallback(
-    async (text: string) => {
+    async (text: string, options?: { screenContext?: ScreenContextImage }) => {
       onBeforeSend?.();
       const convId = conversationId ?? (await createConversation(text));
       const previousMessages = persistence.messages;
@@ -45,7 +49,9 @@ export function useChatMessageSender({
         text,
         isFirstMessage: previousMessages.length === 0,
       });
-      await streaming.sendToAI(text, [...previousMessages, userMessage]);
+      // The screenshot rides only the model request — persistence stores the
+      // text alone, so it never reaches the database or the history UI.
+      await streaming.sendToAI(text, [...previousMessages, userMessage], options);
     },
     [conversationId, createConversation, onBeforeSend, onMessagePersisted, persistence, streaming]
   );

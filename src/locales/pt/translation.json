@@ -3246,6 +3246,17 @@
       "error": "Erro de ferramenta",
       "unknownTool": "Ferramenta desconhecida: {{name}}",
       "invalidArgs": "Argumentos de ferramenta inválidos para {{name}}"
+    },
+    "bar": {
+      "placeholder": "Pergunte qualquer coisa sobre sua tela ou suas reuniões…",
+      "listen": "Ouvir",
+      "send": "Enviar",
+      "voice": "Falar"
+    },
+    "screenConsent": {
+      "question": "O Snowy pode olhar sua tela para ajudar a responder? Nunca é salvo.",
+      "allow": "Permitir",
+      "deny": "Agora não"
     }
   },
   "integrations": {

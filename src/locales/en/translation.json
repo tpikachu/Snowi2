@@ -3411,6 +3411,17 @@
       "error": "Tool error",
       "unknownTool": "Unknown tool: {{name}}",
       "invalidArgs": "Invalid tool arguments for {{name}}"
+    },
+    "bar": {
+      "placeholder": "Ask anything about your screen or your meetings…",
+      "listen": "Listen",
+      "send": "Send",
+      "voice": "Speak"
+    },
+    "screenConsent": {
+      "question": "Can Snowy look at your screen to help answer? It's never saved.",
+      "allow": "Allow",
+      "deny": "Not now"
     }
   },
   "integrations": {

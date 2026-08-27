@@ -3411,6 +3411,17 @@
       "error": "Erreur d'outil",
       "unknownTool": "Outil inconnu : {{name}}",
       "invalidArgs": "Arguments d'outil invalides pour {{name}}"
+    },
+    "bar": {
+      "placeholder": "Posez une question sur votre écran ou vos réunions…",
+      "listen": "Écouter",
+      "send": "Envoyer",
+      "voice": "Parler"
+    },
+    "screenConsent": {
+      "question": "Snowy peut-il regarder votre écran pour mieux répondre ? Rien n'est enregistré.",
+      "allow": "Autoriser",
+      "deny": "Pas maintenant"
     }
   },
   "integrations": {

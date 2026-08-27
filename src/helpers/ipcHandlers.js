@@ -8271,6 +8271,18 @@ class IPCHandlers {
       return { success: true };
     });
 
+    // The bar's Listen button. Routed through the detection engine's manual
+    // path — the same one the meeting hotkey uses — so a meeting started from
+    // the bar gets everything a hotkey meeting gets: the note, the series
+    // template, the navigation queue, the pre-roll claim.
+    ipcMain.handle("start-manual-meeting", async () => {
+      if (!this.meetingDetectionEngine) {
+        return { success: false, error: "Meeting detection is not available" };
+      }
+      await this.meetingDetectionEngine.startManualMeeting();
+      return { success: true };
+    });
+
     ipcMain.handle("resize-agent-window", async (_event, width, height) => {
       this.windowManager.resizeAgentWindow(width, height);
       return { success: true };

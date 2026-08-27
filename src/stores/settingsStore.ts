@@ -252,6 +252,8 @@ const BOOLEAN_SETTINGS = new Set([
   "useCleanupModel",
   "useDictationAgent",
   "voiceAgentScreenContext",
+  "agentScreenContext",
+  "agentScreenContextPrompted",
   "useDictationAgentVisionModel",
   "useDictationTranslation",
   "translationDisableThinking",
@@ -786,6 +788,11 @@ export interface SettingsState
   // Voice-agent screen context: opt-in screenshot capture, plus an optional
   // dedicated model used only when a screenshot is attached.
   voiceAgentScreenContext: boolean;
+  // Chat-bar screen context: opt-in screenshot attached to typed questions.
+  // `Prompted` remembers that the one-time consent row was answered, so the
+  // bar never asks twice regardless of which answer it got.
+  agentScreenContext: boolean;
+  agentScreenContextPrompted: boolean;
   useDictationAgentVisionModel: boolean;
   dictationAgentVisionMode: InferenceMode;
   dictationAgentVisionProvider: string;
@@ -812,6 +819,8 @@ export interface SettingsState
   setDictationAgentCustomApiKey: (key: string) => void;
 
   setVoiceAgentScreenContext: (value: boolean) => void;
+  setAgentScreenContext: (value: boolean) => void;
+  setAgentScreenContextPrompted: (value: boolean) => void;
   setUseDictationAgentVisionModel: (value: boolean) => void;
   setDictationAgentVisionMode: (mode: InferenceMode) => void;
   setDictationAgentVisionProvider: (value: string) => void;
@@ -1652,6 +1661,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   dictationAgentCustomApiKey: readString("dictationAgentCustomApiKey", ""),
 
   voiceAgentScreenContext: readBoolean("voiceAgentScreenContext", false),
+  agentScreenContext: readBoolean("agentScreenContext", false),
+  agentScreenContextPrompted: readBoolean("agentScreenContextPrompted", false),
   useDictationAgentVisionModel: readBoolean("useDictationAgentVisionModel", false),
   // The vision override never had a local lane; BYOK providers is its only mode.
   dictationAgentVisionMode: "providers" as InferenceMode,
@@ -1691,6 +1702,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   ),
 
   setVoiceAgentScreenContext: createBooleanSetter("voiceAgentScreenContext"),
+  setAgentScreenContext: createBooleanSetter("agentScreenContext"),
+  setAgentScreenContextPrompted: createBooleanSetter("agentScreenContextPrompted"),
   setUseDictationAgentVisionModel: createBooleanSetter("useDictationAgentVisionModel"),
   setDictationAgentVisionMode: createStringSetter("dictationAgentVisionMode") as (
     mode: InferenceMode

@@ -3294,6 +3294,17 @@
       "error": "Error de herramienta",
       "unknownTool": "Herramienta desconocida: {{name}}",
       "invalidArgs": "Argumentos de herramienta no válidos para {{name}}"
+    },
+    "bar": {
+      "placeholder": "Pregunta lo que sea sobre tu pantalla o tus reuniones…",
+      "listen": "Escuchar",
+      "send": "Enviar",
+      "voice": "Hablar"
+    },
+    "screenConsent": {
+      "question": "¿Puede Snowy mirar tu pantalla para ayudarte a responder? Nunca se guarda.",
+      "allow": "Permitir",
+      "deny": "Ahora no"
     }
   },
   "integrations": {

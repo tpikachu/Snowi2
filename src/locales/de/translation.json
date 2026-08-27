@@ -3411,6 +3411,17 @@
       "error": "Werkzeugfehler",
       "unknownTool": "Unbekanntes Werkzeug: {{name}}",
       "invalidArgs": "Ungültige Tool-Argumente für {{name}}"
+    },
+    "bar": {
+      "placeholder": "Fragen Sie alles über Ihren Bildschirm oder Ihre Meetings…",
+      "listen": "Zuhören",
+      "send": "Senden",
+      "voice": "Sprechen"
+    },
+    "screenConsent": {
+      "question": "Darf Snowy auf Ihren Bildschirm schauen, um besser zu antworten? Es wird nie gespeichert.",
+      "allow": "Erlauben",
+      "deny": "Jetzt nicht"
     }
   },
   "integrations": {

@@ -3246,6 +3246,17 @@
       "error": "工具错误",
       "unknownTool": "未知工具：{{name}}",
       "invalidArgs": "{{name}} 的工具参数无效"
+    },
+    "bar": {
+      "placeholder": "问我任何关于屏幕或会议的问题…",
+      "listen": "聆听",
+      "send": "发送",
+      "voice": "说话"
+    },
+    "screenConsent": {
+      "question": "允许 Snowy 查看您的屏幕以便更好地回答吗？绝不会保存。",
+      "allow": "允许",
+      "deny": "暂不"
     }
   },
   "integrations": {
