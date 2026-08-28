@@ -2,8 +2,12 @@ import { useCallback, useEffect, useState } from "react";
 import type { NoteItem } from "../types/electron";
 import { normalizeDbDate } from "../utils/dateFormatting";
 
-/** How many meetings Home shows. Enough to recognise the week, not a library. */
-export const RECENT_MEETINGS_LIMIT = 8;
+/**
+ * How many meetings Home shows. Home is now the meeting log — the list people
+ * scroll to find last Tuesday — so it holds a month of ordinary use rather
+ * than a week's highlights. "Browse all" still covers the archive.
+ */
+export const RECENT_MEETINGS_LIMIT = 30;
 
 function toMs(value: string | null | undefined): number {
   if (!value) return 0;

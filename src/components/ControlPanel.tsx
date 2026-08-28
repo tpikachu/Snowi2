@@ -1065,6 +1065,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   isStartingMeeting={isStartingMeetingCapture}
                   onOpenRecordingNote={returnToMeetingNote}
                   onBrowseAll={() => setActiveView("personal-notes")}
+                  onOpenSearch={() => setShowSearch(true)}
                 />
               )}
               {activeView === "chat" && (

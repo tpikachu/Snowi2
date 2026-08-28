@@ -3862,6 +3862,22 @@
       "collapsedSummaryAllSet": "È tutto configurato.",
       "change": "Cambia",
       "onThisMachine": "Su questo computer"
+    },
+    "hero": {
+      "searchPlaceholder": "Cerca o chiedi qualsiasi cosa…",
+      "start": "Avvia riunione"
+    },
+    "activeSession": {
+      "ongoing": "In corso"
+    },
+    "calendarNudge": {
+      "action": "Collega il tuo calendario",
+      "description": "per vedere le prossime riunioni e ricevere un avviso quando ne inizia una.",
+      "google": "Google Calendar",
+      "microsoft": "Microsoft Outlook",
+      "apple": "Calendario Apple",
+      "failedTitle": "Calendario non collegato",
+      "failedDescription": "L'accesso non è stato completato. Puoi riprovare in qualsiasi momento."
     }
   },
   "tour": {

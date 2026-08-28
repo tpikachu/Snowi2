@@ -1,19 +1,19 @@
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertTriangle, CalendarClock } from "lucide-react";
+import { AlertTriangle, AudioLines, CalendarClock, Search } from "lucide-react";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import UpcomingMeetings from "../UpcomingMeetings";
-import ActivityNoteRow from "../activity/ActivityNoteRow";
+import MeetingRow from "./MeetingRow";
 import NowCard from "./NowCard";
-import MeetingActivityCard from "./MeetingActivityCard";
-import CommitmentsCard from "./CommitmentsCard";
+import CalendarNudge from "./CalendarNudge";
 import NeedsWriteUpCard from "./NeedsWriteUpCard";
-import CapabilitiesCard from "./CapabilitiesCard";
-import StatusPanel from "./StatusPanel";
 import { useRecentMeetings } from "../../hooks/useRecentMeetings";
 import { useUpcomingEvents } from "../../hooks/useUpcomingEvents";
+import { useMeetingRecordingStore } from "../../stores/meetingRecordingStore";
 import { formatDateGroup, normalizeDbDate } from "../../utils/dateFormatting";
+import { getCachedPlatform } from "../../utils/platform";
+import { cn } from "../lib/utils";
 import type { NoteItem } from "../../types/electron";
 import type { CalendarEvent } from "../../types/calendar";
 
@@ -23,17 +23,18 @@ interface HomeViewProps {
   isStartingMeeting: boolean;
   onOpenRecordingNote: () => void;
   onBrowseAll: () => void;
+  onOpenSearch: () => void;
 }
 
 /**
- * Home: what is happening, what is next, what just happened, and whether the
- * app is actually ready to capture it.
+ * Home: press the button, or find the meeting.
  *
- * Home used to be a mixed feed of notes, meetings and dictations — the same
- * objects the notes library already lists, in a second arrangement. Two views
- * of one collection is a navigation problem, not a feature, so Home no longer
- * lists notes at all. It is scoped by *time and meetings*: now, next, recent.
- * "Everything I have" is one place, and it is Notes.
+ * This used to be a dashboard — activity chart, commitments, capability
+ * cards, a status panel — and every card was one more thing between the user
+ * and the two acts that matter: starting a meeting and getting back to one.
+ * Now the page is those two acts. Search-or-ask and Start at the top, the
+ * meeting history under them, upcoming meetings beside it. Anything that only
+ * *describes* the app rather than doing the work lives elsewhere.
  */
 export default function HomeView({
   onOpenNote,
@@ -41,14 +42,17 @@ export default function HomeView({
   isStartingMeeting,
   onOpenRecordingNote,
   onBrowseAll,
+  onOpenSearch,
 }: HomeViewProps) {
   const { t } = useTranslation();
   const { events, isLoading: eventsLoading, isConnected } = useUpcomingEvents();
   const { meetings, isLoading, hasError, reload } = useRecentMeetings(true);
+  const isRecording = useMeetingRecordingStore((s) => s.isRecording);
+  const recordingNoteId = useMeetingRecordingStore((s) => s.recordingNoteId);
+  const recordingNoteTitle = useMeetingRecordingStore((s) => s.recordingNoteTitle);
 
-  // The cards below hold a note id, not a note: a commitment records which
-  // meeting it came from, and the backlog query returns columns rather than
-  // whole rows. Fetched here so both open a note the same way the feed does.
+  // The backlog card holds a note id, not a note; fetched here so it opens a
+  // note the same way the list does.
   const openNoteById = useCallback(
     async (noteId: number) => {
       const note = await window.electronAPI?.getNote?.(noteId);
@@ -58,10 +62,12 @@ export default function HomeView({
   );
 
   // Grouped by the day the meeting happened, so the list reads as a history
-  // rather than an undifferentiated stack.
+  // rather than an undifferentiated stack. The note being recorded right now
+  // is excluded — it gets the live row above the list instead.
   const groups = useMemo(() => {
     const buckets: { id: string; label: string; items: NoteItem[] }[] = [];
     for (const meeting of meetings) {
+      if (isRecording && meeting.id === recordingNoteId) continue;
       const date = normalizeDbDate(meeting.created_at || meeting.updated_at);
       const label = Number.isNaN(date.getTime()) ? t("common.unknown") : formatDateGroup(date, t);
       const last = buckets[buckets.length - 1];
@@ -69,52 +75,60 @@ export default function HomeView({
       else buckets.push({ id: `home-group-${buckets.length}`, label, items: [meeting] });
     }
     return buckets;
-  }, [meetings, t]);
+  }, [meetings, isRecording, recordingNoteId, t]);
+
+  const searchShortcut = getCachedPlatform() === "darwin" ? "⌘K" : "Ctrl K";
+  const hasRows = isRecording || meetings.length > 0;
 
   return (
-    <div className="px-5 pb-8 pt-4">
+    <div className="px-6 pb-10 pt-5">
       <div className="mx-auto w-full max-w-5xl">
-        <NowCard
-          events={events}
-          onStartMeeting={onStartMeeting}
-          isStartingMeeting={isStartingMeeting}
-          onOpenRecordingNote={onOpenRecordingNote}
-        />
+        {/* The two acts: find, and start. */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className={cn(
+              "flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full px-4 text-left",
+              "border border-border-subtle bg-input text-[13px] text-muted-foreground",
+              "transition-colors duration-150 ease-snap hover:border-border-hover hover:bg-surface-1",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            )}
+          >
+            <Search size={14} className="shrink-0 text-muted-foreground/70" />
+            <span className="min-w-0 flex-1 truncate">{t("home.hero.searchPlaceholder")}</span>
+            <kbd className="shrink-0 rounded border border-border-subtle bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground/80">
+              {searchShortcut}
+            </kbd>
+          </button>
+          <Button
+            onClick={() => onStartMeeting(null)}
+            disabled={isStartingMeeting || isRecording}
+            className="h-10 shrink-0 rounded-full px-5 text-[13px] font-semibold shadow-[0_4px_24px_-8px_var(--color-primary)]"
+          >
+            <AudioLines size={15} strokeWidth={2} />
+            {t("home.hero.start")}
+          </Button>
+        </div>
 
-        <MeetingActivityCard />
+        {!isConnected && <CalendarNudge />}
 
-        {/* All three hide themselves when there is nothing to say. Order is by
-            how much they are asking of the user: commitments are a to-do list,
-            the write-up backlog is a repair job, and the capability card is an
-            offer — so it goes last, where it cannot push real work down the
-            page. It also collapses, which the other two do not: they describe
-            work the user already has, and this describes work they might. */}
-        <CommitmentsCard onOpenNote={openNoteById} />
-        <NeedsWriteUpCard onOpenNote={openNoteById} />
-        <CapabilitiesCard />
+        <div className="mt-5">
+          {/* While recording, the live list row below is the recording
+              indicator — NowCard's own live card would say it twice. */}
+          {!isRecording && (
+            <NowCard
+              events={events}
+              onStartMeeting={onStartMeeting}
+              isStartingMeeting={isStartingMeeting}
+              onOpenRecordingNote={onOpenRecordingNote}
+            />
+          )}
+          <NeedsWriteUpCard onOpenNote={openNoteById} />
+        </div>
 
-        <div className="mt-4 flex gap-6">
+        <div className="mt-2 flex gap-8">
           <div className="min-w-0 flex-1">
-            <div className="flex h-7 items-center gap-2">
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("home.recent.title")}
-              </h2>
-              <span className="tabular-figures text-[11px] text-muted-foreground/60">
-                {meetings.length}
-              </span>
-              <div className="flex-1" />
-              {meetings.length > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onBrowseAll}
-                  className="h-6 px-2 text-[11px] text-muted-foreground"
-                >
-                  {t("home.recent.browseAll")}
-                </Button>
-              )}
-            </div>
-
             {hasError && (
               <div className="mt-2 flex items-start gap-2.5 rounded-lg border border-destructive/25 bg-destructive-subtle/70 px-3 py-2.5">
                 <AlertTriangle size={14} className="mt-px shrink-0 text-destructive" />
@@ -132,47 +146,95 @@ export default function HomeView({
               </div>
             )}
 
-            {isLoading && meetings.length === 0 ? (
-              <div className="mt-2 space-y-1.5">
+            {isLoading && !hasRows ? (
+              <div className="mt-3 space-y-1.5">
                 {[0, 1, 2].map((i) => (
-                  <Skeleton key={i} className="h-14 w-full rounded-lg" />
+                  <Skeleton key={i} className="h-11 w-full rounded-xl" />
                 ))}
               </div>
-            ) : meetings.length === 0 ? (
+            ) : !hasRows ? (
               <EmptyMeetings
                 onStartMeeting={() => onStartMeeting(null)}
                 isStartingMeeting={isStartingMeeting}
               />
             ) : (
               <div className="mt-1">
-                {groups.map((group, index) => (
-                  <div key={group.id} className={index > 0 ? "mt-5" : ""}>
-                    <div className="sticky top-0 z-10 flex items-center gap-2.5 bg-background py-2">
+                {/* The meeting happening right now, above everything with its
+                    own pulse — the one row that is not history yet. */}
+                {isRecording && (
+                  <div className="pt-2">
+                    <div className="flex items-center py-2">
                       <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        {group.label}
+                        {formatDateGroup(new Date(), t)}
                       </span>
-                      <div className="h-px flex-1 bg-border-subtle" />
                     </div>
-                    <ul className="relative z-0 space-y-1.5">
-                      {group.items.map((meeting) => (
-                        <li key={meeting.id}>
-                          <ActivityNoteRow note={meeting} onOpen={onOpenNote} preferCreatedAt />
-                        </li>
-                      ))}
-                    </ul>
+                    <button
+                      type="button"
+                      onClick={onOpenRecordingNote}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left",
+                        "border border-primary/25 bg-primary/[0.06]",
+                        "transition-colors duration-150 ease-snap hover:bg-primary/[0.1]",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      )}
+                    >
+                      <span className="relative flex size-2 shrink-0">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/60" />
+                        <span className="relative inline-flex size-2 rounded-full bg-primary" />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-[13.5px] font-medium text-foreground">
+                        {recordingNoteTitle?.trim() || t("notes.meeting.stopDialog.untitled")}
+                      </span>
+                      <span className="shrink-0 rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                        {t("home.activeSession.ongoing")}
+                      </span>
+                    </button>
                   </div>
-                ))}
+                )}
+
+                {groups.map((group, index) => {
+                  // The live row already sits under a "Today" header; the first
+                  // group repeating it would label the same day twice.
+                  const labelCovered =
+                    isRecording && index === 0 && group.label === formatDateGroup(new Date(), t);
+                  return (
+                    <div key={group.id} className={index > 0 || isRecording ? "mt-1" : ""}>
+                      {!labelCovered && (
+                        <div className="sticky top-0 z-10 flex items-center bg-background py-2">
+                          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                            {group.label}
+                          </span>
+                        </div>
+                      )}
+                      <ul className="relative z-0 space-y-0.5">
+                        {group.items.map((meeting) => (
+                          <li key={meeting.id}>
+                            <MeetingRow note={meeting} onOpen={onOpenNote} />
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })}
+
+                {meetings.length > 0 && (
+                  <div className="mt-4 flex justify-center">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onBrowseAll}
+                      className="h-7 px-3 text-[11px] text-muted-foreground"
+                    >
+                      {t("home.recent.browseAll")}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          <aside className="hidden w-64 shrink-0 space-y-6 lg:block">
-            {isConnected && (
-              <div>
-                <UpcomingMeetings events={events} isLoading={eventsLoading} />
-              </div>
-            )}
-            <StatusPanel enabled />
+          <aside className="hidden w-64 shrink-0 lg:block">
+            {isConnected && <UpcomingMeetings events={events} isLoading={eventsLoading} />}
           </aside>
         </div>
       </div>
@@ -189,7 +251,7 @@ function EmptyMeetings({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="mt-2 flex flex-col items-center rounded-lg border border-dashed border-border-subtle px-6 py-10 text-center">
+    <div className="mt-4 flex flex-col items-center rounded-2xl border border-dashed border-border-subtle px-6 py-12 text-center">
       <CalendarClock size={22} className="text-muted-foreground/40" />
       <p className="mt-3 text-sm font-medium text-foreground">{t("home.recent.emptyTitle")}</p>
       <p className="mt-1 max-w-xs text-xs leading-relaxed text-muted-foreground">
@@ -198,7 +260,7 @@ function EmptyMeetings({
       <Button
         variant="default"
         size="sm"
-        className="mt-4 h-7 text-xs"
+        className="mt-4 h-8 rounded-full px-4 text-xs"
         disabled={isStartingMeeting}
         onClick={onStartMeeting}
       >

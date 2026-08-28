@@ -3862,6 +3862,22 @@
       "collapsedSummaryAllSet": "Everything is set up.",
       "change": "Change",
       "onThisMachine": "On this machine"
+    },
+    "hero": {
+      "searchPlaceholder": "Search or ask anything…",
+      "start": "Start meeting"
+    },
+    "activeSession": {
+      "ongoing": "Ongoing"
+    },
+    "calendarNudge": {
+      "action": "Connect your calendar",
+      "description": "to see upcoming meetings and get a nudge when one starts.",
+      "google": "Google Calendar",
+      "microsoft": "Microsoft Outlook",
+      "apple": "Apple Calendar",
+      "failedTitle": "Calendar not connected",
+      "failedDescription": "The sign-in didn't finish. You can try again anytime."
     }
   },
   "tour": {

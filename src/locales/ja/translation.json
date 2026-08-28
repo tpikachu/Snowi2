@@ -3862,6 +3862,22 @@
       "collapsedSummaryAllSet": "すべて設定済みです。",
       "change": "変更",
       "onThisMachine": "この端末で実行"
+    },
+    "hero": {
+      "searchPlaceholder": "検索、または何でも質問…",
+      "start": "会議を開始"
+    },
+    "activeSession": {
+      "ongoing": "進行中"
+    },
+    "calendarNudge": {
+      "action": "カレンダーを接続",
+      "description": "すると、今後の会議が表示され、開始時に通知されます。",
+      "google": "Google カレンダー",
+      "microsoft": "Microsoft Outlook",
+      "apple": "Apple カレンダー",
+      "failedTitle": "カレンダー未接続",
+      "failedDescription": "サインインが完了しませんでした。いつでも再試行できます。"
     }
   },
   "tour": {

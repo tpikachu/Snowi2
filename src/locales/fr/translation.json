@@ -3862,6 +3862,22 @@
       "collapsedSummaryAllSet": "Tout est configuré.",
       "change": "Modifier",
       "onThisMachine": "Sur cet appareil"
+    },
+    "hero": {
+      "searchPlaceholder": "Recherchez ou demandez n'importe quoi…",
+      "start": "Démarrer une réunion"
+    },
+    "activeSession": {
+      "ongoing": "En cours"
+    },
+    "calendarNudge": {
+      "action": "Connectez votre calendrier",
+      "description": "pour voir les prochaines réunions et être prévenu quand l'une commence.",
+      "google": "Google Agenda",
+      "microsoft": "Microsoft Outlook",
+      "apple": "Calendrier Apple",
+      "failedTitle": "Calendrier non connecté",
+      "failedDescription": "La connexion n'a pas abouti. Vous pouvez réessayer à tout moment."
     }
   },
   "tour": {

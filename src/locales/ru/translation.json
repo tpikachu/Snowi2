@@ -3896,6 +3896,22 @@
       "collapsedSummaryAllSet": "Всё настроено.",
       "change": "Изменить",
       "onThisMachine": "На этом компьютере"
+    },
+    "hero": {
+      "searchPlaceholder": "Ищите или спросите что угодно…",
+      "start": "Начать встречу"
+    },
+    "activeSession": {
+      "ongoing": "Идёт"
+    },
+    "calendarNudge": {
+      "action": "Подключите календарь",
+      "description": "чтобы видеть предстоящие встречи и получать напоминание, когда одна начинается.",
+      "google": "Google Календарь",
+      "microsoft": "Microsoft Outlook",
+      "apple": "Календарь Apple",
+      "failedTitle": "Календарь не подключён",
+      "failedDescription": "Вход не был завершён. Можно попробовать снова в любой момент."
     }
   },
   "tour": {

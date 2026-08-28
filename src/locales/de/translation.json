@@ -3862,6 +3862,22 @@
       "collapsedSummaryAllSet": "Alles ist eingerichtet.",
       "change": "Ändern",
       "onThisMachine": "Auf diesem Rechner"
+    },
+    "hero": {
+      "searchPlaceholder": "Suchen oder etwas fragen…",
+      "start": "Meeting starten"
+    },
+    "activeSession": {
+      "ongoing": "Läuft"
+    },
+    "calendarNudge": {
+      "action": "Kalender verbinden",
+      "description": "um kommende Meetings zu sehen und beim Start erinnert zu werden.",
+      "google": "Google Kalender",
+      "microsoft": "Microsoft Outlook",
+      "apple": "Apple Kalender",
+      "failedTitle": "Kalender nicht verbunden",
+      "failedDescription": "Die Anmeldung wurde nicht abgeschlossen. Versuchen Sie es jederzeit erneut."
     }
   },
   "tour": {

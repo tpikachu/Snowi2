@@ -251,25 +251,34 @@ function QuickActions({
       : []),
   ];
 
+  // An inline row of verbs separated by interpuncts, not a row of bordered
+  // chips: three boxes in a boxed window read as more chrome, and the verbs
+  // should feel like things to say, not controls to operate.
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-1">
-      {actions.map(({ label, mode, icon: Icon }) => (
-        <button
-          key={label}
-          type="button"
-          onClick={() => onAsk(label, mode)}
-          disabled={!ready}
-          className={cn(
-            "flex items-center gap-1 rounded-md border border-hud-border px-1.5 py-0.5",
-            "text-[10px] text-hud-muted transition-colors duration-150",
-            "hover:bg-white/10 hover:text-hud-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-            "disabled:cursor-not-allowed disabled:opacity-40"
+    <div className="flex shrink-0 flex-wrap items-center gap-x-0.5 gap-y-0.5 px-1">
+      {actions.map(({ label, mode, icon: Icon }, index) => (
+        <span key={label} className="flex items-center gap-x-0.5">
+          {index > 0 && (
+            <span aria-hidden="true" className="px-0.5 text-[10px] text-hud-muted/30">
+              ·
+            </span>
           )}
-        >
-          <Icon size={9} />
-          {label}
-        </button>
+          <button
+            type="button"
+            onClick={() => onAsk(label, mode)}
+            disabled={!ready}
+            className={cn(
+              "flex items-center gap-1 rounded-md px-1.5 py-1",
+              "text-[10.5px] font-medium text-hud-muted transition-colors duration-150",
+              "hover:bg-white/[0.07] hover:text-hud-foreground",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+              "disabled:cursor-not-allowed disabled:opacity-40"
+            )}
+          >
+            <Icon size={10} className="text-hud-muted/70" />
+            {label}
+          </button>
+        </span>
       ))}
     </div>
   );

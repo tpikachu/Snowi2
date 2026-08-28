@@ -3862,6 +3862,22 @@
       "collapsedSummaryAllSet": "都已配置完成。",
       "change": "更改",
       "onThisMachine": "在本机运行"
+    },
+    "hero": {
+      "searchPlaceholder": "搜索或提出任何问题…",
+      "start": "开始会议"
+    },
+    "activeSession": {
+      "ongoing": "进行中"
+    },
+    "calendarNudge": {
+      "action": "连接您的日历",
+      "description": "即可查看即将举行的会议，并在会议开始时收到提醒。",
+      "google": "Google 日历",
+      "microsoft": "Microsoft Outlook",
+      "apple": "Apple 日历",
+      "failedTitle": "日历未连接",
+      "failedDescription": "登录未完成。您可以随时重试。"
     }
   },
   "tour": {

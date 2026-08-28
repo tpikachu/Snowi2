@@ -3862,6 +3862,22 @@
       "collapsedSummaryAllSet": "都已設定完成。",
       "change": "變更",
       "onThisMachine": "在本機執行"
+    },
+    "hero": {
+      "searchPlaceholder": "搜尋或提出任何問題…",
+      "start": "開始會議"
+    },
+    "activeSession": {
+      "ongoing": "進行中"
+    },
+    "calendarNudge": {
+      "action": "連接您的行事曆",
+      "description": "即可查看即將舉行的會議，並在會議開始時收到提醒。",
+      "google": "Google 日曆",
+      "microsoft": "Microsoft Outlook",
+      "apple": "Apple 行事曆",
+      "failedTitle": "行事曆未連接",
+      "failedDescription": "登入未完成。您可以隨時重試。"
     }
   },
   "tour": {
