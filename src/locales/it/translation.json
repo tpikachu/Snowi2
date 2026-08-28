@@ -2618,7 +2618,6 @@
       "staleIndicator": "Il contenuto è cambiato dall'ultimo miglioramento",
       "live": "Dal vivo",
       "transcript": "Trascrizione",
-      "notes": "Note",
       "conversationWillAppear": "La conversazione apparirà qui...",
       "linkedEvent": "Evento collegato",
       "noFolder": "Nessuna cartella",
@@ -2780,10 +2779,9 @@
     },
     "empty": {
       "title": "Ancora nessuna nota qui",
-      "description": "Crea la tua prima nota per iniziare a scrivere",
+      "description": "Le tue note delle riunioni appariranno qui",
       "selectTitle": "Seleziona una nota",
       "selectDescription": "Scegli una nota dalla barra laterale",
-      "createNote": "Crea nota",
       "emptyFolder": "Nessuna nota in questa cartella"
     },
     "addToFolder": {
@@ -3424,23 +3422,6 @@
     "connectCalendarDescription": "Collega il tuo Google Calendar per vedere le prossime riunioni e registrare note automaticamente.",
     "notABot": "Snowy registra usando l'audio del tuo sistema — non entra mai nelle riunioni come bot.",
     "connectCalendarButton": "Collega calendario"
-  },
-  "notesView": {
-    "searchPlaceholder": "Cerca note…",
-    "newNote": "Nuova nota",
-    "empty": {
-      "title": "Nessuna nota ancora",
-      "description": "Crea la tua prima nota per iniziare."
-    },
-    "searchEmpty": {
-      "title": "Nessun risultato",
-      "description": "Nessuna nota trovata per «{{query}}»."
-    },
-    "noteType": {
-      "personal": "personale",
-      "meeting": "riunione",
-      "upload": "caricamento"
-    }
   },
   "noteEditor": {
     "saved": "Salvato",

@@ -7,7 +7,6 @@ import {
   FileText,
   Mail,
   Sparkles,
-  AlignLeft,
   MessageSquareText,
   Calendar,
   LinkIcon,
@@ -329,12 +328,17 @@ export default function NoteEditor({
         setIsDiarizing(false);
         setSpeakerMappings({});
         setShowFollowUpEmail(false);
-        if (!isRecording) {
-          // A meeting with a write-up opens on the summary — that is the page
-          // the note exists to produce. Everything else opens on the user's
-          // own notes, as before. The id guard above keeps typing into the
-          // summary from re-running this.
-          setViewMode(enhancement?.content?.trim() ? "enhanced" : "raw");
+        // A meeting with a write-up opens on the summary — that is the page
+        // the note exists to produce. A recorded note without one opens on
+        // its transcript. Only legacy typed notes (no recording, no summary)
+        // still open on their own text. The id guard above keeps typing into
+        // the summary from re-running this.
+        if (isRecording) {
+          setViewMode("transcript");
+        } else {
+          setViewMode(
+            enhancement?.content?.trim() ? "enhanced" : note.transcript ? "transcript" : "raw"
+          );
         }
         if (titleRef.current && titleRef.current.textContent !== note.title) {
           titleRef.current.textContent = note.title || "";
@@ -342,7 +346,7 @@ export default function NoteEditor({
         editorRef.current?.commands.focus();
       });
     }
-  }, [isRecording, note.id, note.title, enhancement, scheduleUiUpdate]);
+  }, [isRecording, note.id, note.title, note.transcript, enhancement, scheduleUiUpdate]);
 
   useEffect(() => {
     window.electronAPI?.getSpeakerMappings?.(note.id).then((mappings) => {
@@ -790,7 +794,9 @@ export default function NoteEditor({
             )}
             <div className="flex-1" />
             <div className="flex items-center gap-1.5">
-              {(enhancement || hasMeetingTranscript || hasChatSegments || isRecording) && (
+              {/* Two views exist only once the write-up lands; until then the
+                  single view needs no switcher. */}
+              {enhancement && (hasMeetingTranscript || hasChatSegments || isRecording) && (
                 <div
                   role="group"
                   aria-label={t("notes.editor.viewMode")}
@@ -852,21 +858,6 @@ export default function NoteEditor({
                         )}
                       </button>
                     )}
-                    <button
-                      data-segment-button
-                      data-segment-value="raw"
-                      aria-pressed={viewMode === "raw"}
-                      onClick={() => setViewMode("raw")}
-                      className={cn(
-                        SEGMENT_BUTTON_CLASS,
-                        viewMode === "raw"
-                          ? "text-foreground"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      <AlignLeft size={11} />
-                      {t("notes.editor.notes")}
-                    </button>
                   </div>
                 </div>
               )}

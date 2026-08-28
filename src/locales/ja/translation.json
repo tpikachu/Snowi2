@@ -2508,7 +2508,6 @@
       "staleIndicator": "強化後にコンテンツが変更されました",
       "live": "ライブ",
       "transcript": "文字起こし",
-      "notes": "ノート",
       "conversationWillAppear": "会話がここに表示されます...",
       "linkedEvent": "リンクされたイベント",
       "noFolder": "フォルダなし",
@@ -2580,10 +2579,9 @@
     },
     "empty": {
       "title": "まだノートがありません",
-      "description": "最初のノートを作成して書き始めましょう",
+      "description": "会議のノートはここに表示されます",
       "selectTitle": "ノートを選択",
       "selectDescription": "サイドバーからノートを選んでください",
-      "createNote": "ノートを作成",
       "emptyFolder": "このフォルダにノートはありません"
     },
     "addToFolder": {
@@ -3424,23 +3422,6 @@
     "connectCalendarDescription": "Google カレンダーを連携して、今後のミーティングを確認し、自動的にノートを記録します。",
     "notABot": "Snowy はシステムオーディオで録音します — ボットとしてミーティングに参加することはありません。",
     "connectCalendarButton": "カレンダーを接続"
-  },
-  "notesView": {
-    "searchPlaceholder": "ノートを検索…",
-    "newNote": "新しいノート",
-    "empty": {
-      "title": "ノートがまだありません",
-      "description": "最初のノートを作成してください。"
-    },
-    "searchEmpty": {
-      "title": "結果なし",
-      "description": "「{{query}}」に一致するノートが見つかりませんでした。"
-    },
-    "noteType": {
-      "personal": "個人",
-      "meeting": "会議",
-      "upload": "アップロード"
-    }
   },
   "noteEditor": {
     "saved": "保存済み",

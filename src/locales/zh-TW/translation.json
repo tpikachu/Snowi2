@@ -2618,7 +2618,6 @@
       "staleIndicator": "內容在增強後已變更",
       "live": "即時",
       "transcript": "轉錄",
-      "notes": "筆記",
       "conversationWillAppear": "對話將顯示在這裡...",
       "linkedEvent": "關聯行程",
       "noFolder": "無資料夾",
@@ -2780,10 +2779,9 @@
     },
     "empty": {
       "title": "這裡還沒有筆記",
-      "description": "建立你的第一則筆記，開始書寫",
+      "description": "你的會議筆記將顯示在這裡",
       "selectTitle": "選擇筆記",
       "selectDescription": "從側邊欄選擇一則筆記",
-      "createNote": "建立筆記",
       "emptyFolder": "此資料夾中沒有筆記"
     },
     "addToFolder": {
@@ -3424,23 +3422,6 @@
     "connectCalendarDescription": "關聯 Google 日曆以查看即將到來的會議並自動記錄筆記。",
     "notABot": "Snowy 透過系統音訊錄製 — 它不會以機器人身分加入您的會議。",
     "connectCalendarButton": "連接日曆"
-  },
-  "notesView": {
-    "searchPlaceholder": "搜尋筆記…",
-    "newNote": "新建筆記",
-    "empty": {
-      "title": "尚無筆記",
-      "description": "建立你的第一則筆記開始使用。"
-    },
-    "searchEmpty": {
-      "title": "無結果",
-      "description": "找不到與「{{query}}」相符的筆記。"
-    },
-    "noteType": {
-      "personal": "個人",
-      "meeting": "會議",
-      "upload": "上傳"
-    }
   },
   "noteEditor": {
     "saved": "已儲存",

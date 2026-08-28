@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, SquarePen, Search, Sparkles } from "lucide-react";
+import { Search, Sparkles } from "lucide-react";
 import { useToast } from "../ui/useToast";
 import NoteEditor from "./NoteEditor";
 import SpacesTree from "./SpacesTree";
@@ -385,40 +385,10 @@ export default function PersonalNotesView({
     return () => flushPendingSaves("unmount");
   }, [flushPendingSaves]);
 
-  const handleNewNoteIn = useCallback(
-    async (spaceId: number, folderId: number | null) => {
-      const result = await window.electronAPI.saveNote(
-        t("notes.list.untitledNote"),
-        "",
-        "personal",
-        null,
-        null,
-        folderId,
-        spaceId
-      );
-      if (result.success && result.note) {
-        setActiveContext(result.note.space_id, result.note.folder_id);
-        revealContainer(result.note.space_id, result.note.folder_id);
-        setActiveNoteId(result.note.id);
-      }
-    },
-    [t]
-  );
-
   const privateSpaceId = useMemo(
     () => spaces.find((s) => s.kind === "private")?.id ?? null,
     [spaces]
   );
-
-  const handleNewNoteInPrivate = useCallback(() => {
-    if (privateSpaceId == null) return;
-    handleNewNoteIn(privateSpaceId, null);
-  }, [privateSpaceId, handleNewNoteIn]);
-
-  const handleNewNote = useCallback(() => {
-    if (activeContext) handleNewNoteIn(activeContext.spaceId, activeContext.folderId);
-    else handleNewNoteInPrivate();
-  }, [activeContext, handleNewNoteIn, handleNewNoteInPrivate]);
 
   const handleNotesAdded = useCallback(async () => {
     if (activeFolderId) {
@@ -604,18 +574,6 @@ export default function PersonalNotesView({
       <ContextPaneSection inlineClassName="w-52 shrink-0 border-r border-border-subtle">
         <div className="flex h-full min-h-0 flex-col">
           <div className="px-2 pt-2 pb-1 shrink-0 space-y-0.5">
-            <button
-              onClick={handleNewNoteInPrivate}
-              className={cn(
-                "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs",
-                "text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5",
-                "transition-colors duration-150",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              )}
-            >
-              <SquarePen size={14} className="shrink-0" />
-              {t("notes.sidebar.newNote")}
-            </button>
             {onOpenSearch && (
               <button
                 onClick={onOpenSearch}
@@ -653,7 +611,6 @@ export default function PersonalNotesView({
             onDeleteNote={handleDelete}
             onMoveNote={handleMoveNote}
             onCreateFolderAndMove={handleCreateFolderAndMove}
-            onNewNote={handleNewNoteIn}
           />
         </div>
       </ContextPaneSection>
@@ -741,7 +698,6 @@ export default function PersonalNotesView({
             space={overviewSpace}
             folder={overviewFolder}
             onOpenNote={setActiveNoteId}
-            onNewNote={handleNewNote}
             onAddExisting={activeFolderId != null ? () => setShowAddNotesDialog(true) : undefined}
           />
         ) : (
@@ -850,25 +806,15 @@ export default function PersonalNotesView({
                 <p className="text-xs text-foreground/50 dark:text-foreground/25 text-center max-w-55 mb-4">
                   {t("notes.empty.description")}
                 </p>
-                <div className="flex items-center gap-2">
+                {/* AddNotesToFolderDialog only mounts for folder contexts. */}
+                {activeFolderId != null && (
                   <button
-                    onClick={handleNewNote}
-                    className="flex items-center gap-1.5 px-4 h-7 rounded-md bg-primary/8 dark:bg-primary/10 border border-primary/12 dark:border-primary/15 text-xs font-medium text-primary/70 hover:bg-primary/12 hover:text-primary hover:border-primary/20 transition-colors"
+                    onClick={() => setShowAddNotesDialog(true)}
+                    className="flex items-center gap-1.5 px-4 h-7 rounded-md border border-foreground/8 dark:border-white/8 text-xs text-foreground/40 hover:text-foreground/60 hover:border-foreground/15 hover:bg-foreground/3 dark:hover:bg-white/3 transition-colors"
                   >
-                    <Plus size={11} />
-                    {t("notes.empty.createNote")}
+                    {t("notes.addToFolder.addExisting")}
                   </button>
-                  {/* AddNotesToFolderDialog only mounts for folder contexts —
-                      space-root empty states offer just "Create note". */}
-                  {activeFolderId != null && (
-                    <button
-                      onClick={() => setShowAddNotesDialog(true)}
-                      className="flex items-center gap-1.5 px-4 h-7 rounded-md border border-foreground/8 dark:border-white/8 text-xs text-foreground/40 hover:text-foreground/60 hover:border-foreground/15 hover:bg-foreground/3 dark:hover:bg-white/3 transition-colors"
-                    >
-                      {t("notes.addToFolder.addExisting")}
-                    </button>
-                  )}
-                </div>
+                )}
               </>
             ) : (
               <>

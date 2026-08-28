@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { FileText, Plus } from "lucide-react";
+import { FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { groupItemsByDate } from "../../../utils/dateGrouping";
 import { formatRelativeTime } from "../../../utils/dateFormatting";
@@ -8,16 +8,10 @@ import type { NoteItem } from "../../../types/electron";
 interface OverviewNoteListProps {
   notes: NoteItem[];
   onOpenNote: (noteId: number) => void;
-  onNewNote: () => void;
   onAddExisting?: () => void;
 }
 
-export function OverviewNoteList({
-  notes,
-  onOpenNote,
-  onNewNote,
-  onAddExisting,
-}: OverviewNoteListProps) {
+export function OverviewNoteList({ notes, onOpenNote, onAddExisting }: OverviewNoteListProps) {
   const { t } = useTranslation();
 
   const groups = useMemo(() => groupItemsByDate(notes, (n) => n.updated_at, t), [notes, t]);
@@ -28,23 +22,14 @@ export function OverviewNoteList({
         <p className="text-xs text-foreground/40 dark:text-foreground/30 mb-3">
           {t("notes.overview.list.empty")}
         </p>
-        <div className="flex items-center gap-2">
+        {onAddExisting && (
           <button
-            onClick={onNewNote}
-            className="flex items-center gap-1.5 px-4 h-7 rounded-md bg-primary/8 dark:bg-primary/10 border border-primary/12 dark:border-primary/15 text-xs font-medium text-primary/70 hover:bg-primary/12 hover:text-primary hover:border-primary/20 transition-colors"
+            onClick={onAddExisting}
+            className="flex items-center gap-1.5 px-4 h-7 rounded-md border border-foreground/8 dark:border-white/8 text-xs text-foreground/40 hover:text-foreground/60 hover:border-foreground/15 hover:bg-foreground/3 dark:hover:bg-white/3 transition-colors"
           >
-            <Plus size={11} />
-            {t("notes.empty.createNote")}
+            {t("notes.addToFolder.addExisting")}
           </button>
-          {onAddExisting && (
-            <button
-              onClick={onAddExisting}
-              className="flex items-center gap-1.5 px-4 h-7 rounded-md border border-foreground/8 dark:border-white/8 text-xs text-foreground/40 hover:text-foreground/60 hover:border-foreground/15 hover:bg-foreground/3 dark:hover:bg-white/3 transition-colors"
-            >
-              {t("notes.addToFolder.addExisting")}
-            </button>
-          )}
-        </div>
+        )}
       </div>
     );
   }

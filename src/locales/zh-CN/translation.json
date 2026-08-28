@@ -2618,7 +2618,6 @@
       "staleIndicator": "内容在增强后已更改",
       "live": "实时",
       "transcript": "转录",
-      "notes": "笔记",
       "conversationWillAppear": "对话将显示在这里...",
       "linkedEvent": "关联日程",
       "noFolder": "无文件夹",
@@ -2780,10 +2779,9 @@
     },
     "empty": {
       "title": "这里还没有笔记",
-      "description": "创建你的第一条笔记，开始书写",
+      "description": "你的会议笔记将显示在这里",
       "selectTitle": "选择笔记",
       "selectDescription": "从侧边栏选择一条笔记",
-      "createNote": "创建笔记",
       "emptyFolder": "此文件夹中没有笔记"
     },
     "addToFolder": {
@@ -3424,23 +3422,6 @@
     "connectCalendarDescription": "关联 Google 日历以查看即将到来的会议并自动记录笔记。",
     "notABot": "Snowy 通过系统音频录制 — 它不会以机器人身份加入您的会议。",
     "connectCalendarButton": "连接日历"
-  },
-  "notesView": {
-    "searchPlaceholder": "搜索笔记…",
-    "newNote": "新建笔记",
-    "empty": {
-      "title": "暂无笔记",
-      "description": "创建你的第一条笔记开始使用。"
-    },
-    "searchEmpty": {
-      "title": "无结果",
-      "description": "未找到与“{{query}}”匹配的笔记。"
-    },
-    "noteType": {
-      "personal": "个人",
-      "meeting": "会议",
-      "upload": "上传"
-    }
   },
   "noteEditor": {
     "saved": "已保存",

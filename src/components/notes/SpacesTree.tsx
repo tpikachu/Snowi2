@@ -136,7 +136,6 @@ interface SpacesTreeProps {
   onDeleteNote: (id: number) => void;
   onMoveNote: (noteId: number, target: NoteMoveTarget) => Promise<void>;
   onCreateFolderAndMove: (noteId: number, folderName: string) => void;
-  onNewNote: (spaceId: number, folderId: number | null) => void;
 }
 
 function spaceDisplayName(space: SpaceItem, t: TFn): string {
@@ -534,7 +533,6 @@ function FolderRow({
   fileManagerName,
   onActivate,
   onToggle,
-  onNewNote,
   onRename,
   onMoveToSpace,
   onDelete,
@@ -554,7 +552,6 @@ function FolderRow({
   fileManagerName: string;
   onActivate: () => void;
   onToggle: () => void;
-  onNewNote: () => void;
   onRename: () => void;
   onMoveToSpace: (space: SpaceItem) => void;
   onDelete: () => void;
@@ -622,18 +619,6 @@ function FolderRow({
       </span>
       <ContainerRowTrailing count={count} isActive={isActive} isDropSuccess={isDropSuccess} />
       <span className="absolute right-1.5 flex items-center gap-px">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={t("notes.list.newNote")}
-          onClick={(e) => {
-            e.stopPropagation();
-            onNewNote();
-          }}
-          className={KEBAB_BUTTON_CLASS}
-        >
-          <Plus size={12} />
-        </Button>
         {(!folder.is_default || noteFilesEnabled) && (
           <DropdownMenu onOpenChange={(open) => !open && setSpaceSearch("")}>
             <DropdownMenuTrigger asChild>
@@ -1047,7 +1032,6 @@ export default function SpacesTree({
   onDeleteNote,
   onMoveNote,
   onCreateFolderAndMove,
-  onNewNote,
 }: SpacesTreeProps) {
   const { t } = useTranslation();
   const { toast, dismiss } = useToast();
@@ -1368,11 +1352,6 @@ export default function SpacesTree({
   const handleRowKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, row: TreeRow) => {
     if (e.target !== e.currentTarget) return;
     const idx = visibleRows.findIndex((r) => r.key === row.key);
-    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "n") {
-      e.preventDefault();
-      if (activeContext) onNewNote(activeContext.spaceId, activeContext.folderId);
-      return;
-    }
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
@@ -1592,7 +1571,6 @@ export default function SpacesTree({
             activateRow({ type: "folder", key: folderKey, folder, parentKey, level })
           }
           onToggle={() => toggleContainerExpanded(folderKey)}
-          onNewNote={() => onNewNote(folder.space_id, folder.id)}
           onRename={() => startRenameFolder(folder)}
           onMoveToSpace={(space) => requestMoveFolder(folder, space)}
           onDelete={() => requestDeleteFolder(folder)}
@@ -1650,18 +1628,9 @@ export default function SpacesTree({
         )}
         {showEmptySpace && (
           <div className="pl-[18px] pr-2 py-1">
-            <p className="text-xs text-foreground/40 leading-relaxed mb-1.5">
+            <p className="text-xs text-foreground/40 leading-relaxed">
               {t("notes.spaces.emptySpace", { space: space.name })}
             </p>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onNewNote(space.id, null)}
-              className="h-6 px-2 text-xs gap-1 text-primary/70 hover:text-primary hover:bg-primary/8"
-            >
-              <Plus size={11} />
-              {t("notes.list.newNote")}
-            </Button>
           </div>
         )}
       </div>

@@ -2638,7 +2638,6 @@
       "staleIndicator": "Содержимое изменилось после улучшения",
       "live": "Живой",
       "transcript": "Транскрипция",
-      "notes": "Заметки",
       "conversationWillAppear": "Разговор появится здесь...",
       "linkedEvent": "Связанное событие",
       "noFolder": "Без папки",
@@ -2800,10 +2799,9 @@
     },
     "empty": {
       "title": "Нет заметок",
-      "description": "Создайте первую заметку",
+      "description": "Здесь появятся заметки с ваших встреч",
       "selectTitle": "Выберите заметку",
       "selectDescription": "Выберите заметку на боковой панели",
-      "createNote": "Создать заметку",
       "emptyFolder": "Папка пуста"
     },
     "addToFolder": {
@@ -3456,23 +3454,6 @@
     "connectCalendarDescription": "Свяжите Google Календарь, чтобы видеть предстоящие встречи и автоматически записывать заметки.",
     "notABot": "Snowy записывает через системный звук — он никогда не присоединяется к встречам как бот.",
     "connectCalendarButton": "Подключить календарь"
-  },
-  "notesView": {
-    "searchPlaceholder": "Поиск заметок…",
-    "newNote": "Новая заметка",
-    "empty": {
-      "title": "Заметок пока нет",
-      "description": "Создайте первую заметку, чтобы начать."
-    },
-    "searchEmpty": {
-      "title": "Нет результатов",
-      "description": "По запросу «{{query}}» заметки не найдены."
-    },
-    "noteType": {
-      "personal": "личная",
-      "meeting": "встреча",
-      "upload": "загрузка"
-    }
   },
   "noteEditor": {
     "saved": "Сохранено",

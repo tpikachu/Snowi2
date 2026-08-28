@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import { Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   useNotes,
@@ -21,7 +20,6 @@ interface ContainerOverviewProps {
   space: SpaceItem;
   folder: FolderItem | null;
   onOpenNote: (noteId: number) => void;
-  onNewNote: () => void;
   onAddExisting?: () => void;
 }
 
@@ -29,7 +27,6 @@ export function ContainerOverview({
   space,
   folder,
   onOpenNote,
-  onNewNote,
   onAddExisting,
 }: ContainerOverviewProps) {
   const { t } = useTranslation();
@@ -96,18 +93,6 @@ export function ContainerOverview({
           <p className="text-xs text-foreground/35 dark:text-foreground/25">
             {metaParts.join(" · ")}
           </p>
-          <div className="mt-1 flex items-center gap-2">
-            {/* The empty state keeps its own focal create CTA in the list. */}
-            {notes.length > 0 && (
-              <button
-                onClick={onNewNote}
-                className="inline-flex items-center gap-1.5 px-3 h-7 rounded-md border border-border/40 dark:border-white/10 text-xs font-medium text-foreground/60 hover:text-foreground/85 hover:border-border/70 hover:bg-foreground/3 dark:hover:bg-white/3 transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <Plus size={12} />
-                {t("notes.list.newNote")}
-              </button>
-            )}
-          </div>
         </div>
 
         <OverviewExplainerBanner kind={space.kind === "team" ? "team" : "private"} />
@@ -125,12 +110,7 @@ export function ContainerOverview({
         />
 
         <div className="border-t border-border/20 dark:border-white/5">
-          <OverviewNoteList
-            notes={notes}
-            onOpenNote={onOpenNote}
-            onNewNote={onNewNote}
-            onAddExisting={onAddExisting}
-          />
+          <OverviewNoteList notes={notes} onOpenNote={onOpenNote} onAddExisting={onAddExisting} />
         </div>
       </div>
     </div>
