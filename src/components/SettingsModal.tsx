@@ -31,14 +31,14 @@ interface SettingsModalProps {
 }
 
 /**
- * Settings is a full-window workspace, not a centred dialog: there is far too
- * much configuration here to read through a letterbox, and reusing the shell's
- * own context-pane + content-pane language means the surface a user enters from
- * the rail's gear reads as part of the same app.
+ * Settings is a large centred modal over a dimmed backdrop, so it always reads
+ * as a layer the user can leave — the visible Close button, Escape, and a
+ * click on the backdrop all dismiss it. The earlier full-window layout looked
+ * like a separate page and left people unsure how to get back.
  *
- * It is still a Radix dialog, which is what buys the focus trap, the restore of
- * focus to the gear on the way out, Escape-to-dismiss and `aria-modal` — the
- * Content is simply laid out edge to edge instead of as a floating box.
+ * Radix supplies the focus trap, the restore of focus to the gear on the way
+ * out, Escape-to-dismiss and `aria-modal`; the nav + content layout inside
+ * comes from SettingsSurface.
  */
 export default function SettingsModal({
   open,
@@ -47,9 +47,9 @@ export default function SettingsModal({
   initialPanel,
 }: SettingsModalProps) {
   const { t } = useTranslation();
-  // Settings is dense with Selects. Closing one by clicking away must not also
-  // close settings — which, on a full-window surface, reads as being thrown
-  // back to Home rather than as a dialog dismissing.
+  // Settings is dense with Selects. A click that closes one of them must not
+  // also fall through to the backdrop and close settings with it; a click on
+  // the bare backdrop still dismisses.
   const { guardInteractOutside, setContentRef } =
     useUpperLayerDismissGuard<React.ElementRef<typeof DialogPrimitive.Content>>();
 
@@ -110,7 +110,7 @@ export default function SettingsModal({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-background data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           ref={setContentRef}
           aria-describedby={undefined}
@@ -119,7 +119,7 @@ export default function SettingsModal({
             // A hotkey capture field owns the keyboard while it is recording.
             if (document.querySelector("[data-capturing]")) event.preventDefault();
           }}
-          className="fixed inset-0 z-50 flex overflow-hidden bg-background duration-150 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          className="fixed left-1/2 top-1/2 z-50 flex h-[min(88vh,52rem)] w-[min(94vw,68rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-border bg-background shadow-(--shadow-modal) duration-150 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
           <DialogPrimitive.Title className="sr-only">
             {t("settingsModal.title")}

@@ -2,10 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useTranslation } from "react-i18next";
 import { Search, X } from "lucide-react";
 import { cn } from "../lib/utils";
-import WindowControls from "../WindowControls";
 import { SettingsLayoutProvider } from "../ui/useSettingsLayout";
-import { MAC_TRAFFIC_LIGHT_INSET_PX } from "../shell/macChrome";
-import { getCachedPlatform } from "../../utils/platform";
 import {
   SETTINGS_SEARCH_INDEX,
   SETTINGS_SECTIONS,
@@ -19,13 +16,7 @@ import {
   SettingsSurfaceContext,
 } from "./settingsSurfaceContext";
 
-// The nav owns the window's left edge here — there is no rail in front of it —
-// so it carries the full inset, and the content header beside it is already
-// clear at NAV_WIDTH_PX.
 const NAV_WIDTH_PX = 248;
-
-const platform = getCachedPlatform();
-const isMac = platform === "darwin";
 
 const navItemClass = [
   "group relative flex w-full items-center gap-2.5 rounded-md py-1.5 pl-2 pr-2 text-left",
@@ -247,15 +238,7 @@ export default function SettingsSurface({
         className="flex h-full shrink-0 flex-col border-r border-border-subtle bg-surface-1"
         style={{ width: NAV_WIDTH_PX }}
       >
-        <div
-          className="flex h-11 shrink-0 items-center border-b border-border-subtle pr-2"
-          style={
-            {
-              WebkitAppRegion: "drag",
-              paddingLeft: isMac ? MAC_TRAFFIC_LIGHT_INSET_PX : 12,
-            } as React.CSSProperties
-          }
-        >
+        <div className="flex h-11 shrink-0 items-center border-b border-border-subtle pl-3 pr-2">
           {/* The dialog's own accessible title already announces this, so the
               visible copy is decoration rather than another heading. */}
           <span className="min-w-0 flex-1 truncate text-[13px] font-medium leading-none tracking-tight text-foreground">
@@ -451,10 +434,7 @@ export default function SettingsSurface({
 
       {/* ---- Content pane ------------------------------------------------- */}
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header
-          className="relative z-20 flex h-11 w-full shrink-0 items-center gap-2 border-b border-border-subtle bg-background pl-4 pr-2"
-          style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
-        >
+        <header className="relative z-20 flex h-11 w-full shrink-0 items-center gap-2 border-b border-border-subtle bg-background pl-4 pr-2">
           <h2 className="min-w-0 truncate text-[13px] font-medium leading-none tracking-tight text-foreground">
             {section ? t(section.labelKey) : t("settingsModal.title")}
           </h2>
@@ -469,22 +449,16 @@ export default function SettingsSurface({
             </>
           )}
           <div className="flex-1" />
-          <div
-            className="flex items-center gap-1"
-            style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("common.close")}
+            title={t("settingsModal.closeHint")}
+            className="flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-medium text-muted-foreground outline-none transition-colors duration-150 ease-snap hover:border-border-hover hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label={t("common.close")}
-              title={t("settingsModal.closeHint")}
-              className="flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-medium text-muted-foreground outline-none transition-colors duration-150 ease-snap hover:border-border-hover hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <X size={13} />
-              {t("common.close")}
-            </button>
-            {!isMac && <WindowControls />}
-          </div>
+            <X size={13} />
+            {t("common.close")}
+          </button>
         </header>
 
         <div ref={contentRef} className="min-h-0 flex-1 overflow-y-auto">
