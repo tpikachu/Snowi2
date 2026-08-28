@@ -3112,7 +3112,9 @@
         "label": "Transcript",
         "waiting": "Listening…",
         "earlier_one": "{{count}} earlier line",
-        "earlier_other": "{{count}} earlier lines"
+        "earlier_other": "{{count}} earlier lines",
+        "show": "Show transcript",
+        "hide": "Hide transcript"
       },
       "mode": {
         "label": "Answer mode",

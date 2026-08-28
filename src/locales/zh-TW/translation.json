@@ -2905,7 +2905,9 @@
         "label": "轉錄",
         "waiting": "正在聆聽…",
         "earlier_one": "更早的 {{count}} 行",
-        "earlier_other": "更早的 {{count}} 行"
+        "earlier_other": "更早的 {{count}} 行",
+        "show": "顯示轉錄",
+        "hide": "隱藏轉錄"
       },
       "mode": {
         "label": "回答模式",

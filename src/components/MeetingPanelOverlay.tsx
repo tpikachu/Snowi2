@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Brain,
+  ChevronDown,
+  ChevronRight,
   ExternalLink,
   History,
   Lightbulb,
@@ -58,15 +60,26 @@ const CLOCK_INTERVAL_MS = 250;
 const COMPACT_HEIGHT_PX = 140;
 
 /**
- * The transcript is capped at about five lines and never grows.
+ * The transcript is hidden by default and capped at three-to-four lines when
+ * shown.
  *
- * It is here to show the meeting is being heard, not to be read — anyone
- * reading a transcript during a call has stopped listening to the call. Giving
- * it the leftover space, as a `flex-1` pane would, makes the least useful part
- * of this window the biggest part of it. The room goes to the assistant
- * instead, which is the reason to have the panel open at all.
+ * It exists to show the meeting is being heard, not to be read — anyone
+ * reading a transcript during a call has stopped listening to the call, and
+ * words scrolling by pull the eye even unread. The level meter already proves
+ * capture; the tail is one click away for whoever wants the reassurance, and
+ * the choice sticks per machine.
  */
-const TRANSCRIPT_MAX_HEIGHT_PX = 92;
+const TRANSCRIPT_MAX_HEIGHT_PX = 72;
+
+const TRANSCRIPT_VISIBLE_KEY = "meetingPanelTranscriptVisible";
+
+const readTranscriptVisible = () => {
+  try {
+    return localStorage.getItem(TRANSCRIPT_VISIBLE_KEY) === "true";
+  } catch {
+    return false;
+  }
+};
 
 const computeBarHeight = (level: number, index: number) => {
   const scaled = Math.sqrt(level) * 2.4 * BAR_WEIGHTS[index];
@@ -319,6 +332,20 @@ export default function MeetingPanelOverlay() {
   // once and forgets to switch back.
   const [mode, setMode] = useState<AssistMode>("fast");
   const [isCompact, setIsCompact] = useState(false);
+  // Persisted, unlike the mode: whether words-on-screen helps or distracts is
+  // a stable personal preference, not a per-meeting decision.
+  const [showTranscript, setShowTranscript] = useState(readTranscriptVisible);
+  const toggleTranscript = useCallback(() => {
+    setShowTranscript((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(TRANSCRIPT_VISIBLE_KEY, String(next));
+      } catch {
+        // A blocked localStorage costs persistence, not the toggle.
+      }
+      return next;
+    });
+  }, []);
 
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const answerRef = useRef<HTMLDivElement | null>(null);
@@ -380,7 +407,9 @@ export default function MeetingPanelOverlay() {
   useEffect(() => {
     const element = transcriptRef.current;
     if (element) element.scrollTop = element.scrollHeight;
-  }, [transcript]);
+    // showTranscript is a dep so re-opening the pane lands on the live tail,
+    // not wherever the scroll position was when it existed last.
+  }, [transcript, showTranscript]);
 
   // An answer streams in from the bottom, so the newest sentence stays visible
   // without the user reaching for a scrollbar mid-call.
@@ -624,50 +653,73 @@ export default function MeetingPanelOverlay() {
               )}
             </section>
 
-            {/* Transcript. Capped, never grows — see TRANSCRIPT_MAX_HEIGHT_PX. */}
+            {/* Transcript. Collapsed to its header by default — see
+                TRANSCRIPT_MAX_HEIGHT_PX for why the tail stays small. */}
             <section className="flex shrink-0 flex-col rounded-[9px] border border-hud-border bg-white/[0.03]">
-              <div className="flex shrink-0 items-center gap-1.5 px-2.5 pb-1 pt-1.5">
+              <button
+                type="button"
+                onClick={toggleTranscript}
+                aria-expanded={showTranscript}
+                title={t(
+                  showTranscript
+                    ? "notes.meetingPanel.transcript.hide"
+                    : "notes.meetingPanel.transcript.show"
+                )}
+                className={cn(
+                  "flex w-full shrink-0 items-center gap-1.5 px-2.5 pt-1.5",
+                  showTranscript ? "pb-1" : "pb-1.5",
+                  "transition-colors duration-150 hover:bg-white/[0.04]",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
+                )}
+              >
                 <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-hud-muted/70">
                   {t("notes.meetingPanel.transcript.label")}
                 </span>
                 <span className="h-px flex-1 bg-hud-border" aria-hidden="true" />
-                {(transcript?.hiddenCount ?? 0) > 0 && (
+                {showTranscript && (transcript?.hiddenCount ?? 0) > 0 && (
                   <span className="shrink-0 text-[9px] text-hud-muted/50">
                     {t("notes.meetingPanel.transcript.earlier", {
                       count: transcript?.hiddenCount ?? 0,
                     })}
                   </span>
                 )}
-              </div>
-              <div
-                ref={transcriptRef}
-                style={{ maxHeight: TRANSCRIPT_MAX_HEIGHT_PX }}
-                className="space-y-0.5 overflow-y-auto px-2.5 pb-2"
-              >
-                {lines.length === 0 ? (
-                  <p className="pt-0.5 text-[11px] leading-relaxed text-hud-muted/50">
-                    {t("notes.meetingPanel.transcript.waiting")}
-                  </p>
+                {showTranscript ? (
+                  <ChevronDown size={10} className="shrink-0 text-hud-muted/60" />
                 ) : (
-                  lines.map((line) => (
-                    <p key={line.key} className="text-[11px] leading-snug">
-                      <span
-                        className={cn(
-                          "mr-1.5 text-[9px] font-semibold uppercase tracking-[0.06em]",
-                          line.source === "mic" ? "text-hud-accent/80" : "text-hud-muted/60"
-                        )}
-                      >
-                        {line.source === "mic"
-                          ? t("transcript.speaker.you")
-                          : t("transcript.speaker.others")}
-                      </span>
-                      <span className={cn(line.live ? "text-hud-muted/70" : "text-hud-muted")}>
-                        {line.text}
-                      </span>
-                    </p>
-                  ))
+                  <ChevronRight size={10} className="shrink-0 text-hud-muted/60" />
                 )}
-              </div>
+              </button>
+              {showTranscript && (
+                <div
+                  ref={transcriptRef}
+                  style={{ maxHeight: TRANSCRIPT_MAX_HEIGHT_PX }}
+                  className="space-y-0.5 overflow-y-auto px-2.5 pb-2"
+                >
+                  {lines.length === 0 ? (
+                    <p className="pt-0.5 text-[11px] leading-relaxed text-hud-muted/50">
+                      {t("notes.meetingPanel.transcript.waiting")}
+                    </p>
+                  ) : (
+                    lines.map((line) => (
+                      <p key={line.key} className="text-[11px] leading-snug">
+                        <span
+                          className={cn(
+                            "mr-1.5 text-[9px] font-semibold uppercase tracking-[0.06em]",
+                            line.source === "mic" ? "text-hud-accent/80" : "text-hud-muted/60"
+                          )}
+                        >
+                          {line.source === "mic"
+                            ? t("transcript.speaker.you")
+                            : t("transcript.speaker.others")}
+                        </span>
+                        <span className={cn(line.live ? "text-hud-muted/70" : "text-hud-muted")}>
+                          {line.text}
+                        </span>
+                      </p>
+                    ))
+                  )}
+                </div>
+              )}
             </section>
 
             {/* The named verbs, one row above the assistant they feed. */}

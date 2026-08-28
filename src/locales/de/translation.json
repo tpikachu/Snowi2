@@ -3112,7 +3112,9 @@
         "label": "Transkript",
         "waiting": "Hört zu…",
         "earlier_one": "{{count}} frühere Zeile",
-        "earlier_other": "{{count}} frühere Zeilen"
+        "earlier_other": "{{count}} frühere Zeilen",
+        "show": "Transkript anzeigen",
+        "hide": "Transkript ausblenden"
       },
       "mode": {
         "label": "Antwortmodus",

@@ -2933,7 +2933,9 @@
         "earlier_one": "{{count}} предыдущая строка",
         "earlier_few": "{{count}} предыдущие строки",
         "earlier_many": "{{count}} предыдущих строк",
-        "earlier_other": "{{count}} предыдущих строк"
+        "earlier_other": "{{count}} предыдущих строк",
+        "show": "Показать расшифровку",
+        "hide": "Скрыть расшифровку"
       },
       "mode": {
         "label": "Режим ответа",

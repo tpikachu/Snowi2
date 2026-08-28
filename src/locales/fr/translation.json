@@ -3112,7 +3112,9 @@
         "label": "Transcription",
         "waiting": "Écoute…",
         "earlier_one": "{{count}} ligne précédente",
-        "earlier_other": "{{count}} lignes précédentes"
+        "earlier_other": "{{count}} lignes précédentes",
+        "show": "Afficher la transcription",
+        "hide": "Masquer la transcription"
       },
       "mode": {
         "label": "Mode de réponse",

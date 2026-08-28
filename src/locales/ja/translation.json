@@ -2833,7 +2833,9 @@
         "label": "文字起こし",
         "waiting": "聞いています…",
         "earlier_one": "以前の {{count}} 行",
-        "earlier_other": "以前の {{count}} 行"
+        "earlier_other": "以前の {{count}} 行",
+        "show": "文字起こしを表示",
+        "hide": "文字起こしを非表示"
       },
       "mode": {
         "label": "回答モード",

@@ -2905,7 +2905,9 @@
         "label": "Transcrição",
         "waiting": "Ouvindo…",
         "earlier_one": "{{count}} linha anterior",
-        "earlier_other": "{{count}} linhas anteriores"
+        "earlier_other": "{{count}} linhas anteriores",
+        "show": "Mostrar transcrição",
+        "hide": "Ocultar transcrição"
       },
       "mode": {
         "label": "Modo de resposta",

@@ -2905,7 +2905,9 @@
         "label": "Trascrizione",
         "waiting": "In ascolto…",
         "earlier_one": "{{count}} riga precedente",
-        "earlier_other": "{{count}} righe precedenti"
+        "earlier_other": "{{count}} righe precedenti",
+        "show": "Mostra trascrizione",
+        "hide": "Nascondi trascrizione"
       },
       "mode": {
         "label": "Modalità di risposta",

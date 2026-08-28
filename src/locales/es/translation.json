@@ -2953,7 +2953,9 @@
         "label": "Transcripción",
         "waiting": "Escuchando…",
         "earlier_one": "{{count}} línea anterior",
-        "earlier_other": "{{count}} líneas anteriores"
+        "earlier_other": "{{count}} líneas anteriores",
+        "show": "Mostrar transcripción",
+        "hide": "Ocultar transcripción"
       },
       "mode": {
         "label": "Modo de respuesta",
