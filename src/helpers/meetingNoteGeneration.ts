@@ -1,6 +1,5 @@
 import { getSettings, selectResolvedActions } from "../stores/settingsStore";
 import { runBackgroundAction, type RunActionLabels } from "../stores/actionProcessingStore";
-import { templatePromptFor } from "../config/meetingTemplates";
 import { isRegenerableNoteTitle } from "./regenerableNoteTitle";
 import { makeNoteContentHash, noteEnhancementSource } from "../utils/noteContentHash";
 import {
@@ -77,12 +76,10 @@ export async function autoGenerateMeetingNotes(args: AutoGenerateArgs): Promise<
 
   let noteContent = "";
   let rawTranscript = "";
-  let templatePrompt = "";
   try {
     const note: NoteItem | null = (await window.electronAPI?.getNote?.(args.noteId)) ?? null;
     noteContent = note?.content ?? "";
     rawTranscript = note?.transcript ?? "";
-    templatePrompt = templatePromptFor(note?.meeting_template);
   } catch {
     // The note's own text is a bonus; the transcript is the substance.
   }
@@ -98,7 +95,6 @@ export async function autoGenerateMeetingNotes(args: AutoGenerateArgs): Promise<
     {
       modelId,
       isMeetingNote: true,
-      templatePrompt,
       // Never renames a meeting the user titled, or one named after its
       // calendar event — the same guard the manual button applies.
       allowTitleGeneration: isRegenerableNoteTitle(

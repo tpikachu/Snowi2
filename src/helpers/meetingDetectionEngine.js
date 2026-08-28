@@ -1,7 +1,6 @@
 const { shell } = require("electron");
 const debugLogger = require("./debugLogger");
 const { getMeetingJoinUrl } = require("./meetingJoinUrl");
-const { findSeriesOccurrences } = require("./meetingSeries");
 const { broadcastToWindows } = require("./windowBroadcast");
 
 const IMMINENT_THRESHOLD_MS = 5 * 60 * 1000;
@@ -226,12 +225,6 @@ class MeetingDetectionEngine {
           if (calEvent?.attendees) {
             updates.participants = calEvent.attendees;
           }
-          const template = this._resolveSeriesTemplate(
-            noteResult.note.id,
-            noteResult.note.title,
-            calEvent?.attendees
-          );
-          if (template) updates.meeting_template = template;
           const updateResult = this.databaseManager.updateNote(noteResult.note.id, updates);
           if (updateResult?.success && updateResult?.note) {
             broadcastToWindows("note-updated", updateResult.note);
@@ -267,26 +260,6 @@ class MeetingDetectionEngine {
       // including any the responded prompt replaced.
       this.activeDetections.clear();
       this.windowManager.dismissMeetingNotification();
-    }
-  }
-
-  /**
-   * The write-up template a new occurrence of a series inherits.
-   *
-   * Resolved at note creation, from the previous occurrence's stored choice
-   * (title + attendee matching — see meetingSeries.js), so "pick a template
-   * for Acme weekly" is a decision the user makes once. Best-effort: no match
-   * or any failure means the note starts on the default template.
-   */
-  _resolveSeriesTemplate(noteId, title, participants) {
-    try {
-      const candidates = this.databaseManager.getMeetingSeriesCandidates?.(title, noteId);
-      if (!candidates?.length) return null;
-      const last = findSeriesOccurrences({ title, participants }, candidates)[0];
-      return last?.meeting_template || null;
-    } catch (error) {
-      debugLogger.debug("Series template inheritance failed", { error: error?.message });
-      return null;
     }
   }
 
@@ -353,12 +326,6 @@ class MeetingDetectionEngine {
     if (calEvent.attendees) {
       updates.participants = calEvent.attendees;
     }
-    const template = this._resolveSeriesTemplate(
-      noteResult.note.id,
-      noteResult.note.title,
-      calEvent.attendees
-    );
-    if (template) updates.meeting_template = template;
     const updateResult = this.databaseManager.updateNote(noteResult.note.id, updates);
 
     broadcastToWindows("note-added", updateResult?.note || noteResult.note);

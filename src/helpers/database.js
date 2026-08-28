@@ -728,13 +728,6 @@ class DatabaseManager {
       } catch (err) {
         if (!err.message.includes("duplicate column")) throw err;
       }
-      // Which write-up template this meeting uses (src/config/meetingTemplates.ts).
-      // New occurrences of a series inherit it from the previous occurrence.
-      try {
-        this.db.exec("ALTER TABLE notes ADD COLUMN meeting_template TEXT");
-      } catch (err) {
-        if (!err.message.includes("duplicate column")) throw err;
-      }
       try {
         this.db.exec("ALTER TABLE notes ADD COLUMN diarization_enabled INTEGER");
       } catch (err) {
@@ -2283,7 +2276,7 @@ class DatabaseManager {
     try {
       return this.db
         .prepare(
-          `SELECT id, title, created_at, participants, meeting_template FROM notes
+          `SELECT id, title, created_at, participants FROM notes
            WHERE note_type = 'meeting' AND deleted_at IS NULL
              AND id != ? AND LOWER(TRIM(title)) = LOWER(TRIM(?))
            ORDER BY created_at DESC LIMIT ?`
@@ -2458,7 +2451,6 @@ class DatabaseManager {
         "transcript",
         "calendar_event_id",
         "participants",
-        "meeting_template",
         "diarization_enabled",
         "expected_speaker_count",
         "recording_started_at",

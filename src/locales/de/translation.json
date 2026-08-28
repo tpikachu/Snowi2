@@ -3158,15 +3158,6 @@
       "jumpToLive": "Zum Live-Verlauf",
       "jumpToLatest": "Zum Neuesten"
     },
-    "templates": {
-      "default": "Standardnotizen",
-      "oneOnOne": "1:1",
-      "standup": "Standup",
-      "sales": "Vertriebsgespräch",
-      "interview": "Interview",
-      "planning": "Planung",
-      "hint": "Protokollvorlage — wiederkehrende Meetings merken sich diese Wahl"
-    },
     "recap": {
       "copy": "Zusammenfassung kopieren",
       "copied": "Zusammenfassung kopiert — bereit zum Einfügen in Slack oder E-Mail",

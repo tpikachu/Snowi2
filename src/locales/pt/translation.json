@@ -2951,15 +2951,6 @@
       "jumpToLive": "Ir para ao vivo",
       "jumpToLatest": "Ir para o mais recente"
     },
-    "templates": {
-      "default": "Notas padrão",
-      "oneOnOne": "1:1",
-      "standup": "Daily",
-      "sales": "Chamada de vendas",
-      "interview": "Entrevista",
-      "planning": "Planejamento",
-      "hint": "Modelo de notas — reuniões recorrentes lembram esta escolha"
-    },
     "recap": {
       "copy": "Copiar resumo",
       "copied": "Resumo copiado — pronto para colar no Slack ou e-mail",

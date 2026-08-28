@@ -10,7 +10,6 @@ import {
   AlignLeft,
   MessageSquareText,
   Calendar,
-  LayoutTemplate,
   LinkIcon,
   FolderOpen,
   Search,
@@ -18,7 +17,6 @@ import {
   Check,
   Users,
 } from "lucide-react";
-import { MEETING_TEMPLATES, meetingTemplateById } from "../../config/meetingTemplates";
 import { buildMeetingRecap } from "../../utils/meetingRecap";
 import FollowUpEmailDialog from "./FollowUpEmailDialog";
 import { useToast } from "../ui/useToast";
@@ -169,8 +167,6 @@ interface NoteEditorProps {
   folders?: FolderItem[];
   onMoveToFolder?: (noteId: number, folderId: number) => void;
   onCreateFolderAndMove?: (noteId: number, folderName: string) => void;
-  /** Sets the meeting's write-up template; future series occurrences inherit it. */
-  onMeetingTemplateChange?: (noteId: number, templateId: string) => void;
 }
 
 export default function NoteEditor({
@@ -200,7 +196,6 @@ export default function NoteEditor({
   folders,
   onMoveToFolder,
   onCreateFolderAndMove,
-  onMeetingTemplateChange,
 }: NoteEditorProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -784,37 +779,6 @@ export default function NoteEditor({
                       )}
                     </>
                   )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-            {/* The write-up template. A chip like the folder: a quiet fact
-                about the note that opens into a choice. Only meetings have a
-                write-up shape, so only meetings get the chip — and a series
-                remembers the choice, so for a recurring meeting this is
-                usually already right before it is ever touched. */}
-            {note.note_type === "meeting" && onMeetingTemplateChange && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button className={CHIP_BUTTON_CLASS} title={t("notes.templates.hint")}>
-                    <LayoutTemplate size={11} className="shrink-0" />
-                    {t(meetingTemplateById(note.meeting_template).labelKey)}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" sideOffset={6} className="min-w-44 p-1">
-                  {MEETING_TEMPLATES.map((template) => {
-                    const isCurrent = template.id === meetingTemplateById(note.meeting_template).id;
-                    return (
-                      <DropdownMenuItem
-                        key={template.id}
-                        onClick={() => onMeetingTemplateChange(note.id, template.id)}
-                        className="text-xs gap-2 rounded-md px-2 py-1.5"
-                      >
-                        <LayoutTemplate size={11} className="text-foreground/30 shrink-0" />
-                        <span className="truncate flex-1">{t(template.labelKey)}</span>
-                        {isCurrent && <Check size={9} className="text-primary shrink-0" />}
-                      </DropdownMenuItem>
-                    );
-                  })}
                 </DropdownMenuContent>
               </DropdownMenu>
             )}

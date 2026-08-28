@@ -2951,15 +2951,6 @@
       "jumpToLive": "跳到实时",
       "jumpToLatest": "跳到最新"
     },
-    "templates": {
-      "default": "标准笔记",
-      "oneOnOne": "1对1",
-      "standup": "站会",
-      "sales": "销售通话",
-      "interview": "面试",
-      "planning": "规划会议",
-      "hint": "纪要模板 — 例会会记住此选择"
-    },
     "recap": {
       "copy": "复制摘要",
       "copied": "纪要已复制 — 可粘贴到 Slack 或邮件",

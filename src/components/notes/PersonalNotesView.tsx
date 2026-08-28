@@ -59,7 +59,6 @@ import {
 } from "../../lib/noteEditorPendingSave";
 import { makeNoteContentHash, noteEnhancementSource } from "../../utils/noteContentHash";
 import { buildWriteUpRequest } from "../../helpers/noteWriteUp";
-import { templatePromptFor } from "../../config/meetingTemplates";
 import { MEETING_TITLE_PLACEHOLDERS } from "../../utils/meetingNoteInput";
 
 function draftFromNote(note: NoteItem): NoteEditorDraft {
@@ -479,13 +478,6 @@ export default function PersonalNotesView({
     [privateSpaceId, handleMoveToFolder, toast, t]
   );
 
-  // "default" is stored as NULL so old rows and reset choices read the same.
-  const handleMeetingTemplateChange = useCallback(async (noteId: number, templateId: string) => {
-    await window.electronAPI.updateNote(noteId, {
-      meeting_template: templateId === "default" ? null : templateId,
-    });
-  }, []);
-
   const {
     state: actionProcessingState,
     actionName,
@@ -702,7 +694,6 @@ export default function PersonalNotesView({
               folders={editorFolders}
               onMoveToFolder={handleMoveToFolder}
               onCreateFolderAndMove={handleCreateFolderAndMove}
-              onMeetingTemplateChange={handleMeetingTemplateChange}
               actionProcessingState={actionProcessingState}
               actionName={actionName}
               actionPicker={
@@ -723,7 +714,6 @@ export default function PersonalNotesView({
                     runAction(action, request.input, request.contentHash, {
                       modelId: effectiveModelId,
                       isMeetingNote: request.isMeetingNote,
-                      templatePrompt: templatePromptFor(editorNote.meeting_template),
                       allowTitleGeneration: isRegenerableNoteTitle(
                         editorNote.title,
                         MEETING_TITLE_PLACEHOLDERS.map((key) => t(key)),

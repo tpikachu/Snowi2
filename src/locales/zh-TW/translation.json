@@ -2951,15 +2951,6 @@
       "jumpToLive": "跳至即時",
       "jumpToLatest": "跳至最新"
     },
-    "templates": {
-      "default": "標準筆記",
-      "oneOnOne": "1對1",
-      "standup": "站會",
-      "sales": "銷售通話",
-      "interview": "面試",
-      "planning": "規劃會議",
-      "hint": "紀要範本 — 例會會記住此選擇"
-    },
     "recap": {
       "copy": "複製摘要",
       "copied": "紀要已複製 — 可貼到 Slack 或郵件",

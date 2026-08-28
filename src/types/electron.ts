@@ -325,8 +325,6 @@ export interface NoteItem {
   transcript: string | null;
   calendar_event_id: string | null;
   participants: string | null;
-  /** Write-up template id (src/config/meetingTemplates.ts). Null = default. */
-  meeting_template?: string | null;
   /** When the meeting session actually ran. Null for notes that were not recorded. */
   recording_started_at: string | null;
   recording_ended_at: string | null;
@@ -1165,7 +1163,6 @@ declare global {
           transcript?: string | null;
           calendar_event_id?: string | null;
           participants?: string | null;
-          meeting_template?: string | null;
           diarization_enabled?: number | null;
           expected_speaker_count?: number | null;
           recording_started_at?: string | null;

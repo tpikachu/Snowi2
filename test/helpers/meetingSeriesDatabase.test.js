@@ -47,24 +47,6 @@ test("candidates: blank titles and a missing table degrade to empty, not a throw
   assert.deepEqual(db.getMeetingSeriesCandidates(null, null), []);
 });
 
-test("candidates carry the stored write-up template, so a series can inherit it", (t) => {
-  const db = createDb(t);
-  if (!db) return;
-
-  const previous = saveMeeting(db, "Acme weekly", "2026-08-12 10:00:00");
-  db.updateNote(previous, { meeting_template: "sales" });
-  const current = saveMeeting(db, "Acme weekly", "2026-08-19 10:00:00");
-
-  // As the engine calls it: the just-created meeting excludes itself, so the
-  // newest remaining candidate is the previous occurrence.
-  const [candidate] = db.getMeetingSeriesCandidates("Acme weekly", current, 1);
-  assert.equal(candidate.meeting_template, "sales");
-
-  // Choosing the default again stores NULL, not the string "default".
-  db.updateNote(previous, { meeting_template: null });
-  assert.equal(db.getNote(previous).meeting_template, null);
-});
-
 test("candidates respect the limit, keeping the newest", (t) => {
   const db = createDb(t);
   if (!db) return;
