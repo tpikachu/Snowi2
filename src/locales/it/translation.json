@@ -2933,8 +2933,7 @@
       "sourcesLabel": "Da",
       "lastTime": {
         "summary": "Ricorrente · ultima volta {{date}}",
-        "open": "{{n}} aperti dalla volta scorsa",
-        "ask": "Cosa è ancora aperto?"
+        "open": "{{n}} aperti dalla volta scorsa"
       },
       "quickActions": {
         "whatToSay": "Cosa dovrei dire?",

@@ -2933,8 +2933,7 @@
       "sourcesLabel": "De",
       "lastTime": {
         "summary": "Recorrente · última vez {{date}}",
-        "open": "{{n}} pendentes da última vez",
-        "ask": "O que ainda está pendente?"
+        "open": "{{n}} pendentes da última vez"
       },
       "quickActions": {
         "whatToSay": "O que devo dizer?",

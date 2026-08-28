@@ -34,13 +34,19 @@ import { cn } from "./lib/utils";
  * surface — a suggestion the assistant has already prepared, a small live
  * transcript, and a question box.
  *
- * The three sections are sized by how much attention each deserves, which is
- * not how much space they would naturally want. The suggestion is at the top,
- * carrying the accent, because it is the thing worth glancing at mid sentence.
- * The transcript is capped at about five lines and never grows: it is there to
- * confirm the meeting is being heard, not to be read — anyone reading a
- * transcript during a call has stopped attending to the call. Every remaining
- * pixel goes to the assistant, which is the reason to keep the panel open.
+ * The sections are sized by how much attention each deserves, which is not
+ * how much space they would naturally want. The suggestion is at the top,
+ * carrying the accent, because it is the thing worth glancing at mid
+ * sentence. The transcript is capped at about four lines and hidden by
+ * default: it is there to confirm the meeting is being heard, not to be read.
+ * Every remaining pixel goes to the assistant, which is the reason to keep
+ * the panel open.
+ *
+ * The visual language is one dark surface with hairline dividers — no card
+ * inside a card. Three type sizes only: 13px for anything meant to be read
+ * (suggestion, answer), 11px for everything operated (buttons, input,
+ * transcript), 10px for the few uppercase labels. A window this small cannot
+ * afford more registers than that.
  *
  * Still a view, not a controller. The capture graph lives in the control
  * panel's renderer; this window renders published state and sends commands
@@ -92,8 +98,17 @@ const truncateTitle = (title: string) =>
 /** How many past notes are named under a suggestion or an answer. */
 const MAX_VISIBLE_SOURCES = 3;
 
+/** The small round icon buttons in the header. */
+const headerIconButtonClass = cn(
+  "flex size-7 items-center justify-center rounded-lg",
+  "text-hud-muted transition-colors duration-150",
+  "hover:bg-white/10 hover:text-hud-foreground",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+  "disabled:cursor-not-allowed disabled:opacity-50"
+);
+
 /**
- * The two speeds of an answer, as a two-button segment in the ask row.
+ * The two speeds of an answer, a compact segment inside the ask well.
  *
  * Fast is the default and re-defaults every meeting: mid-call the person on
  * the other end is already waiting, so the instant mode has to be the one a
@@ -130,7 +145,7 @@ function ModeToggle({
     <div
       role="radiogroup"
       aria-label={t("notes.meetingPanel.mode.label")}
-      className="flex shrink-0 items-center gap-px rounded-md border border-hud-border p-px"
+      className="flex shrink-0 items-center gap-px rounded-full bg-white/[0.06] p-0.5"
     >
       {options.map(({ id, icon: Icon, label, hint }) => (
         <button
@@ -142,16 +157,16 @@ function ModeToggle({
           onClick={() => onChange(id)}
           title={hint}
           className={cn(
-            "flex h-5 items-center gap-1 rounded-[5px] px-1.5 text-[9px] font-medium",
+            "flex h-[22px] items-center gap-1 rounded-full px-2 text-[10px] font-medium",
             "transition-colors duration-150",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
             "disabled:cursor-not-allowed disabled:opacity-40",
             mode === id
-              ? "bg-hud-accent/15 text-hud-accent"
-              : "text-hud-muted/70 hover:bg-white/5 hover:text-hud-foreground"
+              ? "bg-hud-accent/20 text-hud-accent"
+              : "text-hud-muted/70 hover:text-hud-foreground"
           )}
         >
-          <Icon size={9} />
+          <Icon size={10} />
           {label}
         </button>
       ))}
@@ -162,70 +177,42 @@ function ModeToggle({
 /**
  * "This meeting has met before" — the pre-meeting brief's visible edge.
  *
- * One quiet row, not a card: what it earns the user is the knowledge that the
- * assistant already holds last occurrence's claims, and one click to hear
- * them. The click asks a real question in thinking mode; the button label *is*
- * the question, so what the user pressed and what the assistant was asked can
- * never disagree.
+ * One quiet line of context, not a card and not a control: the action it used
+ * to carry ("What's still open?") lives with the other quick actions, so this
+ * only has to say what the assistant already knows.
  */
-function LastTimeStrip({
-  lastTime,
-  ready,
-  onAsk,
-}: {
-  lastTime: AssistLastTime;
-  ready: boolean;
-  onAsk: (question: string) => void;
-}) {
+function LastTimeLine({ lastTime }: { lastTime: AssistLastTime }) {
   const { t, i18n } = useTranslation();
 
   const parsed = new Date(lastTime.date);
   const date = Number.isNaN(parsed.getTime())
     ? lastTime.date.slice(0, 10)
     : parsed.toLocaleDateString(i18n.language, { month: "short", day: "numeric" });
-  const askLabel = t("notes.meetingPanel.lastTime.ask");
 
   return (
-    <section className="flex shrink-0 items-center gap-1.5 rounded-[9px] border border-hud-border bg-white/[0.03] px-2.5 py-1">
+    <p className="flex min-w-0 shrink-0 items-center gap-1.5 text-[10px] text-hud-muted">
       <History size={10} className="shrink-0 text-hud-muted/60" />
-      <span className="min-w-0 flex-1 truncate text-[10px] text-hud-muted">
+      <span className="min-w-0 truncate">
         {t("notes.meetingPanel.lastTime.summary", { date })}
         {lastTime.openClaims > 0 && (
           <span className="text-hud-foreground/75">
             {" · "}
-            {t("notes.meetingPanel.lastTime.open", { count: lastTime.openClaims })}
+            {t("notes.meetingPanel.lastTime.open", { n: lastTime.openClaims })}
           </span>
         )}
       </span>
-      <button
-        type="button"
-        onClick={() => onAsk(askLabel)}
-        disabled={!ready}
-        className={cn(
-          "flex shrink-0 items-center gap-1 rounded-md border border-hud-border px-1.5 py-0.5",
-          "text-[10px] text-hud-muted transition-colors duration-150",
-          "hover:bg-white/10 hover:text-hud-foreground",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-          "disabled:cursor-not-allowed disabled:opacity-40"
-        )}
-      >
-        <Brain size={9} />
-        {askLabel}
-      </button>
-    </section>
+    </p>
   );
 }
 
 /**
- * The three questions every meeting eventually asks, as one-click chips.
+ * The three questions every meeting eventually asks, as one-tap buttons.
  *
- * The machinery existed before the buttons did — fast assist, thinking
- * retrieval, the series brief — but a text box is an empty prompt, and
- * mid-call nobody composes. Each label IS the question sent, LastTimeStrip's
- * rule: what the user pressed and what the assistant was asked cannot
- * disagree. "What's still open?" appears only for a recognized recurring
- * meeting, because without a previous occurrence it is a question about
- * nothing.
+ * Each label IS the question sent, so what the user pressed and what the
+ * assistant was asked can never disagree. Real pill buttons, not a row of
+ * verbs: mid-call, an action has to look pressable at a glance. "What's still
+ * open?" appears only for a recognized recurring meeting, because without a
+ * previous occurrence it is a question about nothing.
  */
 function QuickActions({
   ready,
@@ -251,34 +238,25 @@ function QuickActions({
       : []),
   ];
 
-  // An inline row of verbs separated by interpuncts, not a row of bordered
-  // chips: three boxes in a boxed window read as more chrome, and the verbs
-  // should feel like things to say, not controls to operate.
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-x-0.5 gap-y-0.5 px-1">
-      {actions.map(({ label, mode, icon: Icon }, index) => (
-        <span key={label} className="flex items-center gap-x-0.5">
-          {index > 0 && (
-            <span aria-hidden="true" className="px-0.5 text-[10px] text-hud-muted/30">
-              ·
-            </span>
+    <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+      {actions.map(({ label, mode, icon: Icon }) => (
+        <button
+          key={label}
+          type="button"
+          onClick={() => onAsk(label, mode)}
+          disabled={!ready}
+          className={cn(
+            "flex h-7 items-center gap-1.5 rounded-full border border-hud-border bg-white/[0.04] px-2.5",
+            "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
+            "hover:border-hud-border-strong hover:bg-white/[0.08] hover:text-hud-foreground",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+            "disabled:cursor-not-allowed disabled:opacity-40"
           )}
-          <button
-            type="button"
-            onClick={() => onAsk(label, mode)}
-            disabled={!ready}
-            className={cn(
-              "flex items-center gap-1 rounded-md px-1.5 py-1",
-              "text-[10.5px] font-medium text-hud-muted transition-colors duration-150",
-              "hover:bg-white/[0.07] hover:text-hud-foreground",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-              "disabled:cursor-not-allowed disabled:opacity-40"
-            )}
-          >
-            <Icon size={10} className="text-hud-muted/70" />
-            {label}
-          </button>
-        </span>
+        >
+          <Icon size={11} className="text-hud-accent/80" />
+          {label}
+        </button>
       ))}
     </div>
   );
@@ -287,34 +265,30 @@ function QuickActions({
 /**
  * Which past notes this was built from.
  *
- * Named rather than cited inline: mid-call there is no time to follow a
+ * One muted line, not a chip per note: mid-call there is no time to follow a
  * citation, but seeing "Acme kickoff" under a claim is enough to know whether
  * to trust it — and enough to catch the assistant answering about the wrong
  * meeting, which is the failure mode retrieval actually has.
  */
-function SourceList({ sources }: { sources: readonly AssistNoteRef[] }) {
+function SourceLine({ sources }: { sources: readonly AssistNoteRef[] }) {
   const { t } = useTranslation();
   if (sources.length === 0) return null;
 
   const shown = sources.slice(0, MAX_VISIBLE_SOURCES);
   const extra = sources.length - shown.length;
+  const names = shown.map((source) => source.title).join(" · ");
 
   return (
-    <div className="mt-1.5 flex flex-wrap items-center gap-1">
-      <span className="text-[9px] uppercase tracking-[0.06em] text-hud-muted/45">
+    <p
+      title={sources.map((source) => source.title).join(", ")}
+      className="mt-1.5 truncate text-[10px] text-hud-muted/60"
+    >
+      <span className="uppercase tracking-[0.06em] text-hud-muted/45">
         {t("notes.meetingPanel.sourcesLabel")}
-      </span>
-      {shown.map((source) => (
-        <span
-          key={source.noteId}
-          title={source.title}
-          className="max-w-[9rem] truncate rounded border border-hud-border px-1 py-px text-[9px] text-hud-muted/70"
-        >
-          {source.title}
-        </span>
-      ))}
-      {extra > 0 && <span className="text-[9px] text-hud-muted/45">+{extra}</span>}
-    </div>
+      </span>{" "}
+      {names}
+      {extra > 0 && ` +${extra}`}
+    </p>
   );
 }
 
@@ -493,11 +467,16 @@ export default function MeetingPanelOverlay() {
       <div
         className={cn(
           "hud-surface flex h-full w-full flex-col overflow-hidden rounded-[13px]",
-          isPaused ? "hud-surface" : isWaitingForMic ? "hud-surface-warn" : "hud-surface-live"
+          isWaitingForMic ? "hud-surface-warn" : !isPaused && "hud-surface-live"
         )}
       >
-        {/* Status row — the old panel, now the header. */}
-        <div className="flex shrink-0 items-center gap-2 py-1 pl-2.5 pr-1.5">
+        {/* Header — capture status left, capture controls right. */}
+        <div
+          className={cn(
+            "flex shrink-0 items-center gap-2 py-1.5 pl-3 pr-1.5",
+            !isCompact && "border-b border-hud-border"
+          )}
+        >
           <span
             className="flex shrink-0 items-end gap-[2px]"
             style={{ height: METER_HEIGHT_PX }}
@@ -516,7 +495,7 @@ export default function MeetingPanelOverlay() {
           </span>
 
           <span className="flex min-w-0 flex-1 flex-col justify-center gap-px">
-            <span className="truncate text-xs font-medium leading-tight text-hud-foreground">
+            <span className="truncate text-xs font-semibold leading-tight text-hud-foreground">
               {isPaused ? t("notes.meeting.pausedWithTitle", { title }) : title}
             </span>
             <span
@@ -539,10 +518,8 @@ export default function MeetingPanelOverlay() {
             {formatMmSs(Math.floor(elapsedMs / 1000))}
           </span>
 
-          <span className="h-4 w-px shrink-0 bg-hud-border" aria-hidden="true" />
-
           <span
-            className="flex shrink-0 items-center gap-1"
+            className="flex shrink-0 items-center gap-0.5"
             style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
           >
             <button
@@ -550,14 +527,9 @@ export default function MeetingPanelOverlay() {
               onClick={() => void send("open")}
               aria-label={openLabel}
               title={openLabel}
-              className={cn(
-                "flex size-6 items-center justify-center rounded-md",
-                "text-hud-muted transition-colors duration-150",
-                "hover:bg-white/10 hover:text-hud-foreground",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
-              )}
+              className={headerIconButtonClass}
             >
-              <ExternalLink size={11} />
+              <ExternalLink size={12} />
             </button>
 
             <button
@@ -566,18 +538,12 @@ export default function MeetingPanelOverlay() {
               disabled={isBusy}
               aria-label={pauseLabel}
               title={pauseLabel}
-              className={cn(
-                "flex size-6 items-center justify-center rounded-md",
-                "text-hud-muted transition-colors duration-150",
-                "hover:bg-white/10 hover:text-hud-foreground",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-                "disabled:opacity-50"
-              )}
+              className={headerIconButtonClass}
             >
               {isPaused ? (
-                <Play size={11} fill="currentColor" />
+                <Play size={12} fill="currentColor" />
               ) : (
-                <Pause size={11} fill="currentColor" />
+                <Pause size={12} fill="currentColor" />
               )}
             </button>
 
@@ -588,7 +554,7 @@ export default function MeetingPanelOverlay() {
               aria-label={stopLabel}
               title={stopLabel}
               className={cn(
-                "flex h-7 items-center justify-center gap-1.5 rounded-lg px-2",
+                "ml-0.5 flex h-7 items-center justify-center gap-1.5 rounded-lg px-2.5",
                 "text-[11px] font-medium transition-colors duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
                 "bg-hud-danger/15 text-hud-danger hover:bg-hud-danger/25",
@@ -603,32 +569,26 @@ export default function MeetingPanelOverlay() {
 
         {!isCompact && (
           <div
-            className="flex min-h-0 flex-1 flex-col gap-1.5 px-1.5 pb-1.5"
+            className="flex min-h-0 flex-1 flex-col gap-2.5 px-3 pb-2.5 pt-2"
             style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
           >
             {/* Last time this meeting met — present only for a recognized
                 recurring meeting, on screen from the first second, before
                 anything has been said. */}
-            {assist?.lastTime && (
-              <LastTimeStrip
-                lastTime={assist.lastTime}
-                ready={assistReady}
-                onAsk={askAgainWithNotes}
-              />
-            )}
+            {assist?.lastTime && <LastTimeLine lastTime={assist.lastTime} />}
 
             {/* Suggestion. The hero of this window: the one thing worth
-                reading mid sentence, so it gets the visible weight — a tinted
-                ground and the accent rule down its edge. Already computed by
-                the time it appears; see useMeetingAssist for why. */}
-            <section className="shrink-0 rounded-[9px] border border-hud-accent/25 border-l-2 border-l-hud-accent bg-hud-accent/[0.07] px-2.5 py-2">
-              <div className="mb-1 flex items-center gap-1.5">
-                <Lightbulb size={10} className="text-hud-accent" />
-                <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-hud-accent/90">
+                reading mid sentence, so it carries the accent and the largest
+                type — and no box, because the words are the emphasis. Already
+                computed by the time it appears; see useMeetingAssist for why. */}
+            <section className="shrink-0">
+              <div className="flex items-center gap-1.5">
+                <Lightbulb size={11} className="text-hud-accent" />
+                <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-hud-accent">
                   {t("notes.meetingPanel.suggestion.label")}
                 </span>
                 {suggestion?.stale && (
-                  <span className="ml-auto shrink-0 text-[9px] text-hud-muted/50">
+                  <span className="ml-auto shrink-0 text-[10px] text-hud-muted/50">
                     {t("notes.meetingPanel.suggestion.stale")}
                   </span>
                 )}
@@ -641,16 +601,16 @@ export default function MeetingPanelOverlay() {
                       is waiting for you to speak. */}
                   <p
                     className={cn(
-                      "text-xs leading-relaxed",
+                      "mt-1 text-[13px] leading-relaxed",
                       suggestion.stale ? "text-hud-foreground/45" : "text-hud-foreground"
                     )}
                   >
                     {suggestion.text}
                   </p>
-                  <SourceList sources={suggestion.sources} />
+                  <SourceLine sources={suggestion.sources} />
                 </>
               ) : (
-                <p className="text-xs leading-relaxed text-hud-muted/70">
+                <p className="mt-1 text-[13px] leading-relaxed text-hud-muted/70">
                   {assistNeedsModel
                     ? t("notes.meetingPanel.suggestion.needsModel")
                     : !assistReady
@@ -662,9 +622,9 @@ export default function MeetingPanelOverlay() {
               )}
             </section>
 
-            {/* Transcript. Collapsed to its header by default — see
+            {/* Transcript. Collapsed to its toggle row by default — see
                 TRANSCRIPT_MAX_HEIGHT_PX for why the tail stays small. */}
-            <section className="flex shrink-0 flex-col rounded-[9px] border border-hud-border bg-white/[0.03]">
+            <section className="flex shrink-0 flex-col">
               <button
                 type="button"
                 onClick={toggleTranscript}
@@ -675,37 +635,36 @@ export default function MeetingPanelOverlay() {
                     : "notes.meetingPanel.transcript.show"
                 )}
                 className={cn(
-                  "flex w-full shrink-0 items-center gap-1.5 px-2.5 pt-1.5",
-                  showTranscript ? "pb-1" : "pb-1.5",
+                  "flex w-full shrink-0 items-center gap-1.5 rounded-md py-1",
                   "transition-colors duration-150 hover:bg-white/[0.04]",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
                 )}
               >
-                <span className="text-[9px] font-semibold uppercase tracking-[0.08em] text-hud-muted/70">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-hud-muted/70">
                   {t("notes.meetingPanel.transcript.label")}
                 </span>
                 <span className="h-px flex-1 bg-hud-border" aria-hidden="true" />
                 {showTranscript && (transcript?.hiddenCount ?? 0) > 0 && (
-                  <span className="shrink-0 text-[9px] text-hud-muted/50">
+                  <span className="shrink-0 text-[10px] text-hud-muted/50">
                     {t("notes.meetingPanel.transcript.earlier", {
                       count: transcript?.hiddenCount ?? 0,
                     })}
                   </span>
                 )}
                 {showTranscript ? (
-                  <ChevronDown size={10} className="shrink-0 text-hud-muted/60" />
+                  <ChevronDown size={11} className="shrink-0 text-hud-muted/60" />
                 ) : (
-                  <ChevronRight size={10} className="shrink-0 text-hud-muted/60" />
+                  <ChevronRight size={11} className="shrink-0 text-hud-muted/60" />
                 )}
               </button>
               {showTranscript && (
                 <div
                   ref={transcriptRef}
                   style={{ maxHeight: TRANSCRIPT_MAX_HEIGHT_PX }}
-                  className="space-y-0.5 overflow-y-auto px-2.5 pb-2"
+                  className="mt-0.5 space-y-0.5 overflow-y-auto"
                 >
                   {lines.length === 0 ? (
-                    <p className="pt-0.5 text-[11px] leading-relaxed text-hud-muted/50">
+                    <p className="text-[11px] leading-relaxed text-hud-muted/50">
                       {t("notes.meetingPanel.transcript.waiting")}
                     </p>
                   ) : (
@@ -713,7 +672,7 @@ export default function MeetingPanelOverlay() {
                       <p key={line.key} className="text-[11px] leading-snug">
                         <span
                           className={cn(
-                            "mr-1.5 text-[9px] font-semibold uppercase tracking-[0.06em]",
+                            "mr-1.5 text-[10px] font-semibold uppercase tracking-[0.06em]",
                             line.source === "mic" ? "text-hud-accent/80" : "text-hud-muted/60"
                           )}
                         >
@@ -731,136 +690,140 @@ export default function MeetingPanelOverlay() {
               )}
             </section>
 
-            {/* The named verbs, one row above the assistant they feed. */}
+            {/* The assistant. This is what the leftover height goes to, because
+                it is the reason to keep the panel open — a question you need
+                answered now, and the room to read the answer. */}
+            {answer ? (
+              <div ref={answerRef} className="min-h-0 flex-1 overflow-y-auto">
+                <p className="flex items-baseline gap-1.5 text-[11px] font-medium leading-snug text-hud-muted/60">
+                  <span className="min-w-0">{answer.question}</span>
+                  {/* Which speed produced this — so a transcript-only answer
+                      is never mistaken for one that checked the notes. */}
+                  <span className="shrink-0 text-[10px] font-normal uppercase tracking-[0.06em] text-hud-muted/40">
+                    {answer.mode === "thinking"
+                      ? t("notes.meetingPanel.mode.thinking")
+                      : t("notes.meetingPanel.mode.fast")}
+                  </span>
+                </p>
+                {answer.errorKey ? (
+                  <p className="mt-1 text-[11px] leading-relaxed text-hud-warning">
+                    {t(answer.errorKey)}
+                  </p>
+                ) : answer.streaming && !answer.text && answer.mode === "thinking" ? (
+                  /* Thinking pays its latency up front, in retrieval, before
+                     a single token exists to stream. Saying what the wait is
+                     makes it deliberate instead of broken. */
+                  <p className="mt-1 animate-pulse text-[11px] leading-relaxed text-hud-muted/60">
+                    {t("notes.meetingPanel.ask.searchingNotes")}
+                  </p>
+                ) : (
+                  <p className="mt-1 whitespace-pre-wrap text-[13px] leading-relaxed text-hud-foreground">
+                    {answer.text}
+                    {/* The caret is the only "it is working" signal an
+                        answer needs: the text itself is the progress bar. */}
+                    {answer.streaming && (
+                      <span className="ml-0.5 inline-block h-3 w-[2px] translate-y-[2px] animate-pulse bg-hud-accent" />
+                    )}
+                  </p>
+                )}
+                {!answer.streaming && <SourceLine sources={answer.sources} />}
+                {/* The escalation. Only on a settled fast answer: it is the
+                    "that was not in this meeting" next step, and offering to
+                    re-check the notes under an answer that already checked
+                    them would be a button that does nothing. */}
+                {!answer.streaming && !answer.errorKey && answer.mode === "fast" && (
+                  <button
+                    type="button"
+                    onClick={() => askAgainWithNotes(answer.question)}
+                    disabled={!assistReady}
+                    className={cn(
+                      "mt-2 flex h-6 items-center gap-1.5 rounded-full border border-hud-border px-2",
+                      "text-[10px] font-medium text-hud-muted transition-colors duration-150",
+                      "hover:bg-white/10 hover:text-hud-foreground",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+                      "disabled:cursor-not-allowed disabled:opacity-40"
+                    )}
+                  >
+                    <Brain size={10} />
+                    {t("notes.meetingPanel.ask.checkNotes")}
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 px-3 text-center">
+                <MessageSquareText size={15} className="text-hud-muted/40" />
+                <p className="text-[11px] leading-relaxed text-hud-muted/60">
+                  {assistNeedsModel
+                    ? t("notes.meetingPanel.ask.needsModel")
+                    : !assistReady
+                      ? t("notes.meetingPanel.ask.connecting")
+                      : t("notes.meetingPanel.ask.empty")}
+                </p>
+                {/* The one place the two modes are explained in a sentence,
+                    shown before the first question — the moment the choice
+                    first exists. */}
+                {assistReady && (
+                  <p className="text-[10px] leading-relaxed text-hud-muted/40">
+                    {t("notes.meetingPanel.ask.modesHint")}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* The named verbs, directly above the box they feed. */}
             <QuickActions
               ready={assistReady}
               hasSeries={!!assist?.lastTime}
               onAsk={(text, askMode) => void window.electronAPI?.meetingPanelAsk?.(text, askMode)}
             />
 
-            {/* The assistant. This is what the leftover height goes to, because
-                it is the reason to keep the panel open — a question you need
-                answered now, and the room to read the answer. */}
-            <section className="flex min-h-0 flex-1 flex-col rounded-[9px] border border-hud-border bg-white/[0.04]">
-              {answer ? (
-                <div ref={answerRef} className="min-h-0 flex-1 overflow-y-auto px-2.5 py-2">
-                  <p className="flex items-baseline gap-1.5 text-[10px] font-medium leading-snug text-hud-muted/60">
-                    <span className="min-w-0">{answer.question}</span>
-                    {/* Which speed produced this — so a transcript-only answer
-                        is never mistaken for one that checked the notes. */}
-                    <span className="shrink-0 text-[9px] font-normal uppercase tracking-[0.06em] text-hud-muted/40">
-                      {answer.mode === "thinking"
-                        ? t("notes.meetingPanel.mode.thinking")
-                        : t("notes.meetingPanel.mode.fast")}
-                    </span>
-                  </p>
-                  {answer.errorKey ? (
-                    <p className="mt-1.5 text-[11px] leading-relaxed text-hud-warning">
-                      {t(answer.errorKey)}
-                    </p>
-                  ) : answer.streaming && !answer.text && answer.mode === "thinking" ? (
-                    /* Thinking pays its latency up front, in retrieval, before
-                       a single token exists to stream. Saying what the wait is
-                       makes it deliberate instead of broken. */
-                    <p className="mt-1.5 animate-pulse text-[11px] leading-relaxed text-hud-muted/60">
-                      {t("notes.meetingPanel.ask.searchingNotes")}
-                    </p>
-                  ) : (
-                    <p className="mt-1.5 whitespace-pre-wrap text-xs leading-relaxed text-hud-foreground">
-                      {answer.text}
-                      {/* The caret is the only "it is working" signal an
-                          answer needs: the text itself is the progress bar. */}
-                      {answer.streaming && (
-                        <span className="ml-0.5 inline-block h-3 w-[2px] translate-y-[2px] animate-pulse bg-hud-accent" />
-                      )}
-                    </p>
-                  )}
-                  {!answer.streaming && <SourceList sources={answer.sources} />}
-                  {/* The escalation. Only on a settled fast answer: it is the
-                      "that was not in this meeting" next step, and offering to
-                      re-check the notes under an answer that already checked
-                      them would be a button that does nothing. */}
-                  {!answer.streaming && !answer.errorKey && answer.mode === "fast" && (
-                    <button
-                      type="button"
-                      onClick={() => askAgainWithNotes(answer.question)}
-                      disabled={!assistReady}
-                      className={cn(
-                        "mt-1.5 flex items-center gap-1 rounded-md border border-hud-border px-1.5 py-0.5",
-                        "text-[10px] text-hud-muted transition-colors duration-150",
-                        "hover:bg-white/10 hover:text-hud-foreground",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-                        "disabled:cursor-not-allowed disabled:opacity-40"
-                      )}
-                    >
-                      <Brain size={9} />
-                      {t("notes.meetingPanel.ask.checkNotes")}
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 px-3 py-3 text-center">
-                  <MessageSquareText size={14} className="text-hud-muted/40" />
-                  <p className="text-[11px] leading-relaxed text-hud-muted/60">
-                    {assistNeedsModel
-                      ? t("notes.meetingPanel.ask.needsModel")
-                      : !assistReady
-                        ? t("notes.meetingPanel.ask.connecting")
-                        : t("notes.meetingPanel.ask.empty")}
-                  </p>
-                  {/* The one place the two modes are explained in a sentence,
-                      shown before the first question — the moment the choice
-                      first exists. */}
-                  {assistReady && (
-                    <p className="text-[10px] leading-relaxed text-hud-muted/40">
-                      {t("notes.meetingPanel.ask.modesHint")}
-                    </p>
-                  )}
-                </div>
+            {/* The ask well: one input surface, mode on the left, send on the
+                right. The filled send button is the panel's single strong
+                affordance — everything else stays quiet. */}
+            <form
+              className={cn(
+                "flex shrink-0 items-center gap-1.5 rounded-[10px] border border-hud-border bg-white/[0.05] p-1 pl-1.5",
+                "transition-colors duration-150 focus-within:border-hud-accent/45"
               )}
-
-              <form
-                className="flex shrink-0 items-center gap-1.5 border-t border-hud-border px-2 py-1.5"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  submitQuestion();
-                }}
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitQuestion();
+              }}
+            >
+              <ModeToggle mode={mode} onChange={setMode} disabled={!assistReady} />
+              <input
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                disabled={!assistReady}
+                placeholder={
+                  assistReady
+                    ? mode === "thinking"
+                      ? t("notes.meetingPanel.ask.placeholderThinking")
+                      : t("notes.meetingPanel.ask.placeholder")
+                    : assistNeedsModel
+                      ? t("notes.meetingPanel.ask.needsModelPlaceholder")
+                      : t("notes.meetingPanel.ask.connectingPlaceholder")
+                }
+                aria-label={t("notes.meetingPanel.ask.label")}
+                className={cn(
+                  "min-w-0 flex-1 bg-transparent text-[11px] text-hud-foreground outline-none",
+                  "placeholder:text-hud-muted/50 disabled:cursor-not-allowed"
+                )}
+              />
+              <button
+                type="submit"
+                disabled={!assistReady || !question.trim()}
+                aria-label={t("notes.meetingPanel.ask.send")}
+                className={cn(
+                  "flex size-6 shrink-0 items-center justify-center rounded-full",
+                  "bg-hud-accent text-hud-surface transition-colors duration-150 hover:bg-hud-accent/85",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+                  "disabled:bg-white/10 disabled:text-hud-muted/50"
+                )}
               >
-                <ModeToggle mode={mode} onChange={setMode} disabled={!assistReady} />
-                <input
-                  value={question}
-                  onChange={(event) => setQuestion(event.target.value)}
-                  disabled={!assistReady}
-                  placeholder={
-                    assistReady
-                      ? mode === "thinking"
-                        ? t("notes.meetingPanel.ask.placeholderThinking")
-                        : t("notes.meetingPanel.ask.placeholder")
-                      : assistNeedsModel
-                        ? t("notes.meetingPanel.ask.needsModelPlaceholder")
-                        : t("notes.meetingPanel.ask.connectingPlaceholder")
-                  }
-                  aria-label={t("notes.meetingPanel.ask.label")}
-                  className={cn(
-                    "min-w-0 flex-1 bg-transparent text-[11px] text-hud-foreground outline-none",
-                    "placeholder:text-hud-muted/50 disabled:cursor-not-allowed"
-                  )}
-                />
-                <button
-                  type="submit"
-                  disabled={!assistReady || !question.trim()}
-                  aria-label={t("notes.meetingPanel.ask.send")}
-                  className={cn(
-                    "flex size-5 shrink-0 items-center justify-center rounded",
-                    "text-hud-accent transition-colors duration-150 hover:bg-white/10",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-                    "disabled:text-hud-muted disabled:opacity-40 disabled:hover:bg-transparent"
-                  )}
-                >
-                  <SendHorizontal size={11} />
-                </button>
-              </form>
-            </section>
+                <SendHorizontal size={12} />
+              </button>
+            </form>
           </div>
         )}
       </div>

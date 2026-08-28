@@ -2933,8 +2933,7 @@
       "sourcesLabel": "来源",
       "lastTime": {
         "summary": "例会 · 上次 {{date}}",
-        "open": "上次遗留 {{n}} 项待办",
-        "ask": "还有哪些未完成？"
+        "open": "上次遗留 {{n}} 项待办"
       },
       "quickActions": {
         "whatToSay": "我该说什么？",

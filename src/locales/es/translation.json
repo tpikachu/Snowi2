@@ -2981,8 +2981,7 @@
       "sourcesLabel": "De",
       "lastTime": {
         "summary": "Periódica · última vez {{date}}",
-        "open": "{{n}} pendientes de la última vez",
-        "ask": "¿Qué sigue pendiente?"
+        "open": "{{n}} pendientes de la última vez"
       },
       "quickActions": {
         "whatToSay": "¿Qué debería decir?",

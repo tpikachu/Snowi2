@@ -3140,8 +3140,7 @@
       "sourcesLabel": "From",
       "lastTime": {
         "summary": "Recurring · last met {{date}}",
-        "open": "{{n}} open from last time",
-        "ask": "What's still open?"
+        "open": "{{n}} open from last time"
       },
       "quickActions": {
         "whatToSay": "What should I say?",

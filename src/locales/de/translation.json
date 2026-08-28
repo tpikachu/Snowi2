@@ -3140,8 +3140,7 @@
       "sourcesLabel": "Aus",
       "lastTime": {
         "summary": "Wiederkehrend · zuletzt am {{date}}",
-        "open": "{{n}} offen vom letzten Mal",
-        "ask": "Was ist noch offen?"
+        "open": "{{n}} offen vom letzten Mal"
       },
       "quickActions": {
         "whatToSay": "Was soll ich sagen?",
