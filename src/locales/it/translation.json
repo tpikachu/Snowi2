@@ -2612,7 +2612,7 @@
       "asJson": "Come JSON (.json)",
       "asTranscriptMarkdown": "Come Markdown (.md)",
       "raw": "Originale",
-      "enhanced": "Migliorato",
+      "enhanced": "Riepilogo",
       "saving": "Salvataggio",
       "startWriting": "Inizia a scrivere...",
       "staleIndicator": "Il contenuto è cambiato dall'ultimo miglioramento",
@@ -2961,10 +2961,25 @@
       "hint": "Modello di verbale — le riunioni ricorrenti ricordano questa scelta"
     },
     "recap": {
-      "copy": "Copia riepilogo da condividere",
+      "copy": "Copia riepilogo",
       "copied": "Riepilogo copiato — pronto da incollare in Slack o email",
       "copyFailed": "Impossibile copiare il riepilogo",
       "attendees": "Partecipanti"
+    },
+    "followUpEmail": {
+      "button": "Email di follow-up",
+      "title": "Email di follow-up",
+      "drafting": "Sto scrivendo la tua email…",
+      "regenerate": "Riscrivi",
+      "openInMail": "Apri nell'app email",
+      "copied": "Email copiata",
+      "subject": "Follow-up: {{title}}",
+      "errors": {
+        "noModel": "Aggiungi un modello IA in Impostazioni → Modelli IA per scrivere email.",
+        "noEndpoint": "Il tuo server IA self-hosted ha bisogno di un URL nelle Impostazioni.",
+        "noWriteUp": "Questa riunione non ha ancora un riepilogo — generane uno prima.",
+        "failed": "La bozza non è arrivata. Riprova."
+      }
     }
   },
   "dictionary": {

@@ -2819,7 +2819,7 @@
       "asJson": "En JSON (.json)",
       "asTranscriptMarkdown": "En Markdown (.md)",
       "raw": "Brut",
-      "enhanced": "Amélioré",
+      "enhanced": "Résumé",
       "saving": "Enregistrement",
       "startWriting": "Commencez à écrire...",
       "staleIndicator": "Le contenu a changé depuis l'amélioration",
@@ -3168,10 +3168,25 @@
       "hint": "Modèle de compte rendu — les réunions récurrentes retiennent ce choix"
     },
     "recap": {
-      "copy": "Copier le compte rendu à partager",
+      "copy": "Copier le résumé",
       "copied": "Compte rendu copié — prêt à coller dans Slack ou un e-mail",
       "copyFailed": "Impossible de copier le compte rendu",
       "attendees": "Participants"
+    },
+    "followUpEmail": {
+      "button": "E-mail de suivi",
+      "title": "E-mail de suivi",
+      "drafting": "Rédaction de votre e-mail…",
+      "regenerate": "Rédiger à nouveau",
+      "openInMail": "Ouvrir dans l'app e-mail",
+      "copied": "E-mail copié",
+      "subject": "Suivi : {{title}}",
+      "errors": {
+        "noModel": "Ajoutez un modèle d'IA dans Réglages → Modèles d'IA pour rédiger des e-mails.",
+        "noEndpoint": "Votre serveur d'IA auto-hébergé a besoin d'une URL dans les Réglages.",
+        "noWriteUp": "Cette réunion n'a pas encore de résumé — générez-en un d'abord.",
+        "failed": "Le brouillon n'est pas arrivé. Réessayez."
+      }
     }
   },
   "dictionary": {

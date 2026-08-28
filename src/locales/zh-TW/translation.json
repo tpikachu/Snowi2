@@ -2612,7 +2612,7 @@
       "asJson": "匯出為 JSON (.json)",
       "asTranscriptMarkdown": "匯出為 Markdown (.md)",
       "raw": "原始",
-      "enhanced": "已增強",
+      "enhanced": "摘要",
       "saving": "儲存中",
       "startWriting": "開始撰寫...",
       "staleIndicator": "內容在增強後已變更",
@@ -2961,10 +2961,25 @@
       "hint": "紀要範本 — 例會會記住此選擇"
     },
     "recap": {
-      "copy": "複製紀要以分享",
+      "copy": "複製摘要",
       "copied": "紀要已複製 — 可貼到 Slack 或郵件",
       "copyFailed": "無法複製紀要",
       "attendees": "與會者"
+    },
+    "followUpEmail": {
+      "button": "跟進郵件",
+      "title": "跟進郵件",
+      "drafting": "正在草擬郵件…",
+      "regenerate": "重新草擬",
+      "openInMail": "在郵件應用程式中開啟",
+      "copied": "郵件已複製",
+      "subject": "跟進：{{title}}",
+      "errors": {
+        "noModel": "請在 設定 → AI 模型 中新增模型以草擬郵件。",
+        "noEndpoint": "您的自架 AI 伺服器需要在設定中填寫 URL。",
+        "noWriteUp": "此會議還沒有摘要 — 請先產生。",
+        "failed": "草稿未能產生。請重試。"
+      }
     }
   },
   "dictionary": {

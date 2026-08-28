@@ -2819,7 +2819,7 @@
       "asJson": "As JSON (.json)",
       "asTranscriptMarkdown": "As Markdown (.md)",
       "raw": "Raw",
-      "enhanced": "Enhanced",
+      "enhanced": "Summary",
       "saving": "Saving",
       "startWriting": "Start writing...",
       "staleIndicator": "Content has changed since enhancement",
@@ -3168,10 +3168,25 @@
       "hint": "Write-up template — recurring meetings remember this choice"
     },
     "recap": {
-      "copy": "Copy recap for sharing",
+      "copy": "Copy summary",
       "copied": "Recap copied — ready to paste into Slack or email",
       "copyFailed": "Could not copy the recap",
       "attendees": "Attendees"
+    },
+    "followUpEmail": {
+      "button": "Follow-up email",
+      "title": "Follow-up email",
+      "drafting": "Drafting your email…",
+      "regenerate": "Redraft",
+      "openInMail": "Open in email app",
+      "copied": "Email copied",
+      "subject": "Follow-up: {{title}}",
+      "errors": {
+        "noModel": "Add an AI model in Settings → AI Models to draft emails.",
+        "noEndpoint": "Your self-hosted AI server needs a URL in Settings.",
+        "noWriteUp": "This meeting has no summary yet — generate one first.",
+        "failed": "The draft didn't come through. Try again."
+      }
     }
   },
   "dictionary": {

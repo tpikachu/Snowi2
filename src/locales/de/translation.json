@@ -2819,7 +2819,7 @@
       "asJson": "Als JSON (.json)",
       "asTranscriptMarkdown": "Als Markdown (.md)",
       "raw": "Roh",
-      "enhanced": "Verbessert",
+      "enhanced": "Zusammenfassung",
       "saving": "Wird gespeichert",
       "startWriting": "Schreibe los...",
       "staleIndicator": "Der Inhalt hat sich seit der Verbesserung geändert",
@@ -3168,10 +3168,25 @@
       "hint": "Protokollvorlage — wiederkehrende Meetings merken sich diese Wahl"
     },
     "recap": {
-      "copy": "Zusammenfassung zum Teilen kopieren",
+      "copy": "Zusammenfassung kopieren",
       "copied": "Zusammenfassung kopiert — bereit zum Einfügen in Slack oder E-Mail",
       "copyFailed": "Zusammenfassung konnte nicht kopiert werden",
       "attendees": "Teilnehmer"
+    },
+    "followUpEmail": {
+      "button": "Follow-up-E-Mail",
+      "title": "Follow-up-E-Mail",
+      "drafting": "E-Mail wird entworfen…",
+      "regenerate": "Neu entwerfen",
+      "openInMail": "In E-Mail-App öffnen",
+      "copied": "E-Mail kopiert",
+      "subject": "Follow-up: {{title}}",
+      "errors": {
+        "noModel": "Fügen Sie unter Einstellungen → KI-Modelle ein Modell hinzu, um E-Mails zu entwerfen.",
+        "noEndpoint": "Ihr selbst gehosteter KI-Server braucht eine URL in den Einstellungen.",
+        "noWriteUp": "Dieses Meeting hat noch keine Zusammenfassung — erstellen Sie zuerst eine.",
+        "failed": "Der Entwurf kam nicht an. Versuchen Sie es erneut."
+      }
     }
   },
   "dictionary": {

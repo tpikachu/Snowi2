@@ -2612,7 +2612,7 @@
       "asJson": "Como JSON (.json)",
       "asTranscriptMarkdown": "Como Markdown (.md)",
       "raw": "Original",
-      "enhanced": "Aprimorado",
+      "enhanced": "Resumo",
       "saving": "Salvando",
       "startWriting": "Comece a escrever...",
       "staleIndicator": "O conteúdo mudou desde o aprimoramento",
@@ -2961,10 +2961,25 @@
       "hint": "Modelo de notas — reuniões recorrentes lembram esta escolha"
     },
     "recap": {
-      "copy": "Copiar resumo para compartilhar",
+      "copy": "Copiar resumo",
       "copied": "Resumo copiado — pronto para colar no Slack ou e-mail",
       "copyFailed": "Não foi possível copiar o resumo",
       "attendees": "Participantes"
+    },
+    "followUpEmail": {
+      "button": "E-mail de acompanhamento",
+      "title": "E-mail de acompanhamento",
+      "drafting": "Redigindo seu e-mail…",
+      "regenerate": "Redigir novamente",
+      "openInMail": "Abrir no app de e-mail",
+      "copied": "E-mail copiado",
+      "subject": "Acompanhamento: {{title}}",
+      "errors": {
+        "noModel": "Adicione um modelo de IA em Configurações → Modelos de IA para redigir e-mails.",
+        "noEndpoint": "Seu servidor de IA auto-hospedado precisa de uma URL nas Configurações.",
+        "noWriteUp": "Esta reunião ainda não tem resumo — gere um primeiro.",
+        "failed": "O rascunho não chegou. Tente de novo."
+      }
     }
   },
   "dictionary": {

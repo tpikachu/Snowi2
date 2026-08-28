@@ -2525,7 +2525,7 @@
       "asJson": "JSON (.json)",
       "asTranscriptMarkdown": "Markdown (.md)",
       "raw": "元のテキスト",
-      "enhanced": "強化済み",
+      "enhanced": "要約",
       "saving": "保存中",
       "startWriting": "書き始める...",
       "viewMode": "表示モード"
@@ -2889,10 +2889,25 @@
       "hint": "議事録テンプレート — 定例会議はこの選択を記憶します"
     },
     "recap": {
-      "copy": "共有用の要約をコピー",
+      "copy": "要約をコピー",
       "copied": "要約をコピーしました — Slackやメールに貼り付けられます",
       "copyFailed": "要約をコピーできませんでした",
       "attendees": "参加者"
+    },
+    "followUpEmail": {
+      "button": "フォローアップメール",
+      "title": "フォローアップメール",
+      "drafting": "メールを作成中…",
+      "regenerate": "作り直す",
+      "openInMail": "メールアプリで開く",
+      "copied": "メールをコピーしました",
+      "subject": "フォローアップ：{{title}}",
+      "errors": {
+        "noModel": "メールを作成するには、設定 → AI モデルでモデルを追加してください。",
+        "noEndpoint": "セルフホストの AI サーバーには設定で URL が必要です。",
+        "noWriteUp": "この会議にはまだ要約がありません。先に生成してください。",
+        "failed": "下書きを作成できませんでした。もう一度お試しください。"
+      }
     }
   },
   "dictionary": {

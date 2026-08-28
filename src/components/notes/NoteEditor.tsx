@@ -5,6 +5,7 @@ import {
   Download,
   Loader2,
   FileText,
+  Mail,
   Sparkles,
   AlignLeft,
   MessageSquareText,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import { MEETING_TEMPLATES, meetingTemplateById } from "../../config/meetingTemplates";
 import { buildMeetingRecap } from "../../utils/meetingRecap";
+import FollowUpEmailDialog from "./FollowUpEmailDialog";
 import { useToast } from "../ui/useToast";
 import { useSpaces, navigateToContainer } from "../../stores/noteStore";
 import { RichTextEditor } from "../ui/RichTextEditor";
@@ -204,6 +206,7 @@ export default function NoteEditor({
   const { toast } = useToast();
   const [viewMode, setViewMode] = useState<MeetingViewMode>("raw");
   const [chatMode, setChatMode] = useState<EmbeddedChatMode>("hidden");
+  const [showFollowUpEmail, setShowFollowUpEmail] = useState(false);
   const [folderSearch, setFolderSearch] = useState("");
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -330,8 +333,13 @@ export default function NoteEditor({
         setDiarizedSegments(null);
         setIsDiarizing(false);
         setSpeakerMappings({});
+        setShowFollowUpEmail(false);
         if (!isRecording) {
-          setViewMode("raw");
+          // A meeting with a write-up opens on the summary — that is the page
+          // the note exists to produce. Everything else opens on the user's
+          // own notes, as before. The id guard above keeps typing into the
+          // summary from re-running this.
+          setViewMode(enhancement?.content?.trim() ? "enhanced" : "raw");
         }
         if (titleRef.current && titleRef.current.textContent !== note.title) {
           titleRef.current.textContent = note.title || "";
@@ -339,7 +347,7 @@ export default function NoteEditor({
         editorRef.current?.commands.focus();
       });
     }
-  }, [isRecording, note.id, note.title, scheduleUiUpdate]);
+  }, [isRecording, note.id, note.title, enhancement, scheduleUiUpdate]);
 
   useEffect(() => {
     window.electronAPI?.getSpeakerMappings?.(note.id).then((mappings) => {
@@ -826,11 +834,37 @@ export default function NoteEditor({
                 >
                   {/* The measured track carries no border or padding of its own:
                       the sliding thumb is positioned from this box's origin. */}
+                  {/* Summary leads: it is the page a meeting note exists to
+                      produce, so it takes the first slot the eye lands on —
+                      then the transcript, then the user's own notes. */}
                   <div ref={segmentContainerRef} className="relative flex items-center">
                     <div
                       className="absolute top-0 left-0 rounded-md bg-surface-raised shadow-raised transition-[width,height,transform,opacity] duration-200 ease-out pointer-events-none"
                       style={indicatorStyle}
                     />
+                    {enhancement && (
+                      <button
+                        data-segment-button
+                        data-segment-value="enhanced"
+                        aria-pressed={viewMode === "enhanced"}
+                        onClick={() => setViewMode("enhanced")}
+                        className={cn(
+                          SEGMENT_BUTTON_CLASS,
+                          viewMode === "enhanced"
+                            ? "text-foreground"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Sparkles size={11} />
+                        {t("notes.editor.enhanced")}
+                        {enhancement.isStale && (
+                          <span
+                            className="h-1.5 w-1.5 rounded-full bg-warning"
+                            title={t("notes.editor.staleIndicator")}
+                          />
+                        )}
+                      </button>
+                    )}
                     {(hasMeetingTranscript || hasChatSegments || isRecording) && (
                       <button
                         data-segment-button
@@ -869,33 +903,32 @@ export default function NoteEditor({
                       <AlignLeft size={11} />
                       {t("notes.editor.notes")}
                     </button>
-                    {enhancement && (
-                      <button
-                        data-segment-button
-                        data-segment-value="enhanced"
-                        aria-pressed={viewMode === "enhanced"}
-                        onClick={() => setViewMode("enhanced")}
-                        className={cn(
-                          SEGMENT_BUTTON_CLASS,
-                          viewMode === "enhanced"
-                            ? "text-foreground"
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        <Sparkles size={11} />
-                        {t("notes.editor.enhanced")}
-                        {enhancement.isStale && (
-                          <span
-                            className="h-1.5 w-1.5 rounded-full bg-warning"
-                            title={t("notes.editor.staleIndicator")}
-                          />
-                        )}
-                      </button>
-                    )}
                   </div>
                 </div>
               )}
-              {(onExportNote || onExportTranscript || canCopyRecap) && (
+              {/* The two things people actually do with a finished write-up,
+                  as visible verbs rather than dropdown archaeology. */}
+              {canCopyRecap && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => void handleCopyRecap()}
+                    className="shrink-0 h-7 flex items-center gap-1.5 rounded-lg border border-border-subtle bg-input px-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <ClipboardCopy size={11} />
+                    {t("notes.recap.copy")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowFollowUpEmail(true)}
+                    className="shrink-0 h-7 flex items-center gap-1.5 rounded-lg border border-border-subtle bg-input px-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Mail size={11} />
+                    {t("notes.followUpEmail.button")}
+                  </button>
+                </>
+              )}
+              {(onExportNote || onExportTranscript) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -939,18 +972,6 @@ export default function NoteEditor({
                       </>
                     ) : (
                       <>
-                        {canCopyRecap && (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() => void handleCopyRecap()}
-                              className="text-xs gap-2"
-                            >
-                              <ClipboardCopy size={13} className="text-foreground/40" />
-                              {t("notes.recap.copy")}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                          </>
-                        )}
                         <DropdownMenuItem
                           onClick={() => onExportNote?.("md")}
                           className="text-xs gap-2"
@@ -973,6 +994,20 @@ export default function NoteEditor({
             </div>
           </div>
         </div>
+
+        {canCopyRecap && (
+          <FollowUpEmailDialog
+            open={showFollowUpEmail}
+            onOpenChange={setShowFollowUpEmail}
+            source={{
+              title: note.title,
+              formattedDate: shortDate,
+              participants: note.participants,
+              enhancedContent: enhancement?.content ?? "",
+              attendeesLabel: t("notes.recap.attendees"),
+            }}
+          />
+        )}
 
         <div className="flex-1 relative min-h-0">
           <div className="h-full overflow-y-auto">

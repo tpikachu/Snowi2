@@ -2612,7 +2612,7 @@
       "asJson": "导出为 JSON (.json)",
       "asTranscriptMarkdown": "导出为 Markdown (.md)",
       "raw": "原始内容",
-      "enhanced": "增强内容",
+      "enhanced": "摘要",
       "saving": "保存中",
       "startWriting": "开始书写...",
       "staleIndicator": "内容在增强后已更改",
@@ -2961,10 +2961,25 @@
       "hint": "纪要模板 — 例会会记住此选择"
     },
     "recap": {
-      "copy": "复制纪要以分享",
+      "copy": "复制摘要",
       "copied": "纪要已复制 — 可粘贴到 Slack 或邮件",
       "copyFailed": "无法复制纪要",
       "attendees": "参会者"
+    },
+    "followUpEmail": {
+      "button": "跟进邮件",
+      "title": "跟进邮件",
+      "drafting": "正在起草邮件…",
+      "regenerate": "重新起草",
+      "openInMail": "在邮件应用中打开",
+      "copied": "邮件已复制",
+      "subject": "跟进：{{title}}",
+      "errors": {
+        "noModel": "请在 设置 → AI 模型 中添加模型以起草邮件。",
+        "noEndpoint": "您的自托管 AI 服务器需要在设置中填写 URL。",
+        "noWriteUp": "此会议还没有摘要 — 请先生成。",
+        "failed": "草稿未能生成。请重试。"
+      }
     }
   },
   "dictionary": {
