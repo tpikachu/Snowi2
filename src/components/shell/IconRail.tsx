@@ -7,7 +7,6 @@ import {
   Database,
   ScrollText,
   Settings,
-  Search,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "../lib/utils";
@@ -87,7 +86,6 @@ interface IconRailProps {
   activeView: ControlPanelView;
   onViewChange: (view: ControlPanelView) => void;
   onOpenSettings: () => void;
-  onOpenSearch?: () => void;
   /** Rendered as an extra rail button above Settings while an update is pending. */
   updateAction?: React.ReactNode;
 }
@@ -101,7 +99,6 @@ export default function IconRail({
   activeView,
   onViewChange,
   onOpenSettings,
-  onOpenSearch,
   updateAction,
 }: IconRailProps) {
   const { t } = useTranslation();
@@ -142,15 +139,6 @@ export default function IconRail({
       <div className="flex size-9 shrink-0 items-center justify-center" title="Snowy">
         <SnowyGlyph className="shrink-0 text-primary" />
       </div>
-
-      {onOpenSearch && (
-        <RailButton
-          icon={Search}
-          label={t("commandSearch.title")}
-          onClick={onOpenSearch}
-          tourAnchor="nav-search"
-        />
-      )}
 
       <div aria-hidden="true" className="my-1 h-px w-6 shrink-0 bg-border-subtle" />
 

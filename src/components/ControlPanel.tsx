@@ -1,7 +1,15 @@
 import React, { Suspense, useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
-import { Download, RefreshCw, Loader2, Zap, ChevronLeft, PanelLeftOpen } from "lucide-react";
+import {
+  Download,
+  RefreshCw,
+  Loader2,
+  Zap,
+  ChevronLeft,
+  PanelLeftOpen,
+  Search,
+} from "lucide-react";
 import { ConfirmDialog, AlertDialog } from "./ui/dialog";
 import { Tooltip } from "./ui/tooltip";
 import { cn } from "./lib/utils";
@@ -62,6 +70,7 @@ import type { CalendarEvent } from "../types/calendar";
 import logger from "../utils/logger";
 
 const platform = getCachedPlatform();
+const searchShortcut = platform === "darwin" ? "⌘K" : "Ctrl K";
 
 const railUpdateButtonClass = [
   "relative flex size-9 items-center justify-center rounded-md",
@@ -907,7 +916,6 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
             <IconRail
               activeView={activeView}
               onViewChange={setActiveView}
-              onOpenSearch={() => setShowSearch(true)}
               onOpenSettings={() => {
                 setSettingsSection(undefined);
                 setShowSettings(true);
@@ -1003,7 +1011,37 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                 />
               )}
 
-              <div className="flex-1" />
+              {/* Search lives in the header so it is reachable from every
+                  screen — the same palette Cmd/Ctrl+K opens. The side-panel
+                  layout's header belongs to the way back out of the meeting,
+                  so it keeps the bare drag strip instead. */}
+              {!isSidePanelLayout ? (
+                <div className="flex min-w-0 flex-1 justify-center px-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowSearch(true)}
+                    data-tour="nav-search"
+                    aria-label={t("commandSearch.title")}
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                    className={cn(
+                      "flex h-7 w-full max-w-sm min-w-0 items-center gap-2 rounded-full px-3 text-left",
+                      "border border-border-subtle bg-input text-xs text-muted-foreground",
+                      "transition-colors duration-150 ease-snap hover:border-border-hover hover:bg-surface-1 hover:text-foreground",
+                      "outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    )}
+                  >
+                    <Search size={12} className="shrink-0 text-muted-foreground/70" />
+                    <span className="min-w-0 flex-1 truncate">
+                      {t("commandSearch.placeholder")}
+                    </span>
+                    <kbd className="shrink-0 rounded border border-border-subtle bg-surface-2 px-1.5 py-px text-[10px] font-semibold text-muted-foreground/80">
+                      {searchShortcut}
+                    </kbd>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex-1" />
+              )}
               {platform !== "darwin" && (
                 <div style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
                   <WindowControls />
@@ -1065,7 +1103,6 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   isStartingMeeting={isStartingMeetingCapture}
                   onOpenRecordingNote={returnToMeetingNote}
                   onBrowseAll={() => setActiveView("personal-notes")}
-                  onOpenSearch={() => setShowSearch(true)}
                 />
               )}
               {activeView === "chat" && (
@@ -1080,7 +1117,6 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                       setSettingsSection(section);
                       setShowSettings(true);
                     }}
-                    onOpenSearch={() => setShowSearch(true)}
                     meetingRecordingRequest={meetingRecordingRequest}
                     onMeetingRecordingRequestHandled={handleMeetingRecordingRequestHandled}
                   />

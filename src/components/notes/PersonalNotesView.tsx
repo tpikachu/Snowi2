@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Search, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { useToast } from "../ui/useToast";
 import NoteEditor from "./NoteEditor";
 import SpacesTree from "./SpacesTree";
@@ -82,7 +82,6 @@ type PendingSaveReason = "switch" | "overview" | "unmount";
 
 interface PersonalNotesViewProps {
   onOpenSettings?: (section: string) => void;
-  onOpenSearch?: () => void;
   meetingRecordingRequest?: {
     noteId: number;
     // Nullable: a note created outside a folder falls back to the note's own
@@ -95,7 +94,6 @@ interface PersonalNotesViewProps {
 
 export default function PersonalNotesView({
   onOpenSettings,
-  onOpenSearch,
   meetingRecordingRequest,
   onMeetingRecordingRequestHandled,
 }: PersonalNotesViewProps) {
@@ -574,20 +572,6 @@ export default function PersonalNotesView({
       <ContextPaneSection inlineClassName="w-52 shrink-0 border-r border-border-subtle">
         <div className="flex h-full min-h-0 flex-col">
           <div className="px-2 pt-2 pb-1 shrink-0 space-y-0.5">
-            {onOpenSearch && (
-              <button
-                onClick={onOpenSearch}
-                className={cn(
-                  "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs",
-                  "text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5",
-                  "transition-colors duration-150",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                )}
-              >
-                <Search size={14} className="shrink-0" />
-                {t("notes.sidebar.searchNotes")}
-              </button>
-            )}
             {/* Writing actions belongs next to the notes they run on — an
                 action is a prompt about your own writing, and you think of one
                 while reading a note, not while in Settings. What lives in

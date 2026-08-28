@@ -2465,7 +2465,6 @@
     },
     "sidebar": {
       "newNote": "Новая заметка",
-      "searchNotes": "Поиск заметок",
       "actions": "Действия"
     },
     "spaces": {
@@ -3885,7 +3884,6 @@
       "onThisMachine": "На этом компьютере"
     },
     "hero": {
-      "searchPlaceholder": "Ищите или спросите что угодно…",
       "start": "Начать встречу"
     },
     "activeSession": {

@@ -2451,7 +2451,6 @@
     },
     "sidebar": {
       "newNote": "新建笔记",
-      "searchNotes": "搜索笔记",
       "actions": "操作"
     },
     "spaces": {
@@ -3851,7 +3850,6 @@
       "onThisMachine": "在本机运行"
     },
     "hero": {
-      "searchPlaceholder": "搜索或提出任何问题…",
       "start": "开始会议"
     },
     "activeSession": {

@@ -2658,7 +2658,6 @@
     },
     "sidebar": {
       "newNote": "Neue Notiz",
-      "searchNotes": "Notizen suchen",
       "actions": "Aktionen"
     },
     "spaces": {
@@ -3851,7 +3850,6 @@
       "onThisMachine": "Auf diesem Rechner"
     },
     "hero": {
-      "searchPlaceholder": "Suchen oder etwas fragen…",
       "start": "Meeting starten"
     },
     "activeSession": {

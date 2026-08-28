@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertTriangle, AudioLines, CalendarClock, Search } from "lucide-react";
+import { AlertTriangle, AudioLines, CalendarClock } from "lucide-react";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import UpcomingMeetings from "../UpcomingMeetings";
@@ -12,7 +12,6 @@ import { useRecentMeetings } from "../../hooks/useRecentMeetings";
 import { useUpcomingEvents } from "../../hooks/useUpcomingEvents";
 import { useMeetingRecordingStore } from "../../stores/meetingRecordingStore";
 import { formatDateGroup, normalizeDbDate } from "../../utils/dateFormatting";
-import { getCachedPlatform } from "../../utils/platform";
 import { cn } from "../lib/utils";
 import type { NoteItem } from "../../types/electron";
 import type { CalendarEvent } from "../../types/calendar";
@@ -23,7 +22,6 @@ interface HomeViewProps {
   isStartingMeeting: boolean;
   onOpenRecordingNote: () => void;
   onBrowseAll: () => void;
-  onOpenSearch: () => void;
 }
 
 /**
@@ -32,9 +30,10 @@ interface HomeViewProps {
  * This used to be a dashboard — activity chart, commitments, capability
  * cards, a status panel — and every card was one more thing between the user
  * and the two acts that matter: starting a meeting and getting back to one.
- * Now the page is those two acts. Search-or-ask and Start at the top, the
- * meeting history under them, upcoming meetings beside it. Anything that only
- * *describes* the app rather than doing the work lives elsewhere.
+ * Now the page is those two acts: Start at the top (search lives in the
+ * window header, reachable from every screen), the meeting history under it,
+ * upcoming meetings beside it. Anything that only *describes* the app rather
+ * than doing the work lives elsewhere.
  */
 export default function HomeView({
   onOpenNote,
@@ -42,7 +41,6 @@ export default function HomeView({
   isStartingMeeting,
   onOpenRecordingNote,
   onBrowseAll,
-  onOpenSearch,
 }: HomeViewProps) {
   const { t } = useTranslation();
   const { events, isLoading: eventsLoading, isConnected } = useUpcomingEvents();
@@ -77,34 +75,18 @@ export default function HomeView({
     return buckets;
   }, [meetings, isRecording, recordingNoteId, t]);
 
-  const searchShortcut = getCachedPlatform() === "darwin" ? "⌘K" : "Ctrl K";
   const hasRows = isRecording || meetings.length > 0;
 
   return (
     <div className="px-6 pb-10 pt-5">
       <div className="mx-auto w-full max-w-5xl">
-        {/* The two acts: find, and start. */}
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={onOpenSearch}
-            className={cn(
-              "flex h-10 min-w-0 flex-1 items-center gap-2.5 rounded-full px-4 text-left",
-              "border border-border-subtle bg-input text-[13px] text-muted-foreground",
-              "transition-colors duration-150 ease-snap hover:border-border-hover hover:bg-surface-1",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            )}
-          >
-            <Search size={14} className="shrink-0 text-muted-foreground/70" />
-            <span className="min-w-0 flex-1 truncate">{t("home.hero.searchPlaceholder")}</span>
-            <kbd className="shrink-0 rounded border border-border-subtle bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground/80">
-              {searchShortcut}
-            </kbd>
-          </button>
+        {/* The one act this page owns: start. Search sits in the window
+            header, shared by every screen. */}
+        <div className="flex items-center">
           <Button
             onClick={() => onStartMeeting(null)}
             disabled={isStartingMeeting || isRecording}
-            className="h-10 shrink-0 rounded-full px-5 text-[13px] font-semibold shadow-[0_4px_24px_-8px_var(--color-primary)]"
+            className="h-10 rounded-full px-5 text-[13px] font-semibold shadow-[0_4px_24px_-8px_var(--color-primary)]"
           >
             <AudioLines size={15} strokeWidth={2} />
             {t("home.hero.start")}

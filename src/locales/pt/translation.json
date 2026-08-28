@@ -2451,7 +2451,6 @@
     },
     "sidebar": {
       "newNote": "Nova nota",
-      "searchNotes": "Pesquisar notas",
       "actions": "Ações"
     },
     "spaces": {
@@ -3851,7 +3850,6 @@
       "onThisMachine": "Nesta máquina"
     },
     "hero": {
-      "searchPlaceholder": "Pesquise ou pergunte qualquer coisa…",
       "start": "Iniciar reunião"
     },
     "activeSession": {

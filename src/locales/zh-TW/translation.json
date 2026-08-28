@@ -2451,7 +2451,6 @@
     },
     "sidebar": {
       "newNote": "新增筆記",
-      "searchNotes": "搜尋筆記",
       "actions": "操作"
     },
     "spaces": {
@@ -3851,7 +3850,6 @@
       "onThisMachine": "在本機執行"
     },
     "hero": {
-      "searchPlaceholder": "搜尋或提出任何問題…",
       "start": "開始會議"
     },
     "activeSession": {

@@ -2379,7 +2379,6 @@
     },
     "sidebar": {
       "newNote": "新しいノート",
-      "searchNotes": "ノートを検索",
       "actions": "アクション"
     },
     "spaces": {
@@ -3851,7 +3850,6 @@
       "onThisMachine": "この端末で実行"
     },
     "hero": {
-      "searchPlaceholder": "検索、または何でも質問…",
       "start": "会議を開始"
     },
     "activeSession": {

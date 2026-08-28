@@ -90,7 +90,7 @@ export const TOUR_STEPS: readonly TourStep[] = [
   {
     id: "search",
     anchor: "nav-search",
-    placement: "right",
+    placement: "bottom",
     titleKey: "tour.steps.search.title",
     bodyKey: "tour.steps.search.body",
   },
