@@ -5,6 +5,79 @@ All notable changes to Snowy are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-rc5] — 2026-08-31
+
+Fifth release candidate: the big simplification. Snowy's surfaces were rebuilt
+around one loop — start a meeting, get the write-up — and everything that
+stood beside that loop was removed, hidden, or folded into it.
+
+**Still a release candidate.** See _Known limitations_ under 0.1.0-rc1.
+
+### Onboarding that sets itself up
+
+- Transcription setup now asks one question in plain words — private on this
+  computer, or an online service — then either picks and **downloads the right
+  model for your machine automatically**, or recommends a provider that fits
+  how you said you'd use Snowy. No model names, sizes or technical terms
+  unless you go looking for them.
+- The download never blocks you: keep going through onboarding while it runs,
+  and after you land in the app a slim strip under the window header shows
+  what is downloading and how far along it is. **Start meeting** stays
+  disabled — with a tooltip saying why — only until the model your meetings
+  actually transcribe with has arrived; anything else downloads quietly in
+  the background.
+
+### One bar to ask, one button to listen
+
+- The assistant hotkey now summons a compact floating bar: type to ask
+  (optionally letting Snowy see your screen — asked once, with consent), or
+  press **Listen** to start a meeting on the spot. The live meeting panel
+  appears right where the bar was.
+
+### The live meeting panel, redesigned
+
+- One clean dark surface instead of boxes inside boxes: the suggestion leads
+  in the largest type, quick actions are real buttons — _What should I say?_,
+  _Recap so far_, _What's still open?_ — and the question box is a proper
+  input well with the panel's single strong send button.
+- The transcript is **hidden by default**; one click shows a 3–4 line tail,
+  and the choice sticks. The level meter already proves the meeting is heard.
+- A missing AI model is no longer a dead end mid-meeting: the panel now
+  carries a **Configure** button that deep-links straight into Settings, and
+  the assistant refuses to pretend a half-configured provider will answer.
+
+### Home is the meeting log
+
+- Search lives in the window header now — one pill, every screen, same
+  **⌘K / Ctrl K** palette. The rail icon, the Home search bar and the notes
+  sidebar entry (three doors to the same room) are gone.
+- Home itself is Start, the meeting history grouped by day, an **Ongoing**
+  row while recording, and a card that says plainly what still needs setting
+  up.
+
+### The note is the summary
+
+- A written-up meeting opens on its **Summary**, with **Copy summary** and a
+  new **Follow-up email** button: Snowy drafts the email from the write-up,
+  you edit it, then copy it or open it in your mail app pre-addressed to the
+  attendees. Snowy never sends anything itself.
+- Settings now opens as a true modal — visible close button, Escape, or a
+  click outside all dismiss it.
+
+### Removed
+
+- **Manual note creation.** The AI write-up is the note; every "New note"
+  button and the manual Notes tab are gone. Notes you already typed still
+  open and edit normally, and the chat assistant can still save notes for
+  you.
+- **Write-up templates** (introduced in rc4). One high-quality default
+  write-up shape, no decision before every meeting.
+- **The extra default folders.** One _Meetings_ folder now; on existing
+  installs, empty seeded folders are removed and ones still holding notes
+  become ordinary folders you can rename or delete.
+- Calendar sync and audio-file upload are hidden for v1 (kept behind feature
+  flags, fully built).
+
 ## [0.1.0-rc4] — 2026-08-26
 
 Fourth release candidate. Snowy learns that your meetings repeat: a recurring
