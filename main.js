@@ -83,7 +83,12 @@ function configureChannelUserDataPath() {
     return;
   }
 
-  const isolatedPath = path.join(app.getPath("appData"), `Snowy-${APP_CHANNEL}`);
+  // Test seam: the Playwright E2E harness points userData at a temp directory
+  // so a test run never reads or writes the developer's own dev data. Only
+  // honoured off the production channel, so a packaged app cannot be
+  // redirected by an environment variable.
+  const isolatedPath =
+    process.env.SNOWY_USER_DATA_DIR || path.join(app.getPath("appData"), `Snowy-${APP_CHANNEL}`);
   app.setPath("userData", isolatedPath);
 }
 
@@ -285,6 +290,7 @@ const LinuxPortalAudioManager = require("./src/helpers/linuxPortalAudioManager")
 const WindowsLoopbackAudioManager = require("./src/helpers/windowsLoopbackAudioManager");
 const MeetingAecManager = require("./src/helpers/meetingAecManager");
 const MeetingDetectionEngine = require("./src/helpers/meetingDetectionEngine");
+const { CALENDAR_ENABLED } = require("./src/config/features");
 const { i18nMain, changeLanguage } = require("./src/helpers/i18nMain");
 const { ensureYdotool } = require("./src/helpers/ensureYdotool");
 const sidecarRegistry = require("./src/helpers/sidecarRegistry");
@@ -545,9 +551,13 @@ function initializeDeferredManagers() {
     });
   }
 
-  googleCalendarManager.start();
-  microsoftCalendarManager.start();
-  appleCalendarManager.start();
+  // Calendar sync stays down while the feature is hidden — an account
+  // connected before the flag flipped must not keep producing reminders.
+  if (CALENDAR_ENABLED) {
+    googleCalendarManager.start();
+    microsoftCalendarManager.start();
+    appleCalendarManager.start();
+  }
   meetingDetectionEngine.start();
 }
 
@@ -842,6 +852,7 @@ async function startApp() {
   initializeDeferredManagers();
 
   app.on("browser-window-focus", () => {
+    if (!CALENDAR_ENABLED) return;
     if (googleCalendarManager) googleCalendarManager.syncOnFocus();
     if (microsoftCalendarManager) microsoftCalendarManager.syncOnFocus();
     if (appleCalendarManager) appleCalendarManager.syncOnFocus();
@@ -849,12 +860,12 @@ async function startApp() {
 
   const { powerMonitor } = require("electron");
   powerMonitor.on("resume", () => {
-    if (calendarReminderScheduler) calendarReminderScheduler.onWakeFromSleep();
-    if (googleCalendarManager) {
-      googleCalendarManager.onWakeFromSleep();
+    if (CALENDAR_ENABLED) {
+      if (calendarReminderScheduler) calendarReminderScheduler.onWakeFromSleep();
+      if (googleCalendarManager) googleCalendarManager.onWakeFromSleep();
+      if (microsoftCalendarManager) microsoftCalendarManager.onWakeFromSleep();
+      if (appleCalendarManager) appleCalendarManager.onWakeFromSleep();
     }
-    if (microsoftCalendarManager) microsoftCalendarManager.onWakeFromSleep();
-    if (appleCalendarManager) appleCalendarManager.onWakeFromSleep();
     // Sleep evicts the local GPU model from VRAM; reload it once the driver settles. See #766.
     if (wakeRewarmTimer) clearTimeout(wakeRewarmTimer);
     wakeRewarmTimer = setTimeout(() => {

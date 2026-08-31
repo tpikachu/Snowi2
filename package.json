@@ -80,6 +80,7 @@
     "format:check": "eslint . && cd src && eslint . && prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
     "lint": "eslint . && cd src && eslint .",
     "test": "node --import tsx --test \"test/**/*.test.js\"",
+    "test:e2e": "playwright test",
     "typecheck": "cd src && tsc --noEmit",
     "quality-check": "npm run format:check && npm run typecheck",
     "i18n:check": "node scripts/check-i18n.js",
@@ -102,6 +103,7 @@
   "devDependencies": {
     "@electron/notarize": "^3.0.1",
     "@eslint/js": "^9.39.4",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.2.2",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",

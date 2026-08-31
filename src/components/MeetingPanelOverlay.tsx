@@ -11,6 +11,7 @@ import {
   Pause,
   Play,
   SendHorizontal,
+  Settings2,
   Square,
   Zap,
 } from "lucide-react";
@@ -706,9 +707,28 @@ export default function MeetingPanelOverlay() {
                   </span>
                 </p>
                 {answer.errorKey ? (
-                  <p className="mt-1 text-[11px] leading-relaxed text-hud-warning">
-                    {t(answer.errorKey)}
-                  </p>
+                  <>
+                    <p className="mt-1 text-[11px] leading-relaxed text-hud-warning">
+                      {t(answer.errorKey)}
+                    </p>
+                    {/* A missing model is not retryable — the fix lives in
+                        Settings, so the error carries the trip there. */}
+                    {assistNeedsModel && (
+                      <button
+                        type="button"
+                        onClick={() => void send("configureModels")}
+                        className={cn(
+                          "mt-2 flex h-6 items-center gap-1.5 rounded-full border border-hud-border px-2",
+                          "text-[10px] font-medium text-hud-muted transition-colors duration-150",
+                          "hover:bg-white/10 hover:text-hud-foreground",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
+                        )}
+                      >
+                        <Settings2 size={10} />
+                        {t("notes.meetingPanel.ask.configureModels")}
+                      </button>
+                    )}
+                  </>
                 ) : answer.streaming && !answer.text && answer.mode === "thinking" ? (
                   /* Thinking pays its latency up front, in retrieval, before
                      a single token exists to stream. Saying what the wait is
@@ -759,6 +779,21 @@ export default function MeetingPanelOverlay() {
                       ? t("notes.meetingPanel.ask.connecting")
                       : t("notes.meetingPanel.ask.empty")}
                 </p>
+                {assistNeedsModel && (
+                  <button
+                    type="button"
+                    onClick={() => void send("configureModels")}
+                    className={cn(
+                      "flex h-6 items-center gap-1.5 rounded-full border border-hud-border px-2",
+                      "text-[10px] font-medium text-hud-muted transition-colors duration-150",
+                      "hover:bg-white/10 hover:text-hud-foreground",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
+                    )}
+                  >
+                    <Settings2 size={10} />
+                    {t("notes.meetingPanel.ask.configureModels")}
+                  </button>
+                )}
                 {/* The one place the two modes are explained in a sentence,
                     shown before the first question — the moment the choice
                     first exists. */}

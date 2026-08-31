@@ -323,14 +323,14 @@ class DatabaseManager {
 
       const folderCount = this.db.prepare("SELECT COUNT(*) as count FROM folders").get();
       if (folderCount.count === 0) {
-        const seedFolder = this.db.prepare(
-          "INSERT INTO folders (name, is_default, sort_order) VALUES (?, 1, ?)"
-        );
-        // Meetings first: it is where nearly every note in a meeting copilot
-        // lands, and the seed order is the tree order.
-        seedFolder.run("Meetings", 0);
-        seedFolder.run("Notes", 1);
-        seedFolder.run("Uploads", 2);
+        // One default container: Meetings is where every note in a meeting
+        // copilot lands. Earlier builds seeded Notes and Uploads beside it;
+        // the user_version 2 migration below retires those from existing
+        // installs, and a fresh database starts past both folder migrations.
+        this.db
+          .prepare("INSERT INTO folders (name, is_default, sort_order) VALUES ('Meetings', 1, 0)")
+          .run();
+        this.db.pragma("user_version = 2");
       }
 
       // Backfill folder_id only when the column is first added: on later
@@ -1146,6 +1146,47 @@ class DatabaseManager {
       // against a database created after the rename shipped — caught, logged,
       // and silently doing nothing.
       this._renameLegacyContainers();
+
+      // One-time simplification (user_version 2): the tree keeps a single
+      // default container, Meetings. The seeded "Notes" and "Uploads"
+      // defaults added navigation without adding anything to store — uploads
+      // are behind a feature flag and manual note creation was retired. A
+      // retired default no note row points at is removed; one that is still
+      // referenced (or that sync knows about) is demoted to an ordinary
+      // folder the user can rename or delete themselves. Notes are never
+      // moved or deleted here. Runs after the legacy renames above so an
+      // ancient "Personal"/"Videos" install is retired in the same pass.
+      if (this.db.pragma("user_version", { simple: true }) < 2) {
+        const retiredDefaults = this.db
+          .prepare(
+            "SELECT id, cloud_id FROM folders WHERE name IN ('Notes', 'Uploads') AND is_default = 1"
+          )
+          .all();
+        const isReferenced = this.db.prepare("SELECT 1 FROM notes WHERE folder_id = ? LIMIT 1");
+        const removeFolder = this.db.prepare("DELETE FROM folders WHERE id = ?");
+        const demoteFolder = this.db.prepare(
+          "UPDATE folders SET is_default = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+        );
+        for (const folder of retiredDefaults) {
+          if (folder.cloud_id || isReferenced.get(folder.id)) demoteFolder.run(folder.id);
+          else removeFolder.run(folder.id);
+        }
+        // The one default every install must have. A database that predates
+        // the meeting-first seed gets it now.
+        const meetingsFolder = this.db
+          .prepare(
+            "SELECT id FROM folders WHERE name = 'Meetings' AND is_default = 1 AND space_id = ? AND deleted_at IS NULL"
+          )
+          .get(privateSpace.id);
+        if (!meetingsFolder) {
+          this.db
+            .prepare(
+              "INSERT INTO folders (name, is_default, sort_order, space_id) VALUES ('Meetings', 1, 0, ?)"
+            )
+            .run(privateSpace.id);
+        }
+        this.db.pragma("user_version = 2");
+      }
 
       this.db.exec("CREATE INDEX IF NOT EXISTS idx_notes_folder_id ON notes(folder_id)");
       this.db.exec("CREATE INDEX IF NOT EXISTS idx_notes_updated_at ON notes(updated_at)");

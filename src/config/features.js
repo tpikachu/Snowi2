@@ -54,6 +54,36 @@ export const DICTATION_SETTINGS_IDS = new Set([
 export const DICTATION_HOTKEY_SLOTS = new Set(["dictation", "voiceAgent", "translation"]);
 
 /**
+ * Audio-file upload — turning an existing recording into a note
+ * (UploadAudioView).
+ *
+ * Off because the upload view is already hidden from the icon rail (product
+ * decision — see IconRail.tsx), and a Speech-to-Text settings tab configuring
+ * models for a surface the user cannot reach is a dead end. The view, its
+ * transcription context and the settings panel all stay wired up, so
+ * re-enabling is this one line plus the rail entry.
+ */
+export const UPLOAD_ENABLED = false;
+
+/** Settings panels, anchors and search entries that only exist for upload. */
+export const UPLOAD_SETTINGS_IDS = new Set(["upload", "uploadEngine"]);
+
+/**
+ * Calendar integration — Google/Microsoft/Apple sync, the connect nudge, the
+ * upcoming-meetings rail, and calendar reminder prompts.
+ *
+ * Off for now (product decision). With this false:
+ *   - Home shows neither the connect nudge nor the upcoming/now cards,
+ *   - the calendar-reminders notification toggle is hidden,
+ *   - the sync managers never start, so a previously connected account
+ *     produces no reminders or prompts.
+ *
+ * The OAuth flows, managers, scheduler and shared calendar_events table all
+ * stay built and wired.
+ */
+export const CALENDAR_ENABLED = false;
+
+/**
  * Shared team spaces.
  *
  * Off because nothing can create one: a `kind: 'team'` space only ever arrives

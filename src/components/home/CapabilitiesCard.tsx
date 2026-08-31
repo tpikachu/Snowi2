@@ -17,6 +17,7 @@ import { requestSettings } from "../../stores/settingsNavigationStore";
 import { SETTINGS_REMEDIES, type SettingsRemedy } from "../../config/settingsRemedies";
 import { getProviderDisplayName, getReasoningModelLabel } from "../../models/ModelRegistry";
 import {
+  selectLLMConfigReady,
   selectResolvedLLMConfig,
   selectResolvedMeetingTranscription,
   selectResolvedActions,
@@ -95,8 +96,16 @@ export default function CapabilitiesCard() {
       return {
         actionsModel: actions.model,
         actionsProvider: actions.provider,
+        actionsMode: actions.mode,
+        // Judged the way the request path will — per mode, credentials
+        // included. A defaulted cloud model with no key, or a local-mode
+        // scope holding a fallback cloud id, must read as "needs setup",
+        // not as running on a model it cannot call.
+        actionsReady: selectLLMConfigReady(state, actions),
         chatModel: chat.model,
         chatProvider: chat.provider,
+        chatMode: chat.mode,
+        chatReady: selectLLMConfigReady(state, chat),
         isLocalTranscription: transcription.useLocalWhisper,
         localTranscriptionModel:
           transcription.localTranscriptionProvider === "nvidia"
@@ -109,10 +118,16 @@ export default function CapabilitiesCard() {
   );
 
   const rows = useMemo((): CapabilityRow[] => {
-    const describe = (model: string, provider: string) => ({
-      ready: Boolean(model),
-      model: model ? getReasoningModelLabel(model) : null,
-      where: model && provider ? getProviderDisplayName(provider) : null,
+    const describe = (ready: boolean, model: string, provider: string, mode: string) => ({
+      ready,
+      model: ready && model ? getReasoningModelLabel(model) : null,
+      where: !ready
+        ? null
+        : mode === "local"
+          ? t("home.capabilities.onThisMachine")
+          : provider
+            ? getProviderDisplayName(provider)
+            : null,
     });
 
     // Transcription is never "unconfigured" the way a model scope is — a
@@ -136,8 +151,18 @@ export default function CapabilitiesCard() {
 
     const byId: Record<CapabilityId, Pick<CapabilityRow, "ready" | "model" | "where">> = {
       transcription,
-      actions: describe(resolved.actionsModel, resolved.actionsProvider),
-      chatIntelligence: describe(resolved.chatModel, resolved.chatProvider),
+      actions: describe(
+        resolved.actionsReady,
+        resolved.actionsModel,
+        resolved.actionsProvider,
+        resolved.actionsMode
+      ),
+      chatIntelligence: describe(
+        resolved.chatReady,
+        resolved.chatModel,
+        resolved.chatProvider,
+        resolved.chatMode
+      ),
     };
 
     return CAPABILITIES.map((capability) => ({ ...capability, ...byId[capability.id] }));

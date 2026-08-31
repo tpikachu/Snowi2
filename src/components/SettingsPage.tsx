@@ -63,7 +63,7 @@ import { validateHotkeyForSlot } from "../utils/hotkeyValidation";
 import { getCachedPlatform } from "../utils/platform";
 import { formatHotkeyLabel, getSuggestedHotkey } from "../utils/hotkeys";
 import HotkeyMap, { type HotkeyMapRow } from "./settings/HotkeyMap";
-import { DICTATION_ENABLED, DICTATION_SETTINGS_IDS } from "../config/features";
+import { CALENDAR_ENABLED, DICTATION_ENABLED, DICTATION_SETTINGS_IDS } from "../config/features";
 import { ActivationModeSelector } from "./ui/ActivationModeSelector";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import LinuxPttSetupInfo from "./ui/LinuxPttSetupInfo";
@@ -1448,20 +1448,22 @@ export default function SettingsPage({
                     />
                   </SettingsRow>
                 </SettingsPanelRow>
-                <SettingsPanelRow>
-                  <SettingsRow
-                    label={t("settingsPage.general.notifications.calendarReminders")}
-                    description={t(
-                      "settingsPage.general.notifications.calendarRemindersDescription"
-                    )}
-                  >
-                    <Toggle
-                      checked={notifyCalendarReminders}
-                      onChange={setNotifyCalendarReminders}
-                      disabled={!notificationsEnabled}
-                    />
-                  </SettingsRow>
-                </SettingsPanelRow>
+                {CALENDAR_ENABLED && (
+                  <SettingsPanelRow>
+                    <SettingsRow
+                      label={t("settingsPage.general.notifications.calendarReminders")}
+                      description={t(
+                        "settingsPage.general.notifications.calendarRemindersDescription"
+                      )}
+                    >
+                      <Toggle
+                        checked={notifyCalendarReminders}
+                        onChange={setNotifyCalendarReminders}
+                        disabled={!notificationsEnabled}
+                      />
+                    </SettingsRow>
+                  </SettingsPanelRow>
+                )}
                 <SettingsPanelRow>
                   <SettingsRow
                     label={t("settingsPage.general.notifications.updates")}

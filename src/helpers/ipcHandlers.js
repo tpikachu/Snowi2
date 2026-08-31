@@ -106,7 +106,7 @@ const MEETING_RECONNECT_BUFFER_MAX_BYTES = MEETING_STREAM_SAMPLE_RATE * 2 * 30;
 // Allow-listed rather than forwarded blind: the panel is a separate renderer,
 // and an unchecked command channel is a way to reach the control panel from
 // anywhere that can talk to this one.
-const MEETING_PANEL_COMMANDS = new Set(["pause", "resume", "stop", "open"]);
+const MEETING_PANEL_COMMANDS = new Set(["pause", "resume", "stop", "open", "configureModels"]);
 /** Long enough for any question worth asking mid-meeting; short enough not to be a paste channel. */
 const MEETING_PANEL_QUESTION_MAX = 2000;
 /** AssistMode values (meetingAssistState.ts). Anything else falls back to "fast". */

@@ -17,7 +17,13 @@
  */
 
 import type React from "react";
-import { DICTATION_ENABLED, DICTATION_SETTINGS_IDS } from "../../config/features";
+import {
+  CALENDAR_ENABLED,
+  DICTATION_ENABLED,
+  DICTATION_SETTINGS_IDS,
+  UPLOAD_ENABLED,
+  UPLOAD_SETTINGS_IDS,
+} from "../../config/features";
 import {
   ListChecks,
   Brain,
@@ -49,9 +55,16 @@ export type LlmTab =
 
 const ALL_SPEECH_TABS: readonly SpeechTab[] = ["dictation", "noteRecording", "upload"] as const;
 
-export const SPEECH_TABS: readonly SpeechTab[] = ALL_SPEECH_TABS.filter((tab) =>
-  DICTATION_ENABLED ? true : !DICTATION_SETTINGS_IDS.has(tab)
-);
+/**
+ * Hidden features take their settings with them: a panel for a surface the user
+ * cannot reach is a dead end, and an anchor pointing at an unrendered group
+ * would leave the nav pane with a link to nothing.
+ */
+export const isVisibleEntry = (id: string) =>
+  (DICTATION_ENABLED || !DICTATION_SETTINGS_IDS.has(id)) &&
+  (UPLOAD_ENABLED || !UPLOAD_SETTINGS_IDS.has(id));
+
+export const SPEECH_TABS: readonly SpeechTab[] = ALL_SPEECH_TABS.filter(isVisibleEntry);
 
 // Same order as the panel list below, and for the same reason.
 const ALL_LLM_TABS: readonly LlmTab[] = [
@@ -62,9 +75,7 @@ const ALL_LLM_TABS: readonly LlmTab[] = [
   "dictationTranslation",
 ] as const;
 
-export const LLM_TABS: readonly LlmTab[] = ALL_LLM_TABS.filter((tab) =>
-  DICTATION_ENABLED ? true : !DICTATION_SETTINGS_IDS.has(tab)
-);
+export const LLM_TABS: readonly LlmTab[] = ALL_LLM_TABS.filter(isVisibleEntry);
 
 export const SPEECH_TAB_STORAGE_KEY = "settings.speechToTextTab";
 export const LLM_TAB_STORAGE_KEY = "settings.llmsTab";
@@ -285,13 +296,6 @@ const ALL_SETTINGS_SECTIONS: SettingsSectionDef[] = [
   },
 ];
 
-/**
- * Hidden features take their settings with them: a panel for a surface the user
- * cannot reach is a dead end, and an anchor pointing at an unrendered group
- * would leave the nav pane with a link to nothing.
- */
-export const isVisibleEntry = (id: string) => DICTATION_ENABLED || !DICTATION_SETTINGS_IDS.has(id);
-
 export const SETTINGS_SECTIONS: SettingsSectionDef[] = ALL_SETTINGS_SECTIONS.map((section) => ({
   ...section,
   ...(section.panels ? { panels: section.panels.filter((panel) => isVisibleEntry(panel.id)) } : {}),
@@ -345,11 +349,17 @@ const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
     anchor: "notifications",
     labelKey: "settingsPage.general.notifications.meetingDetection",
   },
-  {
-    section: "general",
-    anchor: "notifications",
-    labelKey: "settingsPage.general.notifications.calendarReminders",
-  },
+  // Calendar reminders ride the calendar feature: no toggle is rendered while
+  // it is off, so search must not promise one.
+  ...(CALENDAR_ENABLED
+    ? [
+        {
+          section: "general" as const,
+          anchor: "notifications",
+          labelKey: "settingsPage.general.notifications.calendarReminders",
+        },
+      ]
+    : []),
   {
     section: "general",
     anchor: "notifications",

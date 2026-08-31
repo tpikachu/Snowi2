@@ -1,9 +1,10 @@
 import { useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslation } from "react-i18next";
-import { Key, Cpu, Network, Building2 } from "lucide-react";
+import { AlertTriangle, Key, Cpu, Network, Building2 } from "lucide-react";
 import {
   useSettingsStore,
+  selectLLMConfigReady,
   selectResolvedLLMConfig,
   setResolvedLLMConfig,
 } from "../../stores/settingsStore";
@@ -15,7 +16,12 @@ import OpenAICompatiblePanel from "../OpenAICompatiblePanel";
 import { Toggle } from "../ui/toggle";
 import type { InferenceMode } from "../../types/electron";
 import type { InferenceScope } from "../../config/inferenceScopes";
-import { isProviderValidForMode, getCloudModel, getLocalModel } from "../../models/ModelRegistry";
+import {
+  isProviderValidForMode,
+  getCloudModel,
+  getLocalModel,
+  getProviderDisplayName,
+} from "../../models/ModelRegistry";
 
 const MODE_LABEL_PREFIX: Record<InferenceScope, string> = {
   dictationCleanup: "settingsPage.aiModels.modes",
@@ -42,6 +48,30 @@ export default function InferenceConfigEditor({
   const config = useSettingsStore(
     useShallow((settings) => selectResolvedLLMConfig(settings, scope))
   );
+  // Whether the scope as saved could serve a request right now. A tab can
+  // *look* fully chosen — mode active, a provider tile selected, a model
+  // highlighted, all of it store defaults — while the credential that makes
+  // any of it callable was never entered. The banner below says so plainly.
+  const ready = useSettingsStore((settings) =>
+    selectLLMConfigReady(settings, selectResolvedLLMConfig(settings, scope))
+  );
+
+  const readinessHint = (): { key: string; values?: Record<string, string> } => {
+    const mode = config.mode || "local";
+    if (mode === "local") return { key: "reasoning.readiness.needsLocalModel" };
+    if (mode === "self-hosted") {
+      return config.remoteUrl?.trim()
+        ? { key: "reasoning.readiness.needsModel" }
+        : { key: "reasoning.readiness.needsEndpoint" };
+    }
+    if (mode === "enterprise") return { key: "reasoning.readiness.needsEnterprise" };
+    if (!config.model || !config.provider) return { key: "reasoning.readiness.needsModel" };
+    if (config.provider === "custom") return { key: "reasoning.readiness.needsCustom" };
+    return {
+      key: "reasoning.readiness.needsKey",
+      values: { provider: getProviderDisplayName(config.provider) || config.provider },
+    };
+  };
 
   const prefix = MODE_LABEL_PREFIX[scope];
   const modes = (
@@ -141,6 +171,18 @@ export default function InferenceConfigEditor({
   return (
     <div className="space-y-3">
       <InferenceModeSelector modes={modes} activeMode={config.mode} onSelect={handleModeSelect} />
+
+      {!ready && (
+        <div className="flex items-start gap-2 rounded-md border border-warning/30 bg-warning-subtle px-3 py-2">
+          <AlertTriangle size={13} className="mt-0.5 shrink-0 text-warning" aria-hidden="true" />
+          <p className="text-xs leading-relaxed text-foreground">
+            {(() => {
+              const hint = readinessHint();
+              return t(hint.key, hint.values);
+            })()}
+          </p>
+        </div>
+      )}
 
       {config.mode === "providers" && renderModelSelector("cloud")}
       {config.mode === "local" && renderModelSelector("local")}

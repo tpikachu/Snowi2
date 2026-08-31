@@ -24,10 +24,6 @@ test("a legacy section id resolves to its section and its sub-tab", async () => 
 
   // Old "meetings" links predate the Actions rename and carry no panel.
   assert.deepEqual(resolveDeepLink("meetings"), { section: "llms", llmTab: "actions" });
-  assert.deepEqual(resolveDeepLink("uploadTranscription"), {
-    section: "speechToText",
-    speechTab: "upload",
-  });
 });
 
 test("a link into a hidden feature keeps the section and drops the panel", async () => {
@@ -38,6 +34,11 @@ test("a link into a hidden feature keeps the section and drops the panel", async
   // select a tab the nav pane does not render.
   assert.deepEqual(resolveDeepLink("transcription"), { section: "speechToText" });
   assert.deepEqual(resolveDeepLink("llms", "dictationCleanup"), { section: "llms" });
+
+  // Upload is off too (its view is hidden from the icon rail), so legacy
+  // upload links land on the section rather than a tab that is not rendered.
+  assert.deepEqual(resolveDeepLink("uploadTranscription"), { section: "speechToText" });
+  assert.deepEqual(resolveDeepLink("speechToText", "upload"), { section: "speechToText" });
 });
 
 test("an explicit panel beats the legacy sub-tab for the same section", async () => {

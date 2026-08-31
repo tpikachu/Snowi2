@@ -1609,7 +1609,7 @@ class WindowManager {
    * the user is looking at is a question they never see.
    */
   async handleMeetingPanelCommand(command) {
-    if (command === "open" || command === "stop") {
+    if (command === "open" || command === "stop" || command === "configureModels") {
       await this.createControlPanelWindow();
     }
     this.sendToControlPanel("meeting-panel-command", command);

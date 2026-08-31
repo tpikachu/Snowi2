@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSettingsStore } from "../stores/settingsStore";
+import { CALENDAR_ENABLED } from "../config/features";
 import type { CalendarEvent } from "../types/calendar";
 
 export interface UseUpcomingEventsReturn {
@@ -22,7 +23,12 @@ export function useUpcomingEvents(): UseUpcomingEventsReturn {
   const gcalAccounts = useSettingsStore((s) => s.gcalAccounts);
   const mcalAccounts = useSettingsStore((s) => s.mcalAccounts);
   const appleCalendarConnected = useSettingsStore((s) => s.appleCalendarConnected);
-  const isConnected = gcalAccounts.length > 0 || mcalAccounts.length > 0 || appleCalendarConnected;
+  // With calendar off, every consumer sees "not connected": no upcoming rail,
+  // no now-card events, no join buttons — even if an account was connected
+  // before the feature was hidden.
+  const isConnected =
+    CALENDAR_ENABLED &&
+    (gcalAccounts.length > 0 || mcalAccounts.length > 0 || appleCalendarConnected);
 
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);

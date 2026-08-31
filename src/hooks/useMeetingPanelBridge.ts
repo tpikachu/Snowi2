@@ -22,6 +22,8 @@ import {
   type MeetingAssistState,
 } from "../utils/meetingAssistState";
 import { isControlPanelWindow } from "../utils/windowContext";
+import { requestSettings } from "../stores/settingsNavigationStore";
+import { remedyTarget } from "../config/settingsRemedies";
 import type { MeetingPanelCommand } from "../types/electron";
 import logger from "../utils/logger";
 
@@ -120,6 +122,10 @@ export function useMeetingPanelBridge(
             if (command === "pause") await pauseRecording();
             else if (command === "resume") await resumeRecording();
             else if (command === "stop") await requestStopRecording();
+            // The panel cannot open Settings itself; main surfaced this
+            // window, and this lands the user on the chat model tab.
+            else if (command === "configureModels")
+              requestSettings(remedyTarget("configureChatIntelligence"));
             // "open" only had to surface the control panel, which main did.
           } catch (err) {
             logger.error(

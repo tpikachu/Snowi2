@@ -535,6 +535,32 @@ export default function ReasoningModelSelector({
     [defaultModelForProvider, onCloudProviderSelect, setLocalReasoningProvider, setReasoningModel]
   );
 
+  // The grid always *shows* a provider tile as selected, but the store can
+  // hold none (a mode switch clears it) or a provider with no model (nothing
+  // forces the model click). Commit the displayed provider and its default
+  // model whenever the stored pair is incomplete, so what the user sees
+  // selected is what requests will actually use. Custom and OpenRouter type
+  // their model id in, so an empty model is a legitimate state there.
+  useEffect(() => {
+    if (effectiveMode !== "cloud") return;
+    const providerValid = CLOUD_PROVIDER_IDS.includes(localReasoningProvider);
+    if (
+      providerValid &&
+      (reasoningModel ||
+        localReasoningProvider === "custom" ||
+        localReasoningProvider === OPENROUTER_TAB)
+    ) {
+      return;
+    }
+    applyCloudProvider(providerValid ? localReasoningProvider : displayedCloudProvider);
+  }, [
+    effectiveMode,
+    localReasoningProvider,
+    reasoningModel,
+    displayedCloudProvider,
+    applyCloudProvider,
+  ]);
+
   const handleModeChange = async (newMode: "cloud" | "local") => {
     setSelectedMode(newMode);
     setReasoningModeProp?.(newMode === "local" ? "local" : "providers");
@@ -564,6 +590,20 @@ export default function ReasoningModelSelector({
       applyCloudProvider(provider);
     },
     [applyCloudProvider]
+  );
+
+  // A model click must also pin the provider it belongs to. After a mode
+  // switch clears the stored provider, the grid still *shows* a default tab,
+  // so picking a model here would otherwise persist a model with no provider —
+  // a state that routes cloud requests to the local llama server and fails.
+  const handleCloudModelSelect = useCallback(
+    (modelId: string) => {
+      if (localReasoningProvider !== displayedCloudProvider) {
+        setLocalReasoningProvider(displayedCloudProvider);
+      }
+      setReasoningModel(modelId);
+    },
+    [localReasoningProvider, displayedCloudProvider, setLocalReasoningProvider, setReasoningModel]
   );
 
   const handleLocalProviderChange = async (providerId: string) => {
@@ -638,7 +678,7 @@ export default function ReasoningModelSelector({
                 apiKey={openrouterApiKey}
                 setApiKey={setOpenrouterApiKey}
                 model={reasoningModel}
-                setModel={setReasoningModel}
+                setModel={handleCloudModelSelect}
                 lockedBaseUrl
                 apiKeyRequired
                 getKeyUrl={OPENROUTER_KEYS_URL}
@@ -651,7 +691,7 @@ export default function ReasoningModelSelector({
                 apiKey={customReasoningApiKey}
                 setApiKey={setCustomReasoningApiKey || (() => {})}
                 model={reasoningModel}
-                setModel={setReasoningModel}
+                setModel={handleCloudModelSelect}
                 defaultBaseUrl={API_ENDPOINTS.OPENAI_BASE}
               />
             ) : (
@@ -684,7 +724,7 @@ export default function ReasoningModelSelector({
                   <ModelCardList
                     models={selectedCloudModels}
                     selectedModel={reasoningModel}
-                    onModelSelect={setReasoningModel}
+                    onModelSelect={handleCloudModelSelect}
                   />
                   {displayedCloudProvider === "tinfoil" && (
                     <>

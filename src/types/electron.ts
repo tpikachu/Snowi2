@@ -5,7 +5,7 @@ import type { PanelTranscript } from "../utils/meetingPanelTranscript";
 import type { AssistMode, MeetingAssistState } from "../utils/meetingAssistState";
 
 /** What the floating meeting panel can ask the control panel to do. */
-export type MeetingPanelCommand = "pause" | "resume" | "stop" | "open";
+export type MeetingPanelCommand = "pause" | "resume" | "stop" | "open" | "configureModels";
 
 export type LocalTranscriptionProvider = "whisper" | "nvidia";
 

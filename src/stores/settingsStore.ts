@@ -2574,6 +2574,61 @@ export const selectResolvedLLMConfig = (
   };
 };
 
+/** Which store field holds the BYOK credential for each cloud provider. */
+const BYOK_PROVIDER_KEY_FIELDS: Partial<Record<string, keyof SettingsState>> = {
+  openai: "openaiApiKey",
+  anthropic: "anthropicApiKey",
+  gemini: "geminiApiKey",
+  groq: "groqApiKey",
+  openrouter: "openrouterApiKey",
+  tinfoil: "tinfoilApiKey",
+  corti: "cortiApiKey",
+};
+
+function isLocalReasoningModel(modelId: string): boolean {
+  if (!modelId) return false;
+  return modelRegistryData.localProviders.some((provider) =>
+    provider.models.some((model) => model.id === modelId)
+  );
+}
+
+/**
+ * Whether a resolved scope could actually serve a request right now.
+ *
+ * A model id alone proves nothing: several scopes *default* to a cloud model
+ * before the user has chosen anything, fallback chains can hand a local-mode
+ * scope a cloud id, and a BYOK provider without its key 401s on first use.
+ * This is the one place that judges the resolved config the way the request
+ * path will — per mode, credentials included — so "working" on a status
+ * surface means a request would actually go through.
+ *
+ * Local models only need to exist in the registry: startup reconciliation
+ * (reconcileLocalModelSelections) clears any selection that is not on disk.
+ */
+export const selectLLMConfigReady = (
+  state: SettingsState,
+  cfg: Pick<
+    ResolvedLLMConfig,
+    "mode" | "provider" | "model" | "cloudBaseUrl" | "remoteUrl" | "customApiKey"
+  >
+): boolean => {
+  const mode = cfg.mode || "local";
+  if (mode === "local") return isLocalReasoningModel(cfg.model);
+  if (mode === "self-hosted") return Boolean(cfg.remoteUrl?.trim() && cfg.model);
+  // Enterprise: managed resolution only fills provider/model when its own
+  // credential checks pass; an error state resolves them to "".
+  if (mode === "enterprise") return Boolean(cfg.model && cfg.provider);
+  if (!cfg.model || !cfg.provider) return false;
+  // Custom OpenAI-compatible: a key against the default base, an unauthenticated
+  // private endpoint, or both — either half makes it callable.
+  if (cfg.provider === "custom") {
+    return Boolean(cfg.customApiKey?.trim() || cfg.cloudBaseUrl?.trim());
+  }
+  const keyField = BYOK_PROVIDER_KEY_FIELDS[cfg.provider];
+  if (!keyField) return false;
+  return Boolean((state[keyField] as string | undefined)?.trim());
+};
+
 // Scope custom keys are secrets kept in the OS secure store, not localStorage
 // (which is stripped on startup). Writes must go through their dedicated
 // setters so the values survive restarts.
@@ -2706,6 +2761,34 @@ export function reconcileRetiredCloudModelSelections(): void {
     logger.info(
       "Repointed retired cloud model selection",
       { scope: scope.storeKeys.model, from: model, to: replacement },
+      "settings"
+    );
+  }
+}
+
+/**
+ * Repairs scopes left holding a model with no provider.
+ *
+ * A mode round-trip through the settings editor used to clear the provider and
+ * let a model be picked without rewriting it (see handleModeSelect /
+ * handleCloudModelSelect). The empty provider then routed cloud requests to
+ * the local llama server, which cannot start a cloud model id. When the model
+ * unambiguously belongs to one registry provider, write that provider back.
+ */
+export function reconcileOrphanedModelProviders(): void {
+  const state = useSettingsStore.getState() as unknown as Record<string, unknown>;
+  for (const scope of Object.values(INFERENCE_SCOPES)) {
+    const provider = state[scope.storeKeys.provider] as string;
+    const model = state[scope.storeKeys.model] as string;
+    if (provider || !model) continue;
+    const owners = modelRegistryData.cloudProviders.filter((p) =>
+      p.models.some((m) => m.id === model)
+    );
+    if (owners.length !== 1) continue;
+    setStringSetting(scope.storeKeys.provider as keyof SettingsState, owners[0].id);
+    logger.info(
+      "Repaired model selection with missing provider",
+      { scope: scope.storeKeys.provider, model, provider: owners[0].id },
       "settings"
     );
   }
@@ -3162,6 +3245,7 @@ export async function initializeSettings(): Promise<void> {
     }
 
     reconcileRetiredCloudModelSelections();
+    reconcileOrphanedModelProviders();
 
     try {
       await reconcileLocalModelSelections();

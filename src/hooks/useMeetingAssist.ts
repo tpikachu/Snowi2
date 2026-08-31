@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
 import ReasoningService, { type AgentStreamChunk } from "../services/ReasoningService";
 import { isEnterpriseProvider } from "../models/ModelRegistry";
-import { getSettings, selectResolvedLLMConfig } from "../stores/settingsStore";
+import {
+  getSettings,
+  selectLLMConfigReady,
+  selectResolvedLLMConfig,
+} from "../stores/settingsStore";
 import { useMeetingRecordingStore } from "../stores/meetingRecordingStore";
 import {
   clearAnswer,
@@ -79,6 +83,13 @@ interface ResolvedAssistModel {
  * library, and asking someone to configure two models to get one feature is a
  * setup step that buys nothing they can perceive. If time-to-first-token ever
  * needs its own small fast model, this is the single seam to change.
+ *
+ * Gated on selectLLMConfigReady rather than on a model id existing: several
+ * scopes default to a cloud model before anyone chose one, and a BYOK
+ * provider without its key — or a local-mode scope holding a cloud id —
+ * would fail at request time with an error nobody can act on. Unready
+ * resolves to null, which the panel renders as the set-up-a-model state
+ * carrying the trip to Settings.
  */
 function resolveAssistModel(
   systemPrompt: string,
@@ -86,7 +97,7 @@ function resolveAssistModel(
 ): ResolvedAssistModel | null {
   const settings = getSettings();
   const chat = selectResolvedLLMConfig(settings, "chatIntelligence");
-  if (!chat.model) return null;
+  if (!selectLLMConfigReady(settings, chat)) return null;
 
   const mode = chat.mode || "local";
   const isLan = mode === "self-hosted" && !!chat.remoteUrl;
@@ -170,10 +181,13 @@ const toRefs = (notes: readonly AssistNote[]): AssistNoteRef[] =>
  */
 function warmAssistDependencies(): void {
   try {
-    const chat = selectResolvedLLMConfig(getSettings(), "chatIntelligence");
+    const settings = getSettings();
+    const chat = selectResolvedLLMConfig(settings, "chatIntelligence");
     // Only the local runtime needs loading. Cloud providers have no warmup,
-    // and a LAN server is someone else's process.
-    if ((chat.mode || "local") === "local" && chat.model) {
+    // and a LAN server is someone else's process. Ready-gated so the
+    // defaulted cloud id a fresh install holds never spawns a llama server
+    // it cannot load.
+    if ((chat.mode || "local") === "local" && selectLLMConfigReady(settings, chat)) {
       const startedAt = Date.now();
       void window.electronAPI
         ?.llamaServerStart?.(chat.model)
@@ -569,8 +583,9 @@ export function useMeetingAssist(): MeetingAssist {
       // Re-read rather than captured: someone can configure a model from
       // Settings while the meeting runs, and the panel should stop saying the
       // assistant is unavailable the moment they have.
+      const settings = getSettings();
       setAssistConfigured(
-        Boolean(selectResolvedLLMConfig(getSettings(), "chatIntelligence").model)
+        selectLLMConfigReady(settings, selectResolvedLLMConfig(settings, "chatIntelligence"))
       );
 
       const now = Date.now();

@@ -97,7 +97,7 @@ test("is a no-op when run again", (t) => {
   assert.equal(db.db.prepare("SELECT COUNT(*) AS n FROM folders").get().n, 1);
 });
 
-test("fresh installs seed the meeting-first folders, and only those", (t) => {
+test("fresh installs seed only the Meetings folder", (t) => {
   const db = createDb(t);
   if (!db) return;
 
@@ -106,17 +106,18 @@ test("fresh installs seed the meeting-first folders, and only those", (t) => {
     .all()
     .map((row) => row.name);
 
-  // The user_version 1 migration seeds a downloads folder too. It has to
-  // recognise the renamed one, or a fresh install ends up with both Uploads
-  // and Videos and the rename refuses to merge them.
-  assert.deepEqual(names, ["Meetings", "Notes", "Uploads"]);
+  // One default container. The Notes and Uploads defaults were retired by the
+  // user_version 2 migration; a fresh install never creates them, and starts
+  // its user_version past both folder migrations so neither re-runs.
+  assert.deepEqual(names, ["Meetings"]);
+  assert.ok(db.db.pragma("user_version", { simple: true }) >= 2);
 });
 
-test("an install that still calls it Videos does not gain a second folder", (t) => {
+test("an install that still calls it Videos is retired down to Meetings", (t) => {
   const db = createDb(t);
   if (!db) return;
 
-  // Reproduce a pre-rename install: legacy names, migration not yet run.
+  // Reproduce a pre-rename install: legacy names, migrations not yet run.
   db.db.prepare("DELETE FROM folders").run();
   addFolder(db, "Personal");
   addFolder(db, "Videos");
@@ -132,9 +133,33 @@ test("an install that still calls it Videos does not gain a second folder", (t) 
     .all()
     .map((row) => row.name);
 
-  assert.deepEqual(names.filter((n) => n === "Uploads").length, 1, "exactly one downloads folder");
+  // The legacy defaults are empty, so the rename (Personal → Notes,
+  // Videos → Uploads) is followed by the user_version 2 retirement removing
+  // both, and the migration seeds the Meetings default the old install lacked.
   assert.equal(names.includes("Videos"), false, "the old one was renamed, not left beside it");
-  assert.equal(names.includes("Notes"), true);
+  assert.deepEqual(names, ["Meetings"]);
+});
+
+test("a retired default that still holds notes is demoted, not deleted", (t) => {
+  const db = createDb(t);
+  if (!db) return;
+
+  // Reproduce an install where the Notes default was actually used.
+  db.db.prepare("DELETE FROM folders").run();
+  const notesId = addFolder(db, "Notes");
+  db.db
+    .prepare("INSERT INTO notes (title, content, folder_id) VALUES ('Kept', 'body', ?)")
+    .run(notesId);
+  db.db.pragma("user_version = 1");
+
+  db.db.close();
+  db.initDatabase();
+
+  const folder = db.db.prepare("SELECT * FROM folders WHERE id = ?").get(notesId);
+  assert.ok(folder, "a folder with notes in it survives the retirement");
+  assert.equal(folder.is_default, 0, "but as an ordinary folder the user can manage");
+  const note = db.db.prepare("SELECT folder_id FROM notes WHERE title = 'Kept'").get();
+  assert.equal(note.folder_id, notesId, "its notes stay exactly where they were");
 });
 
 test("the rename runs only after folders.space_id exists", () => {

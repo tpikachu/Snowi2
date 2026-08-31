@@ -198,7 +198,19 @@ export default function NoteEditor({
 }: NoteEditorProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const [viewMode, setViewMode] = useState<MeetingViewMode>("raw");
+  // The editor is keyed by note id, so every selection is a fresh mount and
+  // the note-change effect below never sees the first note. The opening view
+  // must be decided here: the AI write-up if there is one, else the
+  // transcript, and the raw text only for a typed note that has neither.
+  const [viewMode, setViewMode] = useState<MeetingViewMode>(() =>
+    isRecording
+      ? "transcript"
+      : enhancement?.content?.trim()
+        ? "enhanced"
+        : note.transcript
+          ? "transcript"
+          : "raw"
+  );
   const [chatMode, setChatMode] = useState<EmbeddedChatMode>("hidden");
   const [showFollowUpEmail, setShowFollowUpEmail] = useState(false);
   const [folderSearch, setFolderSearch] = useState("");
