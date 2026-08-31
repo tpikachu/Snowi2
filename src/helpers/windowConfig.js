@@ -35,6 +35,16 @@ const WINDOW_SIZES = {
   EXPANDED: { width: 400, height: 500 },
 };
 
+// Test seam, mirroring SNOWY_USER_DATA_DIR in main.js: Playwright's video
+// recording cannot attach to a sandboxed Electron renderer — the very first
+// loadURL hangs or dies with ERR_FAILED — so the demo recorder
+// (scripts/record-demo.js) asks for the renderer sandbox to be off. Honoured
+// only off the production channel, so a packaged app can never be
+// de-sandboxed by an environment variable.
+const RENDERER_SANDBOX = !(
+  process.env.SNOWY_DISABLE_RENDERER_SANDBOX && process.env.SNOWY_CHANNEL !== "production"
+);
+
 // Main dictation window configuration
 const MAIN_WINDOW_CONFIG = {
   width: WINDOW_SIZES.BASE.width,
@@ -44,7 +54,7 @@ const MAIN_WINDOW_CONFIG = {
     preload: path.join(__dirname, "..", "..", "preload.js"),
     nodeIntegration: false,
     contextIsolation: true,
-    sandbox: true,
+    sandbox: RENDERER_SANDBOX,
   },
   frame: false,
   alwaysOnTop: true,
@@ -114,7 +124,7 @@ const NOTIFICATION_WINDOW_CONFIG = {
     preload: path.join(__dirname, "..", "..", "preload.js"),
     nodeIntegration: false,
     contextIsolation: true,
-    sandbox: true,
+    sandbox: RENDERER_SANDBOX,
   },
   visibleOnAllWorkspaces: process.platform !== "win32",
   type: FLOATING_OVERLAY_TYPE,
@@ -145,7 +155,7 @@ const TRANSCRIPTION_PREVIEW_CONFIG = {
     preload: path.join(__dirname, "..", "..", "preload.js"),
     nodeIntegration: false,
     contextIsolation: true,
-    sandbox: true,
+    sandbox: RENDERER_SANDBOX,
   },
   visibleOnAllWorkspaces: process.platform !== "win32",
   type: FLOATING_OVERLAY_TYPE,
@@ -197,7 +207,7 @@ const MEETING_PANEL_CONFIG = {
     preload: path.join(__dirname, "..", "..", "preload.js"),
     nodeIntegration: false,
     contextIsolation: true,
-    sandbox: true,
+    sandbox: RENDERER_SANDBOX,
     // The panel is hidden while the control panel has focus; without this its
     // timers would be throttled and the clock would stall behind the meeting.
     backgroundThrottling: false,
