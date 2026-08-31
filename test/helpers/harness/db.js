@@ -65,7 +65,17 @@ function tracked(t) {
     if (entry.dir) {
       // Retries because a WAL sidecar can outlive close() by a moment on
       // Windows; without them this is a rare, confusing failure in teardown.
-      fs.rmSync(entry.dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 50 });
+      try {
+        fs.rmSync(entry.dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+      } catch (error) {
+        // A leftover tmpdir is litter, not a failure. This hook runs after
+        // every subtest already passed, and a throw here marks the whole file
+        // failed — "'test failed'" with zero failing subtests — which is how
+        // the v0.1.0-rc5 release run died on Linux while the same commit's
+        // main-branch run was green. Warn and move on; the runner's tmpdir is
+        // ephemeral anyway.
+        console.warn(`db harness: could not remove ${entry.dir}: ${error?.message ?? error}`);
+      }
     }
   });
   return entry;
