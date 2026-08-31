@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertTriangle, CalendarClock, Loader2, Mic, Square } from "lucide-react";
+import { AlertTriangle, AudioLines, Loader2, Mic, Square } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "../lib/utils";
 import { formatMmSs } from "../../utils/formatDuration";
@@ -97,12 +97,15 @@ export interface CaptureControlProps {
   isStartingMeeting: boolean;
   /** Jump back to the note the live meeting is being written into. */
   onOpenMeetingNote: () => void;
+  /** The transcription model is still downloading — starting would fail. */
+  startBlockedByDownload?: boolean;
 }
 
 export default function CaptureControl({
   onStartMeeting,
   isStartingMeeting,
   onOpenMeetingNote,
+  startBlockedByDownload = false,
 }: CaptureControlProps) {
   const { t } = useTranslation();
   const dictation = useDictationCaptureState();
@@ -299,32 +302,30 @@ export default function CaptureControl({
         </>
       )}
 
-      {/* With dictation behind its flag this is the window's primary action,
-          so it takes the solid treatment and shows its own shortcut. */}
+      {/* The window's primary action. One clean pill — icon and verb, no
+          shortcut chip; the hotkey lives in the tooltip where it informs
+          without cluttering the header. */}
       <Button
         variant={DICTATION_ENABLED ? "outline-flat" : "default"}
         size="sm"
         onClick={onStartMeeting}
-        disabled={isBusy}
+        disabled={isBusy || startBlockedByDownload}
         data-tour="capture"
         title={
-          meetingHotkeyLabel
-            ? t("capture.meetingHintWithHotkey", { hotkey: meetingHotkeyLabel })
-            : t("capture.meetingHint")
+          startBlockedByDownload
+            ? t("shell.modelDownload.startBlocked")
+            : meetingHotkeyLabel
+              ? t("capture.meetingHintWithHotkey", { hotkey: meetingHotkeyLabel })
+              : t("capture.meetingHint")
         }
-        className="h-7 gap-1.5 px-2.5 text-xs"
+        className="h-7 gap-1.5 rounded-full px-3.5 text-xs font-semibold"
       >
         {isStartingMeeting ? (
           <Loader2 size={13} className="animate-spin" aria-hidden="true" />
         ) : (
-          <CalendarClock size={13} strokeWidth={2} aria-hidden="true" />
+          <AudioLines size={13} strokeWidth={2} aria-hidden="true" />
         )}
         {t("capture.meeting")}
-        {!DICTATION_ENABLED && meetingHotkeyLabel && (
-          <kbd className="ml-0.5 hidden rounded-sm bg-primary-foreground/20 px-1 py-px text-[10px] font-medium leading-[1.3] text-primary-foreground md:inline-block">
-            {meetingHotkeyLabel}
-          </kbd>
-        )}
       </Button>
     </div>
   );

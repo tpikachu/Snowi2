@@ -571,6 +571,14 @@
       "keyMissing": "Noch kein API-Schlüssel",
       "keySet": "API-Schlüssel gespeichert",
       "label": "Anbieter"
+    },
+    "readiness": {
+      "needsKey": "Noch nicht einsatzbereit — fügen Sie Ihren {{provider}}-API-Schlüssel hinzu, um dieses Modell zu nutzen.",
+      "needsModel": "Noch nicht einsatzbereit — wählen Sie ein Modell, um die Einrichtung abzuschließen.",
+      "needsLocalModel": "Noch nicht einsatzbereit — laden Sie ein lokales Modell herunter und wählen Sie es aus.",
+      "needsEndpoint": "Noch nicht einsatzbereit — geben Sie Ihre Serveradresse ein.",
+      "needsCustom": "Noch nicht einsatzbereit — fügen Sie einen API-Schlüssel oder eine Endpunkt-URL hinzu.",
+      "needsEnterprise": "Noch nicht einsatzbereit — schließen Sie die Cloud-Einrichtung Ihrer Organisation ab."
     }
   },
   "transcription": {
@@ -3131,6 +3139,7 @@
         "checkNotes": "Frühere Notizen prüfen",
         "needsModel": "Richten Sie ein KI-Modell ein, um während eines Meetings zu fragen.",
         "needsModelPlaceholder": "Benötigt ein KI-Modell",
+        "configureModels": "KI-Modelle einrichten",
         "noModel": "Es ist noch kein KI-Modell eingerichtet.",
         "failed": "Das ließ sich nicht beantworten. Bitte erneut versuchen.",
         "noAnswer": "Es kam keine Antwort zurück.",
@@ -3716,6 +3725,13 @@
     "contextPane": {
       "collapse": "Leiste ausblenden",
       "expand": "Leiste einblenden"
+    },
+    "modelDownload": {
+      "downloading": "{{model}} wird heruntergeladen",
+      "installing": "{{model}} wird installiert",
+      "hint": "Dein Sprachmodell — Meetings können starten, sobald es fertig ist",
+      "backgroundHint": "Lädt im Hintergrund — du kannst weiterarbeiten",
+      "startBlocked": "Dein Sprachmodell wird noch heruntergeladen"
     }
   },
   "activity": {

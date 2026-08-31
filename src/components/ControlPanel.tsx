@@ -49,6 +49,8 @@ import HomeView from "./home/HomeView";
 import MeetingRecordingMount from "./MeetingRecordingMount";
 import MeetingRecordingPill from "./notes/MeetingRecordingPill";
 import CaptureControl from "./shell/CaptureControl";
+import ModelDownloadStrip from "./shell/ModelDownloadStrip";
+import { useSpeechModelDownloadStatus } from "../hooks/useSpeechModelDownloadStatus";
 import WindowControls from "./WindowControls";
 
 import { getCachedPlatform } from "../utils/platform";
@@ -177,6 +179,11 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     installUpdate,
     error: updateError,
   } = useUpdater();
+
+  // The speech-model download onboarding may have left running. Surfaced as a
+  // strip under the header, and it gates starting a meeting while the model
+  // meetings transcribe with is still on its way down.
+  const speechModelDownload = useSpeechModelDownloadStatus();
 
   const {
     confirmDialog,
@@ -1008,6 +1015,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   onStartMeeting={handleStartMeetingCapture}
                   isStartingMeeting={isStartingMeetingCapture}
                   onOpenMeetingNote={returnToMeetingNote}
+                  startBlockedByDownload={speechModelDownload.blocksMeetingStart}
                 />
               )}
 
@@ -1048,6 +1056,16 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                 </div>
               )}
             </header>
+            {/* The speech model onboarding left downloading. Visible from
+                every section so a disabled Start is never a mystery; the
+                side-panel layout means a meeting is already running, where
+                the strip has nothing to say. */}
+            {speechModelDownload.active && !isSidePanelLayout && (
+              <ModelDownloadStrip
+                download={speechModelDownload.active}
+                blocksMeetingStart={speechModelDownload.blocksMeetingStart}
+              />
+            )}
             <div className="flex-1 overflow-y-auto">
               {(gpuAccelAvailable.transcription || gpuAccelAvailable.intelligence) &&
                 activeView === "home" &&
@@ -1103,6 +1121,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   isStartingMeeting={isStartingMeetingCapture}
                   onOpenRecordingNote={returnToMeetingNote}
                   onBrowseAll={() => setActiveView("personal-notes")}
+                  startBlockedByDownload={speechModelDownload.blocksMeetingStart}
                 />
               )}
               {activeView === "chat" && (

@@ -571,6 +571,14 @@
       "keyMissing": "Aún sin clave de API",
       "keySet": "Clave de API guardada",
       "label": "Proveedor"
+    },
+    "readiness": {
+      "needsKey": "Aún no está listo — añade tu clave de API de {{provider}} para usar este modelo.",
+      "needsModel": "Aún no está listo — elige un modelo para terminar la configuración.",
+      "needsLocalModel": "Aún no está listo — descarga y selecciona un modelo local.",
+      "needsEndpoint": "Aún no está listo — introduce la dirección de tu servidor.",
+      "needsCustom": "Aún no está listo — añade una clave de API o una URL de endpoint.",
+      "needsEnterprise": "Aún no está listo — completa la configuración en la nube de tu organización."
     }
   },
   "transcription": {
@@ -2972,6 +2980,7 @@
         "checkNotes": "Consultar notas anteriores",
         "needsModel": "Configura un modelo de IA para hacer preguntas durante una reunión.",
         "needsModelPlaceholder": "Necesita un modelo de IA",
+        "configureModels": "Configurar modelos de IA",
         "noModel": "Todavía no hay ningún modelo de IA configurado.",
         "failed": "No se pudo responder. Inténtalo de nuevo.",
         "noAnswer": "No llegó ninguna respuesta.",
@@ -3716,6 +3725,13 @@
     "contextPane": {
       "collapse": "Ocultar panel",
       "expand": "Mostrar panel"
+    },
+    "modelDownload": {
+      "downloading": "Descargando {{model}}",
+      "installing": "Instalando {{model}}",
+      "hint": "Tu modelo de voz a texto: las reuniones podrán empezar cuando termine",
+      "backgroundHint": "Se descarga en segundo plano; puedes seguir trabajando",
+      "startBlocked": "Tu modelo de voz aún se está descargando"
     }
   },
   "activity": {

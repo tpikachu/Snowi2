@@ -571,6 +571,14 @@
       "keyMissing": "尚无 API 密钥",
       "keySet": "已保存 API 密钥",
       "label": "提供商"
+    },
+    "readiness": {
+      "needsKey": "尚未就绪 — 添加你的 {{provider}} API 密钥以使用此模型。",
+      "needsModel": "尚未就绪 — 选择一个模型以完成设置。",
+      "needsLocalModel": "尚未就绪 — 下载并选择一个本地模型。",
+      "needsEndpoint": "尚未就绪 — 输入你的服务器地址。",
+      "needsCustom": "尚未就绪 — 添加 API 密钥或端点 URL。",
+      "needsEnterprise": "尚未就绪 — 完成你所在组织的云配置。"
     }
   },
   "transcription": {
@@ -2924,6 +2932,7 @@
         "checkNotes": "查看过去的笔记",
         "needsModel": "配置 AI 模型后即可在会议中提问。",
         "needsModelPlaceholder": "需要 AI 模型",
+        "configureModels": "设置 AI 模型",
         "noModel": "还没有配置 AI 模型。",
         "failed": "没能回答，请再试一次。",
         "noAnswer": "没有收到回答。",
@@ -3716,6 +3725,13 @@
     "contextPane": {
       "collapse": "隐藏面板",
       "expand": "显示面板"
+    },
+    "modelDownload": {
+      "downloading": "正在下载 {{model}}",
+      "installing": "正在安装 {{model}}",
+      "hint": "语音转文字模型——下载完成后即可开始会议",
+      "backgroundHint": "在后台下载——你可以继续使用",
+      "startBlocked": "语音模型仍在下载中"
     }
   },
   "activity": {

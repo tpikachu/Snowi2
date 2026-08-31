@@ -571,6 +571,14 @@
       "keyMissing": "Pas encore de clé API",
       "keySet": "Clé API enregistrée",
       "label": "Fournisseur"
+    },
+    "readiness": {
+      "needsKey": "Pas encore prêt — ajoutez votre clé API {{provider}} pour utiliser ce modèle.",
+      "needsModel": "Pas encore prêt — choisissez un modèle pour terminer la configuration.",
+      "needsLocalModel": "Pas encore prêt — téléchargez et sélectionnez un modèle local.",
+      "needsEndpoint": "Pas encore prêt — saisissez l'adresse de votre serveur.",
+      "needsCustom": "Pas encore prêt — ajoutez une clé API ou une URL de point de terminaison.",
+      "needsEnterprise": "Pas encore prêt — terminez la configuration cloud de votre organisation."
     }
   },
   "transcription": {
@@ -3131,6 +3139,7 @@
         "checkNotes": "Consulter les notes passées",
         "needsModel": "Configurez un modèle d'IA pour poser des questions pendant une réunion.",
         "needsModelPlaceholder": "Nécessite un modèle d'IA",
+        "configureModels": "Configurer les modèles d'IA",
         "noModel": "Aucun modèle d'IA n'est encore configuré.",
         "failed": "Impossible de répondre. Réessayez.",
         "noAnswer": "Aucune réponse n'est arrivée.",
@@ -3716,6 +3725,13 @@
     "contextPane": {
       "collapse": "Masquer le panneau",
       "expand": "Afficher le panneau"
+    },
+    "modelDownload": {
+      "downloading": "Téléchargement de {{model}}",
+      "installing": "Installation de {{model}}",
+      "hint": "Votre modèle de reconnaissance vocale — les réunions pourront démarrer une fois terminé",
+      "backgroundHint": "Téléchargement en arrière-plan — vous pouvez continuer à travailler",
+      "startBlocked": "Votre modèle vocal est encore en cours de téléchargement"
     }
   },
   "activity": {

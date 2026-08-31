@@ -571,6 +571,14 @@
       "keyMissing": "API キー未設定",
       "keySet": "API キー保存済み",
       "label": "プロバイダー"
+    },
+    "readiness": {
+      "needsKey": "まだ利用できません — このモデルを使うには {{provider}} の API キーを追加してください。",
+      "needsModel": "まだ利用できません — モデルを選択して設定を完了してください。",
+      "needsLocalModel": "まだ利用できません — ローカルモデルをダウンロードして選択してください。",
+      "needsEndpoint": "まだ利用できません — サーバーのアドレスを入力してください。",
+      "needsCustom": "まだ利用できません — API キーまたはエンドポイント URL を追加してください。",
+      "needsEnterprise": "まだ利用できません — 組織のクラウド設定を完了してください。"
     }
   },
   "transcription": {
@@ -2852,6 +2860,7 @@
         "checkNotes": "過去のノートを確認",
         "needsModel": "会議中に質問するには AI モデルを設定してください。",
         "needsModelPlaceholder": "AI モデルが必要です",
+        "configureModels": "AI モデルを設定",
         "noModel": "AI モデルがまだ設定されていません。",
         "failed": "答えられませんでした。もう一度お試しください。",
         "noAnswer": "回答が返りませんでした。",
@@ -3716,6 +3725,13 @@
     "contextPane": {
       "collapse": "パネルを隠す",
       "expand": "パネルを表示"
+    },
+    "modelDownload": {
+      "downloading": "{{model}} をダウンロード中",
+      "installing": "{{model}} をインストール中",
+      "hint": "音声認識モデルです。完了すると会議を開始できます",
+      "backgroundHint": "バックグラウンドでダウンロード中です。作業を続けられます",
+      "startBlocked": "音声モデルをまだダウンロード中です"
     }
   },
   "activity": {

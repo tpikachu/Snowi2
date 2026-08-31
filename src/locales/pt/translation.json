@@ -550,6 +550,14 @@
       "keyMissing": "Ainda sem chave de API",
       "keySet": "Chave de API salva",
       "label": "Provedor"
+    },
+    "readiness": {
+      "needsKey": "Ainda não está pronto — adicione sua chave de API da {{provider}} para usar este modelo.",
+      "needsModel": "Ainda não está pronto — escolha um modelo para concluir a configuração.",
+      "needsLocalModel": "Ainda não está pronto — baixe e selecione um modelo local.",
+      "needsEndpoint": "Ainda não está pronto — informe o endereço do seu servidor.",
+      "needsCustom": "Ainda não está pronto — adicione uma chave de API ou uma URL de endpoint.",
+      "needsEnterprise": "Ainda não está pronto — conclua a configuração de nuvem da sua organização."
     }
   },
   "transcription": {
@@ -2924,6 +2932,7 @@
         "checkNotes": "Verificar notas anteriores",
         "needsModel": "Configure um modelo de IA para perguntar durante uma reunião.",
         "needsModelPlaceholder": "Precisa de um modelo de IA",
+        "configureModels": "Configurar modelos de IA",
         "noModel": "Ainda não há um modelo de IA configurado.",
         "failed": "Não foi possível responder. Tente de novo.",
         "noAnswer": "Nenhuma resposta voltou.",
@@ -3716,6 +3725,13 @@
     "contextPane": {
       "collapse": "Ocultar painel",
       "expand": "Mostrar painel"
+    },
+    "modelDownload": {
+      "downloading": "Baixando {{model}}",
+      "installing": "Instalando {{model}}",
+      "hint": "Seu modelo de fala para texto — as reuniões poderão começar quando terminar",
+      "backgroundHint": "Baixa em segundo plano — você pode continuar trabalhando",
+      "startBlocked": "Seu modelo de fala ainda está sendo baixado"
     }
   },
   "activity": {

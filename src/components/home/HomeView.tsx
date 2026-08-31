@@ -7,7 +7,9 @@ import UpcomingMeetings from "../UpcomingMeetings";
 import MeetingRow from "./MeetingRow";
 import NowCard from "./NowCard";
 import CalendarNudge from "./CalendarNudge";
+import CapabilitiesCard from "./CapabilitiesCard";
 import NeedsWriteUpCard from "./NeedsWriteUpCard";
+import { CALENDAR_ENABLED } from "../../config/features";
 import { useRecentMeetings } from "../../hooks/useRecentMeetings";
 import { useUpcomingEvents } from "../../hooks/useUpcomingEvents";
 import { useMeetingRecordingStore } from "../../stores/meetingRecordingStore";
@@ -22,6 +24,8 @@ interface HomeViewProps {
   isStartingMeeting: boolean;
   onOpenRecordingNote: () => void;
   onBrowseAll: () => void;
+  /** The transcription model is still downloading — starting would fail. */
+  startBlockedByDownload?: boolean;
 }
 
 /**
@@ -41,6 +45,7 @@ export default function HomeView({
   isStartingMeeting,
   onOpenRecordingNote,
   onBrowseAll,
+  startBlockedByDownload = false,
 }: HomeViewProps) {
   const { t } = useTranslation();
   const { events, isLoading: eventsLoading, isConnected } = useUpcomingEvents();
@@ -85,7 +90,8 @@ export default function HomeView({
         <div className="flex items-center">
           <Button
             onClick={() => onStartMeeting(null)}
-            disabled={isStartingMeeting || isRecording}
+            disabled={isStartingMeeting || isRecording || startBlockedByDownload}
+            title={startBlockedByDownload ? t("shell.modelDownload.startBlocked") : undefined}
             className="h-10 rounded-full px-5 text-[13px] font-semibold shadow-[0_4px_24px_-8px_var(--color-primary)]"
           >
             <AudioLines size={15} strokeWidth={2} />
@@ -93,7 +99,13 @@ export default function HomeView({
           </Button>
         </div>
 
-        {!isConnected && <CalendarNudge />}
+        {CALENDAR_ENABLED && !isConnected && <CalendarNudge />}
+
+        {/* What the app can do right now, and what it still needs. Back on
+            Home by request: setup gaps are invisible everywhere else, and a
+            meeting recorded with no model configured looks complete right up
+            until the write-up is missing. The card collapses once answered. */}
+        <CapabilitiesCard />
 
         <div className="mt-5">
           {/* While recording, the live list row below is the recording

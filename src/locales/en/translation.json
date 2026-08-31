@@ -571,6 +571,14 @@
       "keyMissing": "No API key yet",
       "keySet": "API key saved",
       "label": "Provider"
+    },
+    "readiness": {
+      "needsKey": "Not ready yet — add your {{provider}} API key to use this model.",
+      "needsModel": "Not ready yet — choose a model to finish setup.",
+      "needsLocalModel": "Not ready yet — download and select a local model.",
+      "needsEndpoint": "Not ready yet — enter your server address.",
+      "needsCustom": "Not ready yet — add an API key or endpoint URL.",
+      "needsEnterprise": "Not ready yet — finish your organization's cloud setup."
     }
   },
   "transcription": {
@@ -3131,6 +3139,7 @@
         "checkNotes": "Check past notes",
         "needsModel": "Set up an AI model to ask questions during a meeting.",
         "needsModelPlaceholder": "Needs an AI model",
+        "configureModels": "Set up AI models",
         "noModel": "No AI model is set up yet.",
         "failed": "Could not answer that. Try again.",
         "noAnswer": "No answer came back.",
@@ -3716,6 +3725,13 @@
     "contextPane": {
       "collapse": "Hide panel",
       "expand": "Show panel"
+    },
+    "modelDownload": {
+      "downloading": "Downloading {{model}}",
+      "installing": "Installing {{model}}",
+      "hint": "Your speech-to-text model — meetings can start once it finishes",
+      "backgroundHint": "Downloads in the background — you can keep working",
+      "startBlocked": "Your speech model is still downloading"
     }
   },
   "activity": {

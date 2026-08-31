@@ -571,6 +571,14 @@
       "keyMissing": "尚無 API 金鑰",
       "keySet": "已儲存 API 金鑰",
       "label": "供應商"
+    },
+    "readiness": {
+      "needsKey": "尚未就緒 — 新增你的 {{provider}} API 金鑰以使用此模型。",
+      "needsModel": "尚未就緒 — 選擇一個模型以完成設定。",
+      "needsLocalModel": "尚未就緒 — 下載並選擇一個本機模型。",
+      "needsEndpoint": "尚未就緒 — 輸入你的伺服器位址。",
+      "needsCustom": "尚未就緒 — 新增 API 金鑰或端點 URL。",
+      "needsEnterprise": "尚未就緒 — 完成你所在組織的雲端設定。"
     }
   },
   "transcription": {
@@ -2924,6 +2932,7 @@
         "checkNotes": "查看過去的筆記",
         "needsModel": "設定 AI 模型後即可在會議中提問。",
         "needsModelPlaceholder": "需要 AI 模型",
+        "configureModels": "設定 AI 模型",
         "noModel": "還沒有設定 AI 模型。",
         "failed": "沒能回答，請再試一次。",
         "noAnswer": "沒有收到回答。",
@@ -3716,6 +3725,13 @@
     "contextPane": {
       "collapse": "隱藏面板",
       "expand": "顯示面板"
+    },
+    "modelDownload": {
+      "downloading": "正在下載 {{model}}",
+      "installing": "正在安裝 {{model}}",
+      "hint": "語音轉文字模型——下載完成後即可開始會議",
+      "backgroundHint": "在背景下載——你可以繼續使用",
+      "startBlocked": "語音模型仍在下載中"
     }
   },
   "activity": {
