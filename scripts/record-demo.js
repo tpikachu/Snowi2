@@ -195,8 +195,22 @@ async function ensureDevServer() {
     if (await probeDevServer()) return child;
     await sleep(1000);
   }
-  child.kill();
+  killTree(child);
   throw new Error("Vite dev server never became reachable on :5183");
+}
+
+/**
+ * On Windows, child.kill() only reaches the npm shell wrapper and leaves the
+ * node/Vite process underneath alive — holding :5183 hostage for the next
+ * `npm run dev`. taskkill /T takes the whole tree down.
+ */
+function killTree(child) {
+  if (!child) return;
+  if (process.platform === "win32") {
+    spawnSync("taskkill", ["/PID", String(child.pid), "/T", "/F"], { stdio: "ignore" });
+  } else {
+    child.kill();
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -989,7 +1003,7 @@ async function main() {
     const frames = capture ? await capture.stop() : [];
     await app.close().catch(() => {});
     assembleVideo(frames);
-    if (devServer) devServer.kill();
+    killTree(devServer);
   }
 }
 
