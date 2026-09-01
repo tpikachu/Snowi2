@@ -606,8 +606,6 @@ export default function SettingsPage({
     setMeetingKey,
     meetingHotkeyLayoutMode,
     setMeetingHotkeyLayoutMode,
-    autoLearnCorrections,
-    setAutoLearnCorrections,
     updateTranscriptionSettings,
     updateCleanupSettings,
     cloudTranscriptionMode,
@@ -1796,29 +1794,9 @@ export default function SettingsPage({
               </SettingsPanel>
             </SettingsGroup>
 
-            {/* Dictionary */}
-            <SettingsGroup
-              id="dictionary"
-              title={t("settingsPage.dictionary.autoLearnTitle", {
-                defaultValue: "Auto-learn from corrections",
-              })}
-            >
-              <SettingsPanel>
-                <SettingsPanelRow>
-                  <SettingsRow
-                    label={t("settingsPage.dictionary.autoLearnTitle", {
-                      defaultValue: "Auto-learn from corrections",
-                    })}
-                    description={t("settingsPage.dictionary.autoLearnDescription", {
-                      defaultValue:
-                        "When you correct a transcription in the target app, the corrected word is automatically added to your dictionary.",
-                    })}
-                  >
-                    <Toggle checked={autoLearnCorrections} onChange={setAutoLearnCorrections} />
-                  </SettingsRow>
-                </SettingsPanelRow>
-              </SettingsPanel>
-            </SettingsGroup>
+            {/* Dictionary settings are hidden (client direction, 2026-09,
+                same treatment as the dictionary rail item): auto-learn keeps
+                its stored value and keeps working; only the surface is gone. */}
 
             {/* Wayland Paste Diagnostics — only on Linux + Wayland */}
             {ydotoolStatus?.isLinux && ydotoolStatus?.isWayland && (

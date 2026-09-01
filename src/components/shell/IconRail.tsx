@@ -122,7 +122,9 @@ export default function IconRail({
     // Upload is hidden for now (product decision). The view, its route and
     // UploadAudioView stay wired up so re-enabling is a one-line change.
     // { id: "upload", label: t("sidebar.upload"), icon: Upload },
-    { id: "dictionary", label: t("sidebar.dictionary"), icon: BookOpen },
+    // Dictionary is hidden too (client direction, 2026-09): auto-learn keeps
+    // feeding it silently and the view stays wired for a one-line return.
+    // { id: "dictionary", label: t("sidebar.dictionary"), icon: BookOpen },
   ];
 
   return (

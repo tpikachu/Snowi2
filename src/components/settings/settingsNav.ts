@@ -197,7 +197,6 @@ const ALL_SETTINGS_SECTIONS: SettingsSectionDef[] = [
       { id: "floatingIcon", labelKey: "settingsPage.general.floatingIcon.title" },
       { id: "startup", labelKey: "settingsPage.general.startup.title" },
       { id: "microphone", labelKey: "settingsPage.general.microphone.title" },
-      { id: "dictionary", labelKey: "settingsPage.dictionary.autoLearnTitle" },
       { id: "waylandPaste", labelKey: "settingsPage.general.waylandPaste.title" },
     ],
   },
@@ -405,7 +404,6 @@ const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
     labelKey: "settingsPage.general.startup.barStealth",
   },
   { section: "general", anchor: "microphone", labelKey: "settingsPage.general.microphone.title" },
-  { section: "general", anchor: "dictionary", labelKey: "settingsPage.dictionary.autoLearnTitle" },
   {
     section: "general",
     anchor: "waylandPaste",
