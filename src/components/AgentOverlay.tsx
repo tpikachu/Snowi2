@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { AppWindow, AudioLines, Loader2, Send, TriangleAlert, X } from "lucide-react";
+import { AppWindow, AudioLines, CornerDownLeft, Loader2, TriangleAlert, X } from "lucide-react";
 import { cn } from "./lib/utils";
 import MeetingPanelOverlay from "./MeetingPanelOverlay";
 import { useBarSetupStatus } from "../hooks/useBarSetupStatus";
@@ -19,8 +19,9 @@ import type { ScreenContextImage } from "../types/electron";
 const MIN_HEIGHT = 200;
 const MIN_WIDTH = 360;
 
-/** The collapsed bar: one row. Must match AGENT_OVERLAY_CONFIG.minHeight. */
-const BAR_HEIGHT = 56;
+/** The collapsed bar: an ask field over a control strip — two rows, sized so
+ *  the field is readable at a glance. Must match AGENT_OVERLAY_CONFIG.minHeight. */
+const BAR_HEIGHT = 104;
 /** First expansion; a hand-resized height is remembered over this. */
 const DEFAULT_EXPANDED_HEIGHT = 480;
 /** The cue card the bar morphs into while a meeting records. */
@@ -438,7 +439,7 @@ export default function AgentOverlay() {
         className={cn(
           "flex flex-col w-full h-full",
           "bg-surface-0",
-          "border border-border/50 rounded-lg",
+          "border border-border/40 rounded-2xl",
           "shadow-[var(--shadow-elevated)]",
           "overflow-hidden"
         )}
@@ -459,163 +460,198 @@ export default function AgentOverlay() {
             />
           </>
         ) : (
-          /* The bar. The row itself drags the window; everything interactive
-             opts out, so the empty space is the handle. */
+          /* The bar: an ask field over a control strip. Two rows on purpose —
+             the field is the product's front door and gets a full row of
+             readable 15px text, while every control drops to a quiet toolbar
+             beneath it. The visual language is tonal, not drawn: one border
+             on the window edge, and inside it only fills — a second stroke
+             around the field is what made the old bar read as box-in-a-box.
+             The container drags the window; everything interactive opts out,
+             so the empty toolbar space is the handle. */
           <div
-            className="flex h-full items-center gap-1.5 px-2.5"
+            className="flex h-full flex-col gap-1 p-2.5"
             style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
           >
             {!setupComplete ? (
-              /* Pre-setup: the bar's one job is to hand the user to onboarding. */
+              /* Pre-setup: the same two-row shell, with the hint where the
+                 ask field will live — the bar's one job is to hand the user
+                 to onboarding. */
               <>
-                <TriangleAlert
-                  className="size-4 shrink-0 animate-pulse text-warning"
-                  strokeWidth={1.75}
-                />
-                <p className="min-w-0 flex-1 truncate px-1 text-[12.5px] text-muted-foreground">
-                  {t("agentMode.bar.finishSetupHint")}
-                </p>
-                <button
-                  type="button"
-                  onClick={handleFinishSetup}
-                  className={cn(
-                    "flex h-8 shrink-0 items-center gap-1.5 rounded-control px-2.5",
-                    "border border-warning/40 bg-warning/10 text-[12px] font-semibold text-warning",
-                    "hover:bg-warning/20"
-                  )}
-                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                >
-                  {t("agentMode.bar.finishSetup")}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  aria-label={t("agentMode.titleBar.close")}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-control text-muted-foreground hover:bg-surface-2 hover:text-foreground"
-                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                >
-                  <X className="size-3.5" strokeWidth={1.75} />
-                </button>
+                <div className="flex min-h-0 flex-1 items-center gap-2.5 rounded-xl bg-warning/[0.08] px-3.5">
+                  <TriangleAlert
+                    className="size-4 shrink-0 animate-pulse text-warning"
+                    strokeWidth={1.75}
+                  />
+                  <p className="min-w-0 flex-1 truncate text-[13.5px] text-foreground/85">
+                    {t("agentMode.bar.finishSetupHint")}
+                  </p>
+                </div>
+                <div className="flex h-7 shrink-0 items-center justify-end gap-1.5">
+                  <button
+                    type="button"
+                    onClick={handleFinishSetup}
+                    className={cn(
+                      "flex h-7 shrink-0 items-center gap-1.5 rounded-full px-3",
+                      "bg-warning/15 text-[12px] font-semibold text-warning",
+                      "transition-colors duration-150 hover:bg-warning/25"
+                    )}
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                  >
+                    {t("agentMode.bar.finishSetup")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    aria-label={t("agentMode.titleBar.close")}
+                    className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-surface-2 hover:text-foreground"
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                  >
+                    <X className="size-4" strokeWidth={1.75} />
+                  </button>
+                </div>
               </>
             ) : (
               <>
-                {setupWarning}
-                <input
-                  ref={barInputRef}
-                  type="text"
-                  value={barText}
-                  onChange={(e) => setBarText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleBarSubmit();
-                    }
-                  }}
-                  placeholder={
-                    isRecordingVoice
-                      ? partialTranscript.trim() || t("agentMode.input.listening")
-                      : t("agentMode.bar.placeholder")
-                  }
+                {/* Row 1 — the ask field. A tonal fill, no stroke: the field
+                    reads as a soft well in the card, and focus brightens the
+                    well instead of drawing a ring around it. */}
+                <div
                   className={cn(
-                    "min-w-0 flex-1 bg-transparent px-1.5 text-[13px] text-foreground",
-                    "placeholder:text-muted-foreground focus:outline-none"
+                    "flex min-h-0 flex-1 items-center gap-2 rounded-xl px-3.5",
+                    "bg-surface-2 transition-colors duration-150 focus-within:bg-surface-3"
                   )}
                   style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                />
-                {/* The dictation mic was deliberately dropped from the bar —
-                    typing and Listen are its two verbs; the hotkey still
-                    reaches voice input for those who use it. */}
-                {/* Fast or Thinking, icons only — 56px of bar cannot afford
-                    labels, so the tooltip carries the words. */}
-                <span style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
-                  <LaneToggle lane={chatLane} onChange={setChatLane} compact />
-                </span>
-                {/* A download that doesn't block recording still shows: the
-                    user asked the app for a model, and the bar is the one
-                    surface always on screen to answer "is it done yet". */}
-                {speechDownload && !downloadBlocksMeetingStart && (
-                  <span
-                    title={t("agentMode.bar.downloadingModel", {
-                      model: speechDownload.displayName,
-                    })}
-                    className="flex h-7 shrink-0 items-center gap-1 rounded-control px-1.5 text-[11px] font-medium text-muted-foreground"
-                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                  >
-                    <Loader2 className="size-3 animate-spin" strokeWidth={2} />
-                    {Math.round(speechDownload.percentage)}%
-                  </span>
-                )}
-                {barText.trim() && (
+                >
+                  <input
+                    ref={barInputRef}
+                    type="text"
+                    value={barText}
+                    onChange={(e) => setBarText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleBarSubmit();
+                      }
+                    }}
+                    placeholder={
+                      isRecordingVoice
+                        ? partialTranscript.trim() || t("agentMode.input.listening")
+                        : t("agentMode.bar.placeholder")
+                    }
+                    className={cn(
+                      // input-inline opts out of the app's boxed input chrome:
+                      // the field's well is the surface here, not the input.
+                      "input-inline min-w-0 flex-1 bg-transparent p-0 text-[15px] text-foreground",
+                      "placeholder:text-muted-foreground focus:outline-none"
+                    )}
+                  />
                   <button
                     type="button"
                     onClick={handleBarSubmit}
+                    disabled={!barText.trim()}
                     aria-label={t("agentMode.bar.send")}
-                    className="flex size-8 shrink-0 items-center justify-center rounded-control text-primary hover:bg-surface-2"
+                    className={cn(
+                      "flex size-7 shrink-0 items-center justify-center rounded-lg",
+                      "transition-colors duration-150",
+                      barText.trim()
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                        : "text-muted-foreground/50"
+                    )}
+                  >
+                    <CornerDownLeft className="size-4" strokeWidth={1.75} />
+                  </button>
+                </div>
+
+                {/* Row 2 — the control strip. Everything the field displaced:
+                    warnings, the lane chip, download progress on the left;
+                    the meeting and window verbs on the right. */}
+                <div className="flex h-7 shrink-0 items-center gap-1.5">
+                  {setupWarning}
+                  {/* The dictation mic was deliberately dropped from the bar —
+                      typing and Listen are its two verbs; the hotkey still
+                      reaches voice input for those who use it. */}
+                  <span style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
+                    <LaneToggle lane={chatLane} onChange={setChatLane} />
+                  </span>
+                  {/* A download that doesn't block recording still shows: the
+                      user asked the app for a model, and the bar is the one
+                      surface always on screen to answer "is it done yet". */}
+                  {speechDownload && !downloadBlocksMeetingStart && (
+                    <span
+                      title={t("agentMode.bar.downloadingModel", {
+                        model: speechDownload.displayName,
+                      })}
+                      className="flex h-7 shrink-0 items-center gap-1 rounded-control px-1.5 text-[11px] font-medium text-muted-foreground"
+                      style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                    >
+                      <Loader2 className="size-3 animate-spin" strokeWidth={2} />
+                      {Math.round(speechDownload.percentage)}%
+                    </span>
+                  )}
+                  {/* Draggable breathing room: the strip's empty middle is the
+                      window's handle. */}
+                  <span className="min-w-0 flex-1" />
+                  <button
+                    type="button"
+                    onClick={handleListen}
+                    disabled={downloadBlocksMeetingStart}
+                    title={
+                      downloadBlocksMeetingStart
+                        ? speechDownload
+                          ? t("agentMode.bar.downloadingModel", {
+                              model: speechDownload.displayName,
+                            })
+                          : t("shell.modelDownload.startBlocked")
+                        : undefined
+                    }
+                    className={cn(
+                      "flex h-7 shrink-0 items-center gap-1.5 rounded-full px-3",
+                      "bg-primary text-[12px] font-semibold text-primary-foreground",
+                      "transition-colors duration-150 hover:bg-primary/90",
+                      "disabled:cursor-default disabled:bg-surface-2 disabled:text-muted-foreground"
+                    )}
                     style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
                   >
-                    <Send className="size-4" strokeWidth={1.75} />
+                    {downloadBlocksMeetingStart ? (
+                      <>
+                        <Loader2 className="size-3.5 animate-spin" strokeWidth={2} />
+                        {/* Percent over a spinner alone: "42%" promises an end,
+                            "Preparing…" only promises a wait. */}
+                        {speechDownload
+                          ? speechDownload.isInstalling
+                            ? t("agentMode.bar.installing")
+                            : t("agentMode.bar.downloading", {
+                                percent: Math.round(speechDownload.percentage),
+                              })
+                          : t("agentMode.bar.preparing")}
+                      </>
+                    ) : (
+                      <>
+                        <AudioLines className="size-3.5" strokeWidth={2} />
+                        {t("agentMode.bar.startMeeting")}
+                      </>
+                    )}
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={handleListen}
-                  disabled={downloadBlocksMeetingStart}
-                  title={
-                    downloadBlocksMeetingStart
-                      ? speechDownload
-                        ? t("agentMode.bar.downloadingModel", {
-                            model: speechDownload.displayName,
-                          })
-                        : t("shell.modelDownload.startBlocked")
-                      : undefined
-                  }
-                  className={cn(
-                    "flex h-8 shrink-0 items-center gap-1.5 rounded-control px-2.5",
-                    "border border-primary/35 bg-primary/10 text-[12px] font-semibold text-primary",
-                    "hover:bg-primary/15",
-                    "disabled:cursor-default disabled:border-border disabled:bg-surface-1 disabled:text-muted-foreground"
-                  )}
-                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                >
-                  {downloadBlocksMeetingStart ? (
-                    <>
-                      <Loader2 className="size-3.5 animate-spin" strokeWidth={2} />
-                      {/* Percent over a spinner alone: "42%" promises an end,
-                          "Preparing…" only promises a wait. */}
-                      {speechDownload
-                        ? speechDownload.isInstalling
-                          ? t("agentMode.bar.installing")
-                          : t("agentMode.bar.downloading", {
-                              percent: Math.round(speechDownload.percentage),
-                            })
-                        : t("agentMode.bar.preparing")}
-                    </>
-                  ) : (
-                    <>
-                      <AudioLines className="size-3.5" strokeWidth={2} />
-                      {t("agentMode.bar.startMeeting")}
-                    </>
-                  )}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleToggleApp}
-                  title={t("agentMode.bar.appWindow")}
-                  aria-label={t("agentMode.bar.appWindow")}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-control text-muted-foreground hover:bg-surface-2 hover:text-foreground"
-                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                >
-                  <AppWindow className="size-4" strokeWidth={1.75} />
-                </button>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  aria-label={t("agentMode.titleBar.close")}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-control text-muted-foreground hover:bg-surface-2 hover:text-foreground"
-                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                >
-                  <X className="size-3.5" strokeWidth={1.75} />
-                </button>
+                  <button
+                    type="button"
+                    onClick={handleToggleApp}
+                    title={t("agentMode.bar.appWindow")}
+                    aria-label={t("agentMode.bar.appWindow")}
+                    className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-surface-2 hover:text-foreground"
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                  >
+                    <AppWindow className="size-4" strokeWidth={1.75} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    aria-label={t("agentMode.titleBar.close")}
+                    className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-surface-2 hover:text-foreground"
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                  >
+                    <X className="size-4" strokeWidth={1.75} />
+                  </button>
+                </div>
               </>
             )}
           </div>

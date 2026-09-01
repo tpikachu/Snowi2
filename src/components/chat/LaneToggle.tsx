@@ -49,7 +49,7 @@ export function LaneToggle({
     <div
       role="radiogroup"
       aria-label={t("agentMode.lane.label")}
-      className="flex shrink-0 items-center gap-px rounded-full border border-border/40 bg-surface-2 p-0.5"
+      className="flex shrink-0 items-center gap-px rounded-full bg-surface-2 p-0.5"
     >
       {options.map(({ id, icon: Icon, label, hint }) => (
         <button

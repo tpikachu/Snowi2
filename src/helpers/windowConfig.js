@@ -339,14 +339,16 @@ class WindowPositionUtil {
 /**
  * The bar. Summoned collapsed — one row: a question box, a mic, and Listen —
  * and grown by the renderer (via resize-agent-window) into the chat column
- * once a conversation exists. `minHeight` is the collapsed row, which is why
- * it sits at 56 rather than a chat-sized minimum.
+ * once a conversation exists. `minHeight` is the collapsed bar, which is why
+ * it sits at 104 rather than a chat-sized minimum: two rows — a full-height
+ * ask field over a control strip — so the field reads at a glance instead of
+ * fighting six buttons for one 56px line.
  */
 const AGENT_OVERLAY_CONFIG = {
   width: 560,
-  height: 56,
+  height: 104,
   minWidth: 360,
-  minHeight: 56,
+  minHeight: 104,
   maxWidth: 800,
   maxHeight: 10000,
   frame: false,
