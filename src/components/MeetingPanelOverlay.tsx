@@ -43,11 +43,14 @@ import { cn } from "./lib/utils";
  * Every remaining pixel goes to the assistant, which is the reason to keep
  * the panel open.
  *
- * The visual language is one dark surface with hairline dividers — no card
- * inside a card. Three type sizes only: 13px for anything meant to be read
- * (suggestion, answer), 11px for everything operated (buttons, input,
- * transcript), 10px for the few uppercase labels. A window this small cannot
- * afford more registers than that.
+ * The visual language is one dark surface, tonal rather than drawn: the
+ * window edge carries the only border, and everything inside is a fill —
+ * chips, wells, and buttons are lighter washes on the surface, never boxes.
+ * Three type sizes only: 13px for anything meant to be read (suggestion,
+ * answer), 12px for everything operated (buttons, input, transcript), 11px
+ * for the few uppercase labels. Muted text never drops below the hud-muted
+ * token itself — stacking opacity on top of it is what made the old labels
+ * fail WCAG contrast on this dark surface.
  *
  * Still a view, not a controller. The capture graph lives in the control
  * panel's renderer; this window renders published state and sends commands
@@ -158,13 +161,13 @@ function ModeToggle({
           onClick={() => onChange(id)}
           title={hint}
           className={cn(
-            "flex h-[22px] items-center gap-1 rounded-full px-2 text-[10px] font-medium",
+            "flex h-6 items-center gap-1 rounded-full px-2.5 text-[11px] font-medium",
             "transition-colors duration-150",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
             "disabled:cursor-not-allowed disabled:opacity-40",
             mode === id
               ? "bg-hud-accent/20 text-hud-accent"
-              : "text-hud-muted/70 hover:text-hud-foreground"
+              : "text-hud-muted hover:text-hud-foreground"
           )}
         >
           <Icon size={10} />
@@ -191,8 +194,8 @@ function LastTimeLine({ lastTime }: { lastTime: AssistLastTime }) {
     : parsed.toLocaleDateString(i18n.language, { month: "short", day: "numeric" });
 
   return (
-    <p className="flex min-w-0 shrink-0 items-center gap-1.5 text-[10px] text-hud-muted">
-      <History size={10} className="shrink-0 text-hud-muted/60" />
+    <p className="flex min-w-0 shrink-0 items-center gap-1.5 text-[11px] text-hud-muted">
+      <History size={11} className="shrink-0 text-hud-muted/80" />
       <span className="min-w-0 truncate">
         {t("notes.meetingPanel.lastTime.summary", { date })}
         {lastTime.openClaims > 0 && (
@@ -248,9 +251,9 @@ function QuickActions({
           onClick={() => onAsk(label, mode)}
           disabled={!ready}
           className={cn(
-            "flex h-7 items-center gap-1.5 rounded-full border border-hud-border bg-white/[0.04] px-2.5",
-            "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
-            "hover:border-hud-border-strong hover:bg-white/[0.08] hover:text-hud-foreground",
+            "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.08] px-3",
+            "text-[12px] font-medium text-hud-foreground transition-colors duration-150",
+            "hover:bg-white/[0.14]",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
             "disabled:cursor-not-allowed disabled:opacity-40"
           )}
@@ -282,9 +285,9 @@ function SourceLine({ sources }: { sources: readonly AssistNoteRef[] }) {
   return (
     <p
       title={sources.map((source) => source.title).join(", ")}
-      className="mt-1.5 truncate text-[10px] text-hud-muted/60"
+      className="mt-1.5 truncate text-[11px] text-hud-muted"
     >
-      <span className="uppercase tracking-[0.06em] text-hud-muted/45">
+      <span className="uppercase tracking-[0.06em] text-hud-muted/80">
         {t("notes.meetingPanel.sourcesLabel")}
       </span>{" "}
       {names}
@@ -503,7 +506,7 @@ export default function MeetingPanelOverlay() {
             </span>
             <span
               className={cn(
-                "truncate text-[10px] leading-tight",
+                "truncate text-[11px] leading-tight",
                 isWaitingForMic ? "text-hud-warning" : "text-hud-muted"
               )}
             >
@@ -558,7 +561,7 @@ export default function MeetingPanelOverlay() {
               title={stopLabel}
               className={cn(
                 "ml-0.5 flex h-7 items-center justify-center gap-1.5 rounded-lg px-2.5",
-                "text-[11px] font-medium transition-colors duration-150",
+                "text-[12px] font-medium transition-colors duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
                 "bg-hud-danger/15 text-hud-danger hover:bg-hud-danger/25",
                 "disabled:cursor-not-allowed disabled:opacity-50"
@@ -586,12 +589,12 @@ export default function MeetingPanelOverlay() {
                 computed by the time it appears; see useMeetingAssist for why. */}
             <section className="shrink-0">
               <div className="flex items-center gap-1.5">
-                <Lightbulb size={11} className="text-hud-accent" />
-                <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-hud-accent">
+                <Lightbulb size={12} className="text-hud-accent" />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-hud-accent">
                   {t("notes.meetingPanel.suggestion.label")}
                 </span>
                 {suggestion?.stale && (
-                  <span className="ml-auto shrink-0 text-[10px] text-hud-muted/50">
+                  <span className="ml-auto shrink-0 text-[11px] text-hud-muted">
                     {t("notes.meetingPanel.suggestion.stale")}
                   </span>
                 )}
@@ -605,7 +608,7 @@ export default function MeetingPanelOverlay() {
                   <p
                     className={cn(
                       "mt-1 text-[13px] leading-relaxed",
-                      suggestion.stale ? "text-hud-foreground/45" : "text-hud-foreground"
+                      suggestion.stale ? "text-hud-foreground/60" : "text-hud-foreground"
                     )}
                   >
                     {suggestion.text}
@@ -613,7 +616,7 @@ export default function MeetingPanelOverlay() {
                   <SourceLine sources={suggestion.sources} />
                 </>
               ) : (
-                <p className="mt-1 text-[13px] leading-relaxed text-hud-muted/70">
+                <p className="mt-1 text-[13px] leading-relaxed text-hud-muted">
                   {assistNeedsModel
                     ? t("notes.meetingPanel.suggestion.needsModel")
                     : !assistReady
@@ -643,21 +646,21 @@ export default function MeetingPanelOverlay() {
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
                 )}
               >
-                <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-hud-muted/70">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-hud-muted">
                   {t("notes.meetingPanel.transcript.label")}
                 </span>
                 <span className="h-px flex-1 bg-hud-border" aria-hidden="true" />
                 {showTranscript && (transcript?.hiddenCount ?? 0) > 0 && (
-                  <span className="shrink-0 text-[10px] text-hud-muted/50">
+                  <span className="shrink-0 text-[11px] text-hud-muted">
                     {t("notes.meetingPanel.transcript.earlier", {
                       count: transcript?.hiddenCount ?? 0,
                     })}
                   </span>
                 )}
                 {showTranscript ? (
-                  <ChevronDown size={11} className="shrink-0 text-hud-muted/60" />
+                  <ChevronDown size={12} className="shrink-0 text-hud-muted/80" />
                 ) : (
-                  <ChevronRight size={11} className="shrink-0 text-hud-muted/60" />
+                  <ChevronRight size={12} className="shrink-0 text-hud-muted/80" />
                 )}
               </button>
               {showTranscript && (
@@ -667,23 +670,23 @@ export default function MeetingPanelOverlay() {
                   className="mt-0.5 space-y-0.5 overflow-y-auto"
                 >
                   {lines.length === 0 ? (
-                    <p className="text-[11px] leading-relaxed text-hud-muted/50">
+                    <p className="text-[12px] leading-relaxed text-hud-muted">
                       {t("notes.meetingPanel.transcript.waiting")}
                     </p>
                   ) : (
                     lines.map((line) => (
-                      <p key={line.key} className="text-[11px] leading-snug">
+                      <p key={line.key} className="text-[12px] leading-snug">
                         <span
                           className={cn(
-                            "mr-1.5 text-[10px] font-semibold uppercase tracking-[0.06em]",
-                            line.source === "mic" ? "text-hud-accent/80" : "text-hud-muted/60"
+                            "mr-1.5 text-[11px] font-semibold uppercase tracking-[0.06em]",
+                            line.source === "mic" ? "text-hud-accent" : "text-hud-muted"
                           )}
                         >
                           {line.source === "mic"
                             ? t("transcript.speaker.you")
                             : t("transcript.speaker.others")}
                         </span>
-                        <span className={cn(line.live ? "text-hud-muted/70" : "text-hud-muted")}>
+                        <span className={cn(line.live ? "text-hud-muted/80" : "text-hud-muted")}>
                           {line.text}
                         </span>
                       </p>
@@ -698,11 +701,11 @@ export default function MeetingPanelOverlay() {
                 answered now, and the room to read the answer. */}
             {answer ? (
               <div ref={answerRef} className="min-h-0 flex-1 overflow-y-auto">
-                <p className="flex items-baseline gap-1.5 text-[11px] font-medium leading-snug text-hud-muted/60">
+                <p className="flex items-baseline gap-1.5 text-[12px] font-medium leading-snug text-hud-muted">
                   <span className="min-w-0">{answer.question}</span>
                   {/* Which speed produced this — so a transcript-only answer
                       is never mistaken for one that checked the notes. */}
-                  <span className="shrink-0 text-[10px] font-normal uppercase tracking-[0.06em] text-hud-muted/40">
+                  <span className="shrink-0 text-[11px] font-normal uppercase tracking-[0.06em] text-hud-muted/80">
                     {answer.mode === "thinking"
                       ? t("notes.meetingPanel.mode.thinking")
                       : t("notes.meetingPanel.mode.fast")}
@@ -710,7 +713,7 @@ export default function MeetingPanelOverlay() {
                 </p>
                 {answer.errorKey ? (
                   <>
-                    <p className="mt-1 text-[11px] leading-relaxed text-hud-warning">
+                    <p className="mt-1 text-[12px] leading-relaxed text-hud-warning">
                       {t(answer.errorKey)}
                     </p>
                     {/* A missing model is not retryable — the fix lives in
@@ -720,13 +723,13 @@ export default function MeetingPanelOverlay() {
                         type="button"
                         onClick={() => void send("configureModels")}
                         className={cn(
-                          "mt-2 flex h-6 items-center gap-1.5 rounded-full border border-hud-border px-2",
-                          "text-[10px] font-medium text-hud-muted transition-colors duration-150",
-                          "hover:bg-white/10 hover:text-hud-foreground",
+                          "mt-2 flex h-7 items-center gap-1.5 rounded-full bg-white/[0.08] px-2.5",
+                          "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
+                          "hover:bg-white/[0.14] hover:text-hud-foreground",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
                         )}
                       >
-                        <Settings2 size={10} />
+                        <Settings2 size={11} />
                         {t("notes.meetingPanel.ask.configureModels")}
                       </button>
                     )}
@@ -735,7 +738,7 @@ export default function MeetingPanelOverlay() {
                   /* Thinking pays its latency up front, in retrieval, before
                      a single token exists to stream. Saying what the wait is
                      makes it deliberate instead of broken. */
-                  <p className="mt-1 animate-pulse text-[11px] leading-relaxed text-hud-muted/60">
+                  <p className="mt-1 animate-pulse text-[12px] leading-relaxed text-hud-muted">
                     {t("notes.meetingPanel.ask.searchingNotes")}
                   </p>
                 ) : (
@@ -760,22 +763,22 @@ export default function MeetingPanelOverlay() {
                     disabled={!assistReady}
                     title={t("notes.meetingPanel.ask.thinkDeeperHint")}
                     className={cn(
-                      "mt-2 flex h-6 items-center gap-1.5 rounded-full border border-hud-border px-2",
-                      "text-[10px] font-medium text-hud-muted transition-colors duration-150",
-                      "hover:bg-white/10 hover:text-hud-foreground",
+                      "mt-2 flex h-7 items-center gap-1.5 rounded-full bg-white/[0.08] px-2.5",
+                      "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
+                      "hover:bg-white/[0.14] hover:text-hud-foreground",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
                       "disabled:cursor-not-allowed disabled:opacity-40"
                     )}
                   >
-                    <Brain size={10} />
+                    <Brain size={11} />
                     {t("notes.meetingPanel.ask.thinkDeeper")}
                   </button>
                 )}
               </div>
             ) : (
               <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 px-3 text-center">
-                <MessageSquareText size={15} className="text-hud-muted/40" />
-                <p className="text-[11px] leading-relaxed text-hud-muted/60">
+                <MessageSquareText size={16} className="text-hud-muted/70" />
+                <p className="text-[12px] leading-relaxed text-hud-muted">
                   {assistNeedsModel
                     ? t("notes.meetingPanel.ask.needsModel")
                     : !assistReady
@@ -787,13 +790,13 @@ export default function MeetingPanelOverlay() {
                     type="button"
                     onClick={() => void send("configureModels")}
                     className={cn(
-                      "flex h-6 items-center gap-1.5 rounded-full border border-hud-border px-2",
-                      "text-[10px] font-medium text-hud-muted transition-colors duration-150",
-                      "hover:bg-white/10 hover:text-hud-foreground",
+                      "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.08] px-2.5",
+                      "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
+                      "hover:bg-white/[0.14] hover:text-hud-foreground",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
                     )}
                   >
-                    <Settings2 size={10} />
+                    <Settings2 size={11} />
                     {t("notes.meetingPanel.ask.configureModels")}
                   </button>
                 )}
@@ -801,7 +804,7 @@ export default function MeetingPanelOverlay() {
                     shown before the first question — the moment the choice
                     first exists. */}
                 {assistReady && (
-                  <p className="text-[10px] leading-relaxed text-hud-muted/40">
+                  <p className="text-[11px] leading-relaxed text-hud-muted/80">
                     {t("notes.meetingPanel.ask.modesHint")}
                   </p>
                 )}
@@ -820,8 +823,10 @@ export default function MeetingPanelOverlay() {
                 affordance — everything else stays quiet. */}
             <form
               className={cn(
-                "flex shrink-0 items-center gap-1.5 rounded-[10px] border border-hud-border bg-white/[0.05] p-1 pl-1.5",
-                "transition-colors duration-150 focus-within:border-hud-accent/45"
+                // A tonal well, no stroke — focus brightens the fill instead
+                // of drawing a ring (matches the assistant bar's field).
+                "flex shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.08] p-1.5 pl-2",
+                "transition-colors duration-150 focus-within:bg-white/[0.12]"
               )}
               onSubmit={(event) => {
                 event.preventDefault();
@@ -844,8 +849,11 @@ export default function MeetingPanelOverlay() {
                 }
                 aria-label={t("notes.meetingPanel.ask.label")}
                 className={cn(
-                  "min-w-0 flex-1 bg-transparent text-[11px] text-hud-foreground outline-none",
-                  "placeholder:text-hud-muted/50 disabled:cursor-not-allowed"
+                  // input-inline opts out of the app's boxed input chrome —
+                  // without it the global stylesheet draws its own border and
+                  // focus ring inside this well.
+                  "input-inline min-w-0 flex-1 bg-transparent p-0 text-[13px] text-hud-foreground outline-none",
+                  "placeholder:text-hud-muted disabled:cursor-not-allowed"
                 )}
               />
               <button
@@ -853,13 +861,13 @@ export default function MeetingPanelOverlay() {
                 disabled={!assistReady || !question.trim()}
                 aria-label={t("notes.meetingPanel.ask.send")}
                 className={cn(
-                  "flex size-6 shrink-0 items-center justify-center rounded-full",
+                  "flex size-7 shrink-0 items-center justify-center rounded-full",
                   "bg-hud-accent text-hud-surface transition-colors duration-150 hover:bg-hud-accent/85",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-                  "disabled:bg-white/10 disabled:text-hud-muted/50"
+                  "disabled:bg-white/10 disabled:text-hud-muted"
                 )}
               >
-                <SendHorizontal size={12} />
+                <SendHorizontal size={13} />
               </button>
             </form>
           </div>
