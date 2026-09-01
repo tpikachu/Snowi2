@@ -686,6 +686,18 @@ async function startApp() {
     environmentManager.saveStartMinimized(enabled);
   });
 
+  ipcMain.on("show-bar-at-startup-changed", (_event, enabled) => {
+    if (debugLogger) debugLogger.info("Show bar at startup changed", { enabled });
+    environmentManager.saveShowBarAtStartup(enabled);
+  });
+
+  // The renderer owns onboarding state (localStorage); this mirror is what
+  // lets the next launch decide window layout before any renderer exists.
+  ipcMain.on("onboarding-completed-changed", (_event, done) => {
+    if (debugLogger) debugLogger.info("Onboarding completed changed", { done });
+    environmentManager.saveOnboardingDone(Boolean(done));
+  });
+
   ipcMain.on("panel-start-position-changed", (_event, position) => {
     windowManager.setPanelStartPosition(position);
     environmentManager.savePanelStartPosition(position);
@@ -720,6 +732,20 @@ async function startApp() {
 
   // Create agent window (hidden) and set up agent hotkey
   await windowManager.createAgentWindow();
+
+  // The assistant bar is the product's daily face: after setup it is simply
+  // there at every launch, one click from recording. Shown without focus so
+  // whatever the user logged in to do keeps the keyboard.
+  const { shouldShowBarAtStartup } = require("./src/helpers/barStartupPolicy");
+  if (
+    shouldShowBarAtStartup({
+      showBarAtStartup: environmentManager.getShowBarAtStartup(),
+      onboardingDone: environmentManager.getOnboardingDone(),
+      launchedHidden,
+    })
+  ) {
+    windowManager.showAgentOverlay({ focus: false });
+  }
 
   const agentHotkeyCallback = () => {
     if (hotkeyManager.isInListeningMode()) return;

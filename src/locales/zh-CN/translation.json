@@ -40,7 +40,8 @@
     "openControlPanel": "打开控制面板",
     "hideControlPanel": "隐藏控制面板",
     "quit": "退出 Snowy",
-    "tooltip": "Snowy - 语音听写"
+    "tooltip": "Snowy - 语音听写",
+    "showAssistantBar": "显示助手栏"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -344,7 +345,9 @@
         "step2": "打开 Corti 控制台并创建 API 凭据",
         "step3": "在下方粘贴 Client ID 和 Secret"
       },
-      "downloadStillRunning": "语音模型（{{model}}）仍在下载 — 已完成 {{percent}}%。Snowy 会在后台完成下载。"
+      "downloadStillRunning": "语音模型（{{model}}）仍在下载 — 已完成 {{percent}}%。Snowy 会在后台完成下载。",
+      "launchAtLogin": "登录时启动 Snowy",
+      "launchAtLoginDescription": "Snowy 小条将在屏幕顶部等候，一键即可录制。"
     }
   },
   "streaming": {
@@ -1709,7 +1712,9 @@
           "title": "需要在系统设置中批准",
           "description": "macOS 已将 Snowy 注册为登录项，但仍在等待你在“登录项”中允许它。",
           "action": "打开登录项"
-        }
+        },
+        "showBar": "启动时显示助手栏",
+        "showBarDescription": "只要 Snowy 在运行，就在屏幕顶层显示小助手栏。"
       },
       "waylandPaste": {
         "title": "Wayland 粘贴设置",
@@ -3269,7 +3274,10 @@
       "placeholder": "问我任何关于屏幕或会议的问题…",
       "listen": "聆听",
       "send": "发送",
-      "voice": "说话"
+      "voice": "说话",
+      "finishSetup": "完成设置",
+      "finishSetupHint": "开始第一场会议前，Snowy 需要快速设置",
+      "preparing": "准备中…"
     },
     "screenConsent": {
       "question": "允许 Snowy 查看您的屏幕以便更好地回答吗？绝不会保存。",

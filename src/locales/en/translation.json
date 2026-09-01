@@ -40,7 +40,8 @@
     "openControlPanel": "Open Control Panel",
     "hideControlPanel": "Hide Control Panel",
     "quit": "Quit Snowy",
-    "tooltip": "Snowy - Voice Dictation"
+    "tooltip": "Snowy - Voice Dictation",
+    "showAssistantBar": "Show assistant bar"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -344,7 +345,9 @@
         "step2": "Open the Corti console and create API credentials",
         "step3": "Paste your Client ID and Secret below"
       },
-      "downloadStillRunning": "Your speech model ({{model}}) is still downloading — {{percent}}% done. Snowy will finish it in the background."
+      "downloadStillRunning": "Your speech model ({{model}}) is still downloading — {{percent}}% done. Snowy will finish it in the background.",
+      "launchAtLogin": "Start Snowy when you log in",
+      "launchAtLoginDescription": "The Snowy bar will be waiting at the top of your screen — one click to record."
     }
   },
   "streaming": {
@@ -1992,7 +1995,9 @@
           "title": "Approval needed in System Settings",
           "description": "macOS registered Snowy as a login item but is waiting for you to allow it under Login Items.",
           "action": "Open Login Items"
-        }
+        },
+        "showBar": "Show the assistant bar at startup",
+        "showBarDescription": "Keep the small Snowy bar on top of your screen whenever Snowy is running."
       },
       "waylandPaste": {
         "title": "Wayland Paste Setup",
@@ -3434,7 +3439,10 @@
       "placeholder": "Ask anything about your screen or your meetings…",
       "listen": "Listen",
       "send": "Send",
-      "voice": "Speak"
+      "voice": "Speak",
+      "finishSetup": "Finish setup",
+      "finishSetupHint": "Snowy needs a quick setup before your first meeting",
+      "preparing": "Preparing…"
     },
     "screenConsent": {
       "question": "Can Snowy look at your screen to help answer? It's never saved.",

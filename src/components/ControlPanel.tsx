@@ -127,6 +127,10 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   // for anyone who has already seen this version of the tour.
   useEffect(() => {
     startTourIfUnseen();
+    // Backfill for installs that onboarded before the main process kept an
+    // onboarding mirror: mounting at all proves setup is done, so the next
+    // launch can show the assistant bar. Idempotent.
+    window.electronAPI?.notifyOnboardingCompletedChanged?.(true);
   }, []);
 
   const { collapsed: contextPaneCollapsed, toggle: toggleContextPane } = useContextPaneCollapse();

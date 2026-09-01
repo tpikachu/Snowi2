@@ -40,7 +40,8 @@
     "openControlPanel": "コントロールパネルを開く",
     "hideControlPanel": "コントロールパネルを非表示",
     "quit": "Snowy を終了",
-    "tooltip": "Snowy - 音声ディクテーション"
+    "tooltip": "Snowy - 音声ディクテーション",
+    "showAssistantBar": "アシスタントバーを表示"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -344,7 +345,9 @@
         "step2": "Corti コンソールで API 認証情報を作成",
         "step3": "Client ID と Secret を下に貼り付け"
       },
-      "downloadStillRunning": "音声モデル（{{model}}）はまだダウンロード中です — {{percent}}% 完了。残りは Snowy がバックグラウンドで進めます。"
+      "downloadStillRunning": "音声モデル（{{model}}）はまだダウンロード中です — {{percent}}% 完了。残りは Snowy がバックグラウンドで進めます。",
+      "launchAtLogin": "ログイン時にSnowyを起動",
+      "launchAtLoginDescription": "Snowyバーが画面上部で待機し、ワンクリックで録音できます。"
     }
   },
   "streaming": {
@@ -1709,7 +1712,9 @@
           "title": "システム設定での許可が必要です",
           "description": "macOS は Snowy をログイン項目として登録しましたが、「ログイン項目」での許可を待っています。",
           "action": "ログイン項目を開く"
-        }
+        },
+        "showBar": "起動時にアシスタントバーを表示",
+        "showBarDescription": "Snowyの実行中、小さなバーを画面の最前面に表示し続けます。"
       },
       "waylandPaste": {
         "title": "Wayland 貼り付け設定",
@@ -3269,7 +3274,10 @@
       "placeholder": "画面や会議について何でも聞いてください…",
       "listen": "リッスン",
       "send": "送信",
-      "voice": "話す"
+      "voice": "話す",
+      "finishSetup": "設定を完了",
+      "finishSetupHint": "最初の会議の前に簡単な設定が必要です",
+      "preparing": "準備中…"
     },
     "screenConsent": {
       "question": "回答のために Snowy が画面を見てもいいですか？保存は一切されません。",

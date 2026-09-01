@@ -637,6 +637,8 @@ export default function SettingsPage({
     setFloatingIconAutoHide,
     startMinimized,
     setStartMinimized,
+    showBarAtStartup,
+    setShowBarAtStartup,
     panelStartPosition,
     setPanelStartPosition,
     audioRetentionDays,
@@ -1739,6 +1741,14 @@ export default function SettingsPage({
                     description={t("settingsPage.general.startup.startMinimizedDescription")}
                   >
                     <Toggle checked={startMinimized} onChange={setStartMinimized} />
+                  </SettingsRow>
+                </SettingsPanelRow>
+                <SettingsPanelRow>
+                  <SettingsRow
+                    label={t("settingsPage.general.startup.showBar")}
+                    description={t("settingsPage.general.startup.showBarDescription")}
+                  >
+                    <Toggle checked={showBarAtStartup} onChange={setShowBarAtStartup} />
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>

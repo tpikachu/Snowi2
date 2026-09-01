@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { AudioLines, Mic, Send, Square, X } from "lucide-react";
+import { AudioLines, Loader2, Mic, Send, Square, TriangleAlert, X } from "lucide-react";
 import { cn } from "./lib/utils";
+import { useSpeechModelDownloadStatus } from "../hooks/useSpeechModelDownloadStatus";
 import { AgentTitleBar } from "./agent/AgentTitleBar";
 import { AgentChat } from "./agent/AgentChat";
 import { AgentInput } from "./agent/AgentInput";
@@ -300,6 +301,29 @@ export default function AgentOverlay() {
     void window.electronAPI?.startManualMeeting?.();
   }, []);
 
+  // The bar is now on screen from launch, which means it can be on screen
+  // before the app is set up. Onboarding state lives in localStorage (owned by
+  // the control panel window); the storage event keeps this window honest the
+  // moment setup finishes over there.
+  const [setupComplete, setSetupComplete] = useState(
+    () => localStorage.getItem("onboardingCompleted") === "true"
+  );
+  useEffect(() => {
+    const sync = () => setSetupComplete(localStorage.getItem("onboardingCompleted") === "true");
+    window.addEventListener("storage", sync);
+    window.addEventListener("focus", sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener("focus", sync);
+    };
+  }, []);
+
+  const speechDownload = useSpeechModelDownloadStatus();
+
+  const handleFinishSetup = useCallback(() => {
+    void window.electronAPI?.openControlPanel?.();
+  }, []);
+
   const isRecordingVoice = isVoiceRecording;
 
   const consentRow = !agentScreenContextPrompted && (
@@ -357,80 +381,129 @@ export default function AgentOverlay() {
             className="flex h-full items-center gap-1.5 px-2.5"
             style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
           >
-            <input
-              ref={barInputRef}
-              type="text"
-              value={barText}
-              onChange={(e) => setBarText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleBarSubmit();
-                }
-              }}
-              placeholder={
-                isRecordingVoice
-                  ? partialTranscript.trim() || t("agentMode.input.listening")
-                  : t("agentMode.bar.placeholder")
-              }
-              className={cn(
-                "min-w-0 flex-1 bg-transparent px-1.5 text-[13px] text-foreground",
-                "placeholder:text-muted-foreground focus:outline-none"
-              )}
-              style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-            />
-            {barText.trim() ? (
-              <button
-                type="button"
-                onClick={handleBarSubmit}
-                aria-label={t("agentMode.bar.send")}
-                className="flex size-8 shrink-0 items-center justify-center rounded-control text-primary hover:bg-surface-2"
-                style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-              >
-                <Send className="size-4" strokeWidth={1.75} />
-              </button>
+            {!setupComplete ? (
+              /* Pre-setup: the bar's one job is to hand the user to onboarding. */
+              <>
+                <TriangleAlert className="size-4 shrink-0 text-warning" strokeWidth={1.75} />
+                <p className="min-w-0 flex-1 truncate px-1 text-[12.5px] text-muted-foreground">
+                  {t("agentMode.bar.finishSetupHint")}
+                </p>
+                <button
+                  type="button"
+                  onClick={handleFinishSetup}
+                  className={cn(
+                    "flex h-8 shrink-0 items-center gap-1.5 rounded-control px-2.5",
+                    "border border-warning/40 bg-warning/10 text-[12px] font-semibold text-warning",
+                    "hover:bg-warning/20"
+                  )}
+                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                >
+                  {t("agentMode.bar.finishSetup")}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  aria-label={t("agentMode.titleBar.close")}
+                  className="flex size-7 shrink-0 items-center justify-center rounded-control text-muted-foreground hover:bg-surface-2 hover:text-foreground"
+                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                >
+                  <X className="size-3.5" strokeWidth={1.75} />
+                </button>
+              </>
             ) : (
-              <button
-                type="button"
-                onClick={() => (isRecordingVoice ? stopVoice() : startVoice())}
-                aria-label={t("agentMode.bar.voice")}
-                className={cn(
-                  "flex size-8 shrink-0 items-center justify-center rounded-control",
-                  isRecordingVoice
-                    ? "bg-destructive/10 text-destructive"
-                    : "text-muted-foreground hover:bg-surface-2 hover:text-foreground"
-                )}
-                style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-              >
-                {isRecordingVoice ? (
-                  <Square className="size-3.5" strokeWidth={2} />
+              <>
+                <input
+                  ref={barInputRef}
+                  type="text"
+                  value={barText}
+                  onChange={(e) => setBarText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleBarSubmit();
+                    }
+                  }}
+                  placeholder={
+                    isRecordingVoice
+                      ? partialTranscript.trim() || t("agentMode.input.listening")
+                      : t("agentMode.bar.placeholder")
+                  }
+                  className={cn(
+                    "min-w-0 flex-1 bg-transparent px-1.5 text-[13px] text-foreground",
+                    "placeholder:text-muted-foreground focus:outline-none"
+                  )}
+                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                />
+                {barText.trim() ? (
+                  <button
+                    type="button"
+                    onClick={handleBarSubmit}
+                    aria-label={t("agentMode.bar.send")}
+                    className="flex size-8 shrink-0 items-center justify-center rounded-control text-primary hover:bg-surface-2"
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                  >
+                    <Send className="size-4" strokeWidth={1.75} />
+                  </button>
                 ) : (
-                  <Mic className="size-4" strokeWidth={1.75} />
+                  <button
+                    type="button"
+                    onClick={() => (isRecordingVoice ? stopVoice() : startVoice())}
+                    aria-label={t("agentMode.bar.voice")}
+                    className={cn(
+                      "flex size-8 shrink-0 items-center justify-center rounded-control",
+                      isRecordingVoice
+                        ? "bg-destructive/10 text-destructive"
+                        : "text-muted-foreground hover:bg-surface-2 hover:text-foreground"
+                    )}
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                  >
+                    {isRecordingVoice ? (
+                      <Square className="size-3.5" strokeWidth={2} />
+                    ) : (
+                      <Mic className="size-4" strokeWidth={1.75} />
+                    )}
+                  </button>
                 )}
-              </button>
+                <button
+                  type="button"
+                  onClick={handleListen}
+                  disabled={speechDownload.blocksMeetingStart}
+                  title={
+                    speechDownload.blocksMeetingStart
+                      ? t("shell.modelDownload.startBlocked")
+                      : undefined
+                  }
+                  className={cn(
+                    "flex h-8 shrink-0 items-center gap-1.5 rounded-control px-2.5",
+                    "border border-primary/35 bg-primary/10 text-[12px] font-semibold text-primary",
+                    "hover:bg-primary/15",
+                    "disabled:cursor-default disabled:border-border disabled:bg-surface-1 disabled:text-muted-foreground"
+                  )}
+                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                >
+                  {speechDownload.blocksMeetingStart ? (
+                    <>
+                      <Loader2 className="size-3.5 animate-spin" strokeWidth={2} />
+                      {t("agentMode.bar.preparing")}
+                    </>
+                  ) : (
+                    <>
+                      <AudioLines className="size-3.5" strokeWidth={2} />
+                      {t("agentMode.bar.listen")}
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  aria-label={t("agentMode.titleBar.close")}
+                  className="flex size-7 shrink-0 items-center justify-center rounded-control text-muted-foreground hover:bg-surface-2 hover:text-foreground"
+                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                >
+                  <X className="size-3.5" strokeWidth={1.75} />
+                </button>
+              </>
             )}
-            <button
-              type="button"
-              onClick={handleListen}
-              className={cn(
-                "flex h-8 shrink-0 items-center gap-1.5 rounded-control px-2.5",
-                "border border-primary/35 bg-primary/10 text-[12px] font-semibold text-primary",
-                "hover:bg-primary/15"
-              )}
-              style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-            >
-              <AudioLines className="size-3.5" strokeWidth={2} />
-              {t("agentMode.bar.listen")}
-            </button>
-            <button
-              type="button"
-              onClick={handleClose}
-              aria-label={t("agentMode.titleBar.close")}
-              className="flex size-7 shrink-0 items-center justify-center rounded-control text-muted-foreground hover:bg-surface-2 hover:text-foreground"
-              style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-            >
-              <X className="size-3.5" strokeWidth={1.75} />
-            </button>
           </div>
         )}
       </div>

@@ -40,7 +40,8 @@
     "openControlPanel": "開啟控制面板",
     "hideControlPanel": "隱藏控制面板",
     "quit": "結束 Snowy",
-    "tooltip": "Snowy - 語音輸入"
+    "tooltip": "Snowy - 語音輸入",
+    "showAssistantBar": "顯示助理列"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -344,7 +345,9 @@
         "step2": "開啟 Corti 控制台並建立 API 憑證",
         "step3": "在下方貼上 Client ID 和 Secret"
       },
-      "downloadStillRunning": "語音模型（{{model}}）仍在下載 — 已完成 {{percent}}%。Snowy 會在背景完成下載。"
+      "downloadStillRunning": "語音模型（{{model}}）仍在下載 — 已完成 {{percent}}%。Snowy 會在背景完成下載。",
+      "launchAtLogin": "登入時啟動 Snowy",
+      "launchAtLoginDescription": "Snowy 小列會在螢幕頂部待命，一鍵即可錄製。"
     }
   },
   "streaming": {
@@ -1709,7 +1712,9 @@
           "title": "需要在系統設定中允許",
           "description": "macOS 已將 Snowy 註冊為登入項目，但仍在等待你在「登入項目」中允許它。",
           "action": "開啟登入項目"
-        }
+        },
+        "showBar": "啟動時顯示助理列",
+        "showBarDescription": "只要 Snowy 在執行，就在螢幕最上層顯示小助理列。"
       },
       "waylandPaste": {
         "title": "Wayland 貼上設定",
@@ -3269,7 +3274,10 @@
       "placeholder": "問我任何關於螢幕或會議的問題…",
       "listen": "聆聽",
       "send": "傳送",
-      "voice": "說話"
+      "voice": "說話",
+      "finishSetup": "完成設定",
+      "finishSetupHint": "開始第一場會議前，Snowy 需要快速設定",
+      "preparing": "準備中…"
     },
     "screenConsent": {
       "question": "允許 Snowy 查看您的螢幕以便更好地回答嗎？絕不會儲存。",

@@ -40,7 +40,8 @@
     "openControlPanel": "Abrir panel de control",
     "hideControlPanel": "Ocultar panel de control",
     "quit": "Salir de Snowy",
-    "tooltip": "Snowy - Dictado por voz"
+    "tooltip": "Snowy - Dictado por voz",
+    "showAssistantBar": "Mostrar barra del asistente"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -344,7 +345,9 @@
         "step2": "Abre la consola de Corti y crea credenciales de API",
         "step3": "Pega tu Client ID y Secret abajo"
       },
-      "downloadStillRunning": "Tu modelo de voz ({{model}}) sigue descargándose — {{percent}}% completado. Snowy lo terminará en segundo plano."
+      "downloadStillRunning": "Tu modelo de voz ({{model}}) sigue descargándose — {{percent}}% completado. Snowy lo terminará en segundo plano.",
+      "launchAtLogin": "Iniciar Snowy al iniciar sesión",
+      "launchAtLoginDescription": "La barra de Snowy te esperará en la parte superior de la pantalla: un clic para grabar."
     }
   },
   "streaming": {
@@ -1757,7 +1760,9 @@
           "title": "Se necesita aprobación en Configuración del Sistema",
           "description": "macOS registró Snowy como elemento de inicio, pero espera que lo permitas en Elementos de inicio.",
           "action": "Abrir Elementos de inicio"
-        }
+        },
+        "showBar": "Mostrar la barra del asistente al iniciar",
+        "showBarDescription": "Mantén la pequeña barra de Snowy sobre tu pantalla siempre que Snowy esté en ejecución."
       },
       "waylandPaste": {
         "title": "Configuración de pegado en Wayland",
@@ -3317,7 +3322,10 @@
       "placeholder": "Pregunta lo que sea sobre tu pantalla o tus reuniones…",
       "listen": "Escuchar",
       "send": "Enviar",
-      "voice": "Hablar"
+      "voice": "Hablar",
+      "finishSetup": "Terminar configuración",
+      "finishSetupHint": "Snowy necesita una configuración rápida antes de tu primera reunión",
+      "preparing": "Preparando…"
     },
     "screenConsent": {
       "question": "¿Puede Snowy mirar tu pantalla para ayudarte a responder? Nunca se guarda.",

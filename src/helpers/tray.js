@@ -284,6 +284,14 @@ class TrayManager {
           void this.toggleControlPanelFromTray();
         },
       },
+      {
+        // The recovery path for a closed bar: Escape and the X hide it, and a
+        // user who did that without a hotkey configured needs a way back.
+        label: i18nMain.t("tray.showAssistantBar"),
+        click: () => {
+          this.windowManager?.showAgentOverlay?.({ focus: true });
+        },
+      },
       { type: "separator" },
       {
         label: i18nMain.t("tray.quit"),

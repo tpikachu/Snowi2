@@ -40,7 +40,8 @@
     "openControlPanel": "Abrir painel de controle",
     "hideControlPanel": "Ocultar painel de controle",
     "quit": "Sair do Snowy",
-    "tooltip": "Snowy - Ditado por voz"
+    "tooltip": "Snowy - Ditado por voz",
+    "showAssistantBar": "Mostrar barra do assistente"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -323,7 +324,9 @@
         "step2": "Abra o console da Corti e crie credenciais de API",
         "step3": "Cole seu Client ID e Secret abaixo"
       },
-      "downloadStillRunning": "Seu modelo de fala ({{model}}) ainda está baixando — {{percent}}% concluído. O Snowy terminará em segundo plano."
+      "downloadStillRunning": "Seu modelo de fala ({{model}}) ainda está baixando — {{percent}}% concluído. O Snowy terminará em segundo plano.",
+      "launchAtLogin": "Iniciar o Snowy ao fazer login",
+      "launchAtLoginDescription": "A barra do Snowy estará esperando no topo da tela — um clique para gravar."
     }
   },
   "streaming": {
@@ -1688,7 +1691,9 @@
           "title": "Aprovação necessária nas Configurações do Sistema",
           "description": "O macOS registrou o Snowy como item de início, mas está aguardando que você o permita em Itens de Início.",
           "action": "Abrir Itens de Início"
-        }
+        },
+        "showBar": "Mostrar a barra do assistente ao iniciar",
+        "showBarDescription": "Mantém a pequena barra do Snowy sobre a tela sempre que o Snowy estiver em execução."
       },
       "waylandPaste": {
         "title": "Configuração de colagem no Wayland",
@@ -3269,7 +3274,10 @@
       "placeholder": "Pergunte qualquer coisa sobre sua tela ou suas reuniões…",
       "listen": "Ouvir",
       "send": "Enviar",
-      "voice": "Falar"
+      "voice": "Falar",
+      "finishSetup": "Concluir configuração",
+      "finishSetupHint": "O Snowy precisa de uma configuração rápida antes da sua primeira reunião",
+      "preparing": "Preparando…"
     },
     "screenConsent": {
       "question": "O Snowy pode olhar sua tela para ajudar a responder? Nunca é salvo.",

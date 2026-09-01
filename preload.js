@@ -844,6 +844,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Start minimized
   notifyStartMinimizedChanged: (enabled) => ipcRenderer.send("start-minimized-changed", enabled),
 
+  // Assistant bar at startup
+  notifyShowBarAtStartupChanged: (enabled) =>
+    ipcRenderer.send("show-bar-at-startup-changed", enabled),
+
+  // Mirrors the renderer-owned onboarding flag into the main process, which
+  // decides window layout at launch before any renderer exists.
+  notifyOnboardingCompletedChanged: (done) =>
+    ipcRenderer.send("onboarding-completed-changed", done),
+
   // Auto-start management
   getAutoStartEnabled: () => ipcRenderer.invoke("get-auto-start-enabled"),
   setAutoStartEnabled: (enabled) => ipcRenderer.invoke("set-auto-start-enabled", enabled),
@@ -865,6 +874,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   toggleAgentOverlay: () => ipcRenderer.invoke("toggle-agent-overlay"),
   hideAgentOverlay: () => ipcRenderer.invoke("hide-agent-overlay"),
   startManualMeeting: () => ipcRenderer.invoke("start-manual-meeting"),
+  openControlPanel: () => ipcRenderer.invoke("open-control-panel"),
   resizeAgentWindow: (width, height) => ipcRenderer.invoke("resize-agent-window", width, height),
   getAgentWindowBounds: () => ipcRenderer.invoke("get-agent-window-bounds"),
   setAgentWindowBounds: (x, y, width, height) =>

@@ -40,7 +40,8 @@
     "openControlPanel": "Apri pannello di controllo",
     "hideControlPanel": "Nascondi pannello di controllo",
     "quit": "Esci da Snowy",
-    "tooltip": "Snowy - Dettatura vocale"
+    "tooltip": "Snowy - Dettatura vocale",
+    "showAssistantBar": "Mostra barra dell'assistente"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -344,7 +345,9 @@
         "step2": "Apri la console Corti e crea le credenziali API",
         "step3": "Incolla qui sotto Client ID e Secret"
       },
-      "downloadStillRunning": "Il tuo modello vocale ({{model}}) è ancora in download — {{percent}}% completato. Snowy lo finirà in background."
+      "downloadStillRunning": "Il tuo modello vocale ({{model}}) è ancora in download — {{percent}}% completato. Snowy lo finirà in background.",
+      "launchAtLogin": "Avvia Snowy all'accesso",
+      "launchAtLoginDescription": "La barra di Snowy ti aspetterà nella parte superiore dello schermo: un clic per registrare."
     }
   },
   "streaming": {
@@ -1709,7 +1712,9 @@
           "title": "Approvazione necessaria in Impostazioni di Sistema",
           "description": "macOS ha registrato Snowy come elemento di login, ma attende che tu lo consenta in Elementi login.",
           "action": "Apri Elementi login"
-        }
+        },
+        "showBar": "Mostra la barra dell'assistente all'avvio",
+        "showBarDescription": "Mantiene la piccola barra di Snowy sopra lo schermo quando Snowy è in esecuzione."
       },
       "waylandPaste": {
         "title": "Configurazione incolla su Wayland",
@@ -3269,7 +3274,10 @@
       "placeholder": "Chiedi qualsiasi cosa sul tuo schermo o sulle tue riunioni…",
       "listen": "Ascolta",
       "send": "Invia",
-      "voice": "Parla"
+      "voice": "Parla",
+      "finishSetup": "Completa la configurazione",
+      "finishSetupHint": "Snowy richiede una rapida configurazione prima della tua prima riunione",
+      "preparing": "Preparazione…"
     },
     "screenConsent": {
       "question": "Snowy può guardare il tuo schermo per aiutarti a rispondere? Non viene mai salvato.",

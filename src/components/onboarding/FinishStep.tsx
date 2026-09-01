@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Check, Loader2, Settings, Stethoscope } from "lucide-react";
 import { Button } from "../ui/button";
+import { Toggle } from "../ui/toggle";
 import ApiKeyInput from "../ui/ApiKeyInput";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { getTranscriptionProviders, modelRegistry } from "../../models/ModelRegistry";
@@ -50,6 +51,18 @@ export default function FinishStep({
   const [showCorti, setShowCorti] = useState(
     !!cortiProvider && useCases.includes(USE_CASE_IDS.healthcare)
   );
+
+  // Pre-checked: the bar waiting after every login is the product working as
+  // designed, and the toggle right here is the consent. Applied at finish, not
+  // on toggle, so backing out of this step writes nothing to the OS.
+  const [launchAtLogin, setLaunchAtLogin] = useState(true);
+
+  const finish = (openSettings: boolean) => {
+    if (launchAtLogin) {
+      void window.electronAPI?.setAutoStartEnabled?.(true)?.catch(() => {});
+    }
+    onFinish(openSettings);
+  };
   const hasCortiCredentials =
     cortiClientId.trim().length > 0 && cortiClientSecret.trim().length > 0;
 
@@ -202,6 +215,18 @@ export default function FinishStep({
         </div>
       )}
 
+      <div className="flex items-center justify-between gap-3 rounded-lg border border-border-subtle bg-surface-1 px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-[13px] font-medium text-foreground">
+            {t("onboarding.finish.launchAtLogin")}
+          </p>
+          <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+            {t("onboarding.finish.launchAtLoginDescription")}
+          </p>
+        </div>
+        <Toggle checked={launchAtLogin} onChange={setLaunchAtLogin} />
+      </div>
+
       <p className="text-xs leading-relaxed text-muted-foreground">
         {t("onboarding.finish.cleanupNote")}
       </p>
@@ -209,14 +234,14 @@ export default function FinishStep({
       <div className="flex items-center gap-2 pt-1">
         <Button
           variant="success"
-          onClick={() => onFinish(false)}
+          onClick={() => finish(false)}
           disabled={isFinishing}
           className="px-4"
         >
           <Check className="h-3.5 w-3.5" />
           {t("onboarding.finish.skipForNow")}
         </Button>
-        <Button variant="outline" onClick={() => onFinish(true)} disabled={isFinishing}>
+        <Button variant="outline" onClick={() => finish(true)} disabled={isFinishing}>
           <Settings className="h-3.5 w-3.5" />
           {t("onboarding.finish.openSettings")}
         </Button>

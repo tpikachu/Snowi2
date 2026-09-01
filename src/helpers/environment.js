@@ -48,6 +48,10 @@ const PERSISTED_KEYS = [
   "FLOATING_ICON_AUTO_HIDE",
   "PANEL_START_POSITION",
   "START_MINIMIZED",
+  "SHOW_BAR_AT_STARTUP",
+  // Mirrors the renderer's onboardingCompleted flag so the main process can
+  // decide window layout at launch, before any renderer exists.
+  "ONBOARDING_DONE",
   "UI_LANGUAGE",
   "WHISPER_CUDA_ENABLED",
   "WHISPER_VULKAN_ENABLED",
@@ -505,6 +509,27 @@ class EnvironmentManager {
 
   getStartMinimized() {
     return this._getKey("START_MINIMIZED") === "true";
+  }
+
+  // Default-on: absent means the bar shows. Only an explicit "false" opts out.
+  getShowBarAtStartup() {
+    return this._getKey("SHOW_BAR_AT_STARTUP") !== "false";
+  }
+
+  saveShowBarAtStartup(enabled) {
+    const result = this._saveKey("SHOW_BAR_AT_STARTUP", String(enabled));
+    this.saveAllKeysToEnvFile().catch(() => {});
+    return result;
+  }
+
+  getOnboardingDone() {
+    return this._getKey("ONBOARDING_DONE") === "true";
+  }
+
+  saveOnboardingDone(done) {
+    const result = this._saveKey("ONBOARDING_DONE", String(done));
+    this.saveAllKeysToEnvFile().catch(() => {});
+    return result;
   }
 
   saveStartMinimized(enabled) {

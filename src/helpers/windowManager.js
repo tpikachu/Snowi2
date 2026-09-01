@@ -58,6 +58,8 @@ class WindowManager {
     this._meetingPanelOpening = null;
     /** True only while a meeting is holding the control panel minimised. */
     this._minimizedForMeeting = false;
+    /** True only while the bar→panel handoff is holding the bar hidden. */
+    this._barHiddenForMeeting = false;
     this.updateNotificationWindow = null;
     this._updateNotificationDismissed = false;
     this.notificationPrefs = {
@@ -864,7 +866,12 @@ class WindowManager {
     }
   }
 
-  showAgentOverlay() {
+  /**
+   * `focus: false` is the at-startup and after-meeting variant: the bar
+   * appears without taking the keyboard from whatever the user is doing.
+   * A summon by hotkey keeps the default — the bar exists to be typed into.
+   */
+  showAgentOverlay({ focus = true } = {}) {
     if (!this.agentWindow || this.agentWindow.isDestroyed()) return;
 
     this._clearAgentAnimation();
@@ -907,9 +914,9 @@ class WindowManager {
     } else {
       this.agentWindow.show();
     }
-    // The bar exists to be typed into; showInactive keeps the window server
-    // happy on macOS, then focus moves deliberately.
-    this.agentWindow.focus();
+    // showInactive keeps the window server happy on macOS, then focus moves
+    // deliberately — and only when the user summoned the bar to use it.
+    if (focus) this.agentWindow.focus();
   }
 
   hideAgentOverlay() {
@@ -1464,6 +1471,9 @@ class WindowManager {
       if (this.agentWindow && !this.agentWindow.isDestroyed() && this.agentWindow.isVisible()) {
         this._meetingPanelAnchor = this.agentWindow.getBounds();
         this.hideAgentOverlay();
+        // Remembered so the meeting's end gives the bar its place back — only
+        // a bar this handoff hid comes back; one the user closed stays closed.
+        this._barHiddenForMeeting = true;
       }
       // Awaited nowhere: the snapshot is already cached, and the panel asks for
       // it once its renderer is up, so an in-flight open loses nothing.
@@ -1699,11 +1709,15 @@ class WindowManager {
 
   closeMeetingPanel() {
     // The anchor described one handoff; the next meeting decides its own
-    // position. The bar is deliberately not re-shown here — the stop flow
-    // surfaces the control panel with the keep-or-discard prompt, and a bar
-    // reappearing beside it would compete for the same attention. The hotkey
-    // re-summons it.
+    // position.
     this._meetingPanelAnchor = null;
+    // The bar the handoff hid comes back — without focus, so the
+    // keep-or-discard prompt the stop flow surfaces keeps the keyboard. A bar
+    // the user closed themselves stays closed.
+    if (this._barHiddenForMeeting) {
+      this._barHiddenForMeeting = false;
+      this.showAgentOverlay({ focus: false });
+    }
     this._meetingPanelState = null;
     // Cleared with the panel, or the next meeting would open showing the last
     // one's words until somebody spoke — and, worse, the last one's advice.

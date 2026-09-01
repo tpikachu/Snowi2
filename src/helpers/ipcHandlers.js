@@ -8283,6 +8283,13 @@ class IPCHandlers {
       return { success: true };
     });
 
+    // The bar's "Finish setup" chip: surface the main window (which shows
+    // onboarding until it is completed) from a window that has no other way in.
+    ipcMain.handle("open-control-panel", async () => {
+      await this.windowManager.createControlPanelWindow();
+      return { success: true };
+    });
+
     ipcMain.handle("resize-agent-window", async (_event, width, height) => {
       this.windowManager.resizeAgentWindow(width, height);
       return { success: true };

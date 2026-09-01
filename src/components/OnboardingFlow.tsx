@@ -436,6 +436,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     saveAgentName(agentName);
 
     localStorage.setItem("onboardingCompleted", "true");
+    // Mirrored to the main process so the next launch can put the assistant
+    // bar on screen before any renderer exists.
+    window.electronAPI?.notifyOnboardingCompletedChanged?.(true);
 
     // Cloud transcription always runs against the user's own key.
     if (!useLocalWhisper) {

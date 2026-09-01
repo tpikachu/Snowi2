@@ -40,7 +40,8 @@
     "openControlPanel": "Kontrollzentrum öffnen",
     "hideControlPanel": "Kontrollzentrum ausblenden",
     "quit": "Snowy beenden",
-    "tooltip": "Snowy – Sprachdiktat"
+    "tooltip": "Snowy – Sprachdiktat",
+    "showAssistantBar": "Assistenten-Leiste anzeigen"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -344,7 +345,9 @@
         "step2": "Öffne die Corti-Konsole und erstelle API-Zugangsdaten",
         "step3": "Füge Client-ID und Secret unten ein"
       },
-      "downloadStillRunning": "Ihr Sprachmodell ({{model}}) wird noch heruntergeladen — {{percent}} % fertig. Snowy schließt es im Hintergrund ab."
+      "downloadStillRunning": "Ihr Sprachmodell ({{model}}) wird noch heruntergeladen — {{percent}} % fertig. Snowy schließt es im Hintergrund ab.",
+      "launchAtLogin": "Snowy beim Anmelden starten",
+      "launchAtLoginDescription": "Die Snowy-Leiste wartet oben auf deinem Bildschirm — ein Klick zum Aufnehmen."
     }
   },
   "streaming": {
@@ -1992,7 +1995,9 @@
           "title": "Bestätigung in den Systemeinstellungen erforderlich",
           "description": "macOS hat Snowy als Anmeldeobjekt registriert, wartet aber darauf, dass du es unter Anmeldeobjekte erlaubst.",
           "action": "Anmeldeobjekte öffnen"
-        }
+        },
+        "showBar": "Assistenten-Leiste beim Start anzeigen",
+        "showBarDescription": "Zeigt die kleine Snowy-Leiste über deinem Bildschirm, solange Snowy läuft."
       },
       "waylandPaste": {
         "title": "Wayland-Einfügen einrichten",
@@ -3434,7 +3439,10 @@
       "placeholder": "Fragen Sie alles über Ihren Bildschirm oder Ihre Meetings…",
       "listen": "Zuhören",
       "send": "Senden",
-      "voice": "Sprechen"
+      "voice": "Sprechen",
+      "finishSetup": "Einrichtung abschließen",
+      "finishSetupHint": "Snowy braucht vor deinem ersten Meeting eine kurze Einrichtung",
+      "preparing": "Wird vorbereitet…"
     },
     "screenConsent": {
       "question": "Darf Snowy auf Ihren Bildschirm schauen, um besser zu antworten? Es wird nie gespeichert.",

@@ -262,6 +262,7 @@ const BOOLEAN_SETTINGS = new Set([
   "pauseMediaOnDictation",
   "floatingIconAutoHide",
   "startMinimized",
+  "showBarAtStartup",
   "meetingProcessDetection",
   "meetingPreRollEnabled",
   "speakerDiarizationEnabled",
@@ -683,6 +684,7 @@ export interface SettingsState
   pauseMediaOnDictation: boolean;
   floatingIconAutoHide: boolean;
   startMinimized: boolean;
+  showBarAtStartup: boolean;
   gcalAccounts: CalendarAccount[];
   gcalConnected: boolean;
   gcalEmail: string;
@@ -997,6 +999,7 @@ export interface SettingsState
   setPauseMediaOnDictation: (value: boolean) => void;
   setFloatingIconAutoHide: (enabled: boolean) => void;
   setStartMinimized: (enabled: boolean) => void;
+  setShowBarAtStartup: (enabled: boolean) => void;
   setGcalAccounts: (accounts: CalendarAccount[]) => void;
   setMcalAccounts: (accounts: CalendarAccount[]) => void;
   setNotificationsEnabled: (value: boolean) => void;
@@ -1393,6 +1396,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   pauseMediaOnDictation: readBoolean("pauseMediaOnDictation", false),
   floatingIconAutoHide: readBoolean("floatingIconAutoHide", false),
   startMinimized: readBoolean("startMinimized", false),
+  showBarAtStartup: readBoolean("showBarAtStartup", true),
   notificationsEnabled: readBoolean("notificationsEnabled", true),
   notifyMeetingDetection: readBoolean("notifyMeetingDetection", true),
   notifyCalendarReminders: readBoolean("notifyCalendarReminders", true),
@@ -2110,6 +2114,15 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     set({ startMinimized: enabled });
     if (isBrowser) {
       window.electronAPI?.notifyStartMinimizedChanged?.(enabled);
+    }
+  },
+
+  setShowBarAtStartup: (enabled: boolean) => {
+    if (get().showBarAtStartup === enabled) return;
+    if (isBrowser) localStorage.setItem("showBarAtStartup", String(enabled));
+    set({ showBarAtStartup: enabled });
+    if (isBrowser) {
+      window.electronAPI?.notifyShowBarAtStartupChanged?.(enabled);
     }
   },
 

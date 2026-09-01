@@ -40,7 +40,8 @@
     "openControlPanel": "Ouvrir le panneau de contrôle",
     "hideControlPanel": "Masquer le panneau de contrôle",
     "quit": "Quitter Snowy",
-    "tooltip": "Snowy - Dictée vocale"
+    "tooltip": "Snowy - Dictée vocale",
+    "showAssistantBar": "Afficher la barre de l'assistant"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -344,7 +345,9 @@
         "step2": "Ouvrez la console Corti et créez des identifiants API",
         "step3": "Collez votre Client ID et votre Secret ci-dessous"
       },
-      "downloadStillRunning": "Votre modèle vocal ({{model}}) est encore en téléchargement — {{percent}} % terminé. Snowy le finira en arrière-plan."
+      "downloadStillRunning": "Votre modèle vocal ({{model}}) est encore en téléchargement — {{percent}} % terminé. Snowy le finira en arrière-plan.",
+      "launchAtLogin": "Lancer Snowy à l'ouverture de session",
+      "launchAtLoginDescription": "La barre Snowy vous attendra en haut de l'écran — un clic pour enregistrer."
     }
   },
   "streaming": {
@@ -1992,7 +1995,9 @@
           "title": "Autorisation requise dans Réglages Système",
           "description": "macOS a enregistré Snowy comme élément d'ouverture, mais attend que vous l'autorisiez dans Éléments d'ouverture.",
           "action": "Ouvrir Éléments d'ouverture"
-        }
+        },
+        "showBar": "Afficher la barre de l'assistant au démarrage",
+        "showBarDescription": "Gardez la petite barre Snowy en haut de votre écran tant que Snowy est ouvert."
       },
       "waylandPaste": {
         "title": "Configuration du collage Wayland",
@@ -3434,7 +3439,10 @@
       "placeholder": "Posez une question sur votre écran ou vos réunions…",
       "listen": "Écouter",
       "send": "Envoyer",
-      "voice": "Parler"
+      "voice": "Parler",
+      "finishSetup": "Terminer la configuration",
+      "finishSetupHint": "Snowy a besoin d'une configuration rapide avant votre première réunion",
+      "preparing": "Préparation…"
     },
     "screenConsent": {
       "question": "Snowy peut-il regarder votre écran pour mieux répondre ? Rien n'est enregistré.",

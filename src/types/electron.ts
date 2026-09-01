@@ -1846,6 +1846,8 @@ declare global {
       notifyFloatingIconAutoHideChanged?: (enabled: boolean) => void;
       onFloatingIconAutoHideChanged?: (callback: (enabled: boolean) => void) => () => void;
       notifyStartMinimizedChanged?: (enabled: boolean) => void;
+      notifyShowBarAtStartupChanged?: (enabled: boolean) => void;
+      notifyOnboardingCompletedChanged?: (done: boolean) => void;
       notifyPanelStartPositionChanged?: (position: string) => void;
 
       // Auto-start at login. requiresApproval is macOS-only: SMAppService can
@@ -2030,6 +2032,7 @@ declare global {
       setAgentWindowBounds?: (x: number, y: number, width: number, height: number) => Promise<void>;
       hideAgentOverlay?: () => Promise<void>;
       startManualMeeting?: () => Promise<{ success: boolean; error?: string }>;
+      openControlPanel?: () => Promise<{ success: boolean }>;
       onAgentStartRecording?: (callback: () => void) => () => void;
       onAgentStopRecording?: (callback: () => void) => () => void;
       onAgentToggleRecording?: (callback: () => void) => () => void;
