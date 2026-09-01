@@ -1880,7 +1880,10 @@
         "title": "Alle App-Daten zurücksetzen"
       },
       "resetAppData": "App-Daten zurücksetzen",
-      "resetAppDataDescription": "Alle lokalen Einstellungen, Transkriptionen, Audioaufnahmen, heruntergeladene Modelle und zwischengespeicherte Daten dauerhaft löschen"
+      "resetAppDataDescription": "Alle lokalen Einstellungen, Transkriptionen, Audioaufnahmen, heruntergeladene Modelle und zwischengespeicherte Daten dauerhaft löschen",
+      "replayOnboarding": "Einrichtung erneut durchlaufen",
+      "replayOnboardingDescription": "Gehe die Einrichtungsschritte noch einmal durch. Deine Notizen, Schlüssel und dein Verlauf bleiben erhalten.",
+      "replayOnboardingAction": "Erneut starten"
     },
     "dictionary": {
       "title": "Benutzerwörterbuch",
@@ -3399,7 +3402,8 @@
     "titleBar": {
       "label": "Agent",
       "newChat": "Neues Gespräch",
-      "close": "Schließen"
+      "close": "Schließen",
+      "collapse": "Zurück zur Leiste"
     },
     "input": {
       "holdToSpeak": "Gedrückt halten zum Sprechen",
@@ -3437,7 +3441,6 @@
     },
     "bar": {
       "placeholder": "Fragen Sie alles über Ihren Bildschirm oder Ihre Meetings…",
-      "listen": "Zuhören",
       "send": "Senden",
       "voice": "Sprechen",
       "finishSetup": "Einrichtung abschließen",
@@ -3448,7 +3451,8 @@
         "speech": "Die Transkription braucht einen API-Schlüssel",
         "aiModel": "Für Zusammenfassungen ist noch kein KI-Modell eingerichtet"
       },
-      "appWindow": "Snowy-Fenster anzeigen oder ausblenden"
+      "appWindow": "Snowy-Fenster anzeigen oder ausblenden",
+      "startMeeting": "Meeting starten"
     },
     "screenConsent": {
       "question": "Darf Snowy auf Ihren Bildschirm schauen, um besser zu antworten? Es wird nie gespeichert.",

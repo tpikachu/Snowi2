@@ -49,6 +49,7 @@ import {
 import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
 import { useSettings } from "../hooks/useSettings";
 import { useDialogs } from "../hooks/useDialogs";
+import { useStartOnboarding } from "../hooks/useStartOnboarding";
 import { useWhisper } from "../hooks/useWhisper";
 import { usePermissions } from "../hooks/usePermissions";
 import { useSystemAudioPermission } from "../hooks/useSystemAudioPermission";
@@ -562,6 +563,8 @@ export default function SettingsPage({
     hideConfirmDialog,
     hideAlertDialog,
   } = useDialogs();
+
+  const startOnboarding = useStartOnboarding();
 
   const {
     useLocalWhisper,
@@ -2944,6 +2947,19 @@ EOF`,
                             : t("settingsPage.developer.clearCache")}
                         </Button>
                       </div>
+                    </SettingsRow>
+                  </SettingsPanelRow>
+                </SettingsPanel>
+
+                <SettingsPanel>
+                  <SettingsPanelRow>
+                    <SettingsRow
+                      label={t("settingsPage.developer.replayOnboarding")}
+                      description={t("settingsPage.developer.replayOnboardingDescription")}
+                    >
+                      <Button onClick={() => startOnboarding()} variant="outline" size="sm">
+                        {t("settingsPage.developer.replayOnboardingAction")}
+                      </Button>
                     </SettingsRow>
                   </SettingsPanelRow>
                 </SettingsPanel>

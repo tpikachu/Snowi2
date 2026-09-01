@@ -1597,7 +1597,10 @@
         "title": "すべてのアプリデータをリセット"
       },
       "resetAppData": "アプリデータをリセット",
-      "resetAppDataDescription": "すべてのローカル設定、文字起こし、音声録音、ダウンロード済みモデル、キャッシュデータを完全に削除"
+      "resetAppDataDescription": "すべてのローカル設定、文字起こし、音声録音、ダウンロード済みモデル、キャッシュデータを完全に削除",
+      "replayOnboarding": "初期設定をやり直す",
+      "replayOnboardingDescription": "設定手順をもう一度実行します。ノート、キー、履歴はそのまま残ります。",
+      "replayOnboardingAction": "やり直す"
     },
     "dictionary": {
       "title": "カスタム辞書",
@@ -3234,7 +3237,8 @@
     "titleBar": {
       "label": "エージェント",
       "newChat": "新しい会話",
-      "close": "閉じる"
+      "close": "閉じる",
+      "collapse": "バーに戻る"
     },
     "input": {
       "holdToSpeak": "長押しして話す",
@@ -3272,7 +3276,6 @@
     },
     "bar": {
       "placeholder": "画面や会議について何でも聞いてください…",
-      "listen": "リッスン",
       "send": "送信",
       "voice": "話す",
       "finishSetup": "設定を完了",
@@ -3283,7 +3286,8 @@
         "speech": "文字起こしにはAPIキーが必要です",
         "aiModel": "要約用のAIモデルがまだ設定されていません"
       },
-      "appWindow": "Snowyウィンドウの表示/非表示"
+      "appWindow": "Snowyウィンドウの表示/非表示",
+      "startMeeting": "会議を開始"
     },
     "screenConsent": {
       "question": "回答のために Snowy が画面を見てもいいですか？保存は一切されません。",

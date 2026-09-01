@@ -452,7 +452,9 @@ export default function AgentOverlay() {
       >
         {expanded ? (
           <>
-            <AgentTitleBar onNewChat={handleNewChat} onClose={handleClose} />
+            {/* Collapsing IS starting fresh: the conversation is already in
+                chat history, and "back to the bar" reads as done-with-this. */}
+            <AgentTitleBar onCollapse={handleNewChat} />
             <AgentChat messages={messages} />
             {consentRow}
             <AgentInput
@@ -565,7 +567,7 @@ export default function AgentOverlay() {
                   ) : (
                     <>
                       <AudioLines className="size-3.5" strokeWidth={2} />
-                      {t("agentMode.bar.listen")}
+                      {t("agentMode.bar.startMeeting")}
                     </>
                   )}
                 </button>

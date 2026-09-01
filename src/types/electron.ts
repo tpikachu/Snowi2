@@ -2034,6 +2034,11 @@ declare global {
       startManualMeeting?: () => Promise<{ success: boolean; error?: string }>;
       openControlPanel?: () => Promise<{ success: boolean }>;
       toggleControlPanel?: () => Promise<{ success: boolean; visible: boolean }>;
+      publishBarStatus?: (status: { speechOk: boolean; aiOk: boolean }) => void;
+      getBarStatus?: () => Promise<{ speechOk: boolean; aiOk: boolean } | null>;
+      onBarStatus?: (
+        callback: (status: { speechOk: boolean; aiOk: boolean } | null) => void
+      ) => () => void;
       onAgentStartRecording?: (callback: () => void) => () => void;
       onAgentStopRecording?: (callback: () => void) => () => void;
       onAgentToggleRecording?: (callback: () => void) => () => void;

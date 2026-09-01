@@ -1880,7 +1880,10 @@
         "title": "Réinitialiser toutes les données de l'application"
       },
       "resetAppData": "Réinitialiser les données de l'application",
-      "resetAppDataDescription": "Supprimer définitivement tous les paramètres locaux, transcriptions, enregistrements audio, modèles téléchargés et données en cache"
+      "resetAppDataDescription": "Supprimer définitivement tous les paramètres locaux, transcriptions, enregistrements audio, modèles téléchargés et données en cache",
+      "replayOnboarding": "Rejouer la configuration initiale",
+      "replayOnboardingDescription": "Refaites les étapes de configuration. Vos notes, clés et historique sont conservés.",
+      "replayOnboardingAction": "Rejouer"
     },
     "dictionary": {
       "title": "Dictionnaire personnalisé",
@@ -3399,7 +3402,8 @@
     "titleBar": {
       "label": "Agent",
       "newChat": "Nouvelle conversation",
-      "close": "Fermer"
+      "close": "Fermer",
+      "collapse": "Revenir à la barre"
     },
     "input": {
       "holdToSpeak": "Maintenez pour parler",
@@ -3437,7 +3441,6 @@
     },
     "bar": {
       "placeholder": "Posez une question sur votre écran ou vos réunions…",
-      "listen": "Écouter",
       "send": "Envoyer",
       "voice": "Parler",
       "finishSetup": "Terminer la configuration",
@@ -3448,7 +3451,8 @@
         "speech": "La transcription nécessite une clé API",
         "aiModel": "Aucun modèle d'IA n'est configuré pour les résumés"
       },
-      "appWindow": "Afficher ou masquer la fenêtre Snowy"
+      "appWindow": "Afficher ou masquer la fenêtre Snowy",
+      "startMeeting": "Démarrer la réunion"
     },
     "screenConsent": {
       "question": "Snowy peut-il regarder votre écran pour mieux répondre ? Rien n'est enregistré.",

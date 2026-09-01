@@ -51,6 +51,7 @@ import MeetingRecordingPill from "./notes/MeetingRecordingPill";
 import CaptureControl from "./shell/CaptureControl";
 import ModelDownloadStrip from "./shell/ModelDownloadStrip";
 import { useSpeechModelDownloadStatus } from "../hooks/useSpeechModelDownloadStatus";
+import { useBarStatusPublisher } from "../hooks/useBarStatusPublisher";
 import WindowControls from "./WindowControls";
 
 import { getCachedPlatform } from "../utils/platform";
@@ -188,6 +189,10 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   // strip under the header, and it gates starting a meeting while the model
   // meetings transcribe with is still on its way down.
   const speechModelDownload = useSpeechModelDownloadStatus();
+
+  // Keeps the assistant bar's warning icons honest: readiness is computed
+  // here, where settings actually change, and published through main.
+  useBarStatusPublisher();
 
   const {
     confirmDialog,

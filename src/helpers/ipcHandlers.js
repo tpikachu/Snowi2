@@ -7349,6 +7349,17 @@ class IPCHandlers {
       return this.windowManager?.getMeetingPanelAssist() ?? null;
     });
 
+    // Setup readiness for the bar's warning icons, published by the control
+    // panel renderer (whose settings store is the live one) and cached in
+    // main so a bar that loads later can still ask.
+    ipcMain.on("bar-status-publish", (_event, status) => {
+      this.windowManager?.updateBarStatus(status);
+    });
+
+    ipcMain.handle("bar-status-get", () => {
+      return this.windowManager?.getBarStatus() ?? null;
+    });
+
     // Unlike the commands, this carries free text, so it is length-capped here
     // rather than checked against an allow-list. The mode IS allow-listed:
     // anything unrecognized becomes "fast", the cheapest thing this can do.

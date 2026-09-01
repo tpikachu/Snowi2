@@ -1,14 +1,15 @@
-import { Plus, X } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "../lib/utils";
 import { getAgentName } from "../../utils/agentName";
 
 interface AgentTitleBarProps {
-  onNewChat: () => void;
-  onClose: () => void;
+  /** Collapse the chat column back into the bar (the conversation is already
+   *  persisted to history; the bar's X and Escape still hide the window). */
+  onCollapse: () => void;
 }
 
-export function AgentTitleBar({ onNewChat, onClose }: AgentTitleBarProps) {
+export function AgentTitleBar({ onCollapse }: AgentTitleBarProps) {
   const { t } = useTranslation();
   const agentName = getAgentName();
 
@@ -32,28 +33,17 @@ export function AgentTitleBar({ onNewChat, onClose }: AgentTitleBarProps) {
         style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
       >
         <button
-          onClick={onNewChat}
+          onClick={onCollapse}
           className={cn(
             "p-1 rounded-sm",
             "text-muted-foreground hover:text-foreground hover:bg-foreground/10",
             "transition-colors duration-150",
             "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           )}
-          aria-label={t("agentMode.titleBar.newChat")}
+          aria-label={t("agentMode.titleBar.collapse")}
+          title={t("agentMode.titleBar.collapse")}
         >
-          <Plus size={14} />
-        </button>
-        <button
-          onClick={onClose}
-          className={cn(
-            "p-1 rounded-sm",
-            "text-muted-foreground hover:text-foreground hover:bg-foreground/10",
-            "transition-colors duration-150",
-            "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          )}
-          aria-label={t("agentMode.titleBar.close")}
-        >
-          <X size={14} />
+          <ChevronUp size={14} />
         </button>
       </div>
     </div>

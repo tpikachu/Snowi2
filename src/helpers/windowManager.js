@@ -53,6 +53,8 @@ class WindowManager {
     this._meetingPanelAssist = null;
     /** True while a meeting is recording; its edges drive the bar↔card morph. */
     this._meetingWasRecording = false;
+    /** Last setup-readiness published by the control panel, for the bar. */
+    this._barStatus = null;
     /** True only while a meeting is holding the control panel minimised. */
     this._minimizedForMeeting = false;
     this.updateNotificationWindow = null;
@@ -1549,6 +1551,22 @@ class WindowManager {
         "meeting"
       );
     }
+  }
+
+  /**
+   * Setup readiness for the bar's warning icons, computed in the control
+   * panel renderer — the one window whose settings store is always current —
+   * and cached here so a bar that loads later still gets an answer.
+   */
+  updateBarStatus(status) {
+    this._barStatus = status
+      ? { speechOk: status.speechOk !== false, aiOk: status.aiOk !== false }
+      : null;
+    this.sendToMeetingPanel("bar-status", this._barStatus);
+  }
+
+  getBarStatus() {
+    return this._barStatus ?? null;
   }
 
   sendMeetingPanelLevel(level) {

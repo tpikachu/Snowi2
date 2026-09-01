@@ -1,23 +1,20 @@
 import { useEffect, useState } from "react";
-import {
-  useSettingsStore,
-  selectResolvedLLMConfig,
-  selectLLMConfigReady,
-  selectResolvedMeetingTranscription,
-  BYOK_PROVIDER_KEY_FIELDS,
-  type SettingsState,
-} from "../stores/settingsStore";
 
 export type BarSetupItemId = "microphone" | "speech" | "aiModel";
 
 /**
  * The assistant bar's warning icons: which pieces of setup are still missing.
- * Deliberately coarse — each item answers "will this step of a meeting work?",
- * not "is every related preference filled in".
+ *
+ * Speech and AI readiness arrive from the control panel window via the
+ * bar-status channel (see useBarStatusPublisher) — that window's settings
+ * store is the live one. The microphone is checked here: it is an OS fact,
+ * not a settings-store fact. Everything defaults to "ok" until told
+ * otherwise, so the bar never flashes warnings while the app boots.
+ *
+ * None of this gates the start button — a meeting only needs transcription,
+ * and that has its own download gate. These icons just say what to finish.
  */
 export function useBarSetupStatus(): BarSetupItemId[] {
-  // Microphone: the OS check is authoritative where it exists (macOS); the
-  // onboarding grant flag covers platforms whose check always says yes.
   const [micOk, setMicOk] = useState(true);
   useEffect(() => {
     let cancelled = false;
@@ -45,29 +42,29 @@ export function useBarSetupStatus(): BarSetupItemId[] {
     };
   }, []);
 
-  // Speech-to-text: the one gap a finished onboarding can still have is a
-  // cloud provider whose key was later removed. Local models are covered by
-  // the download gate on the Listen button, not here.
-  const speechOk = useSettingsStore((state: SettingsState) => {
-    const cfg = selectResolvedMeetingTranscription(state);
-    if (cfg.transcriptionMode !== "providers") return true;
-    if (cfg.cloudTranscriptionProvider === "corti") {
-      return state.cortiClientId.trim().length > 0 && state.cortiClientSecret.trim().length > 0;
-    }
-    const field = BYOK_PROVIDER_KEY_FIELDS[cfg.cloudTranscriptionProvider];
-    if (!field) return true;
-    const value = state[field];
-    return typeof value === "string" ? value.trim().length > 0 : true;
-  });
-
-  // The AI that writes meeting summaries — the actions scope.
-  const aiOk = useSettingsStore((state: SettingsState) =>
-    selectLLMConfigReady(state, selectResolvedLLMConfig(state, "actions"))
-  );
+  const [remote, setRemote] = useState({ speechOk: true, aiOk: true });
+  useEffect(() => {
+    let cancelled = false;
+    const apply = (status: { speechOk?: boolean; aiOk?: boolean } | null) => {
+      if (!status) return;
+      setRemote({ speechOk: status.speechOk !== false, aiOk: status.aiOk !== false });
+    };
+    window.electronAPI
+      ?.getBarStatus?.()
+      .then((status) => {
+        if (!cancelled) apply(status);
+      })
+      .catch(() => {});
+    const unsubscribe = window.electronAPI?.onBarStatus?.((status) => apply(status));
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, []);
 
   const missing: BarSetupItemId[] = [];
   if (!micOk) missing.push("microphone");
-  if (!speechOk) missing.push("speech");
-  if (!aiOk) missing.push("aiModel");
+  if (!remote.speechOk) missing.push("speech");
+  if (!remote.aiOk) missing.push("aiModel");
   return missing;
 }

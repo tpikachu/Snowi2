@@ -571,6 +571,11 @@ const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
   { section: "system", anchor: "updates", labelKey: "settingsPage.general.updates.title" },
   { section: "system", anchor: "developerTools", labelKey: "developerSection.title" },
   { section: "system", anchor: "dataManagement", labelKey: "settingsPage.developer.modelCache" },
+  {
+    section: "system",
+    anchor: "dataManagement",
+    labelKey: "settingsPage.developer.replayOnboarding",
+  },
   { section: "system", anchor: "dataManagement", labelKey: "settingsPage.developer.resetAppData" },
 ];
 

@@ -1880,7 +1880,10 @@
         "title": "Reset All App Data"
       },
       "resetAppData": "Reset app data",
-      "resetAppDataDescription": "Permanently delete all local settings, transcriptions, audio recordings, downloaded models, and cached data"
+      "resetAppDataDescription": "Permanently delete all local settings, transcriptions, audio recordings, downloaded models, and cached data",
+      "replayOnboarding": "Replay onboarding",
+      "replayOnboardingDescription": "Go through the setup steps again. Your notes, keys and history all stay.",
+      "replayOnboardingAction": "Replay"
     },
     "dictionary": {
       "title": "Custom Dictionary",
@@ -3399,7 +3402,8 @@
     "titleBar": {
       "label": "Agent",
       "newChat": "New conversation",
-      "close": "Close"
+      "close": "Close",
+      "collapse": "Back to the bar"
     },
     "input": {
       "holdToSpeak": "Hold to speak",
@@ -3437,7 +3441,6 @@
     },
     "bar": {
       "placeholder": "Ask anything about your screen or your meetings…",
-      "listen": "Listen",
       "send": "Send",
       "voice": "Speak",
       "finishSetup": "Finish setup",
@@ -3448,7 +3451,8 @@
         "speech": "Transcription needs an API key",
         "aiModel": "No AI model is set up for summaries yet"
       },
-      "appWindow": "Show or hide the Snowy window"
+      "appWindow": "Show or hide the Snowy window",
+      "startMeeting": "Start meeting"
     },
     "screenConsent": {
       "question": "Can Snowy look at your screen to help answer? It's never saved.",

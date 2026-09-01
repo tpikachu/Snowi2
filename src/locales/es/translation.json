@@ -1645,7 +1645,10 @@
         "title": "Restablecer todos los datos de la app"
       },
       "resetAppData": "Restablecer datos de la app",
-      "resetAppDataDescription": "Eliminar permanentemente todas las configuraciones locales, transcripciones, grabaciones de audio, modelos descargados y datos en caché"
+      "resetAppDataDescription": "Eliminar permanentemente todas las configuraciones locales, transcripciones, grabaciones de audio, modelos descargados y datos en caché",
+      "replayOnboarding": "Repetir la configuración inicial",
+      "replayOnboardingDescription": "Vuelve a recorrer los pasos de configuración. Tus notas, claves e historial se conservan.",
+      "replayOnboardingAction": "Repetir"
     },
     "dictionary": {
       "title": "Diccionario personalizado",
@@ -3282,7 +3285,8 @@
     "titleBar": {
       "label": "Agente",
       "newChat": "Nueva conversación",
-      "close": "Cerrar"
+      "close": "Cerrar",
+      "collapse": "Volver a la barra"
     },
     "input": {
       "holdToSpeak": "Mantén para hablar",
@@ -3320,7 +3324,6 @@
     },
     "bar": {
       "placeholder": "Pregunta lo que sea sobre tu pantalla o tus reuniones…",
-      "listen": "Escuchar",
       "send": "Enviar",
       "voice": "Hablar",
       "finishSetup": "Terminar configuración",
@@ -3331,7 +3334,8 @@
         "speech": "La transcripción necesita una clave de API",
         "aiModel": "Aún no hay un modelo de IA para los resúmenes"
       },
-      "appWindow": "Mostrar u ocultar la ventana de Snowy"
+      "appWindow": "Mostrar u ocultar la ventana de Snowy",
+      "startMeeting": "Iniciar reunión"
     },
     "screenConsent": {
       "question": "¿Puede Snowy mirar tu pantalla para ayudarte a responder? Nunca se guarda.",

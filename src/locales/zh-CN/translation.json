@@ -1597,7 +1597,10 @@
         "title": "重置所有应用数据"
       },
       "resetAppData": "重置应用数据",
-      "resetAppDataDescription": "永久删除所有本地设置、转录、音频录制、下载的模型和缓存数据"
+      "resetAppDataDescription": "永久删除所有本地设置、转录、音频录制、下载的模型和缓存数据",
+      "replayOnboarding": "重新进行初始设置",
+      "replayOnboardingDescription": "再次完成设置步骤。你的笔记、密钥和历史记录都会保留。",
+      "replayOnboardingAction": "重新设置"
     },
     "dictionary": {
       "title": "自定义词典",
@@ -3234,7 +3237,8 @@
     "titleBar": {
       "label": "助手",
       "newChat": "新对话",
-      "close": "关闭"
+      "close": "关闭",
+      "collapse": "返回小条"
     },
     "input": {
       "holdToSpeak": "按住说话",
@@ -3272,7 +3276,6 @@
     },
     "bar": {
       "placeholder": "问我任何关于屏幕或会议的问题…",
-      "listen": "聆听",
       "send": "发送",
       "voice": "说话",
       "finishSetup": "完成设置",
@@ -3283,7 +3286,8 @@
         "speech": "转写需要 API 密钥",
         "aiModel": "尚未设置用于摘要的 AI 模型"
       },
-      "appWindow": "显示或隐藏 Snowy 窗口"
+      "appWindow": "显示或隐藏 Snowy 窗口",
+      "startMeeting": "开始会议"
     },
     "screenConsent": {
       "question": "允许 Snowy 查看您的屏幕以便更好地回答吗？绝不会保存。",

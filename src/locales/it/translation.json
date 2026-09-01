@@ -1597,7 +1597,10 @@
         "title": "Reimposta tutti i dati dell'app"
       },
       "resetAppData": "Reimposta dati app",
-      "resetAppDataDescription": "Eliminare permanentemente tutte le impostazioni locali, trascrizioni, registrazioni audio, modelli scaricati e dati memorizzati nella cache"
+      "resetAppDataDescription": "Eliminare permanentemente tutte le impostazioni locali, trascrizioni, registrazioni audio, modelli scaricati e dati memorizzati nella cache",
+      "replayOnboarding": "Ripeti la configurazione iniziale",
+      "replayOnboardingDescription": "Ripercorri i passaggi di configurazione. Note, chiavi e cronologia restano al loro posto.",
+      "replayOnboardingAction": "Ripeti"
     },
     "dictionary": {
       "title": "Dizionario personalizzato",
@@ -3234,7 +3237,8 @@
     "titleBar": {
       "label": "Agente",
       "newChat": "Nuova conversazione",
-      "close": "Chiudi"
+      "close": "Chiudi",
+      "collapse": "Torna alla barra"
     },
     "input": {
       "holdToSpeak": "Tieni premuto per parlare",
@@ -3272,7 +3276,6 @@
     },
     "bar": {
       "placeholder": "Chiedi qualsiasi cosa sul tuo schermo o sulle tue riunioni…",
-      "listen": "Ascolta",
       "send": "Invia",
       "voice": "Parla",
       "finishSetup": "Completa la configurazione",
@@ -3283,7 +3286,8 @@
         "speech": "La trascrizione richiede una chiave API",
         "aiModel": "Nessun modello IA configurato per i riepiloghi"
       },
-      "appWindow": "Mostra o nascondi la finestra di Snowy"
+      "appWindow": "Mostra o nascondi la finestra di Snowy",
+      "startMeeting": "Avvia riunione"
     },
     "screenConsent": {
       "question": "Snowy può guardare il tuo schermo per aiutarti a rispondere? Non viene mai salvato.",

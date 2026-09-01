@@ -706,6 +706,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
     "meeting-panel-assist",
     (callback) => (_event, assist) => callback(assist)
   ),
+  publishBarStatus: (status) => ipcRenderer.send("bar-status-publish", status),
+  getBarStatus: () => ipcRenderer.invoke("bar-status-get"),
+  onBarStatus: registerListener("bar-status", (callback) => (_event, status) => callback(status)),
   onMeetingPanelAsk: registerListener(
     "meeting-panel-ask",
     (callback) => (_event, question, mode) => callback(question, mode)
