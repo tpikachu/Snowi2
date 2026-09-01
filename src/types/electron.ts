@@ -2033,6 +2033,7 @@ declare global {
       hideAgentOverlay?: () => Promise<void>;
       startManualMeeting?: () => Promise<{ success: boolean; error?: string }>;
       openControlPanel?: () => Promise<{ success: boolean }>;
+      toggleControlPanel?: () => Promise<{ success: boolean; visible: boolean }>;
       onAgentStartRecording?: (callback: () => void) => () => void;
       onAgentStopRecording?: (callback: () => void) => () => void;
       onAgentToggleRecording?: (callback: () => void) => () => void;

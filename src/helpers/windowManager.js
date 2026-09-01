@@ -15,14 +15,11 @@ const {
   CONTROL_PANEL_CONFIG,
   AGENT_OVERLAY_CONFIG,
   NOTIFICATION_WINDOW_CONFIG,
-  MEETING_PANEL_CONFIG,
-  MEETING_PANEL_SIZE_LIMITS,
   TRANSCRIPTION_PREVIEW_CONFIG,
   TRANSCRIPTION_PREVIEW_SIZE_LIMITS,
   WINDOW_SIZES,
   WindowPositionUtil,
 } = require("./windowConfig");
-const { resolvePanelBoundsFromAnchor } = require("./barPanelHandoff");
 
 class WindowManager {
   constructor() {
@@ -51,15 +48,13 @@ class WindowManager {
       this.dismissMeetingNotification();
     });
     this.transcriptionPreviewWindow = null;
-    this.meetingPanelWindow = null;
     this._meetingPanelState = null;
     this._meetingPanelTranscript = null;
     this._meetingPanelAssist = null;
-    this._meetingPanelOpening = null;
+    /** True while a meeting is recording; its edges drive the bar↔card morph. */
+    this._meetingWasRecording = false;
     /** True only while a meeting is holding the control panel minimised. */
     this._minimizedForMeeting = false;
-    /** True only while the bar→panel handoff is holding the bar hidden. */
-    this._barHiddenForMeeting = false;
     this.updateNotificationWindow = null;
     this._updateNotificationDismissed = false;
     this.notificationPrefs = {
@@ -692,8 +687,16 @@ class WindowManager {
     });
   }
 
-  async createControlPanelWindow() {
+  /**
+   * `background: true` creates (or leaves) the window hidden. The control
+   * panel renderer owns the capture graph and the panel bridge, so it has to
+   * exist for a meeting to record at all — but daily usage starts at the
+   * assistant bar, and the big window should only appear when asked for.
+   * A later call without `background` shows the same window.
+   */
+  async createControlPanelWindow({ background = false } = {}) {
     if (this.controlPanelWindow && !this.controlPanelWindow.isDestroyed()) {
+      if (background) return;
       if (this.controlPanelWindow.isMinimized()) {
         this.controlPanelWindow.restore();
       }
@@ -735,23 +738,28 @@ class WindowManager {
       }
     });
 
-    const visibilityTimer = setTimeout(() => {
-      if (!this.controlPanelWindow || this.controlPanelWindow.isDestroyed()) {
-        return;
-      }
-      if (!this.controlPanelWindow.isVisible()) {
-        this.controlPanelWindow.show();
-        this.controlPanelWindow.focus();
-        dockManager.setControlPanelVisible(true);
-      }
-    }, 10000);
+    // The rescue timer exists for a load that hangs before ready-to-show; a
+    // deliberately-background window must not be rescued into view.
+    const visibilityTimer = background
+      ? null
+      : setTimeout(() => {
+          if (!this.controlPanelWindow || this.controlPanelWindow.isDestroyed()) {
+            return;
+          }
+          if (!this.controlPanelWindow.isVisible()) {
+            this.controlPanelWindow.show();
+            this.controlPanelWindow.focus();
+            dockManager.setControlPanelVisible(true);
+          }
+        }, 10000);
 
     const clearVisibilityTimer = () => {
-      clearTimeout(visibilityTimer);
+      if (visibilityTimer) clearTimeout(visibilityTimer);
     };
 
     this.controlPanelWindow.once("ready-to-show", () => {
       clearVisibilityTimer();
+      if (background) return;
       this.controlPanelWindow.show();
       this.controlPanelWindow.focus();
       dockManager.setControlPanelVisible(true);
@@ -769,9 +777,9 @@ class WindowManager {
       this.controlPanelWindow = null;
       dockManager.setControlPanelVisible(false);
       // The renderer that owned the capture graph is gone, so the meeting is
-      // over whether or not a final snapshot made it out. Leaving the panel up
-      // would show a recording that no longer exists.
-      this.closeMeetingPanel();
+      // over whether or not a final snapshot made it out. Leaving the cue
+      // card up would show a recording that no longer exists.
+      this.updateMeetingPanel(null);
     });
 
     // No panel visibility listeners here on purpose — see
@@ -794,7 +802,7 @@ class WindowManager {
         if (process.env.NODE_ENV !== "development") {
           this.showLoadFailureDialog("Control panel", errorCode, errorDescription, validatedURL);
         }
-        if (!this.controlPanelWindow.isVisible()) {
+        if (!background && !this.controlPanelWindow.isVisible()) {
           this.controlPanelWindow.show();
           this.controlPanelWindow.focus();
           dockManager.setControlPanelVisible(true);
@@ -810,7 +818,7 @@ class WindowManager {
           "window"
         );
         // Same reasoning as "closed": the capture graph died with the renderer.
-        this.closeMeetingPanel();
+        this.updateMeetingPanel(null);
         setTimeout(() => this.loadControlPanel(), 1000);
       }
     });
@@ -1446,46 +1454,49 @@ class WindowManager {
   // keeps "is there a meeting" answered in one place.
 
   /**
-   * Applies a published snapshot: opens the panel when a meeting starts, closes
-   * it when one ends, and forwards everything in between.
+   * Applies a published snapshot. The cue card is no longer its own window:
+   * the assistant bar's window renders it while a meeting records, so a
+   * snapshot edge morphs one surface in place instead of swapping two
+   * windows. On the way out, the control panel is surfaced — the
+   * keep-or-discard prompt and the write-up land there, and the end of a
+   * meeting is the one moment the big window has somewhere to take the user.
    */
   updateMeetingPanel(snapshot) {
-    if (!snapshot || !snapshot.isRecording) {
-      this.closeMeetingPanel();
-      // Every route out of a meeting ends here — the panel's Stop, the in-app
-      // one, the hotkey — so this is the one place that can guarantee the
-      // window is back before the keep-or-discard prompt renders inside it.
-      // Without it, stopping by hotkey puts that prompt behind a minimised
-      // window and the meeting looks like it saved nothing.
-      this._restoreAfterMeeting();
+    const wasRecording = this._meetingWasRecording;
+    const isRecording = Boolean(snapshot && snapshot.isRecording);
+    this._meetingWasRecording = isRecording;
+
+    if (!isRecording) {
+      this._meetingPanelState = null;
+      // Cleared with the meeting, or the next one would open showing the last
+      // one's words until somebody spoke — and, worse, the last one's advice.
+      this._meetingPanelTranscript = null;
+      this._meetingPanelAssist = null;
+      this.sendToMeetingPanel("meeting-panel-state", null);
+      if (wasRecording && !this.isQuitting) {
+        this._restoreAfterMeeting();
+        this.createControlPanelWindow().catch((error) => {
+          debugLogger.error(
+            "Failed to open the control panel after the meeting",
+            { error: error.message },
+            "meeting"
+          );
+        });
+      }
       return;
     }
 
     this._meetingPanelState = snapshot;
 
-    if (!this.meetingPanelWindow || this.meetingPanelWindow.isDestroyed()) {
-      // A visible bar hands its place to the panel: the meeting the bar's
-      // Listen button just started should look like the bar becoming the
-      // panel, not a second window appearing while the first lingers. The
-      // bar itself is hidden by main, never by its renderer — one owner.
-      if (this.agentWindow && !this.agentWindow.isDestroyed() && this.agentWindow.isVisible()) {
-        this._meetingPanelAnchor = this.agentWindow.getBounds();
-        this.hideAgentOverlay();
-        // Remembered so the meeting's end gives the bar its place back — only
-        // a bar this handoff hid comes back; one the user closed stays closed.
-        this._barHiddenForMeeting = true;
-      }
-      // Awaited nowhere: the snapshot is already cached, and the panel asks for
-      // it once its renderer is up, so an in-flight open loses nothing.
-      this.createMeetingPanelWindow().catch((error) => {
-        debugLogger.error("Failed to open the meeting panel", { error: error.message }, "meeting");
-      });
+    if (!wasRecording) {
+      // A meeting can start with the bar closed (hotkey, detection prompt);
+      // the recording indicator must be on screen regardless. Without focus,
+      // so the meeting app keeps the keyboard.
+      this.showAgentOverlay({ focus: false });
       this._minimizeForMeeting();
-      return;
     }
 
     this.sendToMeetingPanel("meeting-panel-state", snapshot);
-    this._syncMeetingPanelVisibility();
   }
 
   /**
@@ -1542,7 +1553,7 @@ class WindowManager {
 
   sendMeetingPanelLevel(level) {
     // Dropped rather than queued: a level is only meaningful when it arrives.
-    const win = this.meetingPanelWindow;
+    const win = this.agentWindow;
     if (!win || win.isDestroyed() || win.webContents.isLoading()) return;
     win.webContents.send("meeting-panel-level", level);
   }
@@ -1555,7 +1566,7 @@ class WindowManager {
    */
   sendMeetingPanelTranscript(transcript) {
     this._meetingPanelTranscript = transcript;
-    const win = this.meetingPanelWindow;
+    const win = this.agentWindow;
     if (!win || win.isDestroyed() || win.webContents.isLoading()) return;
     win.webContents.send("meeting-panel-transcript", transcript);
   }
@@ -1599,8 +1610,9 @@ class WindowManager {
     return this._meetingPanelState;
   }
 
+  /** Meeting state rides to the assistant bar's window — the cue card's home. */
   sendToMeetingPanel(channel, data) {
-    const win = this.meetingPanelWindow;
+    const win = this.agentWindow;
     if (!win || win.isDestroyed()) return;
     if (win.webContents.isLoading()) {
       win.webContents.once("did-finish-load", () => {
@@ -1624,108 +1636,6 @@ class WindowManager {
     }
     this.sendToControlPanel("meeting-panel-command", command);
     return { success: true };
-  }
-
-  async createMeetingPanelWindow() {
-    if (this.meetingPanelWindow && !this.meetingPanelWindow.isDestroyed()) return;
-    // Two snapshots arriving back-to-back must not each open a window.
-    if (this._meetingPanelOpening) return this._meetingPanelOpening;
-
-    this._meetingPanelOpening = (async () => {
-      // When the bar handed off (see updateMeetingPanel), the panel opens in
-      // the bar's place; otherwise it docks to the right edge as always.
-      let position;
-      if (this._meetingPanelAnchor) {
-        const anchor = this._meetingPanelAnchor;
-        const display = screen.getDisplayNearestPoint({ x: anchor.x, y: anchor.y });
-        position = resolvePanelBoundsFromAnchor(anchor, display.workArea || display.bounds, {
-          width: MEETING_PANEL_SIZE_LIMITS.defaultWidth,
-          height: MEETING_PANEL_SIZE_LIMITS.defaultHeight,
-        });
-      } else {
-        const cursorPos = screen.getCursorScreenPoint();
-        const display = screen.getDisplayNearestPoint(cursorPos);
-        position = WindowPositionUtil.getMeetingPanelPosition(display);
-      }
-
-      const win = new BrowserWindow({ ...MEETING_PANEL_CONFIG, ...position });
-      this.meetingPanelWindow = win;
-
-      // The point of the panel: it is on screen for the user during a meeting
-      // they are sharing, and absent from the share itself.
-      win.setContentProtection(true);
-      WindowPositionUtil.setupAlwaysOnTop(win);
-
-      win.on("closed", () => {
-        if (this.meetingPanelWindow === win) this.meetingPanelWindow = null;
-      });
-
-      try {
-        if (process.env.NODE_ENV === "development") {
-          await DevServerManager.waitForDevServer();
-          await win.loadURL(`${DevServerManager.DEV_SERVER_URL}?meeting-panel=true`);
-        } else {
-          const fileInfo = DevServerManager.getAppFilePath(false);
-          await win.loadFile(fileInfo.path, {
-            query: { ...fileInfo.query, "meeting-panel": "true" },
-          });
-        }
-      } catch (error) {
-        // A meeting stopped mid-load tears this window down, and the pending
-        // load rejects. That is the intended outcome, not a failure to report.
-        if (win.isDestroyed() || this.meetingPanelWindow !== win) return;
-        throw error;
-      }
-
-      if (this.meetingPanelWindow !== win || win.isDestroyed()) return;
-      this._syncMeetingPanelVisibility();
-    })().finally(() => {
-      this._meetingPanelOpening = null;
-    });
-
-    return this._meetingPanelOpening;
-  }
-
-  /**
-   * The panel is visible for as long as a meeting is recording. Full stop.
-   *
-   * It used to step aside whenever the control panel had focus, to avoid two
-   * copies of the same controls on screen. That coupled a recording indicator
-   * to focus, which moves for reasons that have nothing to do with intent:
-   * minimising an unrelated application hands focus to whatever is next in the
-   * z-order — often the control panel — and the panel would vanish, looking
-   * for all the world like it had been minimised too.
-   *
-   * A status object for something as consequential as an active recording has
-   * to be predictable. Redundancy while the app is in front is a much smaller
-   * cost than a window that hides itself for reasons the user cannot see.
-   */
-  _syncMeetingPanelVisibility() {
-    const win = this.meetingPanelWindow;
-    if (!win || win.isDestroyed()) return;
-    // showInactive: appearing must never steal focus from the meeting app.
-    if (!win.isVisible()) win.showInactive();
-  }
-
-  closeMeetingPanel() {
-    // The anchor described one handoff; the next meeting decides its own
-    // position.
-    this._meetingPanelAnchor = null;
-    // The bar the handoff hid comes back — without focus, so the
-    // keep-or-discard prompt the stop flow surfaces keeps the keyboard. A bar
-    // the user closed themselves stays closed.
-    if (this._barHiddenForMeeting) {
-      this._barHiddenForMeeting = false;
-      this.showAgentOverlay({ focus: false });
-    }
-    this._meetingPanelState = null;
-    // Cleared with the panel, or the next meeting would open showing the last
-    // one's words until somebody spoke — and, worse, the last one's advice.
-    this._meetingPanelTranscript = null;
-    this._meetingPanelAssist = null;
-    const win = this.meetingPanelWindow;
-    this.meetingPanelWindow = null;
-    if (win && !win.isDestroyed()) win.close();
   }
 
   async showUpdateNotification(info) {
@@ -1833,7 +1743,12 @@ class WindowManager {
 
   async queueMeetingNoteNavigation(payload) {
     this._pendingMeetingNoteNavigation = payload;
-    await this.createControlPanelWindow();
+    // Background: starting a meeting should read as the bar becoming the cue
+    // card, not as the big window flashing up just to run the capture graph.
+    // An already-visible control panel stays visible (and gets minimised by
+    // the meeting-start path); the window surfaces for everyone when the
+    // meeting ends.
+    await this.createControlPanelWindow({ background: true });
     this.sendToControlPanel("meeting-note-navigation-pending");
   }
 

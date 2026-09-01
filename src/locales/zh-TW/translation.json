@@ -3277,7 +3277,13 @@
       "voice": "說話",
       "finishSetup": "完成設定",
       "finishSetupHint": "開始第一場會議前，Snowy 需要快速設定",
-      "preparing": "準備中…"
+      "preparing": "準備中…",
+      "setup": {
+        "microphone": "仍需要麥克風權限",
+        "speech": "轉錄需要 API 金鑰",
+        "aiModel": "尚未設定用於摘要的 AI 模型"
+      },
+      "appWindow": "顯示或隱藏 Snowy 視窗"
     },
     "screenConsent": {
       "question": "允許 Snowy 查看您的螢幕以便更好地回答嗎？絕不會儲存。",

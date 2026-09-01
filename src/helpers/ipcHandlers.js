@@ -8290,6 +8290,18 @@ class IPCHandlers {
       return { success: true };
     });
 
+    // The bar's window button: the control panel is a place the user visits,
+    // and this is the doorway — open when hidden, back to the tray when up.
+    ipcMain.handle("toggle-control-panel", async () => {
+      const win = this.windowManager.controlPanelWindow;
+      if (win && !win.isDestroyed() && win.isVisible() && !win.isMinimized()) {
+        this.windowManager.hideControlPanelToTray();
+        return { success: true, visible: false };
+      }
+      await this.windowManager.createControlPanelWindow();
+      return { success: true, visible: true };
+    });
+
     ipcMain.handle("resize-agent-window", async (_event, width, height) => {
       this.windowManager.resizeAgentWindow(width, height);
       return { success: true };

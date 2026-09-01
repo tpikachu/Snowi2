@@ -3277,7 +3277,13 @@
       "voice": "話す",
       "finishSetup": "設定を完了",
       "finishSetupHint": "最初の会議の前に簡単な設定が必要です",
-      "preparing": "準備中…"
+      "preparing": "準備中…",
+      "setup": {
+        "microphone": "マイクへのアクセスがまだ必要です",
+        "speech": "文字起こしにはAPIキーが必要です",
+        "aiModel": "要約用のAIモデルがまだ設定されていません"
+      },
+      "appWindow": "Snowyウィンドウの表示/非表示"
     },
     "screenConsent": {
       "question": "回答のために Snowy が画面を見てもいいですか？保存は一切されません。",

@@ -3442,7 +3442,13 @@
       "voice": "Sprechen",
       "finishSetup": "Einrichtung abschließen",
       "finishSetupHint": "Snowy braucht vor deinem ersten Meeting eine kurze Einrichtung",
-      "preparing": "Wird vorbereitet…"
+      "preparing": "Wird vorbereitet…",
+      "setup": {
+        "microphone": "Der Mikrofonzugriff fehlt noch",
+        "speech": "Die Transkription braucht einen API-Schlüssel",
+        "aiModel": "Für Zusammenfassungen ist noch kein KI-Modell eingerichtet"
+      },
+      "appWindow": "Snowy-Fenster anzeigen oder ausblenden"
     },
     "screenConsent": {
       "question": "Darf Snowy auf Ihren Bildschirm schauen, um besser zu antworten? Es wird nie gespeichert.",

@@ -3277,7 +3277,13 @@
       "voice": "Parla",
       "finishSetup": "Completa la configurazione",
       "finishSetupHint": "Snowy richiede una rapida configurazione prima della tua prima riunione",
-      "preparing": "Preparazione…"
+      "preparing": "Preparazione…",
+      "setup": {
+        "microphone": "Manca ancora l'accesso al microfono",
+        "speech": "La trascrizione richiede una chiave API",
+        "aiModel": "Nessun modello IA configurato per i riepiloghi"
+      },
+      "appWindow": "Mostra o nascondi la finestra di Snowy"
     },
     "screenConsent": {
       "question": "Snowy può guardare il tuo schermo per aiutarti a rispondere? Non viene mai salvato.",

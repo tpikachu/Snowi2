@@ -3442,7 +3442,13 @@
       "voice": "Parler",
       "finishSetup": "Terminer la configuration",
       "finishSetupHint": "Snowy a besoin d'une configuration rapide avant votre première réunion",
-      "preparing": "Préparation…"
+      "preparing": "Préparation…",
+      "setup": {
+        "microphone": "L'accès au micro est encore requis",
+        "speech": "La transcription nécessite une clé API",
+        "aiModel": "Aucun modèle d'IA n'est configuré pour les résumés"
+      },
+      "appWindow": "Afficher ou masquer la fenêtre Snowy"
     },
     "screenConsent": {
       "question": "Snowy peut-il regarder votre écran pour mieux répondre ? Rien n'est enregistré.",

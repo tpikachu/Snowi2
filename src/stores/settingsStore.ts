@@ -2588,7 +2588,7 @@ export const selectResolvedLLMConfig = (
 };
 
 /** Which store field holds the BYOK credential for each cloud provider. */
-const BYOK_PROVIDER_KEY_FIELDS: Partial<Record<string, keyof SettingsState>> = {
+export const BYOK_PROVIDER_KEY_FIELDS: Partial<Record<string, keyof SettingsState>> = {
   openai: "openaiApiKey",
   anthropic: "anthropicApiKey",
   gemini: "geminiApiKey",

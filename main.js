@@ -695,7 +695,14 @@ async function startApp() {
   // lets the next launch decide window layout before any renderer exists.
   ipcMain.on("onboarding-completed-changed", (_event, done) => {
     if (debugLogger) debugLogger.info("Onboarding completed changed", { done });
+    // Edge-triggered on purpose: the control panel re-notifies on every mount
+    // (the backfill for old installs), and only the genuine first completion
+    // should make the bar debut — not every reload of the big window.
+    const wasDone = environmentManager.getOnboardingDone();
     environmentManager.saveOnboardingDone(Boolean(done));
+    if (done && !wasDone && environmentManager.getShowBarAtStartup()) {
+      windowManager.showAgentOverlay({ focus: false });
+    }
   });
 
   ipcMain.on("panel-start-position-changed", (_event, position) => {
@@ -715,10 +722,17 @@ async function startApp() {
   // the OS to start us, not to put a window in front of them at every login.
   const launchedHidden = wasLaunchedAtLoginHidden();
   const startMinimized = environmentManager.getStartMinimized() || launchedHidden;
+  const onboardingDone = environmentManager.getOnboardingDone();
   if (debugLogger) debugLogger.info("Start minimized", { enabled: startMinimized, launchedHidden });
   await windowManager.createMainWindow();
-  if (!startMinimized) {
+  // Daily launches show only the assistant bar. The control panel is still
+  // created — in the background, because its renderer owns the recording
+  // engine and the panel bridge — but the big window only appears at launch
+  // for onboarding, where nothing else exists to guide a first run.
+  if (!startMinimized && !onboardingDone) {
     await windowManager.createControlPanelWindow();
+  } else {
+    await windowManager.createControlPanelWindow({ background: true });
   }
 
   // Windows/Linux cold start delivers protocol URLs via argv (macOS uses
@@ -737,14 +751,17 @@ async function startApp() {
   // there at every launch, one click from recording. Shown without focus so
   // whatever the user logged in to do keeps the keyboard.
   const { shouldShowBarAtStartup } = require("./src/helpers/barStartupPolicy");
-  if (
-    shouldShowBarAtStartup({
-      showBarAtStartup: environmentManager.getShowBarAtStartup(),
-      onboardingDone: environmentManager.getOnboardingDone(),
-      launchedHidden,
-    })
-  ) {
+  const barShown = shouldShowBarAtStartup({
+    showBarAtStartup: environmentManager.getShowBarAtStartup(),
+    onboardingDone,
+    launchedHidden,
+  });
+  if (barShown) {
     windowManager.showAgentOverlay({ focus: false });
+  } else if (onboardingDone && !startMinimized) {
+    // The bar is opted out, so fall back to the classic window — a launch
+    // must never be invisible.
+    await windowManager.createControlPanelWindow();
   }
 
   const agentHotkeyCallback = () => {

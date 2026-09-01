@@ -3442,7 +3442,13 @@
       "voice": "Speak",
       "finishSetup": "Finish setup",
       "finishSetupHint": "Snowy needs a quick setup before your first meeting",
-      "preparing": "Preparing…"
+      "preparing": "Preparing…",
+      "setup": {
+        "microphone": "Microphone access is still needed",
+        "speech": "Transcription needs an API key",
+        "aiModel": "No AI model is set up for summaries yet"
+      },
+      "appWindow": "Show or hide the Snowy window"
     },
     "screenConsent": {
       "question": "Can Snowy look at your screen to help answer? It's never saved.",

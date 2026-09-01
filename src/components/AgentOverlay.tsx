@@ -1,8 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { AudioLines, Loader2, Mic, Send, Square, TriangleAlert, X } from "lucide-react";
+import {
+  AppWindow,
+  AudioLines,
+  Captions,
+  Loader2,
+  Mic,
+  Send,
+  Sparkles,
+  TriangleAlert,
+  X,
+} from "lucide-react";
 import { cn } from "./lib/utils";
+import MeetingPanelOverlay from "./MeetingPanelOverlay";
 import { useSpeechModelDownloadStatus } from "../hooks/useSpeechModelDownloadStatus";
+import { useBarSetupStatus, type BarSetupItemId } from "../hooks/useBarSetupStatus";
 import { AgentTitleBar } from "./agent/AgentTitleBar";
 import { AgentChat } from "./agent/AgentChat";
 import { AgentInput } from "./agent/AgentInput";
@@ -20,6 +32,8 @@ const MIN_WIDTH = 360;
 const BAR_HEIGHT = 56;
 /** First expansion; a hand-resized height is remembered over this. */
 const DEFAULT_EXPANDED_HEIGHT = 480;
+/** The cue card the bar morphs into while a meeting records. */
+const MEETING_CARD_HEIGHT = 520;
 
 export default function AgentOverlay() {
   const { t } = useTranslation();
@@ -171,6 +185,31 @@ export default function AgentOverlay() {
     setIsVoiceRecording(false);
   }, []);
 
+  // While a meeting records, this window IS the cue card: main forwards the
+  // recording snapshot here and the bar morphs in place. MeetingPanelOverlay
+  // subscribes to the full state itself; the bar only needs the edge.
+  const [meetingActive, setMeetingActive] = useState(false);
+  const meetingActiveRef = useRef(false);
+  useEffect(() => {
+    meetingActiveRef.current = meetingActive;
+  }, [meetingActive]);
+  useEffect(() => {
+    let cancelled = false;
+    window.electronAPI
+      ?.meetingPanelGetState?.()
+      .then((snapshot) => {
+        if (!cancelled) setMeetingActive(Boolean(snapshot?.isRecording));
+      })
+      .catch(() => {});
+    const unsubscribe = window.electronAPI?.onMeetingPanelState?.((snapshot) =>
+      setMeetingActive(Boolean(snapshot?.isRecording))
+    );
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, []);
+
   // Bar or chat column. Derived, not toggled: a conversation on screen is
   // what makes the tall window worth its pixels, and "New chat" collapsing
   // back to the bar falls out for free. Voice capture deliberately does not
@@ -188,10 +227,12 @@ export default function AgentOverlay() {
       const bounds = await window.electronAPI?.getAgentWindowBounds?.();
       if (cancelled) return;
       const width = bounds?.width ?? 560;
-      if (expanded) {
+      if (meetingActive) {
+        window.electronAPI?.resizeAgentWindow?.(width, MEETING_CARD_HEIGHT);
+      } else if (expanded) {
         window.electronAPI?.resizeAgentWindow?.(width, lastExpandedHeightRef.current);
       } else {
-        if (bounds?.height && bounds.height > BAR_HEIGHT) {
+        if (bounds?.height && bounds.height > BAR_HEIGHT && bounds.height !== MEETING_CARD_HEIGHT) {
           lastExpandedHeightRef.current = bounds.height;
         }
         window.electronAPI?.resizeAgentWindow?.(width, BAR_HEIGHT);
@@ -200,7 +241,7 @@ export default function AgentOverlay() {
     return () => {
       cancelled = true;
     };
-  }, [expanded]);
+  }, [expanded, meetingActive]);
 
   const handleResizeStart = useCallback((e: React.MouseEvent, direction: string) => {
     e.preventDefault();
@@ -246,7 +287,9 @@ export default function AgentOverlay() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      // Never while recording: a stray Escape must not hide the one on-screen
+      // indicator that a meeting is being captured.
+      if (e.key === "Escape" && !meetingActiveRef.current) {
         window.electronAPI?.hideAgentOverlay?.();
       }
     };
@@ -319,12 +362,47 @@ export default function AgentOverlay() {
   }, []);
 
   const speechDownload = useSpeechModelDownloadStatus();
+  const setupWarnings = useBarSetupStatus();
 
   const handleFinishSetup = useCallback(() => {
     void window.electronAPI?.openControlPanel?.();
   }, []);
 
+  const handleToggleApp = useCallback(() => {
+    void window.electronAPI?.toggleControlPanel?.();
+  }, []);
+
   const isRecordingVoice = isVoiceRecording;
+
+  // Which setup is still missing, as compact warning icons — each one names
+  // itself on hover and leads to the app to fix it.
+  const WARNING_ICONS: Record<BarSetupItemId, typeof Mic> = {
+    microphone: Mic,
+    speech: Captions,
+    aiModel: Sparkles,
+  };
+  const warningCluster =
+    setupWarnings.length > 0 ? (
+      <span className="flex shrink-0 items-center">
+        {setupWarnings.map((id) => {
+          const Icon = WARNING_ICONS[id];
+          return (
+            <button
+              key={id}
+              type="button"
+              onClick={handleFinishSetup}
+              title={t(`agentMode.bar.setup.${id}`)}
+              aria-label={t(`agentMode.bar.setup.${id}`)}
+              className="relative flex size-7 items-center justify-center rounded-control text-warning hover:bg-warning/10"
+              style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+            >
+              <Icon className="size-4" strokeWidth={1.75} />
+              <span className="absolute right-0.5 top-0.5 size-1.5 rounded-full bg-warning" />
+            </button>
+          );
+        })}
+      </span>
+    ) : null;
 
   const consentRow = !agentScreenContextPrompted && (
     <div className="flex items-center gap-2 border-t border-border/50 bg-surface-1 px-3 py-2">
@@ -350,6 +428,16 @@ export default function AgentOverlay() {
       </button>
     </div>
   );
+
+  // The cue card takes the whole window while a meeting records — one
+  // surface, morphing, exactly as it reads to the user.
+  if (meetingActive) {
+    return (
+      <div className="agent-overlay-window h-screen w-screen bg-transparent">
+        <MeetingPanelOverlay />
+      </div>
+    );
+  }
 
   return (
     <div className="agent-overlay-window w-screen h-screen bg-transparent relative">
@@ -382,9 +470,12 @@ export default function AgentOverlay() {
             style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
           >
             {!setupComplete ? (
-              /* Pre-setup: the bar's one job is to hand the user to onboarding. */
+              /* Pre-setup: the bar's one job is to hand the user to onboarding.
+                 The cluster spells out which pieces are still missing. */
               <>
-                <TriangleAlert className="size-4 shrink-0 text-warning" strokeWidth={1.75} />
+                {warningCluster ?? (
+                  <TriangleAlert className="size-4 shrink-0 text-warning" strokeWidth={1.75} />
+                )}
                 <p className="min-w-0 flex-1 truncate px-1 text-[12.5px] text-muted-foreground">
                   {t("agentMode.bar.finishSetupHint")}
                 </p>
@@ -412,6 +503,7 @@ export default function AgentOverlay() {
               </>
             ) : (
               <>
+                {warningCluster}
                 <input
                   ref={barInputRef}
                   type="text"
@@ -434,7 +526,10 @@ export default function AgentOverlay() {
                   )}
                   style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
                 />
-                {barText.trim() ? (
+                {/* The dictation mic was deliberately dropped from the bar —
+                    typing and Listen are its two verbs; the hotkey still
+                    reaches voice input for those who use it. */}
+                {barText.trim() && (
                   <button
                     type="button"
                     onClick={handleBarSubmit}
@@ -443,25 +538,6 @@ export default function AgentOverlay() {
                     style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
                   >
                     <Send className="size-4" strokeWidth={1.75} />
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => (isRecordingVoice ? stopVoice() : startVoice())}
-                    aria-label={t("agentMode.bar.voice")}
-                    className={cn(
-                      "flex size-8 shrink-0 items-center justify-center rounded-control",
-                      isRecordingVoice
-                        ? "bg-destructive/10 text-destructive"
-                        : "text-muted-foreground hover:bg-surface-2 hover:text-foreground"
-                    )}
-                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                  >
-                    {isRecordingVoice ? (
-                      <Square className="size-3.5" strokeWidth={2} />
-                    ) : (
-                      <Mic className="size-4" strokeWidth={1.75} />
-                    )}
                   </button>
                 )}
                 <button
@@ -492,6 +568,16 @@ export default function AgentOverlay() {
                       {t("agentMode.bar.listen")}
                     </>
                   )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleToggleApp}
+                  title={t("agentMode.bar.appWindow")}
+                  aria-label={t("agentMode.bar.appWindow")}
+                  className="flex size-7 shrink-0 items-center justify-center rounded-control text-muted-foreground hover:bg-surface-2 hover:text-foreground"
+                  style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                >
+                  <AppWindow className="size-4" strokeWidth={1.75} />
                 </button>
                 <button
                   type="button"
