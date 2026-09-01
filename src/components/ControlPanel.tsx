@@ -68,6 +68,7 @@ import { applyChineseScript, resolveChineseScriptTarget } from "../utils/chinese
 import BackgroundActionToastListener from "./notes/BackgroundActionToastListener";
 import TourOverlay from "./tour/TourOverlay";
 import { startTourIfUnseen } from "../stores/tourStore";
+import { requestHomeSetup } from "../stores/homeSetupStore";
 import type { NoteItem } from "../types/electron";
 import type { CalendarEvent } from "../types/calendar";
 import logger from "../utils/logger";
@@ -369,6 +370,17 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   useEffect(() => {
     const cleanup = window.electronAPI?.onShowSettings?.(() => {
       setShowSettings(true);
+    });
+    return () => cleanup?.();
+  }, []);
+
+  // The bar's setup warning lands here: Home, with the capabilities card —
+  // the app's setup guide — forced open so the missing pieces are on screen.
+  useEffect(() => {
+    const cleanup = window.electronAPI?.onOpenHomeSetup?.(() => {
+      setShowSettings(false);
+      setActiveView("home");
+      requestHomeSetup();
     });
     return () => cleanup?.();
   }, []);

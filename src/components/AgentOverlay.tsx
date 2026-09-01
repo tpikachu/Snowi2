@@ -1,21 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  AppWindow,
-  AudioLines,
-  Captions,
-  Loader2,
-  MessageSquareText,
-  Mic,
-  Send,
-  Sparkles,
-  TriangleAlert,
-  X,
-} from "lucide-react";
+import { AppWindow, AudioLines, Loader2, Send, TriangleAlert, X } from "lucide-react";
 import { cn } from "./lib/utils";
 import MeetingPanelOverlay from "./MeetingPanelOverlay";
 import { useSpeechModelDownloadStatus } from "../hooks/useSpeechModelDownloadStatus";
-import { useBarSetupStatus, type BarSetupItemId } from "../hooks/useBarSetupStatus";
+import { useBarSetupStatus } from "../hooks/useBarSetupStatus";
 import { AgentTitleBar } from "./agent/AgentTitleBar";
 import { AgentChat } from "./agent/AgentChat";
 import { AgentInput } from "./agent/AgentInput";
@@ -366,7 +355,8 @@ export default function AgentOverlay() {
   const setupWarnings = useBarSetupStatus();
 
   const handleFinishSetup = useCallback(() => {
-    void window.electronAPI?.openControlPanel?.();
+    // "setup" lands the panel on Home with the capabilities card open.
+    void window.electronAPI?.openControlPanel?.("setup");
   }, []);
 
   const handleToggleApp = useCallback(() => {
@@ -375,49 +365,23 @@ export default function AgentOverlay() {
 
   const isRecordingVoice = isVoiceRecording;
 
-  // Which setup is still missing. Same icons as the Home capabilities card,
-  // so the bar and the app tell one story: Mic = OS permission, Captions =
-  // transcription, Sparkles = the write-up model, MessageSquareText = answers.
-  const WARNING_ICONS: Record<BarSetupItemId, typeof Mic> = {
-    microphone: Mic,
-    speech: Captions,
-    actions: Sparkles,
-    chatIntelligence: MessageSquareText,
-  };
+  // Compact on purpose: the bar is a strip of pixels, so unfinished setup is
+  // one pulsing warning icon. Hover spells out each missing piece; the click
+  // lands on Home with the capabilities card forced open — the app's setup
+  // guide, with a Set up button per item. It never gates Start meeting:
+  // transcription alone is enough to record.
   const setupSummary = setupWarnings.map((id) => t(`agentMode.bar.setup.${id}`)).join("\n");
-  const missingIcons =
-    setupWarnings.length > 0 ? (
-      <span className="flex items-center gap-1">
-        {setupWarnings.map((id) => {
-          const Icon = WARNING_ICONS[id];
-          return <Icon key={id} className="size-3.5" strokeWidth={1.75} />;
-        })}
-      </span>
-    ) : null;
-  // A labelled chip, not bare icons: on a bar this small, "state" has to read
-  // as words. It spells out that setup is unfinished, shows which pieces via
-  // the icons, names each one on hover, and one click lands in the app —
-  // where the Home card walks through exactly these items. It never gates
-  // Start meeting: transcription alone is enough to record.
-  const setupChip =
+  const setupWarning =
     setupWarnings.length > 0 ? (
       <button
         type="button"
         onClick={handleFinishSetup}
         title={setupSummary}
         aria-label={setupSummary}
-        className={cn(
-          "flex h-8 shrink-0 items-center gap-1.5 rounded-control px-2.5",
-          "border border-warning/40 bg-warning/10 text-[12px] font-semibold text-warning",
-          "hover:bg-warning/20"
-        )}
+        className="flex size-7 shrink-0 items-center justify-center rounded-control text-warning hover:bg-warning/10"
         style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
       >
-        <TriangleAlert className="size-3.5" strokeWidth={2} />
-        {t("agentMode.bar.finishSetup")}
-        <span className="flex items-center gap-1 border-l border-warning/30 pl-1.5">
-          {missingIcons}
-        </span>
+        <TriangleAlert className="size-4 animate-pulse" strokeWidth={2} />
       </button>
     ) : null;
 
@@ -489,17 +453,12 @@ export default function AgentOverlay() {
             style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
           >
             {!setupComplete ? (
-              /* Pre-setup: the bar's one job is to hand the user to onboarding.
-                 The icon strip spells out which pieces are still missing; the
-                 dedicated button below is the click target. */
+              /* Pre-setup: the bar's one job is to hand the user to onboarding. */
               <>
-                <span
-                  className="flex shrink-0 items-center gap-1.5 text-warning"
-                  title={setupSummary || undefined}
-                >
-                  <TriangleAlert className="size-4" strokeWidth={1.75} />
-                  {missingIcons}
-                </span>
+                <TriangleAlert
+                  className="size-4 shrink-0 animate-pulse text-warning"
+                  strokeWidth={1.75}
+                />
                 <p className="min-w-0 flex-1 truncate px-1 text-[12.5px] text-muted-foreground">
                   {t("agentMode.bar.finishSetupHint")}
                 </p>
@@ -527,7 +486,7 @@ export default function AgentOverlay() {
               </>
             ) : (
               <>
-                {setupChip}
+                {setupWarning}
                 <input
                   ref={barInputRef}
                   type="text"

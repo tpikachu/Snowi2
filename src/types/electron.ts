@@ -2033,7 +2033,8 @@ declare global {
       setAgentWindowBounds?: (x: number, y: number, width: number, height: number) => Promise<void>;
       hideAgentOverlay?: () => Promise<void>;
       startManualMeeting?: () => Promise<{ success: boolean; error?: string }>;
-      openControlPanel?: () => Promise<{ success: boolean }>;
+      openControlPanel?: (target?: "setup") => Promise<{ success: boolean }>;
+      onOpenHomeSetup?: (callback: () => void) => () => void;
       toggleControlPanel?: () => Promise<{ success: boolean; visible: boolean }>;
       publishBarStatus?: (status: {
         speechOk: boolean;

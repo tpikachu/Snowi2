@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import {
@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { cn } from "../lib/utils";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
 import { requestSettings } from "../../stores/settingsNavigationStore";
+import { useHomeSetupStore } from "../../stores/homeSetupStore";
 import { SETTINGS_REMEDIES, type SettingsRemedy } from "../../config/settingsRemedies";
 import { getProviderDisplayName, getReasoningModelLabel } from "../../models/ModelRegistry";
 import {
@@ -85,6 +86,14 @@ interface CapabilityRow extends Capability {
 export default function CapabilitiesCard() {
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useLocalStorage<boolean>(COLLAPSED_KEY, false);
+
+  // The assistant bar's setup warning points at this card. When that click
+  // lands (nonce bump), a collapsed card opens — arriving to guidance that is
+  // folded shut would make the trip pointless.
+  const setupNonce = useHomeSetupStore((s) => s.nonce);
+  useEffect(() => {
+    if (setupNonce > 0) setCollapsed(false);
+  }, [setupNonce, setCollapsed]);
 
   // useShallow because every one of these selectors builds a fresh object per
   // call, and Zustand compares by identity — without it this re-renders forever.

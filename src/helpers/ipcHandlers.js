@@ -8294,10 +8294,25 @@ class IPCHandlers {
       return { success: true };
     });
 
-    // The bar's "Finish setup" chip: surface the main window (which shows
-    // onboarding until it is completed) from a window that has no other way in.
-    ipcMain.handle("open-control-panel", async () => {
+    // The bar's setup warning: surface the main window (which shows
+    // onboarding until it is completed) from a window that has no other way
+    // in. target "setup" additionally lands the renderer on Home with the
+    // capabilities card open — the app's own setup guide.
+    ipcMain.handle("open-control-panel", async (_event, target) => {
       await this.windowManager.createControlPanelWindow();
+      if (target === "setup") {
+        const win = this.windowManager.controlPanelWindow;
+        if (win && !win.isDestroyed()) {
+          const send = () => {
+            if (!win.isDestroyed()) win.webContents.send("open-home-setup");
+          };
+          if (win.webContents.isLoading()) {
+            win.webContents.once("did-finish-load", send);
+          } else {
+            send();
+          }
+        }
+      }
       return { success: true };
     });
 
