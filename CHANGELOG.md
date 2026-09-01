@@ -5,6 +5,68 @@ All notable changes to Snowy are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-rc6] — 2026-08-31
+
+Sixth release candidate: the assistant bar becomes the product's front door.
+Daily use now starts and ends at the little bar on top of your screen; the
+big window steps back to a place you visit.
+
+**Still a release candidate.** See _Known limitations_ under 0.1.0-rc1.
+
+### The bar is where Snowy lives now
+
+- After setup, the assistant bar is simply **there at every launch** — on top
+  of your screen, one click from recording. A launch no longer opens the big
+  window at all (it loads quietly in the background); the window appears when
+  you ask for it, and automatically when a meeting ends with a write-up to
+  read. "Show the assistant bar at startup" in Settings opts out.
+- **Clicking the tray icon shows the bar**, not the app window. The window
+  stays a step away: the tray menu's own entry, or the bar's window button.
+- The bar stays on top of other windows by default, and is **visible in
+  screen shares and screenshots like any normal window**. A new
+  **"Hide from screen sharing"** switch (Settings → Startup) turns on the
+  invisible mode for the bar and the meeting cue card together.
+- While a meeting records, the bar **morphs in place into the cue card** —
+  one surface growing and shrinking, not windows swapping.
+- **Listen is now "Start meeting"** — the same words as everywhere else. The
+  ask field's hint is simply "Ask or search anything".
+- The expanded chat's title bar has exactly one button: a chevron that
+  collapses back to the bar. The conversation is already saved to chat
+  history.
+
+### The bar tells you what's left to set up — and what's downloading
+
+- Unfinished setup shows as a **single pulsing amber warning icon**. Hovering
+  lists exactly what's missing (microphone access, transcription, the
+  write-up model, in-meeting answers — the same items as Home's capability
+  card); clicking lands you on Home with that card open, Set up buttons and
+  all. None of it blocks recording: transcription alone is enough to start.
+- Readiness is computed where settings actually change and pushed to the bar
+  live — configure a model in the app and the warning clears the moment you
+  save.
+- **Speech-model downloads report their progress on the bar.** If the model
+  your meetings need is still arriving, Start meeting itself becomes
+  "Downloading… 42%"; any other model downloads as a quiet percent pill
+  beside the ask field.
+
+### Settings, redesigned
+
+- Settings moved to a softer, more spacious language: **pill switches**,
+  rounded cards with room to breathe, a real page header on every section
+  saying what it is for, leading icons on the startup rows, and the close
+  button at the head of the sidebar.
+- **Replay onboarding** (Settings → System) runs the setup wizard again while
+  your notes, keys and history all stay — no more wiping app data to see the
+  first-run flow.
+
+### Under the hood
+
+- A Playwright end-to-end suite now drives the real app (`npm run test:e2e`):
+  onboarding boot, Home, and the bar's promises — presence, always-on-top,
+  the setup warning's trip to Home, and download progress reaching the bar.
+- The demo-video recorder tells the bar-first story: meeting the bar after
+  onboarding, starting the call from it, and the cue-card morph.
+
 ## [0.1.0-rc5] — 2026-08-31
 
 Fifth release candidate: the big simplification. Snowy's surfaces were rebuilt
