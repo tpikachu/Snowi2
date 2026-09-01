@@ -49,6 +49,7 @@ const PERSISTED_KEYS = [
   "PANEL_START_POSITION",
   "START_MINIMIZED",
   "SHOW_BAR_AT_STARTUP",
+  "OVERLAY_STEALTH",
   // Mirrors the renderer's onboardingCompleted flag so the main process can
   // decide window layout at launch, before any renderer exists.
   "ONBOARDING_DONE",
@@ -518,6 +519,18 @@ class EnvironmentManager {
 
   saveShowBarAtStartup(enabled) {
     const result = this._saveKey("SHOW_BAR_AT_STARTUP", String(enabled));
+    this.saveAllKeysToEnvFile().catch(() => {});
+    return result;
+  }
+
+  // Default-off: the bar and cue card show up in screen shares like any other
+  // window unless the user opts into stealth.
+  getOverlayStealth() {
+    return this._getKey("OVERLAY_STEALTH") === "true";
+  }
+
+  saveOverlayStealth(enabled) {
+    const result = this._saveKey("OVERLAY_STEALTH", String(enabled));
     this.saveAllKeysToEnvFile().catch(() => {});
     return result;
   }

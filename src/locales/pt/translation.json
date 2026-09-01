@@ -1696,7 +1696,9 @@
           "action": "Abrir Itens de Início"
         },
         "showBar": "Mostrar a barra do assistente ao iniciar",
-        "showBarDescription": "Mantém a pequena barra do Snowy sobre a tela sempre que o Snowy estiver em execução."
+        "showBarDescription": "Mantém a pequena barra do Snowy sobre a tela sempre que o Snowy estiver em execução.",
+        "barStealth": "Ocultar ao compartilhar a tela",
+        "barStealthDescription": "Mantenha a barra do assistente e o cartão da reunião fora de compartilhamentos de tela, gravações e capturas. Só você os vê."
       },
       "waylandPaste": {
         "title": "Configuração de colagem no Wayland",
@@ -3284,7 +3286,8 @@
       "setup": {
         "microphone": "Ainda falta o acesso ao microfone",
         "speech": "A transcrição precisa de uma chave de API",
-        "aiModel": "Ainda não há um modelo de IA para os resumos"
+        "actions": "Os resumos de reuniões precisam de um modelo de IA",
+        "chatIntelligence": "As respostas durante a reunião precisam de um modelo de IA"
       },
       "appWindow": "Mostrar ou ocultar a janela do Snowy",
       "startMeeting": "Iniciar reunião"

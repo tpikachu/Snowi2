@@ -263,6 +263,7 @@ const BOOLEAN_SETTINGS = new Set([
   "floatingIconAutoHide",
   "startMinimized",
   "showBarAtStartup",
+  "overlayStealth",
   "meetingProcessDetection",
   "meetingPreRollEnabled",
   "speakerDiarizationEnabled",
@@ -685,6 +686,7 @@ export interface SettingsState
   floatingIconAutoHide: boolean;
   startMinimized: boolean;
   showBarAtStartup: boolean;
+  overlayStealth: boolean;
   gcalAccounts: CalendarAccount[];
   gcalConnected: boolean;
   gcalEmail: string;
@@ -1000,6 +1002,7 @@ export interface SettingsState
   setFloatingIconAutoHide: (enabled: boolean) => void;
   setStartMinimized: (enabled: boolean) => void;
   setShowBarAtStartup: (enabled: boolean) => void;
+  setOverlayStealth: (enabled: boolean) => void;
   setGcalAccounts: (accounts: CalendarAccount[]) => void;
   setMcalAccounts: (accounts: CalendarAccount[]) => void;
   setNotificationsEnabled: (value: boolean) => void;
@@ -1397,6 +1400,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   floatingIconAutoHide: readBoolean("floatingIconAutoHide", false),
   startMinimized: readBoolean("startMinimized", false),
   showBarAtStartup: readBoolean("showBarAtStartup", true),
+  // Visible in screen shares unless the user opts into stealth.
+  overlayStealth: readBoolean("overlayStealth", false),
   notificationsEnabled: readBoolean("notificationsEnabled", true),
   notifyMeetingDetection: readBoolean("notifyMeetingDetection", true),
   notifyCalendarReminders: readBoolean("notifyCalendarReminders", true),
@@ -2123,6 +2128,17 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     set({ showBarAtStartup: enabled });
     if (isBrowser) {
       window.electronAPI?.notifyShowBarAtStartupChanged?.(enabled);
+    }
+  },
+
+  setOverlayStealth: (enabled: boolean) => {
+    if (get().overlayStealth === enabled) return;
+    if (isBrowser) localStorage.setItem("overlayStealth", String(enabled));
+    set({ overlayStealth: enabled });
+    if (isBrowser) {
+      // Main applies content protection to the live window and persists the
+      // preference for the next launch.
+      window.electronAPI?.notifyOverlayStealthChanged?.(enabled);
     }
   },
 

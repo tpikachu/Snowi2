@@ -399,6 +399,11 @@ const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
     anchor: "startup",
     labelKey: "settingsPage.general.startup.showBar",
   },
+  {
+    section: "general",
+    anchor: "startup",
+    labelKey: "settingsPage.general.startup.barStealth",
+  },
   { section: "general", anchor: "microphone", labelKey: "settingsPage.general.microphone.title" },
   { section: "general", anchor: "dictionary", labelKey: "settingsPage.dictionary.autoLearnTitle" },
   {

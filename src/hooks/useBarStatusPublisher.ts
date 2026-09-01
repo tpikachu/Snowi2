@@ -23,11 +23,14 @@ const selectSpeechOk = (state: SettingsState): boolean => {
   return typeof value === "string" ? value.trim().length > 0 : true;
 };
 
-// Both AI scopes the bar's promise rests on: actions writes the meeting
-// summary, chatIntelligence answers the bar's own questions (screen questions
-// included — they ride the chat model, there is no separate vision setup).
-const selectAiOk = (state: SettingsState): boolean =>
-  selectLLMConfigReady(state, selectResolvedLLMConfig(state, "actions")) &&
+// The two AI scopes are published separately so the bar can mirror the Home
+// card's capability rows exactly: actions writes the meeting note, and
+// chatIntelligence answers the bar's own questions (screen questions included
+// — they ride the chat model, there is no separate vision setup).
+const selectActionsOk = (state: SettingsState): boolean =>
+  selectLLMConfigReady(state, selectResolvedLLMConfig(state, "actions"));
+
+const selectChatOk = (state: SettingsState): boolean =>
   selectLLMConfigReady(state, selectResolvedLLMConfig(state, "chatIntelligence"));
 
 /**
@@ -39,8 +42,9 @@ const selectAiOk = (state: SettingsState): boolean =>
  */
 export function useBarStatusPublisher() {
   const speechOk = useSettingsStore(selectSpeechOk);
-  const aiOk = useSettingsStore(selectAiOk);
+  const actionsOk = useSettingsStore(selectActionsOk);
+  const chatOk = useSettingsStore(selectChatOk);
   useEffect(() => {
-    window.electronAPI?.publishBarStatus?.({ speechOk, aiOk });
-  }, [speechOk, aiOk]);
+    window.electronAPI?.publishBarStatus?.({ speechOk, actionsOk, chatOk });
+  }, [speechOk, actionsOk, chatOk]);
 }

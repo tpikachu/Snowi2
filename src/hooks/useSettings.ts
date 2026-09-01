@@ -351,6 +351,8 @@ function useSettingsInternal() {
     setStartMinimized: store.setStartMinimized,
     showBarAtStartup: store.showBarAtStartup,
     setShowBarAtStartup: store.setShowBarAtStartup,
+    overlayStealth: store.overlayStealth,
+    setOverlayStealth: store.setOverlayStealth,
     panelStartPosition: store.panelStartPosition,
     setPanelStartPosition: store.setPanelStartPosition,
     preferBuiltInMic: store.preferBuiltInMic,

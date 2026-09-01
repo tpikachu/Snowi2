@@ -55,6 +55,13 @@ class WindowManager {
     this._meetingWasRecording = false;
     /** Last setup-readiness published by the control panel, for the bar. */
     this._barStatus = null;
+    /**
+     * Content protection for the assistant bar / cue card window. Off by
+     * default — the bar appears in screen shares and screenshots like any
+     * other window; the Settings toggle turns stealth on. Set from the
+     * persisted preference before the window is created.
+     */
+    this._overlayStealth = false;
     /** True only while a meeting is holding the control panel minimised. */
     this._minimizedForMeeting = false;
     this.updateNotificationWindow = null;
@@ -846,10 +853,10 @@ class WindowManager {
 
     this.agentWindow = new BrowserWindow(AGENT_OVERLAY_CONFIG);
 
-    // The bar sits on screen during meetings the user is sharing, and can hold
-    // a conversation about that meeting — same rule as the meeting panel: on
-    // the user's screen, absent from the share.
-    this.agentWindow.setContentProtection(true);
+    // Visible in screen shares by default; the stealth preference (Settings →
+    // Startup) hides the bar and cue card from shares and screenshots for
+    // users who want the Cluely-style invisible copilot.
+    this.agentWindow.setContentProtection(this._overlayStealth);
 
     this.agentWindow.once("ready-to-show", () => {
       WindowPositionUtil.setupAlwaysOnTop(this.agentWindow);
@@ -1560,13 +1567,29 @@ class WindowManager {
    */
   updateBarStatus(status) {
     this._barStatus = status
-      ? { speechOk: status.speechOk !== false, aiOk: status.aiOk !== false }
+      ? {
+          speechOk: status.speechOk !== false,
+          actionsOk: status.actionsOk !== false,
+          chatOk: status.chatOk !== false,
+        }
       : null;
     this.sendToMeetingPanel("bar-status", this._barStatus);
   }
 
   getBarStatus() {
     return this._barStatus ?? null;
+  }
+
+  /**
+   * Whether the bar/cue-card window is excluded from screen capture. Applied
+   * live when the window exists; the cached flag covers a window created
+   * later (startup order: preference read → setOverlayStealth → createAgentWindow).
+   */
+  setOverlayStealth(enabled) {
+    this._overlayStealth = Boolean(enabled);
+    if (this.agentWindow && !this.agentWindow.isDestroyed()) {
+      this.agentWindow.setContentProtection(this._overlayStealth);
+    }
   }
 
   sendMeetingPanelLevel(level) {

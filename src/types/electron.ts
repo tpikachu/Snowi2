@@ -1847,6 +1847,7 @@ declare global {
       onFloatingIconAutoHideChanged?: (callback: (enabled: boolean) => void) => () => void;
       notifyStartMinimizedChanged?: (enabled: boolean) => void;
       notifyShowBarAtStartupChanged?: (enabled: boolean) => void;
+      notifyOverlayStealthChanged?: (enabled: boolean) => void;
       notifyOnboardingCompletedChanged?: (done: boolean) => void;
       notifyPanelStartPositionChanged?: (position: string) => void;
 
@@ -2034,10 +2035,20 @@ declare global {
       startManualMeeting?: () => Promise<{ success: boolean; error?: string }>;
       openControlPanel?: () => Promise<{ success: boolean }>;
       toggleControlPanel?: () => Promise<{ success: boolean; visible: boolean }>;
-      publishBarStatus?: (status: { speechOk: boolean; aiOk: boolean }) => void;
-      getBarStatus?: () => Promise<{ speechOk: boolean; aiOk: boolean } | null>;
+      publishBarStatus?: (status: {
+        speechOk: boolean;
+        actionsOk: boolean;
+        chatOk: boolean;
+      }) => void;
+      getBarStatus?: () => Promise<{
+        speechOk: boolean;
+        actionsOk: boolean;
+        chatOk: boolean;
+      } | null>;
       onBarStatus?: (
-        callback: (status: { speechOk: boolean; aiOk: boolean } | null) => void
+        callback: (
+          status: { speechOk: boolean; actionsOk: boolean; chatOk: boolean } | null
+        ) => void
       ) => () => void;
       onAgentStartRecording?: (callback: () => void) => () => void;
       onAgentStopRecording?: (callback: () => void) => () => void;

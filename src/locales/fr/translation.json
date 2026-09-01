@@ -2000,7 +2000,9 @@
           "action": "Ouvrir Éléments d'ouverture"
         },
         "showBar": "Afficher la barre de l'assistant au démarrage",
-        "showBarDescription": "Gardez la petite barre Snowy en haut de votre écran tant que Snowy est ouvert."
+        "showBarDescription": "Gardez la petite barre Snowy en haut de votre écran tant que Snowy est ouvert.",
+        "barStealth": "Masquer lors du partage d'écran",
+        "barStealthDescription": "La barre d'assistant et la carte de réunion n'apparaissent pas dans les partages d'écran, enregistrements et captures. Vous seul les voyez."
       },
       "waylandPaste": {
         "title": "Configuration du collage Wayland",
@@ -3449,7 +3451,8 @@
       "setup": {
         "microphone": "L'accès au micro est encore requis",
         "speech": "La transcription nécessite une clé API",
-        "aiModel": "Aucun modèle d'IA n'est configuré pour les résumés"
+        "actions": "Les comptes rendus de réunion nécessitent un modèle d'IA",
+        "chatIntelligence": "Les réponses pendant la réunion nécessitent un modèle d'IA"
       },
       "appWindow": "Afficher ou masquer la fenêtre Snowy",
       "startMeeting": "Démarrer la réunion"

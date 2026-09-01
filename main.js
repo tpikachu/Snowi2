@@ -691,6 +691,12 @@ async function startApp() {
     environmentManager.saveShowBarAtStartup(enabled);
   });
 
+  ipcMain.on("overlay-stealth-changed", (_event, enabled) => {
+    if (debugLogger) debugLogger.info("Overlay stealth changed", { enabled });
+    environmentManager.saveOverlayStealth(enabled);
+    windowManager.setOverlayStealth(enabled);
+  });
+
   // The renderer owns onboarding state (localStorage); this mirror is what
   // lets the next launch decide window layout before any renderer exists.
   ipcMain.on("onboarding-completed-changed", (_event, done) => {
@@ -744,7 +750,10 @@ async function startApp() {
     await flushPendingNoteDeepLink();
   }
 
-  // Create agent window (hidden) and set up agent hotkey
+  // Create agent window (hidden) and set up agent hotkey. The stealth
+  // preference must land before creation — content protection is applied as
+  // the window is built.
+  windowManager.setOverlayStealth(environmentManager.getOverlayStealth());
   await windowManager.createAgentWindow();
 
   // The assistant bar is the product's daily face: after setup it is simply

@@ -1717,7 +1717,9 @@
           "action": "打开登录项"
         },
         "showBar": "启动时显示助手栏",
-        "showBarDescription": "只要 Snowy 在运行，就在屏幕顶层显示小助手栏。"
+        "showBarDescription": "只要 Snowy 在运行，就在屏幕顶层显示小助手栏。",
+        "barStealth": "屏幕共享时隐藏",
+        "barStealthDescription": "助手栏和会议提示卡不会出现在屏幕共享、录制和截图中。只有你能看到它们。"
       },
       "waylandPaste": {
         "title": "Wayland 粘贴设置",
@@ -3284,7 +3286,8 @@
       "setup": {
         "microphone": "仍需要麦克风权限",
         "speech": "转写需要 API 密钥",
-        "aiModel": "尚未设置用于摘要的 AI 模型"
+        "actions": "会议纪要需要一个 AI 模型",
+        "chatIntelligence": "会议中的回答需要一个 AI 模型"
       },
       "appWindow": "显示或隐藏 Snowy 窗口",
       "startMeeting": "开始会议"

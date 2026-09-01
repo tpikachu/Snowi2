@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export type BarSetupItemId = "microphone" | "speech" | "aiModel";
+export type BarSetupItemId = "microphone" | "speech" | "actions" | "chatIntelligence";
 
 /**
  * The assistant bar's warning icons: which pieces of setup are still missing.
@@ -42,12 +42,18 @@ export function useBarSetupStatus(): BarSetupItemId[] {
     };
   }, []);
 
-  const [remote, setRemote] = useState({ speechOk: true, aiOk: true });
+  const [remote, setRemote] = useState({ speechOk: true, actionsOk: true, chatOk: true });
   useEffect(() => {
     let cancelled = false;
-    const apply = (status: { speechOk?: boolean; aiOk?: boolean } | null) => {
+    const apply = (
+      status: { speechOk?: boolean; actionsOk?: boolean; chatOk?: boolean } | null
+    ) => {
       if (!status) return;
-      setRemote({ speechOk: status.speechOk !== false, aiOk: status.aiOk !== false });
+      setRemote({
+        speechOk: status.speechOk !== false,
+        actionsOk: status.actionsOk !== false,
+        chatOk: status.chatOk !== false,
+      });
     };
     window.electronAPI
       ?.getBarStatus?.()
@@ -62,9 +68,11 @@ export function useBarSetupStatus(): BarSetupItemId[] {
     };
   }, []);
 
+  // Same order as the Home card's capability rows, mic first.
   const missing: BarSetupItemId[] = [];
   if (!micOk) missing.push("microphone");
   if (!remote.speechOk) missing.push("speech");
-  if (!remote.aiOk) missing.push("aiModel");
+  if (!remote.actionsOk) missing.push("actions");
+  if (!remote.chatOk) missing.push("chatIntelligence");
   return missing;
 }

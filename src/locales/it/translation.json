@@ -1717,7 +1717,9 @@
           "action": "Apri Elementi login"
         },
         "showBar": "Mostra la barra dell'assistente all'avvio",
-        "showBarDescription": "Mantiene la piccola barra di Snowy sopra lo schermo quando Snowy è in esecuzione."
+        "showBarDescription": "Mantiene la piccola barra di Snowy sopra lo schermo quando Snowy è in esecuzione.",
+        "barStealth": "Nascondi durante la condivisione dello schermo",
+        "barStealthDescription": "La barra dell'assistente e la scheda della riunione restano fuori da condivisioni dello schermo, registrazioni e screenshot. Le vedi solo tu."
       },
       "waylandPaste": {
         "title": "Configurazione incolla su Wayland",
@@ -3284,7 +3286,8 @@
       "setup": {
         "microphone": "Manca ancora l'accesso al microfono",
         "speech": "La trascrizione richiede una chiave API",
-        "aiModel": "Nessun modello IA configurato per i riepiloghi"
+        "actions": "I resoconti delle riunioni richiedono un modello di IA",
+        "chatIntelligence": "Le risposte durante la riunione richiedono un modello di IA"
       },
       "appWindow": "Mostra o nascondi la finestra di Snowy",
       "startMeeting": "Avvia riunione"

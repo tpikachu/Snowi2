@@ -851,6 +851,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   notifyShowBarAtStartupChanged: (enabled) =>
     ipcRenderer.send("show-bar-at-startup-changed", enabled),
 
+  // Hide the bar/cue card from screen shares and screenshots (default: visible)
+  notifyOverlayStealthChanged: (enabled) => ipcRenderer.send("overlay-stealth-changed", enabled),
+
   // Mirrors the renderer-owned onboarding flag into the main process, which
   // decides window layout at launch before any renderer exists.
   notifyOnboardingCompletedChanged: (done) =>

@@ -5,6 +5,7 @@ import {
   AudioLines,
   Captions,
   Loader2,
+  MessageSquareText,
   Mic,
   Send,
   Sparkles,
@@ -374,34 +375,50 @@ export default function AgentOverlay() {
 
   const isRecordingVoice = isVoiceRecording;
 
-  // Which setup is still missing, as compact warning icons — each one names
-  // itself on hover and leads to the app to fix it.
+  // Which setup is still missing. Same icons as the Home capabilities card,
+  // so the bar and the app tell one story: Mic = OS permission, Captions =
+  // transcription, Sparkles = the write-up model, MessageSquareText = answers.
   const WARNING_ICONS: Record<BarSetupItemId, typeof Mic> = {
     microphone: Mic,
     speech: Captions,
-    aiModel: Sparkles,
+    actions: Sparkles,
+    chatIntelligence: MessageSquareText,
   };
-  const warningCluster =
+  const setupSummary = setupWarnings.map((id) => t(`agentMode.bar.setup.${id}`)).join("\n");
+  const missingIcons =
     setupWarnings.length > 0 ? (
-      <span className="flex shrink-0 items-center">
+      <span className="flex items-center gap-1">
         {setupWarnings.map((id) => {
           const Icon = WARNING_ICONS[id];
-          return (
-            <button
-              key={id}
-              type="button"
-              onClick={handleFinishSetup}
-              title={t(`agentMode.bar.setup.${id}`)}
-              aria-label={t(`agentMode.bar.setup.${id}`)}
-              className="relative flex size-7 items-center justify-center rounded-control text-warning hover:bg-warning/10"
-              style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-            >
-              <Icon className="size-4" strokeWidth={1.75} />
-              <span className="absolute right-0.5 top-0.5 size-1.5 rounded-full bg-warning" />
-            </button>
-          );
+          return <Icon key={id} className="size-3.5" strokeWidth={1.75} />;
         })}
       </span>
+    ) : null;
+  // A labelled chip, not bare icons: on a bar this small, "state" has to read
+  // as words. It spells out that setup is unfinished, shows which pieces via
+  // the icons, names each one on hover, and one click lands in the app —
+  // where the Home card walks through exactly these items. It never gates
+  // Start meeting: transcription alone is enough to record.
+  const setupChip =
+    setupWarnings.length > 0 ? (
+      <button
+        type="button"
+        onClick={handleFinishSetup}
+        title={setupSummary}
+        aria-label={setupSummary}
+        className={cn(
+          "flex h-8 shrink-0 items-center gap-1.5 rounded-control px-2.5",
+          "border border-warning/40 bg-warning/10 text-[12px] font-semibold text-warning",
+          "hover:bg-warning/20"
+        )}
+        style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+      >
+        <TriangleAlert className="size-3.5" strokeWidth={2} />
+        {t("agentMode.bar.finishSetup")}
+        <span className="flex items-center gap-1 border-l border-warning/30 pl-1.5">
+          {missingIcons}
+        </span>
+      </button>
     ) : null;
 
   const consentRow = !agentScreenContextPrompted && (
@@ -473,11 +490,16 @@ export default function AgentOverlay() {
           >
             {!setupComplete ? (
               /* Pre-setup: the bar's one job is to hand the user to onboarding.
-                 The cluster spells out which pieces are still missing. */
+                 The icon strip spells out which pieces are still missing; the
+                 dedicated button below is the click target. */
               <>
-                {warningCluster ?? (
-                  <TriangleAlert className="size-4 shrink-0 text-warning" strokeWidth={1.75} />
-                )}
+                <span
+                  className="flex shrink-0 items-center gap-1.5 text-warning"
+                  title={setupSummary || undefined}
+                >
+                  <TriangleAlert className="size-4" strokeWidth={1.75} />
+                  {missingIcons}
+                </span>
                 <p className="min-w-0 flex-1 truncate px-1 text-[12.5px] text-muted-foreground">
                   {t("agentMode.bar.finishSetupHint")}
                 </p>
@@ -505,7 +527,7 @@ export default function AgentOverlay() {
               </>
             ) : (
               <>
-                {warningCluster}
+                {setupChip}
                 <input
                   ref={barInputRef}
                   type="text"

@@ -642,6 +642,8 @@ export default function SettingsPage({
     setStartMinimized,
     showBarAtStartup,
     setShowBarAtStartup,
+    overlayStealth,
+    setOverlayStealth,
     panelStartPosition,
     setPanelStartPosition,
     audioRetentionDays,
@@ -1752,6 +1754,14 @@ export default function SettingsPage({
                     description={t("settingsPage.general.startup.showBarDescription")}
                   >
                     <Toggle checked={showBarAtStartup} onChange={setShowBarAtStartup} />
+                  </SettingsRow>
+                </SettingsPanelRow>
+                <SettingsPanelRow>
+                  <SettingsRow
+                    label={t("settingsPage.general.startup.barStealth")}
+                    description={t("settingsPage.general.startup.barStealthDescription")}
+                  >
+                    <Toggle checked={overlayStealth} onChange={setOverlayStealth} />
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>

@@ -1717,7 +1717,9 @@
           "action": "開啟登入項目"
         },
         "showBar": "啟動時顯示助理列",
-        "showBarDescription": "只要 Snowy 在執行，就在螢幕最上層顯示小助理列。"
+        "showBarDescription": "只要 Snowy 在執行，就在螢幕最上層顯示小助理列。",
+        "barStealth": "螢幕分享時隱藏",
+        "barStealthDescription": "助理列和會議提示卡不會出現在螢幕分享、錄影和截圖中。只有你能看到它們。"
       },
       "waylandPaste": {
         "title": "Wayland 貼上設定",
@@ -3284,7 +3286,8 @@
       "setup": {
         "microphone": "仍需要麥克風權限",
         "speech": "轉錄需要 API 金鑰",
-        "aiModel": "尚未設定用於摘要的 AI 模型"
+        "actions": "會議紀要需要一個 AI 模型",
+        "chatIntelligence": "會議中的回答需要一個 AI 模型"
       },
       "appWindow": "顯示或隱藏 Snowy 視窗",
       "startMeeting": "開始會議"

@@ -2000,7 +2000,9 @@
           "action": "Open Login Items"
         },
         "showBar": "Show the assistant bar at startup",
-        "showBarDescription": "Keep the small Snowy bar on top of your screen whenever Snowy is running."
+        "showBarDescription": "Keep the small Snowy bar on top of your screen whenever Snowy is running.",
+        "barStealth": "Hide from screen sharing",
+        "barStealthDescription": "Keep the assistant bar and meeting cue card out of screen shares, recordings, and screenshots. Only you see them."
       },
       "waylandPaste": {
         "title": "Wayland Paste Setup",
@@ -3449,7 +3451,8 @@
       "setup": {
         "microphone": "Microphone access is still needed",
         "speech": "Transcription needs an API key",
-        "aiModel": "No AI model is set up for summaries yet"
+        "actions": "Meeting write-ups need an AI model",
+        "chatIntelligence": "In-meeting answers need an AI model"
       },
       "appWindow": "Show or hide the Snowy window",
       "startMeeting": "Start meeting"

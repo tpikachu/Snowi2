@@ -2000,7 +2000,9 @@
           "action": "Anmeldeobjekte öffnen"
         },
         "showBar": "Assistenten-Leiste beim Start anzeigen",
-        "showBarDescription": "Zeigt die kleine Snowy-Leiste über deinem Bildschirm, solange Snowy läuft."
+        "showBarDescription": "Zeigt die kleine Snowy-Leiste über deinem Bildschirm, solange Snowy läuft.",
+        "barStealth": "Bei Bildschirmfreigabe verbergen",
+        "barStealthDescription": "Assistentenleiste und Meeting-Karte erscheinen nicht in Bildschirmfreigaben, Aufnahmen oder Screenshots. Nur du siehst sie."
       },
       "waylandPaste": {
         "title": "Wayland-Einfügen einrichten",
@@ -3449,7 +3451,8 @@
       "setup": {
         "microphone": "Der Mikrofonzugriff fehlt noch",
         "speech": "Die Transkription braucht einen API-Schlüssel",
-        "aiModel": "Für Zusammenfassungen ist noch kein KI-Modell eingerichtet"
+        "actions": "Meeting-Zusammenfassungen brauchen ein KI-Modell",
+        "chatIntelligence": "Antworten während des Meetings brauchen ein KI-Modell"
       },
       "appWindow": "Snowy-Fenster anzeigen oder ausblenden",
       "startMeeting": "Meeting starten"

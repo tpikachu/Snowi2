@@ -1717,7 +1717,9 @@
           "action": "ログイン項目を開く"
         },
         "showBar": "起動時にアシスタントバーを表示",
-        "showBarDescription": "Snowyの実行中、小さなバーを画面の最前面に表示し続けます。"
+        "showBarDescription": "Snowyの実行中、小さなバーを画面の最前面に表示し続けます。",
+        "barStealth": "画面共有で非表示にする",
+        "barStealthDescription": "アシスタントバーと会議カードを画面共有・録画・スクリーンショットに映さないようにします。自分にだけ表示されます。"
       },
       "waylandPaste": {
         "title": "Wayland 貼り付け設定",
@@ -3284,7 +3286,8 @@
       "setup": {
         "microphone": "マイクへのアクセスがまだ必要です",
         "speech": "文字起こしにはAPIキーが必要です",
-        "aiModel": "要約用のAIモデルがまだ設定されていません"
+        "actions": "会議のまとめには AI モデルが必要です",
+        "chatIntelligence": "会議中の回答には AI モデルが必要です"
       },
       "appWindow": "Snowyウィンドウの表示/非表示",
       "startMeeting": "会議を開始"
