@@ -49,6 +49,12 @@ const TOOL_INSTRUCTIONS: Record<string, string> = {
 
 export interface AgentPromptContext {
   availableTools?: string[];
+  /**
+   * Today's date as a human-readable line ("Monday, September 1, 2026"),
+   * formatted at the call site. Without it the model cannot resolve "next
+   * Friday" or "last week" — dates a desktop assistant is asked about daily.
+   */
+  today?: string;
   /** Retrieved notes, already formatted, that may help answer this turn. */
   noteContext?: string;
   /** Durable facts about the user, pinned on every message (§19). */
@@ -71,6 +77,7 @@ export interface AgentPromptContext {
  */
 export type AgentPromptSectionName =
   | "assistantRole"
+  | "today"
   | "userProfile"
   | "openCommitments"
   | "noteClaims"
@@ -87,11 +94,27 @@ export interface AgentPromptSection {
 export const AGENT_PROMPT_SECTION_SEPARATOR = "\n\n";
 
 export function getAgentPromptSections(context: AgentPromptContext = {}): AgentPromptSection[] {
-  const { availableTools, noteContext, memoryProfile, openCommitments, noteClaims, focusNote } =
-    context;
+  const {
+    availableTools,
+    today,
+    noteContext,
+    memoryProfile,
+    openCommitments,
+    noteClaims,
+    focusNote,
+  } = context;
   const sections: AgentPromptSection[] = [
     { name: "assistantRole", text: resolvePrompt("chatAgent", { agentName: null }) },
   ];
+
+  if (today?.trim()) {
+    sections.push({
+      name: "today",
+      text:
+        `Today is ${today.trim()}. ` +
+        'Resolve relative dates — "yesterday", "next Friday", "last week" — against this.',
+    });
+  }
 
   // Durable facts about the user, pinned on every message (§19). This is what
   // separates memory from search: retrieval answers "what was said about X",

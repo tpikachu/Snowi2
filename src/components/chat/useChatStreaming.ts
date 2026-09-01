@@ -333,6 +333,14 @@ export function useChatStreaming({
       // objects, so it cannot describe a prompt other than the one sent.
       const sections = getAgentPromptSections({
         availableTools,
+        // Human-formatted with the weekday, in English like the rest of the
+        // system prompt: the model needs it to resolve "next Friday".
+        today: new Date().toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
         noteContext: combinedContext || undefined,
         memoryProfile: pinnedMemory.profile || undefined,
         openCommitments: pinnedMemory.openCommitments || undefined,
