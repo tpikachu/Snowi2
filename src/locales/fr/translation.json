@@ -3464,6 +3464,14 @@
       "question": "Snowy peut-il regarder votre écran pour mieux répondre ? Rien n'est enregistré.",
       "allow": "Autoriser",
       "deny": "Pas maintenant"
+    },
+    "fastLane": {
+      "title": "Réponses rapides",
+      "description": "Pendant une réunion, les réponses rapides utilisent un modèle véloce pour que les premiers mots apparaissent immédiatement. Les réponses approfondies gardent le modèle ci-dessus.",
+      "override": "Choisir moi-même le modèle rapide",
+      "overrideOn": "Les réponses rapides utilisent le modèle choisi ci-dessous.",
+      "overrideAuto": "Snowy choisit {{model}} automatiquement — le modèle véloce de votre fournisseur de chat.",
+      "overrideSame": "Les réponses rapides utilisent actuellement votre modèle de chat. Activez ceci pour en choisir un plus véloce."
     }
   },
   "integrations": {

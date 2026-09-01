@@ -3299,6 +3299,14 @@
       "question": "允许 Snowy 查看您的屏幕以便更好地回答吗？绝不会保存。",
       "allow": "允许",
       "deny": "暂不"
+    },
+    "fastLane": {
+      "title": "快速回答",
+      "description": "会议中的快速回答使用轻量模型，让第一句话立即出现。深入回答继续使用上面的模型。",
+      "override": "自己选择快速模型",
+      "overrideOn": "快速回答使用下方选择的模型。",
+      "overrideAuto": "Snowy 当前自动选择 {{model}} — 你的聊天服务商的轻量模型。",
+      "overrideSame": "快速回答当前使用你的聊天模型。开启后可选择更快的模型。"
     }
   },
   "integrations": {

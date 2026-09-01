@@ -531,6 +531,12 @@ const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
   {
     section: "llms",
     panel: "chatIntelligence",
+    anchor: "chatFastLane",
+    labelKey: "agentMode.fastLane.title",
+  },
+  {
+    section: "llms",
+    panel: "chatIntelligence",
     anchor: "chatAgentPrompt",
     labelKey: "agentMode.settings.systemPrompt",
   },

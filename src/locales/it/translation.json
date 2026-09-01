@@ -3299,6 +3299,14 @@
       "question": "Snowy può guardare il tuo schermo per aiutarti a rispondere? Non viene mai salvato.",
       "allow": "Consenti",
       "deny": "Non ora"
+    },
+    "fastLane": {
+      "title": "Risposte rapide",
+      "description": "Durante una riunione, le risposte rapide usano un modello veloce perché le prime parole appaiano subito. Le risposte ponderate mantengono il modello sopra.",
+      "override": "Scegliere da me il modello rapido",
+      "overrideOn": "Le risposte rapide usano il modello scelto qui sotto.",
+      "overrideAuto": "Snowy sceglie {{model}} automaticamente — il modello veloce del tuo provider di chat.",
+      "overrideSame": "Le risposte rapide usano attualmente il tuo modello di chat. Attiva questa opzione per sceglierne uno più veloce."
     }
   },
   "integrations": {

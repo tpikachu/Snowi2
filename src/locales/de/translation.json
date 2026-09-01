@@ -3464,6 +3464,14 @@
       "question": "Darf Snowy auf Ihren Bildschirm schauen, um besser zu antworten? Es wird nie gespeichert.",
       "allow": "Erlauben",
       "deny": "Jetzt nicht"
+    },
+    "fastLane": {
+      "title": "Schnelle Antworten",
+      "description": "Während eines Meetings laufen schnelle Antworten auf einem flinken Modell, damit die ersten Worte sofort erscheinen. Durchdachte Antworten behalten das Modell oben.",
+      "override": "Schnelles Modell selbst wählen",
+      "overrideOn": "Schnelle Antworten nutzen das unten gewählte Modell.",
+      "overrideAuto": "Snowy wählt derzeit automatisch {{model}} — das flinke Modell deines Chat-Anbieters.",
+      "overrideSame": "Schnelle Antworten laufen derzeit auf deinem Chat-Modell. Schalte dies ein, um ein flinkeres zu wählen."
     }
   },
   "integrations": {

@@ -185,7 +185,7 @@ Snowy is an Electron-based desktop dictation application that uses whisper.cpp f
 - **ReasoningService.ts**: AI processing for agent-addressed commands
   - Detects when user addresses their named agent and removes the agent name from final output
   - Provider implementations live in a registry at `src/services/ai/inferenceProviders/index.ts`. Registry keys: `openai` (also aliased as `custom` and `openrouter`), `anthropic`, `gemini`, `groq`, `tinfoil`, `corti`, `local`, `lan`, and the enterprise provider under `bedrock`/`azure`/`vertex`. Each implements the `InferenceProvider` interface from `types.ts`
-  - Per-scope LLM config: 6 scopes (`dictationCleanup`, `dictationAgent`, `dictationAgentVision`, `actions`, `chatIntelligence`, `dictationTranslation`) defined in `src/config/inferenceScopes.ts`
+  - Per-scope LLM config: 7 scopes (`dictationCleanup`, `dictationAgent`, `dictationAgentVision`, `actions`, `chatIntelligence`, `chatFast`, `dictationTranslation`) defined in `src/config/inferenceScopes.ts`. `chatFast` is the meeting assistant's fast-lane override (BYOK only, falls back to `chatIntelligence`); when unset, `resolveFastLaneLLMConfig` (`src/utils/assistFastLane.ts`, pure + unit-tested) derives the chat provider's small sibling (`FAST_LANE_MODELS`) so Fast answers get a low-latency model on the same key. Fast asks also reuse the freshest suggestion/thinking retrieval as free grounding (`lastGroundingRef` in `useMeetingAssist`, 2-min TTL) plus the pinned series context
   - `selectResolvedLLMConfig(state, scope)` in `settingsStore.ts` resolves provider/model per scope with fallback chains
 
 ### whisper.cpp Integration

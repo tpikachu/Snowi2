@@ -3464,6 +3464,14 @@
       "question": "Can Snowy look at your screen to help answer? It's never saved.",
       "allow": "Allow",
       "deny": "Not now"
+    },
+    "fastLane": {
+      "title": "Fast answers",
+      "description": "During a meeting, Fast answers run on a quick model so the first words appear immediately. Thinking answers keep the model above.",
+      "override": "Pick the fast model myself",
+      "overrideOn": "Fast answers use the model chosen below.",
+      "overrideAuto": "Snowy currently picks {{model}} automatically — your chat provider's quick model.",
+      "overrideSame": "Fast answers currently run on your chat model. Turn this on to pick a quicker one."
     }
   },
   "integrations": {

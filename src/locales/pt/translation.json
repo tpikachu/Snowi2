@@ -3299,6 +3299,14 @@
       "question": "O Snowy pode olhar sua tela para ajudar a responder? Nunca é salvo.",
       "allow": "Permitir",
       "deny": "Agora não"
+    },
+    "fastLane": {
+      "title": "Respostas rápidas",
+      "description": "Durante uma reunião, as respostas rápidas usam um modelo veloz para que as primeiras palavras apareçam imediatamente. As respostas ponderadas mantêm o modelo acima.",
+      "override": "Escolher eu mesmo o modelo rápido",
+      "overrideOn": "As respostas rápidas usam o modelo escolhido abaixo.",
+      "overrideAuto": "O Snowy escolhe {{model}} automaticamente — o modelo veloz do seu provedor de chat.",
+      "overrideSame": "As respostas rápidas usam atualmente o seu modelo de chat. Ative isto para escolher um mais veloz."
     }
   },
   "integrations": {

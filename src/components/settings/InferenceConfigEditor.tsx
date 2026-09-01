@@ -29,6 +29,7 @@ const MODE_LABEL_PREFIX: Record<InferenceScope, string> = {
   dictationAgent: "dictationAgent.modes",
   dictationAgentVision: "dictationAgent.modes",
   chatIntelligence: "agentMode.settings.modes",
+  chatFast: "agentMode.settings.modes",
   dictationTranslation: "settingsPage.aiModels.modes",
 };
 

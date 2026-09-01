@@ -81,6 +81,22 @@ export const INFERENCE_SCOPES = {
       disableThinking: "chatAgentDisableThinking",
     },
   },
+  // Optional override for the meeting assistant's fast lane — the model that
+  // answers Fast questions mid-call, where time-to-first-token is the whole
+  // point. Unset fields resolve to chatIntelligence; when the override is off
+  // entirely, the fast lane derives a small sibling of the chat model instead
+  // (see src/utils/assistFastLane.ts). BYOK providers only, like the vision
+  // override, so remoteUrl and the custom-endpoint fields are absent.
+  chatFast: {
+    storeKeys: {
+      mode: "chatFastMode",
+      provider: "chatFastProvider",
+      model: "chatFastModel",
+      cloudMode: "chatFastCloudMode",
+      disableThinking: "chatFastDisableThinking",
+    },
+    fallbackScope: "chatIntelligence",
+  },
   dictationTranslation: {
     storeKeys: {
       mode: "translationMode",

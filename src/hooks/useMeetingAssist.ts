@@ -38,6 +38,7 @@ import {
   type AssistNote,
 } from "../utils/meetingAssistPrompt";
 import { formatNoteClaims, formatOpenCommitments } from "../utils/memoryPrompt";
+import { resolveFastLaneLLMConfig } from "../utils/assistFastLane";
 import { filterGrounding } from "../utils/chatRetrieval";
 import type { AssistLastTime, AssistMode, AssistNoteRef } from "../utils/meetingAssistState";
 import logger from "../utils/logger";
@@ -60,6 +61,10 @@ const ANSWER_NOTE_LIMIT = 6;
 /** A meeting question that hangs is worthless — the moment it was asked for has passed. */
 const ASSIST_TIMEOUT_MS = 30_000;
 
+/** How long a paid-for retrieval stays good enough to ground a fast answer.
+ *  Two minutes of meeting rarely changes which past notes are relevant. */
+const FAST_GROUNDING_TTL_MS = 120_000;
+
 type Activity = "suggestion" | "answer";
 
 interface ResolvedAssistModel {
@@ -76,13 +81,20 @@ interface ResolvedAssistModel {
 }
 
 /**
- * The model the assistant runs on.
+ * The model the assistant runs on — two lanes over one feature.
  *
- * Deliberately the chat scope rather than a dedicated one. The in-meeting
- * assistant and the notes chat answer the same kind of question over the same
- * library, and asking someone to configure two models to get one feature is a
- * setup step that buys nothing they can perceive. If time-to-first-token ever
- * needs its own small fast model, this is the single seam to change.
+ * The thinking lane (and suggestions, which are precomputed and
+ * quality-sensitive) runs on the chat scope: the in-meeting assistant and the
+ * notes chat answer the same kind of question over the same library, and
+ * asking someone to configure two models to get one feature is a setup step
+ * that buys nothing they can perceive.
+ *
+ * The fast lane runs on resolveFastLaneLLMConfig: the user's explicit
+ * override when set, otherwise the chat provider's small sibling (same
+ * provider, same key, a fraction of the time-to-first-token), otherwise the
+ * chat model as before. Thinking is always off in the fast lane — the mode's
+ * whole promise is the first token now, and a reasoning model spending eight
+ * seconds thinking about two sentences breaks exactly that promise.
  *
  * Gated on selectLLMConfigReady rather than on a model id existing: several
  * scopes default to a cloud model before anyone chose one, and a BYOK
@@ -93,30 +105,41 @@ interface ResolvedAssistModel {
  */
 function resolveAssistModel(
   systemPrompt: string,
-  options: { forceDisableThinking?: boolean } = {}
+  options: { lane?: AssistMode } = {}
 ): ResolvedAssistModel | null {
   const settings = getSettings();
-  const chat = selectResolvedLLMConfig(settings, "chatIntelligence");
-  if (!selectLLMConfigReady(settings, chat)) return null;
 
-  const mode = chat.mode || "local";
-  const isLan = mode === "self-hosted" && !!chat.remoteUrl;
-  const isCustom = mode === "providers" && chat.provider === "custom";
+  let resolved: ReturnType<typeof selectResolvedLLMConfig>;
+  let disableThinking: boolean | undefined;
+  if (options.lane === "fast") {
+    const fast = resolveFastLaneLLMConfig(settings);
+    if (!fast) return null;
+    resolved = fast.config;
+    disableThinking = true;
+  } else {
+    const chat = selectResolvedLLMConfig(settings, "chatIntelligence");
+    if (!selectLLMConfigReady(settings, chat)) return null;
+    resolved = chat;
+    // Thinking mode leaves the user's choice alone.
+    disableThinking = chat.disableThinking;
+  }
+
+  const mode = resolved.mode || "local";
+  const isLan = mode === "self-hosted" && !!resolved.remoteUrl;
+  const isCustom = mode === "providers" && resolved.provider === "custom";
 
   return {
-    model: chat.model,
-    provider: chat.provider,
+    model: resolved.model,
+    provider: resolved.provider,
     config: {
       systemPrompt,
+      // Both lanes are the same feature; the scope names the feature, not the
+      // model, and enterprise routing resolves per scope.
       inferenceScope: "chatIntelligence",
-      lanUrl: isLan ? chat.remoteUrl : undefined,
-      baseUrl: isCustom ? chat.cloudBaseUrl || undefined : undefined,
-      customApiKey: isCustom || isLan ? chat.customApiKey || undefined : undefined,
-      // A fast answer overrides the configured setting rather than reading it:
-      // the mode's whole promise is the first token now, and a reasoning model
-      // spending eight seconds thinking about two sentences breaks exactly
-      // that promise. Thinking mode leaves the user's choice alone.
-      disableThinking: options.forceDisableThinking ? true : chat.disableThinking,
+      lanUrl: isLan ? resolved.remoteUrl : undefined,
+      baseUrl: isCustom ? resolved.cloudBaseUrl || undefined : undefined,
+      customApiKey: isCustom || isLan ? resolved.customApiKey || undefined : undefined,
+      disableThinking,
     },
   };
 }
@@ -358,6 +381,18 @@ export function useMeetingAssist(): MeetingAssist {
   /** Pinned previous-occurrence context, resolved once per meeting at start. */
   const seriesRef = useRef<SeriesContext | null>(null);
   /**
+   * The freshest retrieval this meeting has paid for — filled by suggestions
+   * and thinking answers, both of which run the full search. Fast answers
+   * reuse it while it is recent: grounding from a cache hit costs no latency,
+   * and a fast answer that knows what past notes say beats one that answers
+   * from the transcript alone. Never awaited, never fetched for.
+   */
+  const lastGroundingRef = useRef<{
+    notes: AssistNote[];
+    memory: AssistMemoryContext;
+    at: number;
+  } | null>(null);
+  /**
    * Which question is current. Two questions in a row share one model client,
    * so the first one's stream is cancelled — and without this, its `finally`
    * would then clear the flags belonging to the second and let a suggestion
@@ -402,10 +437,14 @@ export function useMeetingAssist(): MeetingAssist {
       const state = useMeetingRecordingStore.getState();
       const segments = selectAssistWindow(readSegments(now), now);
       // The retrieval round trip is the fast mode's entire savings: it runs
-      // before the model call, so in fast mode it does not run at all, and the
-      // first token is as early as the provider allows. Thinking then adds the
-      // cheap layer on top — durable memory, and each note's claims — because
-      // a mode already paying for retrieval gets the truth values for free.
+      // before the model call, so in fast mode it never runs — the first
+      // token is as early as the provider allows. But grounding that is
+      // already in hand is free: fast answers carry the previous-occurrence
+      // context (resolved once at meeting start) and whatever retrieval a
+      // recent suggestion or thinking answer already paid for. Thinking runs
+      // the full search and adds the cheap layer on top — durable memory,
+      // and each note's claims — because a mode already paying for retrieval
+      // gets the truth values for free.
       let notes: AssistNote[] = [];
       let memory: AssistMemoryContext | undefined;
       if (mode === "thinking") {
@@ -416,6 +455,15 @@ export function useMeetingAssist(): MeetingAssist {
         const enriched = await retrieveAssistMemory(retrieved);
         notes = enriched.notes;
         memory = { ...enriched.memory, previousMeeting: seriesRef.current ?? undefined };
+        lastGroundingRef.current = { notes, memory: enriched.memory, at: Date.now() };
+      } else {
+        const cached = lastGroundingRef.current;
+        const fresh = cached && Date.now() - cached.at < FAST_GROUNDING_TTL_MS;
+        notes = fresh ? cached.notes : [];
+        memory = {
+          ...(fresh ? cached.memory : {}),
+          previousMeeting: seriesRef.current ?? undefined,
+        };
       }
       if (!isCurrent()) return;
       updateAnswer({ sources: toRefs(notes) });
@@ -429,9 +477,7 @@ export function useMeetingAssist(): MeetingAssist {
         mode,
       });
 
-      const resolved = resolveAssistModel(systemPrompt, {
-        forceDisableThinking: mode === "fast",
-      });
+      const resolved = resolveAssistModel(systemPrompt, { lane: mode });
       if (!resolved) {
         setAssistConfigured(false);
         updateAnswer({ streaming: false, errorKey: "notes.meetingPanel.ask.noModel" });
@@ -500,6 +546,8 @@ export function useMeetingAssist(): MeetingAssist {
       // so the memory layer is free here — and the prompt already asks for "a
       // commitment from the user's past notes", which is exactly what it adds.
       const { memory, notes } = await retrieveAssistMemory(retrieved);
+      // Paid for anyway — becomes the fast lane's free grounding.
+      lastGroundingRef.current = { notes, memory, at: Date.now() };
       if (!stillOurs()) return;
 
       const { systemPrompt, messages } = buildSuggestionMessages({
@@ -555,6 +603,7 @@ export function useMeetingAssist(): MeetingAssist {
     if (isRecording) return undefined;
     schedulerRef.current = IDLE_SCHEDULER;
     seriesRef.current = null;
+    lastGroundingRef.current = null;
     resetMeetingAssist();
     return undefined;
   }, [isRecording]);

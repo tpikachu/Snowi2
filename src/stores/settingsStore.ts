@@ -281,6 +281,8 @@ const BOOLEAN_SETTINGS = new Set([
   "dictationAgentVisionDisableThinking",
   "actionsDisableThinking",
   "chatAgentDisableThinking",
+  "useChatFastModel",
+  "chatFastDisableThinking",
   "notificationsEnabled",
   "notifyMeetingDetection",
   "notifyCalendarReminders",
@@ -811,6 +813,15 @@ export interface SettingsState
   actionsDisableThinking: boolean;
   chatAgentDisableThinking: boolean;
 
+  // Fast-lane override for the meeting assistant (chatFast scope). Off = the
+  // fast lane derives a small sibling of the chat model automatically.
+  useChatFastModel: boolean;
+  chatFastMode: InferenceMode;
+  chatFastProvider: string;
+  chatFastModel: string;
+  chatFastCloudMode: string;
+  chatFastDisableThinking: boolean;
+
   customPrompts: Record<PromptKind, string>;
   setCustomPrompt: (kind: PromptKind, value: string) => void;
 
@@ -833,6 +844,13 @@ export interface SettingsState
   setDictationAgentVisionCloudBaseUrl: (value: string) => void;
   setDictationAgentVisionCustomApiKey: (key: string) => void;
   setDictationAgentVisionDisableThinking: (value: boolean) => void;
+
+  setUseChatFastModel: (value: boolean) => void;
+  setChatFastMode: (mode: InferenceMode) => void;
+  setChatFastProvider: (value: string) => void;
+  setChatFastModel: (value: string) => void;
+  setChatFastCloudMode: (value: string) => void;
+  setChatFastDisableThinking: (value: boolean) => void;
 
   setTranscriptionMode: (mode: InferenceMode) => void;
   setRemoteTranscriptionType: (type: SelfHostedType) => void;
@@ -1673,6 +1691,15 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   agentScreenContext: readBoolean("agentScreenContext", false),
   agentScreenContextPrompted: readBoolean("agentScreenContextPrompted", false),
   useDictationAgentVisionModel: readBoolean("useDictationAgentVisionModel", false),
+  // Fast-lane override, BYOK providers only — same shape as the vision
+  // override. Off by default: the fast lane derives its model automatically.
+  useChatFastModel: readBoolean("useChatFastModel", false),
+  chatFastMode: "providers" as InferenceMode,
+  chatFastProvider: readString("chatFastProvider", ""),
+  chatFastModel: readString("chatFastModel", ""),
+  chatFastCloudMode: readString("chatFastCloudMode", "byok"),
+  // Fast answers exist for the first token; thinking stays off.
+  chatFastDisableThinking: readBoolean("chatFastDisableThinking", true),
   // The vision override never had a local lane; BYOK providers is its only mode.
   dictationAgentVisionMode: "providers" as InferenceMode,
   dictationAgentVisionProvider: readString("dictationAgentVisionProvider", ""),
@@ -1729,6 +1756,12 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
 
   setCleanupDisableThinking: createBooleanSetter("cleanupDisableThinking"),
   setDictationAgentDisableThinking: createBooleanSetter("dictationAgentDisableThinking"),
+  setUseChatFastModel: createBooleanSetter("useChatFastModel"),
+  setChatFastMode: createStringSetter("chatFastMode") as (mode: InferenceMode) => void,
+  setChatFastProvider: createStringSetter("chatFastProvider"),
+  setChatFastModel: createStringSetter("chatFastModel"),
+  setChatFastCloudMode: createStringSetter("chatFastCloudMode"),
+  setChatFastDisableThinking: createBooleanSetter("chatFastDisableThinking"),
   setDictationAgentVisionDisableThinking: createBooleanSetter(
     "dictationAgentVisionDisableThinking"
   ),

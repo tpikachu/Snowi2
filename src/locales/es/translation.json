@@ -3347,6 +3347,14 @@
       "question": "¿Puede Snowy mirar tu pantalla para ayudarte a responder? Nunca se guarda.",
       "allow": "Permitir",
       "deny": "Ahora no"
+    },
+    "fastLane": {
+      "title": "Respuestas rápidas",
+      "description": "Durante una reunión, las respuestas rápidas usan un modelo veloz para que las primeras palabras aparezcan de inmediato. Las respuestas reflexivas mantienen el modelo de arriba.",
+      "override": "Elegir yo mismo el modelo rápido",
+      "overrideOn": "Las respuestas rápidas usan el modelo elegido abajo.",
+      "overrideAuto": "Snowy elige {{model}} automáticamente — el modelo veloz de tu proveedor de chat.",
+      "overrideSame": "Las respuestas rápidas usan ahora tu modelo de chat. Activa esto para elegir uno más veloz."
     }
   },
   "integrations": {
