@@ -4,16 +4,14 @@ import { useSettingsLayout } from "./useSettingsLayout";
 import type { InferenceMode } from "../../types/electron";
 
 /**
- * The settings scaffolding, in the "machined instrument" language.
+ * The settings scaffolding, in the product's softer rounded language
+ * (client direction, 2026-08: match and beat the Cluely-class settings look).
  *
- * Rule 4 does most of the work: a settings panel is ONE plate divided by
- * full-width hairline seams (`divide-y`), not a stack of translucent cards.
- * The previous version leaned on `/50` alpha fills and `backdrop-blur-sm`,
- * which made every panel a slightly different colour depending on what
- * happened to be behind it — the opposite of an instrument reading.
- *
- * Rule 5 puts section titles in micro-caps so a long settings page can be
- * skimmed by its headers alone.
+ * A settings panel is still ONE plate divided by full-width hairline seams
+ * (`divide-y`) — never a stack of translucent cards — but the plate is now
+ * rounded-xl with room to breathe in every row: 14px labels over muted
+ * descriptions, optional leading icon tiles, and the pill Toggle on the
+ * trailing edge. Micro-caps survive only as group metadata labels.
  */
 
 interface SettingsSectionProps {
@@ -55,7 +53,7 @@ export const SettingsGroup: React.FC<SettingsGroupProps> = ({
   variant = "default",
   className = "",
 }) => {
-  const baseClasses = "space-y-2.5 rounded-surface border border-border-subtle p-3";
+  const baseClasses = "space-y-2.5 rounded-xl border border-border-subtle p-3.5";
   const variantClasses = {
     default: "bg-surface-1 shadow-(--shadow-panel)",
     // Rule 3 — emphasis is a rail, not a tinted box.
@@ -73,6 +71,8 @@ export const SettingsGroup: React.FC<SettingsGroupProps> = ({
 interface SettingsRowProps {
   label: string;
   description?: string;
+  /** Optional leading icon, rendered in a soft square tile beside the copy. */
+  icon?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
 }
@@ -80,6 +80,7 @@ interface SettingsRowProps {
 export const SettingsRow: React.FC<SettingsRowProps> = ({
   label,
   description,
+  icon,
   children,
   className = "",
 }) => {
@@ -91,11 +92,21 @@ export const SettingsRow: React.FC<SettingsRowProps> = ({
         isCompact ? "flex-col items-start gap-2" : "items-center justify-between gap-4"
       } ${className}`}
     >
-      <div className="min-w-0 flex-1">
-        <p className="text-[13px] font-medium leading-tight text-foreground">{label}</p>
-        {description && (
-          <p className="mt-0.5 text-xs leading-snug text-muted-foreground">{description}</p>
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        {icon && (
+          <span
+            aria-hidden="true"
+            className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border-subtle bg-surface-3 text-muted-foreground"
+          >
+            {icon}
+          </span>
         )}
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium leading-tight text-foreground">{label}</p>
+          {description && (
+            <p className="mt-1 text-xs leading-snug text-muted-foreground">{description}</p>
+          )}
+        </div>
       </div>
       <div className={isCompact ? "" : "shrink-0"}>{children}</div>
     </div>
@@ -111,7 +122,7 @@ export function SettingsPanel({
 }) {
   return (
     <div
-      className={`divide-y divide-border-subtle overflow-hidden rounded-surface border border-border-subtle bg-surface-1 shadow-(--shadow-panel) ${className}`}
+      className={`divide-y divide-border-subtle overflow-hidden rounded-xl border border-border-subtle bg-surface-1 shadow-(--shadow-panel) ${className}`}
     >
       {children}
     </div>
@@ -128,7 +139,7 @@ export function SettingsPanelRow({
   const { isCompact } = useSettingsLayout();
 
   return (
-    <div className={`${isCompact ? "px-3 py-2.5" : "px-3.5 py-2.5"} ${className}`}>{children}</div>
+    <div className={`${isCompact ? "px-3.5 py-3" : "px-4 py-3"} ${className}`}>{children}</div>
   );
 }
 

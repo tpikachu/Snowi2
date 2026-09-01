@@ -119,7 +119,7 @@ export default function SettingsModal({
             // A hotkey capture field owns the keyboard while it is recording.
             if (document.querySelector("[data-capturing]")) event.preventDefault();
           }}
-          className="fixed left-1/2 top-1/2 z-50 flex h-[min(88vh,52rem)] w-[min(94vw,68rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-xl border border-border bg-background shadow-(--shadow-modal) duration-150 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+          className="fixed left-1/2 top-1/2 z-50 flex h-[min(88vh,52rem)] w-[min(94vw,68rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-border bg-background shadow-(--shadow-modal) duration-150 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
           <DialogPrimitive.Title className="sr-only">
             {t("settingsModal.title")}

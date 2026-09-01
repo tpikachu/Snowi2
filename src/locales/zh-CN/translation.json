@@ -3277,7 +3277,7 @@
       "invalidArgs": "{{name}} 的工具参数无效"
     },
     "bar": {
-      "placeholder": "问我任何关于屏幕或会议的问题…",
+      "placeholder": "提问或搜索任何内容",
       "send": "发送",
       "voice": "说话",
       "finishSetup": "完成设置",

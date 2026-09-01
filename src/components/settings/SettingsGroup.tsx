@@ -60,7 +60,7 @@ export default function SettingsGroup({
         <div className="min-w-0">
           <h3
             id={headingId}
-            className="text-[13px] font-semibold leading-tight tracking-tight text-foreground"
+            className="text-sm font-semibold leading-tight tracking-tight text-foreground"
           >
             {title}
           </h3>

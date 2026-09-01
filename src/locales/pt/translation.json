@@ -3277,7 +3277,7 @@
       "invalidArgs": "Argumentos de ferramenta inválidos para {{name}}"
     },
     "bar": {
-      "placeholder": "Pergunte qualquer coisa sobre sua tela ou suas reuniões…",
+      "placeholder": "Pergunte ou pesquise qualquer coisa",
       "send": "Enviar",
       "voice": "Falar",
       "finishSetup": "Concluir configuração",

@@ -3325,7 +3325,7 @@
       "invalidArgs": "Argumentos de herramienta no válidos para {{name}}"
     },
     "bar": {
-      "placeholder": "Pregunta lo que sea sobre tu pantalla o tus reuniones…",
+      "placeholder": "Pregunta o busca lo que sea",
       "send": "Enviar",
       "voice": "Hablar",
       "finishSetup": "Terminar configuración",

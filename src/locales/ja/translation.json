@@ -3277,7 +3277,7 @@
       "invalidArgs": "{{name}} のツール引数が無効です"
     },
     "bar": {
-      "placeholder": "画面や会議について何でも聞いてください…",
+      "placeholder": "何でも質問・検索",
       "send": "送信",
       "voice": "話す",
       "finishSetup": "設定を完了",

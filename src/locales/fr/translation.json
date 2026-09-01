@@ -3442,7 +3442,7 @@
       "invalidArgs": "Arguments d'outil invalides pour {{name}}"
     },
     "bar": {
-      "placeholder": "Posez une question sur votre écran ou vos réunions…",
+      "placeholder": "Posez une question ou cherchez",
       "send": "Envoyer",
       "voice": "Parler",
       "finishSetup": "Terminer la configuration",

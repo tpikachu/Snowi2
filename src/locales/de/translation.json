@@ -3442,7 +3442,7 @@
       "invalidArgs": "Ungültige Tool-Argumente für {{name}}"
     },
     "bar": {
-      "placeholder": "Fragen Sie alles über Ihren Bildschirm oder Ihre Meetings…",
+      "placeholder": "Frag oder such einfach",
       "send": "Senden",
       "voice": "Sprechen",
       "finishSetup": "Einrichtung abschließen",

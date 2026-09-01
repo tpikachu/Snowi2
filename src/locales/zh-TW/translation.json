@@ -3277,7 +3277,7 @@
       "invalidArgs": "{{name}} 的工具參數無效"
     },
     "bar": {
-      "placeholder": "問我任何關於螢幕或會議的問題…",
+      "placeholder": "提問或搜尋任何內容",
       "send": "傳送",
       "voice": "說話",
       "finishSetup": "完成設定",

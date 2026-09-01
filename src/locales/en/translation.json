@@ -3442,7 +3442,7 @@
       "invalidArgs": "Invalid tool arguments for {{name}}"
     },
     "bar": {
-      "placeholder": "Ask anything about your screen or your meetings…",
+      "placeholder": "Ask or search anything",
       "send": "Send",
       "voice": "Speak",
       "finishSetup": "Finish setup",

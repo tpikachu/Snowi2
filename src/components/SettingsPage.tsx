@@ -29,6 +29,10 @@ import {
   MessageSquare,
   Video,
   Wand2,
+  Rocket,
+  Minimize2,
+  PanelTop,
+  EyeOff,
 } from "lucide-react";
 import MicPermissionWarning from "./ui/MicPermissionWarning";
 import MicrophoneSettings from "./ui/MicrophoneSettings";
@@ -1710,6 +1714,7 @@ export default function SettingsPage({
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
+                    icon={<Rocket size={16} />}
                     label={t("settingsPage.general.startup.launchAtLogin")}
                     description={t("settingsPage.general.startup.launchAtLoginDescription")}
                   >
@@ -1742,6 +1747,7 @@ export default function SettingsPage({
                 )}
                 <SettingsPanelRow>
                   <SettingsRow
+                    icon={<Minimize2 size={16} />}
                     label={t("settingsPage.general.startup.startMinimized")}
                     description={t("settingsPage.general.startup.startMinimizedDescription")}
                   >
@@ -1750,6 +1756,7 @@ export default function SettingsPage({
                 </SettingsPanelRow>
                 <SettingsPanelRow>
                   <SettingsRow
+                    icon={<PanelTop size={16} />}
                     label={t("settingsPage.general.startup.showBar")}
                     description={t("settingsPage.general.startup.showBarDescription")}
                   >
@@ -1758,6 +1765,7 @@ export default function SettingsPage({
                 </SettingsPanelRow>
                 <SettingsPanelRow>
                   <SettingsRow
+                    icon={<EyeOff size={16} />}
                     label={t("settingsPage.general.startup.barStealth")}
                     description={t("settingsPage.general.startup.barStealthDescription")}
                   >

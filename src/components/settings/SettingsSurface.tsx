@@ -19,7 +19,7 @@ import {
 const NAV_WIDTH_PX = 248;
 
 const navItemClass = [
-  "group relative flex w-full items-center gap-2.5 rounded-md py-1.5 pl-2 pr-2 text-left",
+  "group relative flex w-full items-center gap-2.5 rounded-lg py-2 pl-2.5 pr-2 text-left",
   "outline-none transition-colors duration-150 ease-snap",
   "focus-visible:ring-2 focus-visible:ring-ring",
 ].join(" ");
@@ -238,7 +238,18 @@ export default function SettingsSurface({
         className="flex h-full shrink-0 flex-col border-r border-border-subtle bg-surface-1"
         style={{ width: NAV_WIDTH_PX }}
       >
-        <div className="flex h-11 shrink-0 items-center border-b border-border-subtle pl-3 pr-2">
+        <div className="flex h-11 shrink-0 items-center gap-1.5 border-b border-border-subtle pl-2 pr-2">
+          {/* Close lives at the head of the sidebar, where the eye starts —
+              Escape and the backdrop still dismiss. */}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={t("common.close")}
+            title={t("settingsModal.closeHint")}
+            className="flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground outline-none transition-colors duration-150 ease-snap hover:bg-surface-3 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <X size={15} />
+          </button>
           {/* The dialog's own accessible title already announces this, so the
               visible copy is decoration rather than another heading. */}
           <span className="min-w-0 flex-1 truncate text-[13px] font-medium leading-none tracking-tight text-foreground">
@@ -357,10 +368,12 @@ export default function SettingsSurface({
                           )}
                         >
                           <Icon
-                            size={15}
+                            size={16}
                             className={cn("shrink-0", isActive ? "text-primary" : undefined)}
                           />
-                          <span className="min-w-0 flex-1 truncate text-xs">{t(def.labelKey)}</span>
+                          <span className="min-w-0 flex-1 truncate text-[13px]">
+                            {t(def.labelKey)}
+                          </span>
                         </button>
 
                         {isActive && def.panels && (
@@ -434,35 +447,40 @@ export default function SettingsSurface({
 
       {/* ---- Content pane ------------------------------------------------- */}
       <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="relative z-20 flex h-11 w-full shrink-0 items-center gap-2 border-b border-border-subtle bg-background pl-4 pr-2">
-          <h2 className="min-w-0 truncate text-[13px] font-medium leading-none tracking-tight text-foreground">
-            {section ? t(section.labelKey) : t("settingsModal.title")}
-          </h2>
-          {activePanelLabel && (
-            <>
-              <span aria-hidden="true" className="text-muted-foreground">
-                ›
-              </span>
-              <span className="min-w-0 truncate text-[13px] leading-none text-muted-foreground">
-                {activePanelLabel}
-              </span>
-            </>
-          )}
-          <div className="flex-1" />
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t("common.close")}
-            title={t("settingsModal.closeHint")}
-            className="flex h-7 items-center gap-1.5 rounded-md border border-border px-2.5 text-xs font-medium text-muted-foreground outline-none transition-colors duration-150 ease-snap hover:border-border-hover hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <X size={13} />
-            {t("common.close")}
-          </button>
-        </header>
-
         <div ref={contentRef} className="min-h-0 flex-1 overflow-y-auto">
-          <div className="mx-auto w-full max-w-[76rem] px-6 pb-24 pt-6">
+          <div className="mx-auto w-full max-w-[76rem] px-6 pb-24 pt-7">
+            {/* The page header sits in the content, not a chrome bar: the
+                section's name in full weight with its one-line purpose under
+                it, so every section opens by saying what it is for. Width
+                follows the content — centred at reading measure normally,
+                full-width when the section flows into two columns. */}
+            <div
+              className={cn(
+                "mb-6",
+                !!section?.twoColumn && isWide ? "w-full" : "mx-auto w-full max-w-[46rem]"
+              )}
+            >
+              <h2 className="flex min-w-0 items-baseline gap-2 text-[17px] font-semibold leading-tight tracking-tight text-foreground">
+                <span className="truncate">
+                  {section ? t(section.labelKey) : t("settingsModal.title")}
+                </span>
+                {activePanelLabel && (
+                  <>
+                    <span aria-hidden="true" className="shrink-0 text-sm text-muted-foreground">
+                      ›
+                    </span>
+                    <span className="truncate text-sm font-medium text-muted-foreground">
+                      {activePanelLabel}
+                    </span>
+                  </>
+                )}
+              </h2>
+              {section && (
+                <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                  {t(section.descriptionKey)}
+                </p>
+              )}
+            </div>
             <SettingsSurfaceContext.Provider value={surfaceValue}>
               <SettingsLayoutProvider value={layoutValue}>{children}</SettingsLayoutProvider>
             </SettingsSurfaceContext.Provider>

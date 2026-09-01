@@ -3277,7 +3277,7 @@
       "invalidArgs": "Argomenti dello strumento non validi per {{name}}"
     },
     "bar": {
-      "placeholder": "Chiedi qualsiasi cosa sul tuo schermo o sulle tue riunioni…",
+      "placeholder": "Chiedi o cerca qualsiasi cosa",
       "send": "Invia",
       "voice": "Parla",
       "finishSetup": "Completa la configurazione",
