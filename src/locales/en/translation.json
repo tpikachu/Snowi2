@@ -3478,8 +3478,8 @@
       "label": "Answer speed",
       "fast": "Fast",
       "thinking": "Thinking",
-      "fastHint": "Fast — answers right away on a quick model, without tools",
-      "thinkingHint": "Thinking — takes longer, can search your notes and use tools"
+      "fastHint": "Fast — instant answers on a quick model; can still search your notes and meetings",
+      "thinkingHint": "Thinking — slower, reasons more deeply on your main model"
     }
   },
   "integrations": {

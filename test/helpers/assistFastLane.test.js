@@ -78,23 +78,22 @@ test("resolveFastLaneLLMConfig picks the fastest callable model", async (t) => {
     assert.equal(resolved.config.model, FAST_LANE_MODELS.openai);
   });
 
-  await t.test("the fast chat lane is a single shot on the fast model", () => {
-    // Fast in chat means no tool loop and no thinking — the whole point is
-    // the first token, and a tool round-trip is another entire model turn.
+  await t.test("the fast chat lane swaps the engine, never the coverage", () => {
+    // Fast means the fast model with thinking off — the tool loop stays, or
+    // "how many meetings did we have" gets a confident guess instead of a
+    // list_meetings call.
     const lane = resolveChatLaneConfig(state(), "fast");
     assert.equal(lane.lane, "fast");
-    assert.equal(lane.allowTools, false);
     assert.equal(lane.disableThinking, true);
     assert.equal(lane.config.model, FAST_LANE_MODELS.openai);
   });
 
-  await t.test("the thinking chat lane is the full agent on the chat model", () => {
+  await t.test("the thinking chat lane keeps the chat model and the user's setting", () => {
     // The user's own thinking setting rides through untouched — set it to the
     // value the fast lane would never produce, and see it survive.
     useSettingsStore.setState({ chatAgentDisableThinking: false });
     const lane = resolveChatLaneConfig(state(), "thinking");
     assert.equal(lane.lane, "thinking");
-    assert.equal(lane.allowTools, true);
     assert.equal(lane.config.model, "gpt-5.5");
     assert.equal(lane.disableThinking, false);
   });
@@ -106,6 +105,5 @@ test("resolveFastLaneLLMConfig picks the fastest callable model", async (t) => {
     useSettingsStore.setState({ openaiApiKey: "" });
     const lane = resolveChatLaneConfig(state(), "fast");
     assert.equal(lane.lane, "thinking");
-    assert.equal(lane.allowTools, true);
   });
 });

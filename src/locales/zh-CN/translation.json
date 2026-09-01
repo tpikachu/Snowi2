@@ -3313,8 +3313,8 @@
       "label": "回答速度",
       "fast": "快速",
       "thinking": "思考",
-      "fastHint": "快速 — 用轻量模型立即回答，不使用工具",
-      "thinkingHint": "思考 — 较慢，可搜索你的笔记并使用工具"
+      "fastHint": "快速 — 用轻量模型立即回答，仍可搜索你的笔记和会议",
+      "thinkingHint": "思考 — 较慢，用你的主模型更深入地推理"
     }
   },
   "integrations": {

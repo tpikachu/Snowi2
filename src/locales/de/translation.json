@@ -3478,8 +3478,8 @@
       "label": "Antwortgeschwindigkeit",
       "fast": "Schnell",
       "thinking": "Denken",
-      "fastHint": "Schnell — antwortet sofort mit einem flinken Modell, ohne Werkzeuge",
-      "thinkingHint": "Denken — dauert länger, kann deine Notizen durchsuchen und Werkzeuge nutzen"
+      "fastHint": "Schnell — sofortige Antworten mit einem flinken Modell; durchsucht weiterhin deine Notizen und Meetings",
+      "thinkingHint": "Denken — langsamer, denkt gründlicher mit deinem Hauptmodell nach"
     }
   },
   "integrations": {

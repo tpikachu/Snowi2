@@ -78,18 +78,18 @@ export interface ChatLaneResolution {
   /** The lane actually served — "thinking" when fast could not resolve. */
   lane: ChatLane;
   disableThinking: boolean | undefined;
-  /** Fast is a single shot: no tool loop, the prefetched context is everything. */
-  allowTools: boolean;
 }
 
 /**
  * The model and turn shape for one chat send.
  *
- * Thinking (the default) is the full agent: the chat model, the tool loop,
- * and whatever thinking setting the user chose. Fast is the same question as
- * a single shot — the fast-lane model, thinking off, no tools — over the same
- * prefetched grounding, because retrieval is local and cheap while a tool
- * round-trip is another whole model turn.
+ * Both lanes are the full agent — same tools, same prefetched grounding —
+ * because a lane that cannot call list_meetings answers "how many meetings
+ * did we have" with a confident guess, and a wrong answer is slower than any
+ * model. What Fast changes is the engine: the fast-lane model with thinking
+ * forced off, so a plain question streams immediately and a tool round-trip
+ * costs a quick call instead of a reasoning pass. Thinking keeps the chat
+ * model and whatever thinking setting the user chose.
  *
  * A fast request that cannot resolve (the chat scope itself is unready)
  * degrades to the thinking lane rather than failing differently: the thinking
@@ -100,14 +100,9 @@ export function resolveChatLaneConfig(settings: SettingsState, lane: ChatLane): 
   if (lane === "fast") {
     const fast = resolveFastLaneLLMConfig(settings);
     if (fast) {
-      return { config: fast.config, lane: "fast", disableThinking: true, allowTools: false };
+      return { config: fast.config, lane: "fast", disableThinking: true };
     }
   }
   const chat = selectResolvedLLMConfig(settings, "chatIntelligence");
-  return {
-    config: chat,
-    lane: "thinking",
-    disableThinking: chat.disableThinking,
-    allowTools: true,
-  };
+  return { config: chat, lane: "thinking", disableThinking: chat.disableThinking };
 }

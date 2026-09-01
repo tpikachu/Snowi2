@@ -3313,8 +3313,8 @@
       "label": "Velocità di risposta",
       "fast": "Veloce",
       "thinking": "Riflessione",
-      "fastHint": "Veloce — risponde subito con un modello rapido, senza strumenti",
-      "thinkingHint": "Riflessione — più lenta, può cercare nelle tue note e usare strumenti"
+      "fastHint": "Veloce — risposte immediate con un modello rapido; cerca comunque nelle tue note e riunioni",
+      "thinkingHint": "Riflessione — più lenta, ragiona più a fondo con il tuo modello principale"
     }
   },
   "integrations": {

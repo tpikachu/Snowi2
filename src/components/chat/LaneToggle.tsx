@@ -7,8 +7,9 @@ import type { ChatLane } from "../../utils/assistFastLane";
  * The two speeds of a chat answer, as a compact segment beside the input.
  *
  * The same pair the meeting panel offers, in the app's own visual language
- * rather than the HUD's: Fast is a single shot on the fast-lane model, and
- * Thinking is the full agent with tools and the user's thinking setting. The
+ * rather than the HUD's. Both lanes are the full agent with the same tools —
+ * Fast swaps in the fast-lane model with thinking off, Thinking keeps the
+ * chat model and the user's thinking setting. The
  * default belongs to the surface — the bar defaults to Fast because it is the
  * glance-and-go surface, the app chat to Thinking because someone sitting in
  * the app has time for the better answer. Neither choice is persisted: each

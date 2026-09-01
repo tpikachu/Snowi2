@@ -220,12 +220,11 @@ export function useChatStreaming({
       options?: { screenContext?: ScreenContextImage; lane?: ChatLane }
     ) => {
       const settings = getSettings();
-      // The lane decides the model and the shape of the turn: thinking (the
-      // default) is the full agent — the chat model, the tool loop, the
-      // user's thinking setting. Fast is a single shot on the fast-lane
-      // model with thinking off and no tools, over the same prefetched
-      // grounding. An unresolvable fast lane degrades to thinking, whose
-      // unconfigured-model path already explains itself.
+      // The lane decides the engine, not the coverage: both lanes are the
+      // full agent with the same tools — fast swaps in the fast-lane model
+      // with thinking off, thinking keeps the chat model and the user's
+      // thinking setting. An unresolvable fast lane degrades to thinking,
+      // whose unconfigured-model path already explains itself.
       const laneResolution = resolveChatLaneConfig(settings, options?.lane ?? "thinking");
       const chatConfig = laneResolution.config;
       const chatAgentMode = chatConfig.mode || "local";
@@ -263,7 +262,7 @@ export function useChatStreaming({
         ].includes(chatConfig.provider);
       const localModelCanUseTool =
         isLocalProvider && estimateModelSizeB(chatConfig.model) >= LOCAL_TOOL_MIN_PARAMS_B;
-      const supportsTools = laneResolution.allowTools && (!isLocalProvider || localModelCanUseTool);
+      const supportsTools = !isLocalProvider || localModelCanUseTool;
 
       const scope = searchScopeRef.current;
       let registry: ToolRegistry | null = null;
