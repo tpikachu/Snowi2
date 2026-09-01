@@ -1680,7 +1680,12 @@
         "light": "Claro",
         "theme": "Tema",
         "themeDescription": "Elige claro, oscuro o según tu sistema",
-        "title": "Apariencia"
+        "title": "Apariencia",
+        "textSize": "Tamaño del texto",
+        "textSizeDescription": "Agranda todo en esta ventana. La barra flotante no cambia.",
+        "textSizeDefault": "Normal",
+        "textSizeLarge": "Grande",
+        "textSizeLarger": "Muy grande"
       },
       "floatingIcon": {
         "autoHide": "Ocultar automáticamente cuando está inactivo",
@@ -2292,7 +2297,8 @@
         "voiceAgent": "Agente de voz"
       },
       "title": "Atajos",
-      "useSuggested": "Usar {{hotkey}}"
+      "useSuggested": "Usar {{hotkey}}",
+      "notSet": "Sin asignar"
     },
     "actions": {
       "autoGenerateTitle": "Generar títulos de notas automáticamente",

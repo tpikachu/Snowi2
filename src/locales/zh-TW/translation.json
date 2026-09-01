@@ -1632,7 +1632,12 @@
         "light": "淺色",
         "theme": "主題",
         "themeDescription": "選擇淺色、深色或跟隨系統",
-        "title": "外觀"
+        "title": "外觀",
+        "textSize": "文字大小",
+        "textSizeDescription": "放大此視窗中的所有內容。懸浮列不受影響。",
+        "textSizeDefault": "預設",
+        "textSizeLarge": "大",
+        "textSizeLarger": "更大"
       },
       "floatingIcon": {
         "autoHide": "閒置時自動隱藏",
@@ -2244,7 +2249,8 @@
         "voiceAgent": "語音代理"
       },
       "title": "快速鍵",
-      "useSuggested": "使用 {{hotkey}}"
+      "useSuggested": "使用 {{hotkey}}",
+      "notSet": "未設定"
     },
     "actions": {
       "autoGenerateTitle": "自動產生筆記標題",

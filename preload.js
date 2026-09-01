@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer, webUtils } = require("electron");
+const { contextBridge, ipcRenderer, webUtils, webFrame } = require("electron");
 
 // BYOK API-key bridges, built once instead of hand-listed per key. Sandboxed
 // preloads can't require local modules, so the {base, get, save} tuples are
@@ -881,6 +881,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   hideAgentOverlay: () => ipcRenderer.invoke("hide-agent-overlay"),
   startManualMeeting: () => ipcRenderer.invoke("start-manual-meeting"),
   openControlPanel: (target) => ipcRenderer.invoke("open-control-panel", target),
+  // Text-size preference: zooms this window only. webFrame is per-renderer,
+  // so the bar and HUD windows (fixed-pixel layouts) are untouched.
+  setUiZoom: (factor) => webFrame.setZoomFactor(factor),
   onOpenHomeSetup: registerListener("open-home-setup", (callback) => () => callback()),
   toggleControlPanel: () => ipcRenderer.invoke("toggle-control-panel"),
   resizeAgentWindow: (width, height) => ipcRenderer.invoke("resize-agent-window", width, height),

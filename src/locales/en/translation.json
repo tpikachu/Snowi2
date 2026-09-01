@@ -1915,7 +1915,12 @@
         "light": "Light",
         "theme": "Theme",
         "themeDescription": "Choose light, dark, or match your system",
-        "title": "Appearance"
+        "title": "Appearance",
+        "textSize": "Text size",
+        "textSizeDescription": "Makes everything in this window larger. The floating bar is unaffected.",
+        "textSizeDefault": "Default",
+        "textSizeLarge": "Large",
+        "textSizeLarger": "Larger"
       },
       "floatingIcon": {
         "autoHide": "Auto-hide when idle",
@@ -2332,7 +2337,8 @@
         "voiceAgent": "Voice agent"
       },
       "title": "Shortcuts",
-      "useSuggested": "Use {{hotkey}}"
+      "useSuggested": "Use {{hotkey}}",
+      "notSet": "Not set"
     },
     "actions": {
       "autoGenerateTitle": "Auto-generate note titles",

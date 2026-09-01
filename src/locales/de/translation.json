@@ -1915,7 +1915,12 @@
         "light": "Hell",
         "theme": "Design",
         "themeDescription": "Wählen Sie zwischen Hell, Dunkel oder Systemstandard",
-        "title": "Darstellung"
+        "title": "Darstellung",
+        "textSize": "Textgröße",
+        "textSizeDescription": "Vergrößert alles in diesem Fenster. Die schwebende Leiste bleibt unverändert.",
+        "textSizeDefault": "Standard",
+        "textSizeLarge": "Groß",
+        "textSizeLarger": "Größer"
       },
       "floatingIcon": {
         "autoHide": "Automatisch ausblenden bei Inaktivität",
@@ -2332,7 +2337,8 @@
         "voiceAgent": "Sprachagent"
       },
       "title": "Tastenkürzel",
-      "useSuggested": "{{hotkey}} verwenden"
+      "useSuggested": "{{hotkey}} verwenden",
+      "notSet": "Nicht belegt"
     },
     "actions": {
       "autoGenerateTitle": "Notiztitel automatisch generieren",

@@ -1611,7 +1611,12 @@
         "light": "Claro",
         "theme": "Tema",
         "themeDescription": "Escolha claro, escuro ou acompanhe o sistema",
-        "title": "Aparência"
+        "title": "Aparência",
+        "textSize": "Tamanho do texto",
+        "textSizeDescription": "Aumenta tudo nesta janela. A barra flutuante não é afetada.",
+        "textSizeDefault": "Normal",
+        "textSizeLarge": "Grande",
+        "textSizeLarger": "Muito grande"
       },
       "floatingIcon": {
         "autoHide": "Ocultar automaticamente quando ocioso",
@@ -2223,7 +2228,8 @@
         "voiceAgent": "Agente de voz"
       },
       "title": "Atalhos",
-      "useSuggested": "Usar {{hotkey}}"
+      "useSuggested": "Usar {{hotkey}}",
+      "notSet": "Não definido"
     },
     "actions": {
       "autoGenerateTitle": "Gerar títulos de notas automaticamente",

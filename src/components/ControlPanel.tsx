@@ -124,6 +124,16 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   const showDiscarded = useShowDiscarded();
   const [activeView, setActiveView] = useState<ControlPanelView>("home");
 
+  // The text-size preference, applied as renderer zoom: the one lever that
+  // scales every pixel value in this window uniformly, which is what an
+  // accessibility setting has to do. Scoped to this window — the bar and HUD
+  // overlays keep their fixed-pixel layouts.
+  const uiTextScale = useSettingsStore((s) => s.uiTextScale);
+  useEffect(() => {
+    const factor = Number.parseFloat(uiTextScale);
+    window.electronAPI?.setUiZoom?.(Number.isFinite(factor) && factor > 0 ? factor : 1);
+  }, [uiTextScale]);
+
   // The control panel only mounts once onboarding is done (AppRouter gates it),
   // so this is the first moment the real interface exists to point at. No-ops
   // for anyone who has already seen this version of the tour.

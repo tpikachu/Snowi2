@@ -1632,7 +1632,12 @@
         "light": "Chiaro",
         "theme": "Tema",
         "themeDescription": "Scegli chiaro, scuro o in base al sistema",
-        "title": "Aspetto"
+        "title": "Aspetto",
+        "textSize": "Dimensione del testo",
+        "textSizeDescription": "Ingrandisce tutto in questa finestra. La barra flottante non cambia.",
+        "textSizeDefault": "Normale",
+        "textSizeLarge": "Grande",
+        "textSizeLarger": "Più grande"
       },
       "floatingIcon": {
         "autoHide": "Nascondi automaticamente quando inattivo",
@@ -2244,7 +2249,8 @@
         "voiceAgent": "Agente vocale"
       },
       "title": "Scorciatoie",
-      "useSuggested": "Usa {{hotkey}}"
+      "useSuggested": "Usa {{hotkey}}",
+      "notSet": "Non impostato"
     },
     "actions": {
       "autoGenerateTitle": "Genera automaticamente i titoli delle note",

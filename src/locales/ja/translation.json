@@ -1632,7 +1632,12 @@
         "light": "ライト",
         "theme": "テーマ",
         "themeDescription": "ライト、ダーク、またはシステムに合わせる",
-        "title": "外観"
+        "title": "外観",
+        "textSize": "文字サイズ",
+        "textSizeDescription": "このウィンドウ全体を拡大します。フローティングバーは変わりません。",
+        "textSizeDefault": "標準",
+        "textSizeLarge": "大",
+        "textSizeLarger": "特大"
       },
       "floatingIcon": {
         "autoHide": "使用していないときに自動で非表示",
@@ -2244,7 +2249,8 @@
         "voiceAgent": "音声エージェント"
       },
       "title": "ショートカット",
-      "useSuggested": "{{hotkey}} を使う"
+      "useSuggested": "{{hotkey}} を使う",
+      "notSet": "未設定"
     },
     "actions": {
       "autoGenerateTitle": "ノートのタイトルを自動生成",

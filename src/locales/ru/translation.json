@@ -1636,7 +1636,12 @@
         "light": "Светлая",
         "theme": "Тема",
         "themeDescription": "Выберите светлую, тёмную тему или следуйте системным настройкам",
-        "title": "Внешний вид"
+        "title": "Внешний вид",
+        "textSize": "Размер текста",
+        "textSizeDescription": "Увеличивает всё в этом окне. Плавающая панель не меняется.",
+        "textSizeDefault": "Обычный",
+        "textSizeLarge": "Крупный",
+        "textSizeLarger": "Крупнее"
       },
       "floatingIcon": {
         "autoHide": "Скрывать при бездействии",
@@ -2258,7 +2263,8 @@
         "voiceAgent": "Голосовой агент"
       },
       "title": "Сочетания клавиш",
-      "useSuggested": "Назначить {{hotkey}}"
+      "useSuggested": "Назначить {{hotkey}}",
+      "notSet": "Не задано"
     },
     "actions": {
       "autoGenerateTitle": "Автоматически генерировать заголовки заметок",

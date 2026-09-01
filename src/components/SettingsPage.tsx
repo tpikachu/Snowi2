@@ -689,6 +689,8 @@ export default function SettingsPage({
   const setTranslationKey = useSettingsStore((s) => s.setTranslationKey);
 
   const { t } = useTranslation();
+  const uiTextScale = useSettingsStore((s) => s.uiTextScale);
+  const setUiTextScale = useSettingsStore((s) => s.setUiTextScale);
   const { toast } = useToast();
 
   const [currentVersion, setCurrentVersion] = useState<string>("");
@@ -1369,6 +1371,55 @@ export default function SettingsPage({
                             ].join(" ")}
                           >
                             <Icon className={`h-3 w-3 ${isSelected ? "text-primary" : ""}`} />
+                            {option.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </SettingsRow>
+                </SettingsPanelRow>
+                <SettingsPanelRow>
+                  <SettingsRow
+                    label={t("settingsPage.general.appearance.textSize")}
+                    description={t("settingsPage.general.appearance.textSizeDescription")}
+                  >
+                    <div
+                      role="group"
+                      aria-label={t("settingsPage.general.appearance.textSize")}
+                      className="inline-flex items-center gap-px rounded-md bg-muted p-0.5"
+                    >
+                      {(
+                        [
+                          {
+                            value: "1",
+                            label: t("settingsPage.general.appearance.textSizeDefault"),
+                          },
+                          {
+                            value: "1.1",
+                            label: t("settingsPage.general.appearance.textSizeLarge"),
+                          },
+                          {
+                            value: "1.25",
+                            label: t("settingsPage.general.appearance.textSizeLarger"),
+                          },
+                        ] as const
+                      ).map((option) => {
+                        const isSelected = uiTextScale === option.value;
+                        return (
+                          <button
+                            key={option.value}
+                            type="button"
+                            onClick={() => setUiTextScale(option.value)}
+                            aria-pressed={isSelected}
+                            className={[
+                              "flex items-center gap-1 rounded-sm px-2.5 py-1 text-xs font-medium",
+                              "outline-none transition-colors duration-150 ease-snap",
+                              "focus-visible:ring-2 focus-visible:ring-ring",
+                              isSelected
+                                ? "bg-surface-0 text-foreground shadow-(--shadow-card) dark:bg-surface-raised"
+                                : "text-muted-foreground hover:text-foreground",
+                            ].join(" ")}
+                          >
                             {option.label}
                           </button>
                         );
@@ -2290,6 +2341,7 @@ EOF`,
         const hotkeyRows: HotkeyMapRow[] = [
           {
             id: "dictationHotkey",
+            hotkey: dictationKey,
             icon: Mic,
             label: t("settingsPage.hotkeys.slots.dictation"),
             description: t("settingsPage.general.hotkey.description"),
@@ -2338,6 +2390,7 @@ EOF`,
           },
           {
             id: "voiceAgentHotkey",
+            hotkey: voiceAgentKey,
             icon: Wand2,
             label: t("settingsPage.hotkeys.slots.voiceAgent"),
             description: t("settingsPage.general.voiceAgentHotkey.description"),
@@ -2362,6 +2415,7 @@ EOF`,
           },
           {
             id: "translationHotkey",
+            hotkey: translationKey,
             icon: Languages,
             label: t("settingsPage.hotkeys.slots.translation"),
             description: t("settingsPage.general.translationHotkey.description"),
@@ -2386,6 +2440,7 @@ EOF`,
           },
           {
             id: "meetingHotkey",
+            hotkey: meetingKey,
             icon: Video,
             label: t("settingsPage.hotkeys.slots.meeting"),
             description: t("settingsPage.general.meetingHotkey.description"),
@@ -2443,6 +2498,7 @@ EOF`,
           },
           {
             id: "chatAgentHotkey",
+            hotkey: chatAgentKey,
             icon: MessageSquare,
             label: t("settingsPage.hotkeys.slots.chatAgent"),
             description: t("agentMode.settings.hotkeyDescription"),

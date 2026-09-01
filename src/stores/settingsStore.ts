@@ -818,6 +818,8 @@ export interface SettingsState
   useChatFastModel: boolean;
   chatFastMode: InferenceMode;
   chatFastProvider: string;
+  /** Control-panel text scale as a zoom factor string ("1" | "1.1" | "1.25"). */
+  uiTextScale: string;
   chatFastModel: string;
   chatFastCloudMode: string;
   chatFastDisableThinking: boolean;
@@ -848,6 +850,7 @@ export interface SettingsState
   setUseChatFastModel: (value: boolean) => void;
   setChatFastMode: (mode: InferenceMode) => void;
   setChatFastProvider: (value: string) => void;
+  setUiTextScale: (value: string) => void;
   setChatFastModel: (value: string) => void;
   setChatFastCloudMode: (value: string) => void;
   setChatFastDisableThinking: (value: boolean) => void;
@@ -1696,6 +1699,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   useChatFastModel: readBoolean("useChatFastModel", false),
   chatFastMode: "providers" as InferenceMode,
   chatFastProvider: readString("chatFastProvider", ""),
+  uiTextScale: readString("uiTextScale", "1"),
   chatFastModel: readString("chatFastModel", ""),
   chatFastCloudMode: readString("chatFastCloudMode", "byok"),
   // Fast answers exist for the first token; thinking stays off.
@@ -1759,6 +1763,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setUseChatFastModel: createBooleanSetter("useChatFastModel"),
   setChatFastMode: createStringSetter("chatFastMode") as (mode: InferenceMode) => void,
   setChatFastProvider: createStringSetter("chatFastProvider"),
+  setUiTextScale: createStringSetter("uiTextScale"),
   setChatFastModel: createStringSetter("chatFastModel"),
   setChatFastCloudMode: createStringSetter("chatFastCloudMode"),
   setChatFastDisableThinking: createBooleanSetter("chatFastDisableThinking"),

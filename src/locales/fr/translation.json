@@ -1915,7 +1915,12 @@
         "light": "Clair",
         "theme": "Thème",
         "themeDescription": "Choisissez clair, sombre ou suivre le système",
-        "title": "Apparence"
+        "title": "Apparence",
+        "textSize": "Taille du texte",
+        "textSizeDescription": "Agrandit tout dans cette fenêtre. La barre flottante n'est pas affectée.",
+        "textSizeDefault": "Normale",
+        "textSizeLarge": "Grande",
+        "textSizeLarger": "Très grande"
       },
       "floatingIcon": {
         "autoHide": "Masquer automatiquement au repos",
@@ -2332,7 +2337,8 @@
         "voiceAgent": "Agent vocal"
       },
       "title": "Raccourcis",
-      "useSuggested": "Utiliser {{hotkey}}"
+      "useSuggested": "Utiliser {{hotkey}}",
+      "notSet": "Non défini"
     },
     "actions": {
       "autoGenerateTitle": "Générer automatiquement les titres des notes",

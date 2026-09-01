@@ -1632,7 +1632,12 @@
         "light": "浅色",
         "theme": "主题",
         "themeDescription": "选择浅色、深色或跟随系统",
-        "title": "外观"
+        "title": "外观",
+        "textSize": "文字大小",
+        "textSizeDescription": "放大此窗口中的所有内容。悬浮条不受影响。",
+        "textSizeDefault": "默认",
+        "textSizeLarge": "大",
+        "textSizeLarger": "更大"
       },
       "floatingIcon": {
         "autoHide": "空闲时自动隐藏",
@@ -2244,7 +2249,8 @@
         "voiceAgent": "语音代理"
       },
       "title": "快捷键",
-      "useSuggested": "使用 {{hotkey}}"
+      "useSuggested": "使用 {{hotkey}}",
+      "notSet": "未设置"
     },
     "actions": {
       "autoGenerateTitle": "自动生成笔记标题",
