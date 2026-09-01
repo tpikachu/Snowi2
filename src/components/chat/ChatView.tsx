@@ -5,6 +5,8 @@ import { useChatStreaming } from "./useChatStreaming";
 import { useChatMessageSender } from "./useChatMessageSender";
 import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
+import { LaneToggle } from "./LaneToggle";
+import type { ChatLane } from "../../utils/assistFastLane";
 import { ChatEmptyIllustration } from "./ChatEmptyIllustration";
 import ConversationList from "./ConversationList";
 import EmptyChatState from "./EmptyChatState";
@@ -78,13 +80,22 @@ export default function ChatView() {
     [persistence]
   );
   const markChatStarted = useCallback(() => setIsNewChat(false), []);
-  const handleTextSubmit = useChatMessageSender({
+  const sendMessage = useChatMessageSender({
     conversationId: activeConversationId,
     persistence,
     streaming,
     createConversation,
     onBeforeSend: markChatStarted,
   });
+
+  // The app chat defaults to Thinking — the opposite of the bar's call, and
+  // deliberate: someone sitting in the app has time for the better answer,
+  // and tools are the reason this chat exists. Fast is the opt-in here.
+  const [chatLane, setChatLane] = useState<ChatLane>("thinking");
+  const handleTextSubmit = useCallback(
+    (text: string) => void sendMessage(text, { lane: chatLane }),
+    [sendMessage, chatLane]
+  );
 
   const handleArchive = useCallback(
     async (id: number) => {
@@ -173,6 +184,7 @@ export default function ChatView() {
                 onTextSubmit={handleTextSubmit}
                 onCancel={streaming.cancelStream}
                 autoFocus={isNewChat}
+                accessory={<LaneToggle lane={chatLane} onChange={setChatLane} />}
               />
             </>
           ) : (

@@ -3308,6 +3308,13 @@
       "overrideOn": "快速回答使用下方選擇的模型。",
       "overrideAuto": "Snowy 目前自動選擇 {{model}} — 你的聊天服務商的輕量模型。",
       "overrideSame": "快速回答目前使用你的聊天模型。開啟後可選擇更快的模型。"
+    },
+    "lane": {
+      "label": "回答速度",
+      "fast": "快速",
+      "thinking": "思考",
+      "fastHint": "快速 — 用輕量模型立即回答，不使用工具",
+      "thinkingHint": "思考 — 較慢，可搜尋你的筆記並使用工具"
     }
   },
   "integrations": {

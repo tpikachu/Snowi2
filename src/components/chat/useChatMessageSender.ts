@@ -3,6 +3,13 @@ import type { ChatPersistence } from "./useChatPersistence";
 import type { ChatStreaming } from "./useChatStreaming";
 import type { Message } from "./types";
 import type { ScreenContextImage } from "../../types/electron";
+import type { ChatLane } from "../../utils/assistFastLane";
+
+/** Per-send extras, forwarded verbatim to the streaming hook. */
+export interface SendMessageOptions {
+  screenContext?: ScreenContextImage;
+  lane?: ChatLane;
+}
 
 interface PersistedMessageContext {
   conversationId: number;
@@ -26,12 +33,9 @@ export function useChatMessageSender({
   createConversation,
   onBeforeSend,
   onMessagePersisted,
-}: UseChatMessageSenderOptions): (
-  text: string,
-  options?: { screenContext?: ScreenContextImage }
-) => Promise<void> {
+}: UseChatMessageSenderOptions): (text: string, options?: SendMessageOptions) => Promise<void> {
   return useCallback(
-    async (text: string, options?: { screenContext?: ScreenContextImage }) => {
+    async (text: string, options?: SendMessageOptions) => {
       onBeforeSend?.();
       const convId = conversationId ?? (await createConversation(text));
       const previousMessages = persistence.messages;

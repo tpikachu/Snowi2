@@ -3356,6 +3356,13 @@
       "overrideOn": "Las respuestas rápidas usan el modelo elegido abajo.",
       "overrideAuto": "Snowy elige {{model}} automáticamente — el modelo veloz de tu proveedor de chat.",
       "overrideSame": "Las respuestas rápidas usan ahora tu modelo de chat. Activa esto para elegir uno más veloz."
+    },
+    "lane": {
+      "label": "Velocidad de respuesta",
+      "fast": "Rápido",
+      "thinking": "Pensar",
+      "fastHint": "Rápido: responde al instante con un modelo veloz, sin herramientas",
+      "thinkingHint": "Pensar: tarda más, puede buscar en tus notas y usar herramientas"
     }
   },
   "integrations": {

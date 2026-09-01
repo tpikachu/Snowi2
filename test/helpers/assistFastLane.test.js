@@ -13,9 +13,8 @@ test("resolveFastLaneLLMConfig picks the fastest callable model", async (t) => {
   installBrowserGlobals(t, { initialStorage: { _llmScopeKeysMigrated: "1" } });
   const vite = await createRendererServer(t, { cachePrefix: "snowy-fastlane-test-" });
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
-  const { resolveFastLaneLLMConfig, FAST_LANE_MODELS } = await vite.ssrLoadModule(
-    "/utils/assistFastLane.ts"
-  );
+  const { resolveFastLaneLLMConfig, resolveChatLaneConfig, FAST_LANE_MODELS } =
+    await vite.ssrLoadModule("/utils/assistFastLane.ts");
   const state = () => useSettingsStore.getState();
 
   await t.test("an unready chat scope resolves to null — no lane without the feature", () => {
@@ -77,5 +76,36 @@ test("resolveFastLaneLLMConfig picks the fastest callable model", async (t) => {
     assert.equal(resolved.source, "derived");
     assert.equal(resolved.config.provider, "openai");
     assert.equal(resolved.config.model, FAST_LANE_MODELS.openai);
+  });
+
+  await t.test("the fast chat lane is a single shot on the fast model", () => {
+    // Fast in chat means no tool loop and no thinking — the whole point is
+    // the first token, and a tool round-trip is another entire model turn.
+    const lane = resolveChatLaneConfig(state(), "fast");
+    assert.equal(lane.lane, "fast");
+    assert.equal(lane.allowTools, false);
+    assert.equal(lane.disableThinking, true);
+    assert.equal(lane.config.model, FAST_LANE_MODELS.openai);
+  });
+
+  await t.test("the thinking chat lane is the full agent on the chat model", () => {
+    // The user's own thinking setting rides through untouched — set it to the
+    // value the fast lane would never produce, and see it survive.
+    useSettingsStore.setState({ chatAgentDisableThinking: false });
+    const lane = resolveChatLaneConfig(state(), "thinking");
+    assert.equal(lane.lane, "thinking");
+    assert.equal(lane.allowTools, true);
+    assert.equal(lane.config.model, "gpt-5.5");
+    assert.equal(lane.disableThinking, false);
+  });
+
+  await t.test("an unresolvable fast lane degrades to the thinking lane, and says so", () => {
+    // With the chat scope unready, fast has no feature to belong to. The
+    // thinking path's unconfigured-model handling explains itself; failing
+    // some other way here would produce an error nobody can act on.
+    useSettingsStore.setState({ openaiApiKey: "" });
+    const lane = resolveChatLaneConfig(state(), "fast");
+    assert.equal(lane.lane, "thinking");
+    assert.equal(lane.allowTools, true);
   });
 });

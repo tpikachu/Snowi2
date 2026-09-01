@@ -77,6 +77,31 @@ test("the bar's setup warning opens Home with the capabilities card forced open"
   await expect(page.getByText("Needs setup").first()).toBeVisible();
 });
 
+test("the lane chip defaults Fast on the bar and Thinking in the app chat", async () => {
+  ({ app } = await launchApp(test.info()));
+  const page = await controlPanelPage(app);
+  await skipOnboarding(page);
+  const bar = await agentBarPage(app);
+  await expect(bar.getByRole("button", { name: "Start meeting" })).toBeVisible({
+    timeout: 30_000,
+  });
+
+  // The bar is the glance-and-go surface: Fast must be what a hurried
+  // question gets without touching anything.
+  await expect(bar.getByRole("radiogroup", { name: "Answer speed" })).toBeVisible();
+  await expect(bar.getByRole("radio", { name: "Fast" })).toBeChecked();
+  await bar.getByRole("radio", { name: "Thinking" }).click();
+  await expect(bar.getByRole("radio", { name: "Thinking" })).toBeChecked();
+
+  // The app chat makes the opposite default: someone sitting in the app has
+  // time for the better answer, and the two surfaces must not share state.
+  await page.locator('[data-tour="nav-chat"]').click();
+  await expect(page.getByRole("radiogroup", { name: "Answer speed" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByRole("radio", { name: "Thinking" })).toBeChecked();
+});
+
 test("a speech-model download published by the control panel shows on the bar", async () => {
   ({ app } = await launchApp(test.info()));
   const page = await controlPanelPage(app);

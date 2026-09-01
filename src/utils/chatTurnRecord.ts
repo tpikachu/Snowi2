@@ -70,6 +70,12 @@ export interface ChatTurnRecord {
   provider: string;
   model: string;
   mode: string;
+  /**
+   * Which speed served this turn: "thinking" is the full agent, "fast" a
+   * single shot on the fast-lane model. Records what actually ran — a fast
+   * request that degraded (chat scope unready) is recorded as thinking.
+   */
+  lane?: "fast" | "thinking";
   /** Set for self-hosted and custom endpoints, so "which server" is answerable. */
   endpoint?: string;
 

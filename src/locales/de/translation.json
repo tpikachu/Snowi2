@@ -3473,6 +3473,13 @@
       "overrideOn": "Schnelle Antworten nutzen das unten gewählte Modell.",
       "overrideAuto": "Snowy wählt derzeit automatisch {{model}} — das flinke Modell deines Chat-Anbieters.",
       "overrideSame": "Schnelle Antworten laufen derzeit auf deinem Chat-Modell. Schalte dies ein, um ein flinkeres zu wählen."
+    },
+    "lane": {
+      "label": "Antwortgeschwindigkeit",
+      "fast": "Schnell",
+      "thinking": "Denken",
+      "fastHint": "Schnell — antwortet sofort mit einem flinken Modell, ohne Werkzeuge",
+      "thinkingHint": "Denken — dauert länger, kann deine Notizen durchsuchen und Werkzeuge nutzen"
     }
   },
   "integrations": {

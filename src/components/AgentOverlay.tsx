@@ -11,7 +11,9 @@ import AudioManager from "../helpers/audioManager";
 import { useChatPersistence } from "./chat/useChatPersistence";
 import { useChatStreaming } from "./chat/useChatStreaming";
 import { useChatMessageSender } from "./chat/useChatMessageSender";
+import { LaneToggle } from "./chat/LaneToggle";
 import { useSettingsStore } from "../stores/settingsStore";
+import type { ChatLane } from "../utils/assistFastLane";
 import type { ScreenContextImage } from "../types/electron";
 
 const MIN_HEIGHT = 200;
@@ -39,6 +41,11 @@ export default function AgentOverlay() {
   const audioManagerRef = useRef<InstanceType<typeof AudioManager> | null>(null);
   const agentStateRef = useRef<string>("idle");
   const barInputRef = useRef<HTMLInputElement | null>(null);
+
+  // The bar defaults to Fast: it is the glance-and-go surface, and its promise
+  // is the answer now. Not persisted — the default is the promise. The app
+  // chat makes the opposite call (see ChatView).
+  const [chatLane, setChatLane] = useState<ChatLane>("fast");
 
   const agentScreenContext = useSettingsStore((s) => s.agentScreenContext);
   const agentScreenContextPrompted = useSettingsStore((s) => s.agentScreenContextPrompted);
@@ -118,9 +125,9 @@ export default function AgentOverlay() {
           screenContext = undefined;
         }
       }
-      await sendMessage(text, screenContext ? { screenContext } : undefined);
+      await sendMessage(text, { lane: chatLane, ...(screenContext ? { screenContext } : {}) });
     },
-    [sendMessage]
+    [sendMessage, chatLane]
   );
 
   const handleTranscriptionComplete = useCallback(
@@ -448,6 +455,7 @@ export default function AgentOverlay() {
               partialTranscript={partialTranscript}
               onTextSubmit={handleSend}
               onCancel={streaming.cancelStream}
+              accessory={<LaneToggle lane={chatLane} onChange={setChatLane} />}
             />
           </>
         ) : (
@@ -517,6 +525,11 @@ export default function AgentOverlay() {
                 {/* The dictation mic was deliberately dropped from the bar —
                     typing and Listen are its two verbs; the hotkey still
                     reaches voice input for those who use it. */}
+                {/* Fast or Thinking, icons only — 56px of bar cannot afford
+                    labels, so the tooltip carries the words. */}
+                <span style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
+                  <LaneToggle lane={chatLane} onChange={setChatLane} compact />
+                </span>
                 {/* A download that doesn't block recording still shows: the
                     user asked the app for a model, and the bar is the one
                     surface always on screen to answer "is it done yet". */}

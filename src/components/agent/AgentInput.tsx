@@ -6,6 +6,7 @@ interface AgentInputProps {
   partialTranscript: string;
   onTextSubmit?: (text: string) => void;
   onCancel?: () => void;
+  accessory?: React.ReactNode;
 }
 
 export function AgentInput(props: AgentInputProps) {

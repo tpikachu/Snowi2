@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import ReasoningService, { type AgentStreamChunk } from "../../services/ReasoningService";
 import { isEnterpriseProvider } from "../../models/ModelRegistry";
-import { getSettings, selectResolvedLLMConfig } from "../../stores/settingsStore";
+import { getSettings } from "../../stores/settingsStore";
 import { getAgentPromptSections, renderAgentPromptSections } from "../../config/prompts";
 import {
   buildNoteAnchorText,
@@ -24,6 +24,7 @@ import {
 } from "../../utils/chatRetrieval";
 import { renderCitations } from "../../utils/chatCitations";
 import { recordChatTurn, updateChatTurn, type ChatTurnRecord } from "../../utils/chatTurnRecord";
+import { resolveChatLaneConfig, type ChatLane } from "../../utils/assistFastLane";
 import logger from "../../utils/logger";
 import type { ScreenContextImage } from "../../types/electron";
 
@@ -140,7 +141,7 @@ export interface ChatStreaming {
   sendToAI: (
     userText: string,
     allMessages: Message[],
-    options?: { screenContext?: ScreenContextImage }
+    options?: { screenContext?: ScreenContextImage; lane?: ChatLane }
   ) => Promise<void>;
   cancelStream: () => void;
 }
@@ -216,10 +217,17 @@ export function useChatStreaming({
     async (
       userText: string,
       allMessages: Message[],
-      options?: { screenContext?: ScreenContextImage }
+      options?: { screenContext?: ScreenContextImage; lane?: ChatLane }
     ) => {
       const settings = getSettings();
-      const chatConfig = selectResolvedLLMConfig(settings, "chatIntelligence");
+      // The lane decides the model and the shape of the turn: thinking (the
+      // default) is the full agent — the chat model, the tool loop, the
+      // user's thinking setting. Fast is a single shot on the fast-lane
+      // model with thinking off and no tools, over the same prefetched
+      // grounding. An unresolvable fast lane degrades to thinking, whose
+      // unconfigured-model path already explains itself.
+      const laneResolution = resolveChatLaneConfig(settings, options?.lane ?? "thinking");
+      const chatConfig = laneResolution.config;
       const chatAgentMode = chatConfig.mode || "local";
 
       // An unconfigured scope used to stream zero chunks and leave an empty
@@ -255,7 +263,7 @@ export function useChatStreaming({
         ].includes(chatConfig.provider);
       const localModelCanUseTool =
         isLocalProvider && estimateModelSizeB(chatConfig.model) >= LOCAL_TOOL_MIN_PARAMS_B;
-      const supportsTools = !isLocalProvider || localModelCanUseTool;
+      const supportsTools = laneResolution.allowTools && (!isLocalProvider || localModelCanUseTool);
 
       const scope = searchScopeRef.current;
       let registry: ToolRegistry | null = null;
@@ -349,6 +357,7 @@ export function useChatStreaming({
         provider: chatConfig.provider,
         model: chatConfig.model,
         mode: chatAgentMode,
+        lane: laneResolution.lane,
         endpoint: isLanAgent
           ? chatConfig.remoteUrl
           : isCustomAgent
@@ -419,7 +428,7 @@ export function useChatStreaming({
             baseUrl: isCustomAgent ? chatConfig.cloudBaseUrl || undefined : undefined,
             customApiKey:
               isCustomAgent || isLanAgent ? chatConfig.customApiKey || undefined : undefined,
-            disableThinking: chatConfig.disableThinking,
+            disableThinking: laneResolution.disableThinking,
             // The bar's opt-in screenshot. Lives in renderer memory for this
             // one request; ReasoningService drops it on routes that cannot
             // carry an image and retries text-only if a provider rejects it.

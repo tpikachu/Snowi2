@@ -3473,6 +3473,13 @@
       "overrideOn": "Fast answers use the model chosen below.",
       "overrideAuto": "Snowy currently picks {{model}} automatically — your chat provider's quick model.",
       "overrideSame": "Fast answers currently run on your chat model. Turn this on to pick a quicker one."
+    },
+    "lane": {
+      "label": "Answer speed",
+      "fast": "Fast",
+      "thinking": "Thinking",
+      "fastHint": "Fast — answers right away on a quick model, without tools",
+      "thinkingHint": "Thinking — takes longer, can search your notes and use tools"
     }
   },
   "integrations": {

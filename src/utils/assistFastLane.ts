@@ -69,3 +69,45 @@ export function resolveFastLaneLLMConfig(settings: SettingsState): FastLaneResol
 
   return { config: chat, source: "chat" };
 }
+
+/** The two speeds of a chat answer, chosen per send by the lane chip. */
+export type ChatLane = "fast" | "thinking";
+
+export interface ChatLaneResolution {
+  config: ResolvedLLMConfigLike;
+  /** The lane actually served — "thinking" when fast could not resolve. */
+  lane: ChatLane;
+  disableThinking: boolean | undefined;
+  /** Fast is a single shot: no tool loop, the prefetched context is everything. */
+  allowTools: boolean;
+}
+
+/**
+ * The model and turn shape for one chat send.
+ *
+ * Thinking (the default) is the full agent: the chat model, the tool loop,
+ * and whatever thinking setting the user chose. Fast is the same question as
+ * a single shot — the fast-lane model, thinking off, no tools — over the same
+ * prefetched grounding, because retrieval is local and cheap while a tool
+ * round-trip is another whole model turn.
+ *
+ * A fast request that cannot resolve (the chat scope itself is unready)
+ * degrades to the thinking lane rather than failing differently: the thinking
+ * path already explains an unconfigured model in words the user can act on,
+ * and the returned `lane` says what was actually served.
+ */
+export function resolveChatLaneConfig(settings: SettingsState, lane: ChatLane): ChatLaneResolution {
+  if (lane === "fast") {
+    const fast = resolveFastLaneLLMConfig(settings);
+    if (fast) {
+      return { config: fast.config, lane: "fast", disableThinking: true, allowTools: false };
+    }
+  }
+  const chat = selectResolvedLLMConfig(settings, "chatIntelligence");
+  return {
+    config: chat,
+    lane: "thinking",
+    disableThinking: chat.disableThinking,
+    allowTools: true,
+  };
+}
