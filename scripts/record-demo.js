@@ -969,16 +969,14 @@ async function main() {
         );
         await sleep(2500);
 
-        // Open the transcript section so the live lines are on film.
-        await moveClick(panelPage, panelPage.getByText(/^transcript$/i).first(), {
-          timeout: 5000,
-        }).catch(() => {});
+        // The cue card no longer shows a transcript (it lives in the note);
+        // the level meter and the suggestion are the live signals on film.
         await sleep(800);
         await framePanel();
         await caption(
           panelPage,
-          "The conversation streams in here live",
-          "Glance at what was just said without ever leaving your meeting window."
+          "The assistant listens along with you",
+          "The full transcript lands in the meeting's note — this card stays focused on what to say next."
         );
         await sleep(5000);
         await framePanel();

@@ -17,6 +17,7 @@ import { MAX_SPEAKER_COUNT } from "../../constants/speakerDetection.json";
 import type { TranscriptSegment } from "../../stores/meetingRecordingStore";
 import type { LiveUtterance } from "../../utils/liveUtterances";
 import { windowTranscript } from "../../utils/transcriptWindow";
+import { formatMmSs } from "../../utils/formatDuration";
 import { SPEAKER_IDENTIFICATION_ENABLED } from "../../helpers/speakerIdentificationPolicy";
 import {
   isTranscriptSpeakerLocked,
@@ -24,24 +25,15 @@ import {
   type TranscriptSpeakerStatus,
 } from "../../utils/transcriptSpeakerState";
 
-/* Two tracks, told apart three ways at once so none of them has to shout:
- * alignment (you left / room right), a rail on each track's outer edge, and a
- * tint (accent for you, neutral surface for the room). Interim text keeps the
- * same geometry but drops the fill for a dashed outline and muted type, so a
- * provisional line can never be mistaken for a committed one. */
-const BUBBLE_STYLES = {
-  mic: {
-    align: "justify-start",
-    radius: "rounded-bl-sm",
-    bg: "border border-dashed border-primary/40 text-muted-foreground",
-    cursor: "bg-primary/70",
-  },
-  system: {
-    align: "justify-end",
-    radius: "rounded-br-sm",
-    bg: "border border-dashed border-border-hover/70 text-muted-foreground",
-    cursor: "bg-muted-foreground/70",
-  },
+/* A flat script, not a chat: every turn is a colored speaker name (plus a
+ * meeting-relative time) over plain unboxed text, in one left-aligned column.
+ * The old bubble layout — alignment games, rails, borders per line — was the
+ * client's least favorite surface in the app; the name's color alone carries
+ * who is talking. Interim text keeps the same geometry with muted type and a
+ * caret, so a provisional line can never be mistaken for a committed one. */
+const INTERIM_CURSOR = {
+  mic: "bg-primary/70",
+  system: "bg-muted-foreground/70",
 } as const;
 
 /* Diarization is categorical data, so this ramp stays multi-hue — it is the one
@@ -59,28 +51,6 @@ const SPEAKER_COLORS = [
   "text-speaker-6",
   "text-speaker-7",
   "text-speaker-8",
-];
-
-const SPEAKER_CHIP_COLORS = [
-  "border-speaker-1/40 bg-speaker-1/10",
-  "border-speaker-2/40 bg-speaker-2/10",
-  "border-speaker-3/40 bg-speaker-3/10",
-  "border-speaker-4/40 bg-speaker-4/10",
-  "border-speaker-5/40 bg-speaker-5/10",
-  "border-speaker-6/40 bg-speaker-6/10",
-  "border-speaker-7/40 bg-speaker-7/10",
-  "border-speaker-8/40 bg-speaker-8/10",
-];
-
-const SPEAKER_BORDER_COLORS = [
-  "border-r-speaker-1/70",
-  "border-r-speaker-2/70",
-  "border-r-speaker-3/70",
-  "border-r-speaker-4/70",
-  "border-r-speaker-5/70",
-  "border-r-speaker-6/70",
-  "border-r-speaker-7/70",
-  "border-r-speaker-8/70",
 ];
 
 const STICKY_SCROLL_THRESHOLD_PX = 80;
@@ -134,39 +104,39 @@ function PartialBubble({
   speakerState?: TranscriptSpeakerStatus;
   t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
-  const s = BUBBLE_STYLES[source];
   return (
-    <div
-      className={cn("flex", s.align)}
-      style={{ animation: "agent-message-in 150ms ease-out both" }}
-    >
-      <div
-        className={cn("max-w-[80%] flex flex-col", source === "mic" ? "items-start" : "items-end")}
-      >
-        <div className="mb-0.5 flex items-center gap-1 px-1">
-          {speakerLabel && (
-            <span className="text-[11px] font-medium text-muted-foreground/70">{speakerLabel}</span>
-          )}
-          <span className="inline-flex items-center gap-0.5 text-[10px] font-medium uppercase tracking-[0.06em] text-muted-foreground/50">
-            {speakerState === "provisional" ? (
-              <>
-                <Sparkles size={9} />
-                {getSpeakerStateLabel("provisional", t)}
-              </>
-            ) : (
-              t("notes.speaker.state.interim")
-            )}
-          </span>
-        </div>
-        <div
-          className={cn("px-3 py-1.5 rounded-lg", s.radius, s.bg, "text-[13px] leading-relaxed")}
-        >
-          {text}
+    <div className="flex flex-col" style={{ animation: "agent-message-in 150ms ease-out both" }}>
+      <div className="flex items-baseline gap-2">
+        {speakerLabel && (
           <span
-            className={cn("inline-block w-[2px] h-[13px] align-middle ml-0.5", s.cursor)}
-            style={{ animation: "agent-cursor-blink 800ms steps(1) infinite" }}
-          />
-        </div>
+            className={cn(
+              "text-[12px] font-semibold",
+              source === "mic" ? "text-primary" : "text-speaker-1"
+            )}
+          >
+            {speakerLabel}
+          </span>
+        )}
+        <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-muted-foreground/70">
+          {speakerState === "provisional" ? (
+            <>
+              <Sparkles size={10} />
+              {getSpeakerStateLabel("provisional", t)}
+            </>
+          ) : (
+            t("notes.speaker.state.interim")
+          )}
+        </span>
+      </div>
+      <div className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
+        {text}
+        <span
+          className={cn(
+            "ml-0.5 inline-block h-[13px] w-[2px] align-middle",
+            INTERIM_CURSOR[source]
+          )}
+          style={{ animation: "agent-cursor-blink 800ms steps(1) infinite" }}
+        />
       </div>
     </div>
   );
@@ -421,6 +391,7 @@ function SpeakerLabel({
   participants,
   colorIdx,
   isOriginallyYou,
+  selfSide,
   onMap,
   onConfirm,
   onDismiss,
@@ -433,6 +404,8 @@ function SpeakerLabel({
   participants?: Array<{ email: string; displayName: string | null }>;
   colorIdx: number;
   isOriginallyYou: boolean;
+  /** The user's own turns carry the accent, never a ramp color. */
+  selfSide?: boolean;
   onMap?: (speakerId: string, name: string, email?: string | null, profileId?: number) => void;
   onConfirm?: (speakerId: string, name: string, profileId: number) => void;
   onDismiss?: (speakerId: string) => void;
@@ -456,7 +429,7 @@ function SpeakerLabel({
   if (hasSuggestion) {
     return (
       <span className="group inline-flex items-center gap-1 mb-0.5 px-1">
-        <span className="text-[11px] font-medium italic text-muted-foreground/60">
+        <span className="text-[12px] font-semibold italic text-muted-foreground">
           {segment.suggestedName}
         </span>
         <button
@@ -490,18 +463,19 @@ function SpeakerLabel({
       <PopoverTrigger asChild>
         <button
           className={cn(
-            "inline-flex items-center gap-1 text-[11px] font-medium mb-0.5 px-1.5 py-0.5 rounded-md outline-none cursor-pointer",
-            "border transition-colors duration-150",
+            // A plain colored name, not a chip: the color is the identity and
+            // the popover is one click away. A dashed underline marks the
+            // still-unmapped, so clickability never depends on hover alone.
+            "-mx-1 inline-flex items-center gap-1 rounded-md px-1 text-[12px] font-semibold",
+            "outline-none cursor-pointer transition-colors duration-150 hover:bg-surface-2",
             "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-            SPEAKER_COLORS[colorIdx],
-            SPEAKER_CHIP_COLORS[colorIdx],
-            "hover:brightness-110",
-            isUnmapped && "border-dashed",
+            selfSide ? "text-primary" : SPEAKER_COLORS[colorIdx],
+            isUnmapped && "underline decoration-dashed decoration-from-font underline-offset-2",
             speakerState === "provisional" && "italic"
           )}
         >
           {displayLabel}
-          {speakerState === "locked" && <Lock size={8} className="opacity-60" />}
+          {speakerState === "locked" && <Lock size={9} className="opacity-60" />}
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-0">
@@ -733,6 +707,13 @@ export function MeetingTranscriptChat({
     return map;
   }, [segments, speakerMappings]);
 
+  // The meeting's own clock: turn headers show mm:ss from the first
+  // timestamped segment, the way a call recording is quoted.
+  const baseTimestamp = useMemo(
+    () => segments.find((segment) => segment.timestamp != null)?.timestamp ?? null,
+    [segments]
+  );
+
   if (!hasContent) {
     return (
       <div className="h-full flex flex-col items-center justify-center gap-2 px-5">
@@ -877,7 +858,7 @@ export function MeetingTranscriptChat({
             !!onAttachSpeakerEmail;
 
           const labelElement = hasSpeaker && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-baseline gap-1.5">
               <SpeakerLabel
                 speakerId={segment.speaker!}
                 segment={segment}
@@ -886,6 +867,7 @@ export function MeetingTranscriptChat({
                 participants={participants}
                 colorIdx={colorIdx}
                 isOriginallyYou={isOriginallyYou}
+                selfSide={selfSide}
                 onMap={onMapSpeaker}
                 onConfirm={onConfirmSuggestion}
                 onDismiss={onDismissSuggestion}
@@ -901,70 +883,61 @@ export function MeetingTranscriptChat({
             </div>
           );
 
+          const relTime =
+            baseTimestamp != null && segment.timestamp != null
+              ? formatMmSs(Math.max(0, Math.floor((segment.timestamp - baseTimestamp) / 1000)))
+              : null;
+
           return (
             <div
               key={segment.id}
               className={cn(
-                "group flex flex-col",
-                selfSide ? "items-start" : "items-end",
-                !sameSpeaker && i > 0 && "mt-2",
-                selectable && (selfSide ? "pl-6" : "pr-6")
+                "group relative flex flex-col",
+                !sameSpeaker && i > 0 && "mt-3",
+                selectable && "pl-6"
               )}
               style={{ animation: "agent-message-in 200ms ease-out both" }}
             >
-              {/* Unlabelled runs still get a track caption, so "you" and "the
-                  room" never rely on alignment alone. Both sides, not just the
-                  mic: with speaker identification off (the V1 default) no
-                  system segment carries a speaker, and captioning only one
-                  side leaves half the transcript anonymous. Same keys the
-                  export path resolves to, so the pane and the exported file
-                  call the two tracks the same thing. */}
-              {!labelElement && !sameSpeaker && (
-                <span className="mb-0.5 px-1 text-[11px] font-medium text-muted-foreground/60">
-                  {t(selfSide ? "transcript.speaker.you" : "transcript.speaker.others")}
-                </span>
-              )}
-              {labelElement && !sameSpeaker && labelElement}
-              {labelElement && sameSpeaker && (
-                <div
-                  className={cn(
-                    "grid grid-rows-[0fr] opacity-0 pointer-events-none transition-[grid-template-rows,opacity] duration-150 ease-out",
-                    "group-hover:grid-rows-[1fr] group-hover:opacity-100 group-hover:pointer-events-auto"
+              {/* Every new turn opens with its speaker and the meeting clock.
+                  Unlabelled runs get the track caption — "You" in the accent,
+                  "Them" in the first ramp color — so who is talking never
+                  relies on layout. Same keys the export path resolves to, so
+                  the pane and the exported file agree. */}
+              {!sameSpeaker && (
+                <div className="flex items-baseline gap-2">
+                  {labelElement || (
+                    <span
+                      className={cn(
+                        "text-[12px] font-semibold",
+                        selfSide ? "text-primary" : "text-speaker-1"
+                      )}
+                    >
+                      {t(selfSide ? "transcript.speaker.you" : "transcript.speaker.others")}
+                    </span>
                   )}
-                >
-                  <div className="overflow-hidden">{labelElement}</div>
+                  {relTime && (
+                    <span data-numeric className="text-[11px] text-muted-foreground/70">
+                      {relTime}
+                    </span>
+                  )}
                 </div>
               )}
-              <div className="relative max-w-[80%]">
-                <div
-                  className={cn(
-                    "px-3 py-1.5 cursor-default transition-colors",
-                    "text-[13px] leading-relaxed text-foreground",
-                    selfSide
-                      ? cn(
-                          "bg-primary-subtle/70 border border-primary/25 border-l-2 border-l-primary",
-                          sameSpeaker ? "rounded-lg rounded-tl-sm" : "rounded-lg rounded-bl-sm"
-                        )
-                      : cn(
-                          "bg-surface-2 border border-border-subtle",
-                          sameSpeaker ? "rounded-lg rounded-tr-sm" : "rounded-lg rounded-br-sm",
-                          isSystemSpeaker
-                            ? cn("border-r-2", SPEAKER_BORDER_COLORS[colorIdx])
-                            : "border-r-2 border-r-border-hover"
-                        ),
-                    isSelected && "ring-2 ring-primary/60"
-                  )}
-                >
-                  {segment.text}
-                </div>
-                {selectable && (
-                  <SelectCheckbox
-                    isSelected={isSelected}
-                    onToggle={() => onToggleSelect?.(segment.id)}
-                    className={cn("absolute top-1.5", selfSide ? "-left-6" : "-right-6")}
-                  />
+              <div
+                className={cn(
+                  "mt-0.5 max-w-[72ch] rounded-md text-[13px] leading-relaxed text-foreground",
+                  sameSpeaker && "mt-1",
+                  isSelected && "-mx-1 bg-primary/10 px-1 ring-1 ring-primary/50"
                 )}
+              >
+                {segment.text}
               </div>
+              {selectable && (
+                <SelectCheckbox
+                  isSelected={isSelected}
+                  onToggle={() => onToggleSelect?.(segment.id)}
+                  className="absolute left-0 top-1"
+                />
+              )}
             </div>
           );
         })}

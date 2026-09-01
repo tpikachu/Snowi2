@@ -3625,7 +3625,7 @@
   "transcript": {
     "speaker": {
       "you": "Tú",
-      "others": "Otros"
+      "others": "Ellos"
     },
     "missingAudio": "[audio faltante {{from}}-{{to}}]"
   },

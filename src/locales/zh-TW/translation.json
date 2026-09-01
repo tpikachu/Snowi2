@@ -3625,7 +3625,7 @@
   "transcript": {
     "speaker": {
       "you": "你",
-      "others": "其他人"
+      "others": "對方"
     },
     "missingAudio": "[音訊缺失 {{from}}-{{to}}]"
   },

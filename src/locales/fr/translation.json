@@ -3702,7 +3702,7 @@
   "transcript": {
     "speaker": {
       "you": "Vous",
-      "others": "Autres"
+      "others": "Eux"
     },
     "missingAudio": "[audio manquant {{from}}-{{to}}]"
   },

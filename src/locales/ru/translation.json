@@ -3657,7 +3657,7 @@
   "transcript": {
     "speaker": {
       "you": "Вы",
-      "others": "Другие"
+      "others": "Они"
     },
     "missingAudio": "[аудио отсутствует {{from}}-{{to}}]"
   },

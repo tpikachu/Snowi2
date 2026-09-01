@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import Markdown, { type Components } from "react-markdown";
 import {
   Brain,
-  ChevronDown,
-  ChevronRight,
   ExternalLink,
   History,
   Lightbulb,
@@ -16,7 +15,6 @@ import {
   Zap,
 } from "lucide-react";
 import { capturedMsAt, type MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
-import type { PanelTranscript } from "../utils/meetingPanelTranscript";
 import type {
   AssistLastTime,
   AssistMode,
@@ -32,16 +30,17 @@ import { cn } from "./lib/utils";
  *
  * It used to be a status bar, back when the meeting itself lived in the main
  * window. Now the main window minimises when a meeting starts and this is the
- * surface — a suggestion the assistant has already prepared, a small live
- * transcript, and a question box.
+ * surface — a suggestion the assistant has already prepared and a question
+ * box.
  *
  * The sections are sized by how much attention each deserves, which is not
  * how much space they would naturally want. The suggestion is at the top,
  * carrying the accent, because it is the thing worth glancing at mid
- * sentence. The transcript is capped at about four lines and hidden by
- * default: it is there to confirm the meeting is being heard, not to be read.
- * Every remaining pixel goes to the assistant, which is the reason to keep
- * the panel open.
+ * sentence. There is deliberately no transcript here: reading words scroll by
+ * mid-call means no longer listening to the call, the level meter already
+ * proves capture, and the full transcript lives in the meeting's note. Every
+ * remaining pixel goes to the assistant, which is the reason to keep the
+ * panel open.
  *
  * The visual language is one dark surface, tonal rather than drawn: the
  * window edge carries the only border, and everything inside is a fill —
@@ -69,28 +68,6 @@ const CLOCK_INTERVAL_MS = 250;
 /** Below this the window is a bar again, and the panes are not worth drawing. */
 const COMPACT_HEIGHT_PX = 140;
 
-/**
- * The transcript is hidden by default and capped at three-to-four lines when
- * shown.
- *
- * It exists to show the meeting is being heard, not to be read — anyone
- * reading a transcript during a call has stopped listening to the call, and
- * words scrolling by pull the eye even unread. The level meter already proves
- * capture; the tail is one click away for whoever wants the reassurance, and
- * the choice sticks per machine.
- */
-const TRANSCRIPT_MAX_HEIGHT_PX = 72;
-
-const TRANSCRIPT_VISIBLE_KEY = "meetingPanelTranscriptVisible";
-
-const readTranscriptVisible = () => {
-  try {
-    return localStorage.getItem(TRANSCRIPT_VISIBLE_KEY) === "true";
-  } catch {
-    return false;
-  }
-};
-
 const computeBarHeight = (level: number, index: number) => {
   const scaled = Math.sqrt(level) * 2.4 * BAR_WEIGHTS[index];
   return `${(METER_HEIGHT_PX * Math.max(BAR_FLOOR, Math.min(1, scaled))).toFixed(2)}px`;
@@ -101,6 +78,42 @@ const truncateTitle = (title: string) =>
 
 /** How many past notes are named under a suggestion or an answer. */
 const MAX_VISIBLE_SOURCES = 3;
+
+/**
+ * Answers render as markdown, restyled for the HUD's dark surface: bold for
+ * the decisive fact, dash lists for genuine lists, and a backticked line —
+ * the "say this" line the prompts ask for — set in monospace on its own soft
+ * well, the way a quotable line reads in the reference product. Headings and
+ * links are flattened rather than styled: the prompt bans them, and a stray
+ * one should degrade to text, not to a broken register.
+ */
+const ANSWER_MARKDOWN_COMPONENTS: Components = {
+  p: ({ children }) => <p className="mb-1.5 last:mb-0">{children}</p>,
+  ul: ({ children }) => <ul className="mb-1.5 list-disc space-y-1 pl-4 last:mb-0">{children}</ul>,
+  ol: ({ children }) => (
+    <ol className="mb-1.5 list-decimal space-y-1 pl-4 last:mb-0">{children}</ol>
+  ),
+  li: ({ children }) => <li className="pl-0.5">{children}</li>,
+  strong: ({ children }) => (
+    <strong className="font-semibold text-hud-foreground">{children}</strong>
+  ),
+  em: ({ children }) => <em className="italic">{children}</em>,
+  code: ({ children }) => (
+    <code className="rounded-md bg-white/[0.09] px-1.5 py-0.5 font-mono text-[12px] leading-relaxed text-hud-foreground">
+      {children}
+    </code>
+  ),
+  pre: ({ children }) => (
+    <pre className="mb-1.5 overflow-x-auto rounded-lg bg-white/[0.09] p-2 font-mono text-[12px] last:mb-0">
+      {children}
+    </pre>
+  ),
+  h1: ({ children }) => <p className="mb-1.5 font-semibold last:mb-0">{children}</p>,
+  h2: ({ children }) => <p className="mb-1.5 font-semibold last:mb-0">{children}</p>,
+  h3: ({ children }) => <p className="mb-1.5 font-semibold last:mb-0">{children}</p>,
+  a: ({ children }) => <>{children}</>,
+  blockquote: ({ children }) => <div className="mb-1.5 last:mb-0">{children}</div>,
+};
 
 /** The small round icon buttons in the header. */
 const headerIconButtonClass = cn(
@@ -299,7 +312,6 @@ function SourceLine({ sources }: { sources: readonly AssistNoteRef[] }) {
 export default function MeetingPanelOverlay() {
   const { t } = useTranslation();
   const [snapshot, setSnapshot] = useState<MeetingPanelSnapshot | null>(null);
-  const [transcript, setTranscript] = useState<PanelTranscript | null>(null);
   /**
    * Null until the control panel has actually said something.
    *
@@ -319,22 +331,7 @@ export default function MeetingPanelOverlay() {
   // once and forgets to switch back.
   const [mode, setMode] = useState<AssistMode>("fast");
   const [isCompact, setIsCompact] = useState(false);
-  // Persisted, unlike the mode: whether words-on-screen helps or distracts is
-  // a stable personal preference, not a per-meeting decision.
-  const [showTranscript, setShowTranscript] = useState(readTranscriptVisible);
-  const toggleTranscript = useCallback(() => {
-    setShowTranscript((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem(TRANSCRIPT_VISIBLE_KEY, String(next));
-      } catch {
-        // A blocked localStorage costs persistence, not the toggle.
-      }
-      return next;
-    });
-  }, []);
 
-  const transcriptRef = useRef<HTMLDivElement | null>(null);
   const answerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -342,9 +339,6 @@ export default function MeetingPanelOverlay() {
     // missed is fetched once rather than waited for.
     void window.electronAPI?.meetingPanelGetState?.().then((initial) => {
       if (initial) setSnapshot(initial);
-    });
-    void window.electronAPI?.meetingPanelGetTranscript?.().then((initial) => {
-      if (initial) setTranscript(initial);
     });
     // Caught rather than left dangling: on a dev run where the main process
     // predates this channel the invoke rejects, and an unhandled rejection is
@@ -358,12 +352,10 @@ export default function MeetingPanelOverlay() {
 
     const unbindState = window.electronAPI?.onMeetingPanelState?.(setSnapshot);
     const unbindLevel = window.electronAPI?.onMeetingPanelLevel?.(setLevel);
-    const unbindTranscript = window.electronAPI?.onMeetingPanelTranscript?.(setTranscript);
     const unbindAssist = window.electronAPI?.onMeetingPanelAssist?.(setAssist);
     return () => {
       unbindState?.();
       unbindLevel?.();
-      unbindTranscript?.();
       unbindAssist?.();
     };
   }, []);
@@ -387,16 +379,6 @@ export default function MeetingPanelOverlay() {
     const intervalId = setInterval(update, CLOCK_INTERVAL_MS);
     return () => clearInterval(intervalId);
   }, [snapshot]);
-
-  // Follows the conversation. No "scroll back to live" affordance here on
-  // purpose: this pane holds a couple of minutes at most, and the full
-  // transcript is a click away in the note.
-  useEffect(() => {
-    const element = transcriptRef.current;
-    if (element) element.scrollTop = element.scrollHeight;
-    // showTranscript is a dep so re-opening the pane lands on the live tail,
-    // not wherever the scroll position was when it existed last.
-  }, [transcript, showTranscript]);
 
   // An answer streams in from the bottom, so the newest sentence stays visible
   // without the user reaching for a scrollbar mid-call.
@@ -457,7 +439,6 @@ export default function MeetingPanelOverlay() {
         ? t("notes.meetingPanel.sources.both")
         : t("notes.meetingPanel.sources.micOnly");
 
-  const lines = transcript?.lines ?? [];
   const suggestion = assist?.suggestion ?? null;
   const answer = assist?.answer ?? null;
   // Three states, not two: configured, known to need a model, and not yet
@@ -628,74 +609,6 @@ export default function MeetingPanelOverlay() {
               )}
             </section>
 
-            {/* Transcript. Collapsed to its toggle row by default — see
-                TRANSCRIPT_MAX_HEIGHT_PX for why the tail stays small. */}
-            <section className="flex shrink-0 flex-col">
-              <button
-                type="button"
-                onClick={toggleTranscript}
-                aria-expanded={showTranscript}
-                title={t(
-                  showTranscript
-                    ? "notes.meetingPanel.transcript.hide"
-                    : "notes.meetingPanel.transcript.show"
-                )}
-                className={cn(
-                  "flex w-full shrink-0 items-center gap-1.5 rounded-md py-1",
-                  "transition-colors duration-150 hover:bg-white/[0.04]",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
-                )}
-              >
-                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-hud-muted">
-                  {t("notes.meetingPanel.transcript.label")}
-                </span>
-                <span className="h-px flex-1 bg-hud-border" aria-hidden="true" />
-                {showTranscript && (transcript?.hiddenCount ?? 0) > 0 && (
-                  <span className="shrink-0 text-[11px] text-hud-muted">
-                    {t("notes.meetingPanel.transcript.earlier", {
-                      count: transcript?.hiddenCount ?? 0,
-                    })}
-                  </span>
-                )}
-                {showTranscript ? (
-                  <ChevronDown size={12} className="shrink-0 text-hud-muted/80" />
-                ) : (
-                  <ChevronRight size={12} className="shrink-0 text-hud-muted/80" />
-                )}
-              </button>
-              {showTranscript && (
-                <div
-                  ref={transcriptRef}
-                  style={{ maxHeight: TRANSCRIPT_MAX_HEIGHT_PX }}
-                  className="mt-0.5 space-y-0.5 overflow-y-auto"
-                >
-                  {lines.length === 0 ? (
-                    <p className="text-[12px] leading-relaxed text-hud-muted">
-                      {t("notes.meetingPanel.transcript.waiting")}
-                    </p>
-                  ) : (
-                    lines.map((line) => (
-                      <p key={line.key} className="text-[12px] leading-snug">
-                        <span
-                          className={cn(
-                            "mr-1.5 text-[11px] font-semibold uppercase tracking-[0.06em]",
-                            line.source === "mic" ? "text-hud-accent" : "text-hud-muted"
-                          )}
-                        >
-                          {line.source === "mic"
-                            ? t("transcript.speaker.you")
-                            : t("transcript.speaker.others")}
-                        </span>
-                        <span className={cn(line.live ? "text-hud-muted/80" : "text-hud-muted")}>
-                          {line.text}
-                        </span>
-                      </p>
-                    ))
-                  )}
-                </div>
-              )}
-            </section>
-
             {/* The assistant. This is what the leftover height goes to, because
                 it is the reason to keep the panel open — a question you need
                 answered now, and the room to read the answer. */}
@@ -742,14 +655,14 @@ export default function MeetingPanelOverlay() {
                     {t("notes.meetingPanel.ask.searchingNotes")}
                   </p>
                 ) : (
-                  <p className="mt-1 whitespace-pre-wrap text-[13px] leading-relaxed text-hud-foreground">
-                    {answer.text}
+                  <div className="mt-1 text-[13px] leading-relaxed text-hud-foreground">
+                    <Markdown components={ANSWER_MARKDOWN_COMPONENTS}>{answer.text}</Markdown>
                     {/* The caret is the only "it is working" signal an
                         answer needs: the text itself is the progress bar. */}
                     {answer.streaming && (
                       <span className="ml-0.5 inline-block h-3 w-[2px] translate-y-[2px] animate-pulse bg-hud-accent" />
                     )}
-                  </p>
+                  </div>
                 )}
                 {!answer.streaming && <SourceLine sources={answer.sources} />}
                 {/* The escalation. Only on a settled fast answer: it is the
