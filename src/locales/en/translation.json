@@ -3146,7 +3146,6 @@
         "placeholder": "Ask about this meeting…",
         "placeholderThinking": "Ask across this meeting and your notes…",
         "searchingNotes": "Searching your past notes…",
-        "checkNotes": "Check past notes",
         "needsModel": "Set up an AI model to ask questions during a meeting.",
         "needsModelPlaceholder": "Needs an AI model",
         "configureModels": "Set up AI models",
@@ -3154,7 +3153,9 @@
         "failed": "Could not answer that. Try again.",
         "noAnswer": "No answer came back.",
         "connecting": "Getting ready…",
-        "connectingPlaceholder": "Connecting…"
+        "connectingPlaceholder": "Connecting…",
+        "thinkDeeper": "Think deeper",
+        "thinkDeeperHint": "Checks this answer against your past notes and improves it."
       },
       "sourcesLabel": "From",
       "lastTime": {

@@ -2939,7 +2939,6 @@
         "placeholder": "问问这场会议…",
         "placeholderThinking": "询问本次会议和你的笔记…",
         "searchingNotes": "正在搜索过去的笔记…",
-        "checkNotes": "查看过去的笔记",
         "needsModel": "配置 AI 模型后即可在会议中提问。",
         "needsModelPlaceholder": "需要 AI 模型",
         "configureModels": "设置 AI 模型",
@@ -2947,7 +2946,9 @@
         "failed": "没能回答，请再试一次。",
         "noAnswer": "没有收到回答。",
         "connecting": "准备中…",
-        "connectingPlaceholder": "连接中…"
+        "connectingPlaceholder": "连接中…",
+        "thinkDeeper": "深入思考",
+        "thinkDeeperHint": "根据你过去的笔记核对并改进此回答。"
       },
       "sourcesLabel": "来源",
       "lastTime": {

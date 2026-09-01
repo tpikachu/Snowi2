@@ -3146,7 +3146,6 @@
         "placeholder": "Frage zu diesem Meeting…",
         "placeholderThinking": "Fragen Sie zu diesem Meeting und Ihren Notizen…",
         "searchingNotes": "Ihre früheren Notizen werden durchsucht…",
-        "checkNotes": "Frühere Notizen prüfen",
         "needsModel": "Richten Sie ein KI-Modell ein, um während eines Meetings zu fragen.",
         "needsModelPlaceholder": "Benötigt ein KI-Modell",
         "configureModels": "KI-Modelle einrichten",
@@ -3154,7 +3153,9 @@
         "failed": "Das ließ sich nicht beantworten. Bitte erneut versuchen.",
         "noAnswer": "Es kam keine Antwort zurück.",
         "connecting": "Wird vorbereitet…",
-        "connectingPlaceholder": "Verbinden…"
+        "connectingPlaceholder": "Verbinden…",
+        "thinkDeeper": "Tiefer nachdenken",
+        "thinkDeeperHint": "Prüft diese Antwort gegen deine früheren Notizen und verbessert sie."
       },
       "sourcesLabel": "Aus",
       "lastTime": {

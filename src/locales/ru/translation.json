@@ -2967,7 +2967,6 @@
         "placeholder": "Спросить об этой встрече…",
         "placeholderThinking": "Спросите об этой встрече и ваших заметках…",
         "searchingNotes": "Поиск по прошлым заметкам…",
-        "checkNotes": "Проверить прошлые заметки",
         "needsModel": "Настройте модель ИИ, чтобы задавать вопросы во время встречи.",
         "needsModelPlaceholder": "Нужна модель ИИ",
         "configureModels": "Настроить модели ИИ",
@@ -2975,7 +2974,9 @@
         "failed": "Не удалось ответить. Попробуйте ещё раз.",
         "noAnswer": "Ответ не пришёл.",
         "connecting": "Готовимся…",
-        "connectingPlaceholder": "Подключение…"
+        "connectingPlaceholder": "Подключение…",
+        "thinkDeeper": "Подумать глубже",
+        "thinkDeeperHint": "Сверяет этот ответ с вашими прошлыми заметками и улучшает его."
       },
       "sourcesLabel": "Источник",
       "lastTime": {

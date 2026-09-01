@@ -2867,7 +2867,6 @@
         "placeholder": "この会議について質問…",
         "placeholderThinking": "この会議とノートについて質問…",
         "searchingNotes": "過去のノートを検索中…",
-        "checkNotes": "過去のノートを確認",
         "needsModel": "会議中に質問するには AI モデルを設定してください。",
         "needsModelPlaceholder": "AI モデルが必要です",
         "configureModels": "AI モデルを設定",
@@ -2875,7 +2874,9 @@
         "failed": "答えられませんでした。もう一度お試しください。",
         "noAnswer": "回答が返りませんでした。",
         "connecting": "準備しています…",
-        "connectingPlaceholder": "接続中…"
+        "connectingPlaceholder": "接続中…",
+        "thinkDeeper": "じっくり考える",
+        "thinkDeeperHint": "この回答を過去のノートと照合して改善します。"
       },
       "sourcesLabel": "出典",
       "lastTime": {

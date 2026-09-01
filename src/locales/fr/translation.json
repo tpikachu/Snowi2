@@ -3146,7 +3146,6 @@
         "placeholder": "Posez une question sur cette réunion…",
         "placeholderThinking": "Posez une question sur cette réunion et vos notes…",
         "searchingNotes": "Recherche dans vos notes passées…",
-        "checkNotes": "Consulter les notes passées",
         "needsModel": "Configurez un modèle d'IA pour poser des questions pendant une réunion.",
         "needsModelPlaceholder": "Nécessite un modèle d'IA",
         "configureModels": "Configurer les modèles d'IA",
@@ -3154,7 +3153,9 @@
         "failed": "Impossible de répondre. Réessayez.",
         "noAnswer": "Aucune réponse n'est arrivée.",
         "connecting": "Préparation…",
-        "connectingPlaceholder": "Connexion…"
+        "connectingPlaceholder": "Connexion…",
+        "thinkDeeper": "Approfondir",
+        "thinkDeeperHint": "Vérifie cette réponse dans vos notes passées et l'améliore."
       },
       "sourcesLabel": "D'après",
       "lastTime": {

@@ -421,10 +421,12 @@ export default function MeetingPanelOverlay() {
     void window.electronAPI?.meetingPanelAsk?.(trimmed, mode);
   }, [question, mode]);
 
-  // The escalation: the same question again, this time over past notes. One
-  // click, because the moment someone wants it is the moment a fast answer
-  // just said "that is not in this meeting". Deliberately does not move the
-  // toggle — it escalates this question, not the default.
+  // The escalation: the same question again, this time over past notes — and
+  // because the question is identical, the assist hook sends the fast draft
+  // along for the thinking model to verify and extend rather than restart.
+  // One click, because the moment someone wants it is the moment a fast
+  // answer just said "that is not in this meeting". Deliberately does not
+  // move the toggle — it escalates this question, not the default.
   const askAgainWithNotes = useCallback((text: string) => {
     void window.electronAPI?.meetingPanelAsk?.(text, "thinking");
   }, []);
@@ -756,6 +758,7 @@ export default function MeetingPanelOverlay() {
                     type="button"
                     onClick={() => askAgainWithNotes(answer.question)}
                     disabled={!assistReady}
+                    title={t("notes.meetingPanel.ask.thinkDeeperHint")}
                     className={cn(
                       "mt-2 flex h-6 items-center gap-1.5 rounded-full border border-hud-border px-2",
                       "text-[10px] font-medium text-hud-muted transition-colors duration-150",
@@ -765,7 +768,7 @@ export default function MeetingPanelOverlay() {
                     )}
                   >
                     <Brain size={10} />
-                    {t("notes.meetingPanel.ask.checkNotes")}
+                    {t("notes.meetingPanel.ask.thinkDeeper")}
                   </button>
                 )}
               </div>

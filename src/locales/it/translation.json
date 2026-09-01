@@ -2939,7 +2939,6 @@
         "placeholder": "Chiedi qualcosa su questa riunione…",
         "placeholderThinking": "Chiedi su questa riunione e sulle tue note…",
         "searchingNotes": "Ricerca nelle tue note passate…",
-        "checkNotes": "Controlla le note passate",
         "needsModel": "Configura un modello di IA per fare domande durante una riunione.",
         "needsModelPlaceholder": "Serve un modello di IA",
         "configureModels": "Configura i modelli di IA",
@@ -2947,7 +2946,9 @@
         "failed": "Non è stato possibile rispondere. Riprova.",
         "noAnswer": "Non è arrivata nessuna risposta.",
         "connecting": "Preparazione…",
-        "connectingPlaceholder": "Connessione…"
+        "connectingPlaceholder": "Connessione…",
+        "thinkDeeper": "Approfondire",
+        "thinkDeeperHint": "Verifica questa risposta con le tue note passate e la migliora."
       },
       "sourcesLabel": "Da",
       "lastTime": {

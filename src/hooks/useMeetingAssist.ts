@@ -9,6 +9,7 @@ import {
 import { useMeetingRecordingStore } from "../stores/meetingRecordingStore";
 import {
   clearAnswer,
+  getMeetingAssist,
   markSuggestionStale,
   resetMeetingAssist,
   setAssistConfigured,
@@ -428,6 +429,22 @@ export function useMeetingAssist(): MeetingAssist {
         schedulerRef.current = markSettled(schedulerRef.current);
         setSuggestionPending(false);
       }
+      // Draft-then-refine: escalating a settled fast answer to thinking sends
+      // the draft along, so the big model verifies and extends an answer the
+      // user has already read instead of starting blind. Read before
+      // startAnswer replaces it, and only for the same question — a new
+      // question deserves a fresh answer, not a revision of an unrelated one.
+      const previous = getMeetingAssist().answer;
+      const draft =
+        mode === "thinking" &&
+        previous?.mode === "fast" &&
+        !previous.streaming &&
+        !previous.errorKey &&
+        previous.question === trimmed &&
+        previous.text.trim()
+          ? previous.text.trim()
+          : undefined;
+
       const seq = ++askSeqRef.current;
       const isCurrent = () => mountedRef.current && askSeqRef.current === seq;
       activityRef.current = "answer";
@@ -475,6 +492,7 @@ export function useMeetingAssist(): MeetingAssist {
         memory,
         question: trimmed,
         mode,
+        draft,
       });
 
       const resolved = resolveAssistModel(systemPrompt, { lane: mode });

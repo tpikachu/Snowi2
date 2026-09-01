@@ -260,6 +260,52 @@ test("the two answer modes get different prompts, and only thinking mentions not
   assert.ok(thinking.systemPrompt.includes("past notes"));
 });
 
+test("an escalated question carries the fast draft for the thinking model to refine", () => {
+  // Draft-then-refine: "Think deeper" re-asks the same question with the fast
+  // answer attached, so the big model corrects and extends an answer the user
+  // has already read instead of starting blind.
+  const built = buildAnswerMessages({
+    meetingTitle: null,
+    segments: [seg("what about the discount", "system", NOW)],
+    notes: [{ noteId: 3, title: "Acme pricing", snippet: "agreed 15% through Q3" }],
+    question: "what did we agree?",
+    mode: "thinking",
+    draft: "  You agreed on a discount, but the rate was not said today.  ",
+  });
+  const user = built.messages[1].content;
+  assert.ok(user.includes('"You agreed on a discount, but the rate was not said today."'));
+  assert.ok(user.includes("drafted from the live transcript alone"));
+  assert.ok(user.includes("never mention the draft"));
+  // The draft follows the question — the question stays the request, the
+  // draft is material for answering it.
+  assert.ok(user.indexOf("My question:") < user.indexOf("drafted from the live transcript"));
+});
+
+test("a fast request ignores a draft — its prompt promises the transcript is everything", () => {
+  const user = buildAnswerMessages({
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    question: "what did we agree?",
+    mode: "fast",
+    draft: "an earlier answer",
+  }).messages[1].content;
+  assert.ok(!user.includes("an earlier answer"));
+  assert.ok(user.endsWith("My question: what did we agree?"));
+});
+
+test("a blank draft renders no draft block", () => {
+  const user = buildAnswerMessages({
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    question: "what did we agree?",
+    mode: "thinking",
+    draft: "   ",
+  }).messages[1].content;
+  assert.ok(!user.includes("drafted from the live transcript"));
+});
+
 test("a meeting with nothing said yet still produces a usable prompt", () => {
   const built = buildSuggestionMessages({ meetingTitle: null, segments: [], notes: [] });
   assert.ok(built.messages[1].content.includes("(nothing said yet)"));

@@ -2939,7 +2939,6 @@
         "placeholder": "Pergunte sobre esta reunião…",
         "placeholderThinking": "Pergunte sobre esta reunião e suas notas…",
         "searchingNotes": "Pesquisando suas notas anteriores…",
-        "checkNotes": "Verificar notas anteriores",
         "needsModel": "Configure um modelo de IA para perguntar durante uma reunião.",
         "needsModelPlaceholder": "Precisa de um modelo de IA",
         "configureModels": "Configurar modelos de IA",
@@ -2947,7 +2946,9 @@
         "failed": "Não foi possível responder. Tente de novo.",
         "noAnswer": "Nenhuma resposta voltou.",
         "connecting": "Preparando…",
-        "connectingPlaceholder": "Conectando…"
+        "connectingPlaceholder": "Conectando…",
+        "thinkDeeper": "Pensar mais a fundo",
+        "thinkDeeperHint": "Confere esta resposta com as suas notas anteriores e a melhora."
       },
       "sourcesLabel": "De",
       "lastTime": {

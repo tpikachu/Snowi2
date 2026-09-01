@@ -280,17 +280,35 @@ export function buildSuggestionMessages(input: AssistMessagesInput): AssistMessa
 }
 
 export function buildAnswerMessages(
-  input: AssistMessagesInput & { question: string; mode: AssistMode }
+  input: AssistMessagesInput & { question: string; mode: AssistMode; draft?: string }
 ): AssistMessages {
   const systemPrompt =
     input.mode === "fast" ? FAST_ANSWER_SYSTEM_PROMPT : THINKING_ANSWER_SYSTEM_PROMPT;
+  // Draft-then-refine: when a fast answer is escalated, its text rides along
+  // so the thinking model verifies and extends an answer the user has already
+  // read, instead of starting blind and possibly contradicting it for no
+  // reason. Thinking-only — a fast request has no earlier draft to refine,
+  // and its prompt promises the transcript is the whole context.
+  const draft = input.mode === "thinking" ? (input.draft?.trim() ?? "") : "";
+  const draftBlock = draft
+    ? [
+        "",
+        "",
+        "A first answer was already drafted from the live transcript alone:",
+        `"${draft}"`,
+        "Check it against the notes and memory above: keep what holds, correct",
+        "anything they contradict, and add the concrete details they contribute.",
+        "Reply with the improved answer only — never mention the draft or that",
+        "you revised it.",
+      ].join("\n")
+    : "";
   return {
     systemPrompt,
     messages: [
       { role: "system", content: systemPrompt },
       {
         role: "user",
-        content: `${buildContext(input)}\n\nMy question: ${input.question.trim()}`,
+        content: `${buildContext(input)}\n\nMy question: ${input.question.trim()}${draftBlock}`,
       },
     ],
   };
