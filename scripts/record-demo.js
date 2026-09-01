@@ -1066,13 +1066,22 @@ async function main() {
     });
 
     // -- Act 5: ask Snowy ----------------------------------------------------
+    // The post-meeting note context hides parts of the shell (and grows its
+    // own "Chat" controls), so leave it cleanly: a reload lands on Home with
+    // the icon rail up, and the rail buttons are addressed by their tour
+    // anchors rather than text that the note view can duplicate.
+    await page.reload();
+    await page.waitForLoadState("domcontentloaded");
+    await injectDemoChrome(page);
+    await sleep(2500);
+
     await chapter("chat", async () => {
       await caption(
         page,
         "Later, just ask Snowy",
         "It answers from your own meetings — like a colleague with perfect memory."
       );
-      await moveClick(page, page.getByRole("button", { name: "Chat", exact: true }));
+      await moveClick(page, page.locator('[data-tour="nav-chat"]'));
       await sleep(BEAT_MS);
       await moveClick(page, page.getByRole("button", { name: /new chat/i }).first(), {
         timeout: 6000,
@@ -1115,7 +1124,7 @@ async function main() {
 
     // -- Finale ----------------------------------------------------------
     await chapter("finale", async () => {
-      await moveClick(page, page.getByRole("button", { name: "Home", exact: true }));
+      await moveClick(page, page.locator('[data-tour="nav-home"]'));
       await caption(
         page,
         "Snowy — your meetings, remembered",
