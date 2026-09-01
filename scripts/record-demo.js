@@ -70,23 +70,62 @@ function readOpenAIKey() {
 // ---------------------------------------------------------------------------
 
 const CALL_LINES = [
-  ["Microsoft David Desktop", "Hi Priya, thanks for joining. Today I want to walk you through the rollout plan for your team."],
-  ["Microsoft Zira Desktop", "Sounds good. Our main concern is getting the sales team on board without slowing them down."],
-  ["Microsoft David Desktop", "Understood. We suggest starting with a two week pilot for just the Austin office."],
-  ["Microsoft Zira Desktop", "That works for us. Can you have the training materials ready by next Friday?"],
+  [
+    "Microsoft David Desktop",
+    "Hi Priya, thanks for joining. Today I want to walk you through the rollout plan for your team.",
+  ],
+  [
+    "Microsoft Zira Desktop",
+    "Sounds good. Our main concern is getting the sales team on board without slowing them down.",
+  ],
+  [
+    "Microsoft David Desktop",
+    "Understood. We suggest starting with a two week pilot for just the Austin office.",
+  ],
+  [
+    "Microsoft Zira Desktop",
+    "That works for us. Can you have the training materials ready by next Friday?",
+  ],
   ["Microsoft David Desktop", "Yes, I will send the training guide and a short video by Friday."],
-  ["Microsoft Zira Desktop", "Great. One more thing. Our director Dana needs to approve the annual pricing before we sign."],
+  [
+    "Microsoft Zira Desktop",
+    "Great. One more thing. Our director Dana needs to approve the annual pricing before we sign.",
+  ],
   ["Microsoft David Desktop", "No problem. I will email the full pricing proposal to Dana today."],
-  ["Microsoft Zira Desktop", "Perfect. Let us meet again in two weeks to review how the pilot is going."],
-  ["Microsoft David Desktop", "Agreed. Let me quickly recap. We start a two week pilot in Austin, and I send the training guide and video by Friday."],
-  ["Microsoft Zira Desktop", "Right. And the pricing proposal goes to Dana today so she can review it before we sign."],
+  [
+    "Microsoft Zira Desktop",
+    "Perfect. Let us meet again in two weeks to review how the pilot is going.",
+  ],
+  [
+    "Microsoft David Desktop",
+    "Agreed. Let me quickly recap. We start a two week pilot in Austin, and I send the training guide and video by Friday.",
+  ],
+  [
+    "Microsoft Zira Desktop",
+    "Right. And the pricing proposal goes to Dana today so she can review it before we sign.",
+  ],
   ["Microsoft David Desktop", "Exactly. How many people should we plan for in the pilot?"],
-  ["Microsoft Zira Desktop", "About twenty five people from the Austin sales team. I will send you the list tomorrow."],
-  ["Microsoft David Desktop", "Great, twenty five seats it is. I will set up their accounts as soon as I get the list."],
-  ["Microsoft Zira Desktop", "One question. Can our team keep using their current tools during the pilot?"],
-  ["Microsoft David Desktop", "Yes, nothing changes in their workflow. Snowy runs quietly alongside the tools they already use."],
+  [
+    "Microsoft Zira Desktop",
+    "About twenty five people from the Austin sales team. I will send you the list tomorrow.",
+  ],
+  [
+    "Microsoft David Desktop",
+    "Great, twenty five seats it is. I will set up their accounts as soon as I get the list.",
+  ],
+  [
+    "Microsoft Zira Desktop",
+    "One question. Can our team keep using their current tools during the pilot?",
+  ],
+  [
+    "Microsoft David Desktop",
+    "Yes, nothing changes in their workflow. Snowy runs quietly alongside the tools they already use.",
+  ],
   ["Microsoft Zira Desktop", "That is exactly what I hoped. Alright, I think we have a plan."],
-  ["Microsoft David Desktop", "Wonderful. I will send the calendar invite for the two week review. Have a great day, Priya!"],
+  [
+    "Microsoft David Desktop",
+    "Wonderful. I will send the calendar invite for the two week review. Have a great day, Priya!",
+  ],
 ];
 
 /**
@@ -156,9 +195,13 @@ Build '${sysWav.replace(/'/g, "''")}' 'Microsoft Zira Desktop'
   const psPath = path.join(OUT_DIR, "make-demo-call.ps1");
   fs.mkdirSync(OUT_DIR, { recursive: true });
   fs.writeFileSync(psPath, script);
-  const result = spawnSync("powershell", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", psPath], {
-    stdio: "ignore",
-  });
+  const result = spawnSync(
+    "powershell",
+    ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", psPath],
+    {
+      stdio: "ignore",
+    }
+  );
   if (result.status === 0 && fresh(micWav) && fresh(sysWav)) return { micWav, sysWav };
   console.warn("could not synthesize the demo call audio — the live call chapter will be skipped");
   return null;
@@ -690,12 +733,75 @@ async function main() {
     // A few believable past meetings, so search and chat have history.
     await seedDemoNotes(page);
 
+    // -- Act 1.5: meet the assistant bar -----------------------------------
+    // Finishing onboarding is the edge that makes the bar debut: from now on
+    // it sits on top of the screen at every login, and it is where daily use
+    // happens. Filmed in its own window, padded taller with a letterbox-dark
+    // backdrop so the caption has somewhere to live under the 56px row.
+    let barPage = null;
+    for (let i = 0; i < 20 && !barPage; i++) {
+      barPage = app.windows().find((candidate) => candidate.url().includes("agent=true")) ?? null;
+      if (!barPage) await sleep(300);
+    }
+    const barBw = barPage ? await app.browserWindow(barPage) : null;
+    const frameBar = async () => {
+      await barBw.evaluate((win) => {
+        const bounds = win.getBounds();
+        win.setBounds({ ...bounds, width: 560, height: 250 });
+      });
+      await barPage.evaluate(() => {
+        if (document.getElementById("__demo-bar-style")) return;
+        const style = document.createElement("style");
+        style.id = "__demo-bar-style";
+        // Pin the bar chrome to its real 56px row and paint the padding the
+        // letterbox colour, so the strip below carries the caption.
+        style.textContent = [
+          ".agent-overlay-window { background: #0d1214 !important; }",
+          ".agent-overlay-window > div:first-child { height: 56px !important; flex: none !important; }",
+        ].join("\n");
+        document.head.appendChild(style);
+      });
+    };
+    // Must run before the bar morphs into the cue card — the pinned 56px
+    // would otherwise squash the card too.
+    const unframeBar = async () => {
+      await barPage.evaluate(() => document.getElementById("__demo-bar-style")?.remove());
+    };
+
+    if (barPage) {
+      await injectDemoChrome(barPage);
+      await chapter("meet the bar", async () => {
+        await frameBar();
+        capturePage = barPage;
+        captureClip = null;
+        await caption(
+          barPage,
+          "Meet the assistant bar",
+          "The moment setup ends, this little bar appears — and it stays on top of your screen, ready at every login."
+        );
+        await sleep(BEAT_MS * 1.5);
+        await caption(
+          barPage,
+          "The amber light means something still needs setting up",
+          "Hover it to see exactly what's missing — click it, and Snowy takes you straight there."
+        );
+        await sleep(BEAT_MS);
+        // The pulsing warning's accessible name lists the gaps; clicking it
+        // surfaces the app on Home with the setup card open — which is
+        // exactly where the next chapter begins.
+        await moveClick(barPage, barPage.getByLabel(/AI model/i).first(), { timeout: 10_000 });
+        await sleep(1200);
+        await caption(barPage, "");
+        capturePage = page;
+      });
+    }
+
     // -- Act 2: pick the AI that writes the summaries ----------------------
     await chapter("ai model setup", async () => {
       await caption(
         page,
         "One more choice: which AI writes your summaries",
-        "Snowy points out what still needs setting up, right on the Home screen."
+        "The bar dropped us on the setup guide — everything left to do is on this one card."
       );
       await moveClick(page, page.getByRole("button", { name: "Set up" }).first(), {
         timeout: 15_000,
@@ -746,14 +852,33 @@ async function main() {
     // -- Act 3: the demo call ----------------------------------------------
     await chapter("demo call", async () => {
       if (!call) throw new Error("no demo call audio on this platform");
-      await caption(
-        page,
-        "Now let's record a real call",
-        "One click on Start meeting — Snowy handles everything else."
-      );
-      await moveClick(page, page.getByRole("button", { name: /start meeting/i }).first(), {
-        timeout: 15_000,
-      });
+      if (barPage) {
+        // The bar again — this time with nothing left to warn about, and the
+        // meeting starts from it, the way daily use actually goes.
+        await frameBar();
+        capturePage = barPage;
+        await caption(
+          barPage,
+          "Back at the bar — the amber light is gone",
+          "Now let's record a real call. One click, right from here."
+        );
+        await sleep(BEAT_MS);
+        await unframeBar();
+        await moveClick(barPage, barPage.getByRole("button", { name: /start meeting/i }).first(), {
+          timeout: 15_000,
+        });
+        capturePage = page;
+        captureClip = null;
+      } else {
+        await caption(
+          page,
+          "Now let's record a real call",
+          "One click on Start meeting — Snowy handles everything else."
+        );
+        await moveClick(page, page.getByRole("button", { name: /start meeting/i }).first(), {
+          timeout: 15_000,
+        });
+      }
       await sleep(1500);
 
       // The customer's side of the call, through the real speakers — the mic
@@ -791,19 +916,12 @@ async function main() {
       );
       await sleep(6000);
 
-      // -- The cue card: the floating panel only the user ever sees --------
-      let panelPage = null;
-      for (let i = 0; i < 10 && !panelPage; i++) {
-        panelPage =
-          app.windows().find((candidate) => candidate.url().includes("meeting-panel=true")) ??
-          null;
-        if (!panelPage) await sleep(300);
-      }
+      // -- The cue card: the bar, morphed ----------------------------------
+      // While a meeting records, the assistant bar window IS the cue card —
+      // one surface growing in place, no second window to find. Its demo
+      // chrome is already injected; framePanel repositions the caption.
+      const panelPage = barPage;
       if (panelPage) {
-        await injectDemoChrome(panelPage, { captionAtTop: true });
-        // The cue card hides itself while Snowy's own window has focus —
-        // blur the main window so the card is on show while we film it.
-        await bw.evaluate((win) => win.blur());
         await sleep(800);
 
         // Crop the capture to the card's content (the window is taller than
@@ -829,13 +947,16 @@ async function main() {
             };
           });
           const height = Math.min(metrics.height, metrics.bottom + 100);
-          await panelPage.evaluate((top) => {
-            const el = document.getElementById("__demo-caption");
-            if (el) {
-              el.style.bottom = "";
-              el.style.top = `${top}px`;
-            }
-          }, Math.min(metrics.bottom + 10, height - 90));
+          await panelPage.evaluate(
+            (top) => {
+              const el = document.getElementById("__demo-caption");
+              if (el) {
+                el.style.bottom = "";
+                el.style.top = `${top}px`;
+              }
+            },
+            Math.min(metrics.bottom + 10, height - 90)
+          );
           captureClip = { x: 0, y: 0, width: metrics.width, height };
         };
         await framePanel();
@@ -843,8 +964,8 @@ async function main() {
 
         await caption(
           panelPage,
-          "Meet the cue card",
-          "It floats above every app during a call — and it's invisible to screen sharing. Only you see it."
+          "The bar just grew into the cue card",
+          "It floats above every app during the call — and one switch in Settings keeps it out of screen shares."
         );
         await sleep(2500);
 
@@ -930,7 +1051,11 @@ async function main() {
       );
       await sleep(BEAT_MS * 2);
 
-      await caption(page, "Need to share it? One click", "Copy the recap, or draft the follow-up email.");
+      await caption(
+        page,
+        "Need to share it? One click",
+        "Copy the recap, or draft the follow-up email."
+      );
       await moveClick(page, page.getByRole("button", { name: /copy (recap|summary)/i }));
       await sleep(BEAT_MS);
       await moveClick(page, page.getByRole("button", { name: /follow-up email/i }));
@@ -994,7 +1119,7 @@ async function main() {
       await caption(
         page,
         "Snowy — your meetings, remembered",
-        "Set up once. Every meeting after that takes care of itself."
+        "Set up once. After that, the bar is always there — one click from every meeting."
       );
       await sleep(BEAT_MS * 2);
     });

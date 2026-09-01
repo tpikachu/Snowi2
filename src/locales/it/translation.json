@@ -3290,7 +3290,10 @@
         "chatIntelligence": "Le risposte durante la riunione richiedono un modello di IA"
       },
       "appWindow": "Mostra o nascondi la finestra di Snowy",
-      "startMeeting": "Avvia riunione"
+      "startMeeting": "Avvia riunione",
+      "downloading": "Download… {{percent}}%",
+      "installing": "Installazione…",
+      "downloadingModel": "Download di {{model}}"
     },
     "screenConsent": {
       "question": "Snowy può guardare il tuo schermo per aiutarti a rispondere? Non viene mai salvato.",

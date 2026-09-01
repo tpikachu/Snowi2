@@ -931,6 +931,11 @@ class WindowManager {
     } else {
       this.agentWindow.show();
     }
+    // The bar stays above the app by default. alwaysOnTop puts it above
+    // normal windows (the control panel included); moveTop settles it above
+    // the app's other topmost overlays too, so a summon always ends with the
+    // bar actually in view.
+    this.agentWindow.moveTop();
     // showInactive keeps the window server happy on macOS, then focus moves
     // deliberately — and only when the user summoned the bar to use it.
     if (focus) this.agentWindow.focus();
@@ -1566,13 +1571,25 @@ class WindowManager {
    * and cached here so a bar that loads later still gets an answer.
    */
   updateBarStatus(status) {
-    this._barStatus = status
-      ? {
-          speechOk: status.speechOk !== false,
-          actionsOk: status.actionsOk !== false,
-          chatOk: status.chatOk !== false,
-        }
-      : null;
+    if (!status) {
+      this._barStatus = null;
+    } else {
+      const download =
+        status.download && typeof status.download === "object"
+          ? {
+              displayName: String(status.download.displayName ?? ""),
+              percentage: Math.max(0, Math.min(100, Number(status.download.percentage) || 0)),
+              isInstalling: status.download.isInstalling === true,
+            }
+          : null;
+      this._barStatus = {
+        speechOk: status.speechOk !== false,
+        actionsOk: status.actionsOk !== false,
+        chatOk: status.chatOk !== false,
+        downloadBlocksMeetingStart: status.downloadBlocksMeetingStart === true,
+        download,
+      };
+    }
     this.sendToMeetingPanel("bar-status", this._barStatus);
   }
 

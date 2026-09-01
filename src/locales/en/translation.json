@@ -3455,7 +3455,10 @@
         "chatIntelligence": "In-meeting answers need an AI model"
       },
       "appWindow": "Show or hide the Snowy window",
-      "startMeeting": "Start meeting"
+      "startMeeting": "Start meeting",
+      "downloading": "Downloading… {{percent}}%",
+      "installing": "Installing…",
+      "downloadingModel": "Downloading {{model}}"
     },
     "screenConsent": {
       "question": "Can Snowy look at your screen to help answer? It's never saved.",

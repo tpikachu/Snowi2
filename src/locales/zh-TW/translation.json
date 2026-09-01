@@ -3290,7 +3290,10 @@
         "chatIntelligence": "會議中的回答需要一個 AI 模型"
       },
       "appWindow": "顯示或隱藏 Snowy 視窗",
-      "startMeeting": "開始會議"
+      "startMeeting": "開始會議",
+      "downloading": "下載中… {{percent}}%",
+      "installing": "安裝中…",
+      "downloadingModel": "正在下載 {{model}}"
     },
     "screenConsent": {
       "question": "允許 Snowy 查看您的螢幕以便更好地回答嗎？絕不會儲存。",

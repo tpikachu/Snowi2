@@ -7,6 +7,7 @@ import {
   BYOK_PROVIDER_KEY_FIELDS,
   type SettingsState,
 } from "../stores/settingsStore";
+import { useSpeechModelDownloadStatus } from "./useSpeechModelDownloadStatus";
 
 const selectSpeechOk = (state: SettingsState): boolean => {
   const cfg = selectResolvedMeetingTranscription(state);
@@ -44,7 +45,35 @@ export function useBarStatusPublisher() {
   const speechOk = useSettingsStore(selectSpeechOk);
   const actionsOk = useSettingsStore(selectActionsOk);
   const chatOk = useSettingsStore(selectChatOk);
+
+  // Download state rides the same channel, and for the same reason: the
+  // download's progress events only reach the window that started it — this
+  // one. The bar's own hooks would hydrate once at mount and then sit
+  // frozen; published from here, the bar's percentage moves.
+  const speechDownload = useSpeechModelDownloadStatus();
+  const download = speechDownload.active;
+  const displayName = download?.displayName ?? "";
+  const percentage = download ? Math.round(download.percentage) : 0;
+  const isInstalling = download?.isInstalling ?? false;
+  const downloadActive = download != null;
+  const downloadBlocksMeetingStart = speechDownload.blocksMeetingStart;
+
   useEffect(() => {
-    window.electronAPI?.publishBarStatus?.({ speechOk, actionsOk, chatOk });
-  }, [speechOk, actionsOk, chatOk]);
+    window.electronAPI?.publishBarStatus?.({
+      speechOk,
+      actionsOk,
+      chatOk,
+      downloadBlocksMeetingStart,
+      download: downloadActive ? { displayName, percentage, isInstalling } : null,
+    });
+  }, [
+    speechOk,
+    actionsOk,
+    chatOk,
+    downloadBlocksMeetingStart,
+    downloadActive,
+    displayName,
+    percentage,
+    isInstalling,
+  ]);
 }

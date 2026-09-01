@@ -7,6 +7,18 @@ import type { AssistMode, MeetingAssistState } from "../utils/meetingAssistState
 /** What the floating meeting panel can ask the control panel to do. */
 export type MeetingPanelCommand = "pause" | "resume" | "stop" | "open" | "configureModels";
 
+/**
+ * Setup readiness and download state for the assistant bar, published by the
+ * control panel renderer over the bar-status channel and cached in main.
+ */
+export interface BarStatusPayload {
+  speechOk: boolean;
+  actionsOk: boolean;
+  chatOk: boolean;
+  downloadBlocksMeetingStart: boolean;
+  download: { displayName: string; percentage: number; isInstalling: boolean } | null;
+}
+
 export type LocalTranscriptionProvider = "whisper" | "nvidia";
 
 export type ChineseScriptPreference = "simplified" | "traditional" | "as-transcribed";
@@ -2036,21 +2048,9 @@ declare global {
       openControlPanel?: (target?: "setup") => Promise<{ success: boolean }>;
       onOpenHomeSetup?: (callback: () => void) => () => void;
       toggleControlPanel?: () => Promise<{ success: boolean; visible: boolean }>;
-      publishBarStatus?: (status: {
-        speechOk: boolean;
-        actionsOk: boolean;
-        chatOk: boolean;
-      }) => void;
-      getBarStatus?: () => Promise<{
-        speechOk: boolean;
-        actionsOk: boolean;
-        chatOk: boolean;
-      } | null>;
-      onBarStatus?: (
-        callback: (
-          status: { speechOk: boolean; actionsOk: boolean; chatOk: boolean } | null
-        ) => void
-      ) => () => void;
+      publishBarStatus?: (status: BarStatusPayload) => void;
+      getBarStatus?: () => Promise<BarStatusPayload | null>;
+      onBarStatus?: (callback: (status: BarStatusPayload | null) => void) => () => void;
       onAgentStartRecording?: (callback: () => void) => () => void;
       onAgentStopRecording?: (callback: () => void) => () => void;
       onAgentToggleRecording?: (callback: () => void) => () => void;

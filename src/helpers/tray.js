@@ -277,19 +277,20 @@ class TrayManager {
           ]
         : []),
       {
+        // First because the bar is the product's daily face — and the
+        // recovery path for a closed one: Escape and the X hide it, and a
+        // user who did that without a hotkey configured needs a way back.
+        label: i18nMain.t("tray.showAssistantBar"),
+        click: () => {
+          this.windowManager?.showAgentOverlay?.({ focus: true });
+        },
+      },
+      {
         label: this.isControlPanelVisible()
           ? i18nMain.t("tray.hideControlPanel")
           : i18nMain.t("tray.openControlPanel"),
         click: () => {
           void this.toggleControlPanelFromTray();
-        },
-      },
-      {
-        // The recovery path for a closed bar: Escape and the X hide it, and a
-        // user who did that without a hotkey configured needs a way back.
-        label: i18nMain.t("tray.showAssistantBar"),
-        click: () => {
-          this.windowManager?.showAgentOverlay?.({ focus: true });
         },
       },
       { type: "separator" },
@@ -317,8 +318,11 @@ class TrayManager {
     }
 
     if (process.platform !== "darwin") {
+      // A tray click summons the bar, not the control panel: the bar is what
+      // the user lives in, and the big window stays one deliberate step away
+      // (this context menu, or the bar's window button).
       this.tray.on("click", () => {
-        void this.toggleControlPanelFromTray();
+        this.windowManager?.showAgentOverlay?.({ focus: true });
       });
     }
 

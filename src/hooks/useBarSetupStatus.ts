@@ -2,19 +2,37 @@ import { useEffect, useState } from "react";
 
 export type BarSetupItemId = "microphone" | "speech" | "actions" | "chatIntelligence";
 
+export interface BarDownloadStatus {
+  /** Human model name from the registry, for the tooltip. */
+  displayName: string;
+  percentage: number;
+  isInstalling: boolean;
+}
+
+export interface BarSetupStatus {
+  /** Which pieces of setup are still missing, Home-card order, mic first. */
+  missing: BarSetupItemId[];
+  /** The speech-model download currently running, or null. */
+  download: BarDownloadStatus | null;
+  /** True while the model meetings transcribe with is itself still missing. */
+  downloadBlocksMeetingStart: boolean;
+}
+
 /**
- * The assistant bar's warning icons: which pieces of setup are still missing.
+ * The assistant bar's view of setup and download state.
  *
- * Speech and AI readiness arrive from the control panel window via the
- * bar-status channel (see useBarStatusPublisher) — that window's settings
- * store is the live one. The microphone is checked here: it is an OS fact,
- * not a settings-store fact. Everything defaults to "ok" until told
- * otherwise, so the bar never flashes warnings while the app boots.
+ * Speech, AI readiness, and download progress arrive from the control panel
+ * window via the bar-status channel (see useBarStatusPublisher) — that
+ * window's settings store is the live one, and it is also the only window
+ * the download's progress events reach. The microphone is checked here: it
+ * is an OS fact, not a settings-store fact. Everything defaults to "ok"
+ * until told otherwise, so the bar never flashes warnings while the app
+ * boots.
  *
- * None of this gates the start button — a meeting only needs transcription,
- * and that has its own download gate. These icons just say what to finish.
+ * None of this gates the start button beyond downloadBlocksMeetingStart —
+ * a meeting only needs transcription. The warnings just say what to finish.
  */
-export function useBarSetupStatus(): BarSetupItemId[] {
+export function useBarSetupStatus(): BarSetupStatus {
   const [micOk, setMicOk] = useState(true);
   useEffect(() => {
     let cancelled = false;
@@ -42,17 +60,37 @@ export function useBarSetupStatus(): BarSetupItemId[] {
     };
   }, []);
 
-  const [remote, setRemote] = useState({ speechOk: true, actionsOk: true, chatOk: true });
+  const [remote, setRemote] = useState<{
+    speechOk: boolean;
+    actionsOk: boolean;
+    chatOk: boolean;
+    downloadBlocksMeetingStart: boolean;
+    download: BarDownloadStatus | null;
+  }>({
+    speechOk: true,
+    actionsOk: true,
+    chatOk: true,
+    downloadBlocksMeetingStart: false,
+    download: null,
+  });
   useEffect(() => {
     let cancelled = false;
     const apply = (
-      status: { speechOk?: boolean; actionsOk?: boolean; chatOk?: boolean } | null
+      status: {
+        speechOk?: boolean;
+        actionsOk?: boolean;
+        chatOk?: boolean;
+        downloadBlocksMeetingStart?: boolean;
+        download?: BarDownloadStatus | null;
+      } | null
     ) => {
       if (!status) return;
       setRemote({
         speechOk: status.speechOk !== false,
         actionsOk: status.actionsOk !== false,
         chatOk: status.chatOk !== false,
+        downloadBlocksMeetingStart: status.downloadBlocksMeetingStart === true,
+        download: status.download ?? null,
       });
     };
     window.electronAPI
@@ -74,5 +112,9 @@ export function useBarSetupStatus(): BarSetupItemId[] {
   if (!remote.speechOk) missing.push("speech");
   if (!remote.actionsOk) missing.push("actions");
   if (!remote.chatOk) missing.push("chatIntelligence");
-  return missing;
+  return {
+    missing,
+    download: remote.download,
+    downloadBlocksMeetingStart: remote.downloadBlocksMeetingStart,
+  };
 }

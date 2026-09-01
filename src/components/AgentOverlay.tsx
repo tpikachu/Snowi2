@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { AppWindow, AudioLines, Loader2, Send, TriangleAlert, X } from "lucide-react";
 import { cn } from "./lib/utils";
 import MeetingPanelOverlay from "./MeetingPanelOverlay";
-import { useSpeechModelDownloadStatus } from "../hooks/useSpeechModelDownloadStatus";
 import { useBarSetupStatus } from "../hooks/useBarSetupStatus";
 import { AgentTitleBar } from "./agent/AgentTitleBar";
 import { AgentChat } from "./agent/AgentChat";
@@ -351,8 +350,14 @@ export default function AgentOverlay() {
     };
   }, []);
 
-  const speechDownload = useSpeechModelDownloadStatus();
-  const setupWarnings = useBarSetupStatus();
+  // Warnings, download progress, and the start gate all arrive over the
+  // bar-status channel — the control panel window computes them, because
+  // that is where settings change and where download progress events land.
+  const {
+    missing: setupWarnings,
+    download: speechDownload,
+    downloadBlocksMeetingStart,
+  } = useBarSetupStatus();
 
   const handleFinishSetup = useCallback(() => {
     // "setup" lands the panel on Home with the capabilities card open.
@@ -512,6 +517,21 @@ export default function AgentOverlay() {
                 {/* The dictation mic was deliberately dropped from the bar —
                     typing and Listen are its two verbs; the hotkey still
                     reaches voice input for those who use it. */}
+                {/* A download that doesn't block recording still shows: the
+                    user asked the app for a model, and the bar is the one
+                    surface always on screen to answer "is it done yet". */}
+                {speechDownload && !downloadBlocksMeetingStart && (
+                  <span
+                    title={t("agentMode.bar.downloadingModel", {
+                      model: speechDownload.displayName,
+                    })}
+                    className="flex h-7 shrink-0 items-center gap-1 rounded-control px-1.5 text-[11px] font-medium text-muted-foreground"
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                  >
+                    <Loader2 className="size-3 animate-spin" strokeWidth={2} />
+                    {Math.round(speechDownload.percentage)}%
+                  </span>
+                )}
                 {barText.trim() && (
                   <button
                     type="button"
@@ -526,10 +546,14 @@ export default function AgentOverlay() {
                 <button
                   type="button"
                   onClick={handleListen}
-                  disabled={speechDownload.blocksMeetingStart}
+                  disabled={downloadBlocksMeetingStart}
                   title={
-                    speechDownload.blocksMeetingStart
-                      ? t("shell.modelDownload.startBlocked")
+                    downloadBlocksMeetingStart
+                      ? speechDownload
+                        ? t("agentMode.bar.downloadingModel", {
+                            model: speechDownload.displayName,
+                          })
+                        : t("shell.modelDownload.startBlocked")
                       : undefined
                   }
                   className={cn(
@@ -540,10 +564,18 @@ export default function AgentOverlay() {
                   )}
                   style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
                 >
-                  {speechDownload.blocksMeetingStart ? (
+                  {downloadBlocksMeetingStart ? (
                     <>
                       <Loader2 className="size-3.5 animate-spin" strokeWidth={2} />
-                      {t("agentMode.bar.preparing")}
+                      {/* Percent over a spinner alone: "42%" promises an end,
+                          "Preparing…" only promises a wait. */}
+                      {speechDownload
+                        ? speechDownload.isInstalling
+                          ? t("agentMode.bar.installing")
+                          : t("agentMode.bar.downloading", {
+                              percent: Math.round(speechDownload.percentage),
+                            })
+                        : t("agentMode.bar.preparing")}
                     </>
                   ) : (
                     <>

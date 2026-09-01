@@ -3322,7 +3322,10 @@
         "chatIntelligence": "Для ответов во время встречи нужна модель ИИ"
       },
       "appWindow": "Показать или скрыть окно Snowy",
-      "startMeeting": "Начать встречу"
+      "startMeeting": "Начать встречу",
+      "downloading": "Загрузка… {{percent}}%",
+      "installing": "Установка…",
+      "downloadingModel": "Загрузка {{model}}"
     },
     "screenConsent": {
       "question": "Можно ли Snowy взглянуть на ваш экран, чтобы лучше ответить? Ничего не сохраняется.",

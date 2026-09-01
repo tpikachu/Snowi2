@@ -3455,7 +3455,10 @@
         "chatIntelligence": "Antworten während des Meetings brauchen ein KI-Modell"
       },
       "appWindow": "Snowy-Fenster anzeigen oder ausblenden",
-      "startMeeting": "Meeting starten"
+      "startMeeting": "Meeting starten",
+      "downloading": "Wird geladen… {{percent}}%",
+      "installing": "Wird installiert…",
+      "downloadingModel": "{{model}} wird heruntergeladen"
     },
     "screenConsent": {
       "question": "Darf Snowy auf Ihren Bildschirm schauen, um besser zu antworten? Es wird nie gespeichert.",

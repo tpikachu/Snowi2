@@ -3290,7 +3290,10 @@
         "chatIntelligence": "会議中の回答には AI モデルが必要です"
       },
       "appWindow": "Snowyウィンドウの表示/非表示",
-      "startMeeting": "会議を開始"
+      "startMeeting": "会議を開始",
+      "downloading": "ダウンロード中… {{percent}}%",
+      "installing": "インストール中…",
+      "downloadingModel": "{{model}} をダウンロード中"
     },
     "screenConsent": {
       "question": "回答のために Snowy が画面を見てもいいですか？保存は一切されません。",

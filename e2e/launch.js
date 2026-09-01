@@ -67,9 +67,37 @@ async function controlPanelPage(app) {
 }
 
 /**
+ * The assistant bar window (?agent=true) — the product's daily face. Same
+ * polling rationale as controlPanelPage.
+ *
+ * @param {import("playwright").ElectronApplication} app
+ * @returns {Promise<import("playwright").Page>}
+ */
+async function agentBarPage(app) {
+  const deadline = Date.now() + CONTROL_PANEL_TIMEOUT_MS;
+  for (;;) {
+    for (const page of app.windows()) {
+      if (page.url().includes("agent=true")) {
+        await page.waitForLoadState("domcontentloaded");
+        return page;
+      }
+    }
+    if (Date.now() > deadline) {
+      const urls = app.windows().map((page) => page.url());
+      throw new Error(`Assistant bar window never appeared. Windows: ${JSON.stringify(urls)}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+}
+
+/**
  * Marks the first-run flows — onboarding and the product tour — as already
  * done and reloads, landing the window on the control panel. Without the tour
  * flag its modal overlay swallows every click the tests try to make.
+ *
+ * Reloading also remounts ControlPanel, whose backfill notifies main that
+ * onboarding is done — which is the edge that makes the assistant bar debut
+ * without a relaunch.
  *
  * @param {import("playwright").Page} page
  */
@@ -84,4 +112,4 @@ async function skipOnboarding(page) {
   await page.waitForLoadState("domcontentloaded");
 }
 
-module.exports = { launchApp, controlPanelPage, skipOnboarding };
+module.exports = { launchApp, controlPanelPage, agentBarPage, skipOnboarding };
