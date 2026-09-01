@@ -733,6 +733,10 @@ class ReasoningService extends BaseReasoningService {
     const needsGroqDisableThinking =
       provider === "groq" && (modelDef?.disableThinking || userSuppressesThinking);
     const needsGeminiMinimalThinking = provider === "gemini" && userSuppressesThinking;
+    // GPT-5-generation models reason by default with no off switch; left
+    // alone they spend seconds thinking before the first token — which broke
+    // the meeting assistant's fast lane on its own designated fast model.
+    const needsOpenAIMinimalReasoning = provider === "openai" && userSuppressesThinking;
     const providerOptions = {
       // The effort value is a family fact: gpt-oss has no "none" (#1611).
       ...(needsGroqDisableThinking
@@ -745,6 +749,14 @@ class ReasoningService extends BaseReasoningService {
         : {}),
       ...(needsGeminiMinimalThinking
         ? { google: { thinkingConfig: { thinkingLevel: "minimal", includeThoughts: false } } }
+        : {}),
+      ...(needsOpenAIMinimalReasoning
+        ? {
+            openai: {
+              reasoningEffort:
+                getModelFamilyConstraints(model)?.reasoningEffort?.suppressValue ?? "minimal",
+            },
+          }
         : {}),
     };
     const hasProviderOptions = Object.keys(providerOptions).length > 0;

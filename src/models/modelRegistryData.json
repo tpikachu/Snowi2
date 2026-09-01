@@ -287,7 +287,8 @@
           "descriptionKey": "models.descriptions.cloud.openai_gpt_5_6_sol",
           "tokenParam": "max_completion_tokens",
           "supportsTemperature": false,
-          "supportsVision": true
+          "supportsVision": true,
+          "supportsThinking": true
         },
         {
           "id": "gpt-5.6-terra",
@@ -296,7 +297,8 @@
           "descriptionKey": "models.descriptions.cloud.openai_gpt_5_6_terra",
           "tokenParam": "max_completion_tokens",
           "supportsTemperature": false,
-          "supportsVision": true
+          "supportsVision": true,
+          "supportsThinking": true
         },
         {
           "id": "gpt-5.6-luna",
@@ -305,7 +307,8 @@
           "descriptionKey": "models.descriptions.cloud.openai_gpt_5_6_luna",
           "tokenParam": "max_completion_tokens",
           "supportsTemperature": false,
-          "supportsVision": true
+          "supportsVision": true,
+          "supportsThinking": true
         },
         {
           "id": "gpt-5.5",
@@ -314,7 +317,8 @@
           "descriptionKey": "models.descriptions.cloud.openai_gpt_5_5",
           "tokenParam": "max_completion_tokens",
           "supportsTemperature": false,
-          "supportsVision": true
+          "supportsVision": true,
+          "supportsThinking": true
         },
         {
           "id": "gpt-5.2",
@@ -323,7 +327,8 @@
           "descriptionKey": "models.descriptions.cloud.openai_gpt_5_2",
           "tokenParam": "max_completion_tokens",
           "supportsTemperature": false,
-          "supportsVision": true
+          "supportsVision": true,
+          "supportsThinking": true
         },
         {
           "id": "gpt-5-mini",
@@ -332,7 +337,8 @@
           "descriptionKey": "models.descriptions.cloud.openai_gpt_5_mini",
           "tokenParam": "max_completion_tokens",
           "supportsTemperature": false,
-          "supportsVision": true
+          "supportsVision": true,
+          "supportsThinking": true
         },
         {
           "id": "gpt-5-nano",
@@ -341,7 +347,8 @@
           "descriptionKey": "models.descriptions.cloud.openai_gpt_5_nano",
           "tokenParam": "max_completion_tokens",
           "supportsTemperature": false,
-          "supportsVision": true
+          "supportsVision": true,
+          "supportsThinking": true
         },
         {
           "id": "gpt-4.1",

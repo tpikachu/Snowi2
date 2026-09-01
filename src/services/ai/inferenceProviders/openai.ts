@@ -1,6 +1,7 @@
 import type { InferenceProvider } from "./types";
 import { API_ENDPOINTS, TOKEN_LIMITS, buildApiUrl } from "../../../config/constants";
-import { getOpenAiApiConfig } from "../../../models/ModelRegistry";
+import { getCloudModel, getOpenAiApiConfig } from "../../../models/ModelRegistry";
+import { getModelFamilyConstraints } from "../modelFamilyConstraints";
 import { getSettings } from "../../../stores/settingsStore";
 import { withRetry, createApiRetryStrategy, httpError } from "../../../utils/retry";
 import logger from "../../../utils/logger";
@@ -235,6 +236,16 @@ export const openaiProvider: InferenceProvider = {
             requestBody.input = buildMessages(type);
             requestBody.store = false;
             requestBody.max_output_tokens = maxTokens;
+            // GPT-5-generation models reason by default with no off switch;
+            // when the caller disabled thinking, ask for the family's floor so
+            // latency-sensitive scopes are not billed seconds of hidden
+            // reasoning before the first output token.
+            if (config.disableThinking === true && getCloudModel(model)?.supportsThinking) {
+              requestBody.reasoning = {
+                effort:
+                  getModelFamilyConstraints(model)?.reasoningEffort?.suppressValue ?? "minimal",
+              };
+            }
             // A known endpoint host knows its own request shape better than the model id does.
             const apiConfig = dialect ?? getOpenAiApiConfig(model, resolvedProvider);
             if (apiConfig.supportsTemperature) {

@@ -99,10 +99,22 @@ test("unlisted providers keep the legacy reasoning_effort none plus chat_templat
   const { suppressThinking } = await load();
 
   const body = {};
-  suppressThinking(body, "openai", "gpt-5.2");
+  suppressThinking(body, "openai", "some-unknown-reasoner");
 
   assert.deepEqual(body, {
     reasoning_effort: "none",
+    chat_template_kwargs: { enable_thinking: false },
+  });
+});
+
+test("gpt-5 family suppresses at its minimal floor — the family rejects none", async () => {
+  const { suppressThinking } = await load();
+
+  const body = {};
+  suppressThinking(body, "openai", "gpt-5.2");
+
+  assert.deepEqual(body, {
+    reasoning_effort: "minimal",
     chat_template_kwargs: { enable_thinking: false },
   });
 });

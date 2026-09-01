@@ -9,7 +9,7 @@
  * like thinkingSuppressionDialects.
  */
 export interface ModelFamilyConstraints {
-  family: "gpt-oss" | "qwen" | "magistral";
+  family: "gpt-oss" | "qwen" | "magistral" | "gpt-5";
   reasoningEffort?: {
     /** Value that best approximates "thinking off" for reasoning_effort. */
     suppressValue: string;
@@ -27,6 +27,16 @@ export interface ModelFamilyConstraints {
 }
 
 const FAMILIES: Array<ModelFamilyConstraints & { match: RegExp }> = [
+  {
+    family: "gpt-5",
+    // Anchored: "gpt-oss" and "gpt-4.1" must not match, and gpt-oss ids
+    // arrive prefixed ("openai/gpt-oss-120b"), never bare.
+    match: /^gpt-5/,
+    // Every GPT-5-generation model reasons by default and has no hard off
+    // switch; "minimal" is the floor the whole family accepts, and it is what
+    // turns an eight-second time-to-first-token into under two.
+    reasoningEffort: { suppressValue: "minimal" },
+  },
   {
     family: "gpt-oss",
     match: /gpt-oss/,
