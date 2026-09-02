@@ -5,6 +5,86 @@ All notable changes to Snowy are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-rc7] — 2026-09-02
+
+Seventh release candidate: the app learns to answer at two speeds, the bar
+and cue card turn to dark glass, and setup collapses to a single API key —
+after which meetings can even pick themselves back up.
+
+**Still a release candidate.** See _Known limitations_ under 0.1.0-rc1.
+
+### One key is the whole AI setup
+
+- **Entering a provider key now configures everything.** The moment a key is
+  saved, Snowy assigns each feature the right model on it (chat gets the
+  capable one, write-ups the quick one). Nothing else to pick, ever — and an
+  explicit choice you made is never overridden by a later key.
+- **Models are chosen where they're used, not in Settings.** A quiet model
+  chip sits in the chat composer, on the meeting cue card, in each action's
+  editor and the follow-up email dialog — with a one-line description for
+  every model, and "App default" now naming the model it stands for.
+- **Settings → Language Models is one page**: cloud or local, the provider
+  grid, a key field. The chat/actions tabs, the Advanced disclosure and the
+  per-feature editors are gone; the settings sidebar lost its sub-items.
+- **Hotkeys are one flat list**, Cluely style: keycaps on the right, click
+  them and press the new combo right there. Unbound slots offer a one-click
+  suggestion.
+- **Onboarding lets you pick a text size** with the window zooming live as
+  you try the options.
+- Home's capability card is two honest rows — transcription and the AI
+  model — and the bar's warning matches.
+
+### Fast or Thinking, per question
+
+- The cue card's ask box grew a **speed switch**: Fast answers run on a
+  quick model (picked automatically from your provider) so the first words
+  appear immediately; Thinking answers keep the full model. **"Think
+  deeper"** on a settled fast answer refines the draft instead of starting
+  over.
+- Answers render as **briefing cards** — real formatting, sources
+  underneath — and settled answers stay as a **thread** you can scroll back
+  through or clear.
+- An **eye toggle** lets an ask also look at your screen (off by default);
+  the answer then knows what you're looking at, using the same chat model.
+- The **global chat answers everything** — your notes, your meetings, the
+  world — not just the meeting on record.
+
+### Dark glass, one surface
+
+- The assistant bar, its command palette and the cue card now share the
+  same **dark glass material** with a proper window edge — the bar and the
+  card read as one object morphing, because they are.
+- The bar is **two rows**: a readable ask field over a quiet toolbar.
+  Clicking the field opens a **command palette** — actions and every
+  Settings page, filtered as you type; the same look the app's header
+  search now has. Clicking anywhere else closes it.
+- The chat agent got **hands**: ask it to change a hotkey or open a
+  settings page and it does, through the same paths the UI uses.
+- The **cue card is resizable** and remembers your size; the transcript
+  left the card for the note, where it reads as a per-line script with
+  speaker names and the meeting clock.
+
+### Meetings can pick back up
+
+- **Resume meeting**: a meeting note's bottom bar offers to record another
+  session into the same note — several sittings, one topic, one write-up.
+  The transcript restarts its clock per session and draws a quiet
+  "Resumed" divider; discarding a resumed session drops only what that
+  session added, never the meeting.
+- The **note header leads with the meeting's date and time**, taken from
+  the transcript itself — resume a topic days later and the date follows.
+  The chip clutter (folder, empty attendees, date chip) is gone, and Copy
+  summary tucked into an icon.
+- The composer's bare dictation mic, the clipboard auto-paste settings,
+  and the not-yet-shipped Self-Hosted transcription card were removed.
+
+### Fixed
+
+- "Back to notes" actually navigates at larger text sizes, and the window
+  can no longer be shrunk past its layout.
+- Clicking the bar no longer re-opens the palette by restoring focus to
+  the ask field.
+
 ## [0.1.0-rc6] — 2026-08-31
 
 Sixth release candidate: the assistant bar becomes the product's front door.

@@ -7,11 +7,12 @@
  * throwaway userData directory — and tells the whole story a new,
  * non-technical user lives through: every onboarding step at a human pace,
  * the one-time OpenAI key setup (a placeholder is typed on camera; the real
- * key from .env.local is saved silently and never filmed), choosing the AI
- * that writes summaries, then an actual recorded call: a scripted two-voice
- * meeting is synthesized with Windows TTS and fed to the app as its
- * microphone (Chromium's fake audio capture), so the live transcript, the
- * AI-written summary, and the chat answer in the video are all real.
+ * key from .env.local is saved silently and never filmed — and entering the
+ * key IS the whole AI setup: the app picks each feature's model itself),
+ * then an actual recorded call: a scripted two-voice meeting is synthesized
+ * with Windows TTS and fed to the app as its microphone (Chromium's fake
+ * audio capture), so the live transcript, the AI-written summary, and the
+ * chat answer in the video are all real.
  * A fake cursor and a two-line caption card are injected so the viewer can
  * follow along; every chapter is best-effort, so a changed selector skips
  * that chapter instead of killing the recording.
@@ -358,13 +359,18 @@ async function caption(page, text, detail = "") {
   if (text) await sleep(Math.max(1100, (text.length + detail.length) * 45));
 }
 
-/** Glides the mouse to the locator, then clicks — the injected cursor follows. */
-async function moveClick(page, locator, { timeout = 8000 } = {}) {
+/** Glides the mouse to the locator without clicking — for pointing at things. */
+async function moveTo(page, locator, { timeout = 8000 } = {}) {
   await locator.first().waitFor({ state: "visible", timeout });
   const box = await locator.first().boundingBox();
   if (!box) throw new Error("target has no bounding box");
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 28 });
   await sleep(350);
+}
+
+/** Glides the mouse to the locator, then clicks — the injected cursor follows. */
+async function moveClick(page, locator, { timeout = 8000 } = {}) {
+  await moveTo(page, locator, { timeout });
   await locator.first().click();
 }
 
@@ -684,12 +690,19 @@ async function main() {
       );
       // A placeholder key is typed for the camera; the real key from
       // .env.local is saved silently afterwards, so it never appears on film.
+      // Typing it through the real field matters beyond the camera: the key
+      // setter is what assigns each feature its default model
+      // (scopeModelDefaults.ts), so this one paste is the entire AI setup.
       await moveClick(page, page.getByRole("button", { name: "Add API key" }));
       await sleep(400);
       await page.keyboard.type("sk-proj-demo-key-for-this-video", { delay: 55 });
       await sleep(500);
       await page.keyboard.press("Enter");
-      await caption(page, "That's the only technical step — and you only do it once");
+      await caption(
+        page,
+        "That's the only technical step — and you only do it once",
+        "The same key also powers the AI that writes your notes. Snowy picks the models for you."
+      );
       await sleep(600);
       await moveClick(page, page.getByRole("button", { name: "Next", exact: true }));
       await sleep(BEAT_MS);
@@ -713,6 +726,22 @@ async function main() {
         timeout: 10_000,
       });
       await sleep(BEAT_MS);
+      await moveClick(page, page.getByRole("button", { name: "Next", exact: true }));
+      await sleep(BEAT_MS);
+    });
+
+    await chapter("onboarding: text size", async () => {
+      await caption(
+        page,
+        "Make it comfortable to read",
+        "Try a text size — the window resizes the moment you click."
+      );
+      // The size cards are a radiogroup; the whole onboarding window zooms
+      // live on selection, which is the point of filming this step.
+      await moveClick(page, page.getByRole("radio", { name: /larger/i }), { timeout: 10_000 });
+      await sleep(BEAT_MS);
+      await moveClick(page, page.getByRole("radio", { name: /default/i }));
+      await sleep(600);
       await moveClick(page, page.getByRole("button", { name: "Next", exact: true }));
       await sleep(BEAT_MS);
     });
@@ -753,12 +782,11 @@ async function main() {
         if (document.getElementById("__demo-bar-style")) return;
         const style = document.createElement("style");
         style.id = "__demo-bar-style";
-        // Pin the bar chrome to its real 56px row and paint the padding the
-        // letterbox colour, so the strip below carries the caption.
-        style.textContent = [
-          ".agent-overlay-window { background: #0d1214 !important; }",
-          ".agent-overlay-window > div:first-child { height: 56px !important; flex: none !important; }",
-        ].join("\n");
+        // Paint the window's padding the letterbox colour so the strip under
+        // the bar carries the caption. The bar card itself is already a fixed
+        // 104px (BAR_HEIGHT in AgentOverlay), so no height pinning is needed —
+        // pinning it would fight the glass card's own layout.
+        style.textContent = ".agent-overlay-window { background: #0d1214 !important; }";
         document.head.appendChild(style);
       });
     };
@@ -780,56 +808,35 @@ async function main() {
           "The moment setup ends, this little bar appears — and it stays on top of your screen, ready at every login."
         );
         await sleep(BEAT_MS * 1.5);
+        // No amber warning to point at: the key entered during onboarding
+        // already configured transcription AND the AI models, so the bar has
+        // nothing to complain about — which is itself the story.
         await caption(
           barPage,
-          "The amber light means something still needs setting up",
-          "Hover it to see exactly what's missing — click it, and Snowy takes you straight there."
+          "And there's nothing left to configure",
+          "The key you pasted a minute ago also chose the AI that writes your notes. Snowy handled the rest."
         );
-        await sleep(BEAT_MS);
-        // The pulsing warning's accessible name lists the gaps; clicking it
-        // surfaces the app on Home with the setup card open — which is
-        // exactly where the next chapter begins.
-        await moveClick(barPage, barPage.getByLabel(/AI model/i).first(), { timeout: 10_000 });
-        await sleep(1200);
+        await sleep(BEAT_MS * 1.5);
         await caption(barPage, "");
         capturePage = page;
       });
     }
 
-    // -- Act 2: pick the AI that writes the summaries ----------------------
-    await chapter("ai model setup", async () => {
+    // -- Act 2: the setup card agrees ---------------------------------------
+    await chapter("everything ready", async () => {
+      // Home's capabilities card shows both rows — transcription and the AI
+      // model — already green. No clicks; the point is that there is nothing
+      // to click.
+      await page
+        .getByText("What Snowy can do right now")
+        .first()
+        .waitFor({ state: "visible", timeout: 15_000 });
       await caption(
         page,
-        "One more choice: which AI writes your summaries",
-        "The bar dropped us on the setup guide — everything left to do is on this one card."
+        "See for yourself — both lights are green",
+        "Speech-to-text and the AI writer are ready. You never picked a model, and you never have to."
       );
-      await moveClick(page, page.getByRole("button", { name: "Set up" }).first(), {
-        timeout: 15_000,
-      });
-      await sleep(BEAT_MS);
-      // Caption wording must never contain the literal UI strings we click,
-      // or the locators can resolve to the caption instead of the control.
-      await caption(
-        page,
-        "Your key is already saved, so this is two clicks",
-        "Pick the cloud option, then choose a model — done."
-      );
-      // Inactive settings panels stay mounted but hidden, so filter to the
-      // copy of the text that is actually on screen.
-      await moveClick(
-        page,
-        page.getByText("Cloud Providers", { exact: true }).filter({ visible: true }).first(),
-        { timeout: 10_000 }
-      );
-      await sleep(BEAT_MS);
-      await moveClick(
-        page,
-        page.getByText("GPT-5 Mini", { exact: true }).filter({ visible: true }).first(),
-        { timeout: 10_000 }
-      );
-      await sleep(BEAT_MS);
-      await page.keyboard.press("Escape");
-      await sleep(600);
+      await sleep(BEAT_MS * 2);
       await caption(page, "");
     });
 
@@ -859,8 +866,8 @@ async function main() {
         capturePage = barPage;
         await caption(
           barPage,
-          "Back at the bar — the amber light is gone",
-          "Now let's record a real call. One click, right from here."
+          "Time for a real call",
+          "Every meeting starts from the bar — one click, whatever app you're in."
         );
         await sleep(BEAT_MS);
         await unframeBar();
@@ -1060,6 +1067,16 @@ async function main() {
       await sleep(BEAT_MS * 3);
       await page.keyboard.press("Escape");
       await sleep(400);
+
+      // Point at (but don't press) Resume: pressing would start a second
+      // recording session against an already-consumed fake-mic file.
+      await caption(
+        page,
+        "And a meeting isn't over unless you say so",
+        "Pick this same topic up next week — Resume records another session straight into this note."
+      );
+      await moveTo(page, page.getByRole("button", { name: /resume meeting/i })).catch(() => {});
+      await sleep(BEAT_MS * 1.5);
       await caption(page, "");
     });
 
@@ -1102,6 +1119,19 @@ async function main() {
         "It even offers to draft the email for you."
       );
       await sleep(5000);
+
+      // The point-of-use model chip: the one place a model is ever chosen.
+      await caption(
+        page,
+        "Prefer a different AI? Change it right here",
+        "The choice lives where you use it — never buried in Settings."
+      );
+      await moveClick(page, page.getByRole("button", { name: "Model", exact: true }).first(), {
+        timeout: 8000,
+      }).catch(() => {});
+      await sleep(BEAT_MS * 1.5);
+      await page.keyboard.press("Escape");
+      await sleep(400);
       await caption(page, "");
     });
 
