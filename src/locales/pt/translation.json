@@ -3278,7 +3278,14 @@
       "noResults": "Nenhum resultado",
       "error": "Erro de ferramenta",
       "unknownTool": "Ferramenta desconhecida: {{name}}",
-      "invalidArgs": "Argumentos de ferramenta inválidos para {{name}}"
+      "invalidArgs": "Argumentos de ferramenta inválidos para {{name}}",
+      "get_app_settingsStatus": "Lendo configurações do app...",
+      "set_hotkeyStatus": "Atualizando atalho...",
+      "open_settingsStatus": "Abrindo Configurações...",
+      "appSettingsRead": "Configurações atuais do app lidas",
+      "hotkeySet": "{{label}} agora é {{hotkey}}",
+      "hotkeyCleared": "{{label}} sem atalho",
+      "settingsOpened": "Configurações → {{section}} abertas"
     },
     "bar": {
       "placeholder": "Pergunte ou pesquise qualquer coisa",
@@ -3311,6 +3318,9 @@
       "overrideOn": "As respostas rápidas usam o modelo escolhido abaixo.",
       "overrideAuto": "O Snowy escolhe {{model}} automaticamente — o modelo veloz do seu provedor de chat.",
       "overrideSame": "As respostas rápidas usam atualmente o seu modelo de chat. Ative isto para escolher um mais veloz."
+    },
+    "palette": {
+      "askHint": "Pressione Enter para perguntar ao Snowy"
     }
   },
   "integrations": {

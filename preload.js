@@ -885,6 +885,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // so the bar and HUD windows (fixed-pixel layouts) are untouched.
   setUiZoom: (factor) => webFrame.setZoomFactor(factor),
   onOpenHomeSetup: registerListener("open-home-setup", (callback) => () => callback()),
+  onOpenSettingsSection: registerListener(
+    "open-settings-section",
+    (callback) => (_event, payload) => callback(payload)
+  ),
   toggleControlPanel: () => ipcRenderer.invoke("toggle-control-panel"),
   resizeAgentWindow: (width, height) => ipcRenderer.invoke("resize-agent-window", width, height),
   getAgentWindowBounds: () => ipcRenderer.invoke("get-agent-window-bounds"),

@@ -3443,7 +3443,14 @@
       "noResults": "No results found",
       "error": "Tool error",
       "unknownTool": "Unknown tool: {{name}}",
-      "invalidArgs": "Invalid tool arguments for {{name}}"
+      "invalidArgs": "Invalid tool arguments for {{name}}",
+      "get_app_settingsStatus": "Reading app settings...",
+      "set_hotkeyStatus": "Updating hotkey...",
+      "open_settingsStatus": "Opening Settings...",
+      "appSettingsRead": "Read the app's current settings",
+      "hotkeySet": "{{label}} is now {{hotkey}}",
+      "hotkeyCleared": "{{label}} unbound",
+      "settingsOpened": "Opened Settings → {{section}}"
     },
     "bar": {
       "placeholder": "Ask or search anything",
@@ -3476,6 +3483,9 @@
       "overrideOn": "Fast answers use the model chosen below.",
       "overrideAuto": "Snowy currently picks {{model}} automatically — your chat provider's quick model.",
       "overrideSame": "Fast answers currently run on your chat model. Turn this on to pick a quicker one."
+    },
+    "palette": {
+      "askHint": "Press Enter to ask Snowy"
     }
   },
   "integrations": {

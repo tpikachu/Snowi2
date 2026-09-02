@@ -3278,7 +3278,14 @@
       "noResults": "未找到结果",
       "error": "工具错误",
       "unknownTool": "未知工具：{{name}}",
-      "invalidArgs": "{{name}} 的工具参数无效"
+      "invalidArgs": "{{name}} 的工具参数无效",
+      "get_app_settingsStatus": "正在读取应用设置...",
+      "set_hotkeyStatus": "正在更新快捷键...",
+      "open_settingsStatus": "正在打开设置...",
+      "appSettingsRead": "已读取应用当前设置",
+      "hotkeySet": "{{label}}已设为 {{hotkey}}",
+      "hotkeyCleared": "已清除{{label}}",
+      "settingsOpened": "已打开设置 → {{section}}"
     },
     "bar": {
       "placeholder": "提问或搜索任何内容",
@@ -3311,6 +3318,9 @@
       "overrideOn": "快速回答使用下方选择的模型。",
       "overrideAuto": "Snowy 当前自动选择 {{model}} — 你的聊天服务商的轻量模型。",
       "overrideSame": "快速回答当前使用你的聊天模型。开启后可选择更快的模型。"
+    },
+    "palette": {
+      "askHint": "按 Enter 向 Snowy 提问"
     }
   },
   "integrations": {

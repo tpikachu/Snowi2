@@ -395,6 +395,17 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     return () => cleanup?.();
   }, []);
 
+  // Deep links from other windows — the bar's palette rows and the chat
+  // agent's open_settings tool — land the Settings modal on a named section.
+  useEffect(() => {
+    const cleanup = window.electronAPI?.onOpenSettingsSection?.((payload) => {
+      setSettingsSection(payload?.section || "general");
+      setSettingsPanel(payload?.panel);
+      setShowSettings(true);
+    });
+    return () => cleanup?.();
+  }, []);
+
   // Settings lives in this component's state, so anything further away that
   // needs to send the user there — a background toast, for one — asks through
   // the navigation store instead of holding a setter it cannot reach.
@@ -911,6 +922,10 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
       {showSettings && (
         <Suspense fallback={null}>
           <SettingsModal
+            // Remounts when a deep link arrives while the modal is already
+            // open — initialSection/initialPanel are read once on mount, so
+            // without the key a second "open Hotkeys" would land nowhere.
+            key={`${settingsSection ?? ""}:${settingsPanel ?? ""}`}
             open={showSettings}
             onOpenChange={(open) => {
               setShowSettings(open);

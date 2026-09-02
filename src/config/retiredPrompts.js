@@ -89,6 +89,9 @@ export const RETIRED_DEFAULT_PROMPT_HASHES = new Set([
   //  rc6 registry.ts chatAgent — the "meeting copilot" framing, before the
   //  desktop-assistant identity that answers beyond the record
   "d45dafdd041cacbf30b38f77c6bb4466e6adaf75d0707afa3d3b0ad2a96c7d55",
+  //  rc6 registry.ts chatAgent — desktop assistant, before the app-control
+  //  paragraph (get_app_settings / set_hotkey / open_settings)
+  "ddc4158fe9309e0f2ffa69ff1e43924c8d40b79bd6b9cb3dc34b33b4056da7c3",
 ]);
 
 // Hashes of the defaults currently shipped, keyed by locale/bundle key. Not
@@ -125,7 +128,7 @@ export const CURRENT_DEFAULT_PROMPT_HASHES = {
   "zh-TW/cleanupPrompt": "9b586c6141f09263fdf9d06973b9bb9579fc325b2b6f906a0a7804f9418824be",
   "zh-TW/fullPrompt": "9312644f8de56d874e0de9e18d610a3ed6afd0ca1b31411f02d021e012fee601",
   "zh-TW/translatePrompt": "6b1c867216603f9741d13b8c564fcf6d484c817e69e2c7d6fe2de83118ed862e",
-  chatAgent: "ddc4158fe9309e0f2ffa69ff1e43924c8d40b79bd6b9cb3dc34b33b4056da7c3",
+  chatAgent: "32caac5835b8537d2e93d34430a63e2610232bb805be22e9428bd095cc5508e7",
 };
 
 export async function hashPromptText(text) {

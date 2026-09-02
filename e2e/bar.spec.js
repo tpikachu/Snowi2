@@ -98,6 +98,54 @@ test("global chat offers no speed chooser, on the bar or in the app", async () =
   await expect(page.getByRole("radiogroup", { name: "Answer speed" })).toHaveCount(0);
 });
 
+test("clicking the ask field opens the palette, filters, and deep-links Settings", async () => {
+  ({ app } = await launchApp(test.info()));
+  const page = await controlPanelPage(app);
+  await skipOnboarding(page);
+  const bar = await agentBarPage(app);
+  await expect(bar.getByRole("button", { name: "Start meeting" })).toBeVisible({
+    timeout: 30_000,
+  });
+
+  // Focusing the field reveals the app's map: actions, then every Settings
+  // destination.
+  await bar.getByPlaceholder("Ask or search anything").click();
+  await expect(bar.getByRole("button", { name: "Preferences" })).toBeVisible();
+  await expect(bar.getByRole("button", { name: "Hotkeys" })).toBeVisible();
+  // The window grows to palette height asynchronously; give the resize a
+  // beat so the screenshot shows the whole menu.
+  await bar.waitForTimeout(500);
+  await bar.screenshot({ path: test.info().outputPath("bar-palette.png") });
+
+  // Typing filters the rows; Enter with text would still ask the agent.
+  await bar.getByPlaceholder("Ask or search anything").fill("hotk");
+  await expect(bar.getByRole("button", { name: "Preferences" })).toHaveCount(0);
+  await expect(bar.getByRole("button", { name: "Hotkeys" })).toBeVisible();
+
+  // A settings row lands the control panel's Settings modal on that section —
+  // the keybinds page renders its keycaps.
+  await bar.getByRole("button", { name: "Hotkeys" }).click();
+  await expect(page.locator("kbd").first()).toBeVisible({ timeout: 15_000 });
+  await page.screenshot({ path: test.info().outputPath("palette-deep-link.png") });
+});
+
+test("Escape closes the palette before it hides the bar", async () => {
+  ({ app } = await launchApp(test.info()));
+  const page = await controlPanelPage(app);
+  await skipOnboarding(page);
+  const bar = await agentBarPage(app);
+  await expect(bar.getByRole("button", { name: "Start meeting" })).toBeVisible({
+    timeout: 30_000,
+  });
+
+  await bar.getByPlaceholder("Ask or search anything").click();
+  await expect(bar.getByRole("button", { name: "Preferences" })).toBeVisible();
+  await bar.keyboard.press("Escape");
+  await expect(bar.getByRole("button", { name: "Preferences" })).toHaveCount(0);
+  // One Escape peeled the palette only — the bar is still on screen.
+  await expect(bar.getByRole("button", { name: "Start meeting" })).toBeVisible();
+});
+
 test("a speech-model download published by the control panel shows on the bar", async () => {
   ({ app } = await launchApp(test.info()));
   const page = await controlPanelPage(app);

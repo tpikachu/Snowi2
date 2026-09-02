@@ -3443,7 +3443,14 @@
       "noResults": "Aucun résultat",
       "error": "Erreur d'outil",
       "unknownTool": "Outil inconnu : {{name}}",
-      "invalidArgs": "Arguments d'outil invalides pour {{name}}"
+      "invalidArgs": "Arguments d'outil invalides pour {{name}}",
+      "get_app_settingsStatus": "Lecture des réglages de l'app...",
+      "set_hotkeyStatus": "Mise à jour du raccourci...",
+      "open_settingsStatus": "Ouverture des Réglages...",
+      "appSettingsRead": "Réglages actuels de l'app lus",
+      "hotkeySet": "{{label}} est maintenant {{hotkey}}",
+      "hotkeyCleared": "{{label}} désassigné",
+      "settingsOpened": "Réglages → {{section}} ouverts"
     },
     "bar": {
       "placeholder": "Posez une question ou cherchez",
@@ -3476,6 +3483,9 @@
       "overrideOn": "Les réponses rapides utilisent le modèle choisi ci-dessous.",
       "overrideAuto": "Snowy choisit {{model}} automatiquement — le modèle véloce de votre fournisseur de chat.",
       "overrideSame": "Les réponses rapides utilisent actuellement votre modèle de chat. Activez ceci pour en choisir un plus véloce."
+    },
+    "palette": {
+      "askHint": "Appuyez sur Entrée pour demander à Snowy"
     }
   },
   "integrations": {

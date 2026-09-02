@@ -8,6 +8,7 @@ import { updateNoteTool } from "./updateNoteTool";
 import { listFoldersTool } from "./listFoldersTool";
 import { clipboardTool } from "./clipboardTool";
 import { calendarTool } from "./calendarTool";
+import { getAppSettingsTool, setHotkeyTool, openSettingsTool } from "./appControlTools";
 import type { ContainerScope } from "../../types/chat";
 
 export { ToolRegistry } from "./ToolRegistry";
@@ -35,6 +36,11 @@ export function createToolRegistry(settings: ToolRegistrySettings): ToolRegistry
   registry.register(updateNoteTool);
   registry.register(listFoldersTool);
   registry.register(clipboardTool);
+  // App control: the agent can read the app's setup, change hotkeys, and
+  // open Settings — same code paths as the Settings UI, never credentials.
+  registry.register(getAppSettingsTool);
+  registry.register(setHotkeyTool);
+  registry.register(openSettingsTool);
 
   if (settings.calendarConnected) {
     registry.register(calendarTool);

@@ -2045,10 +2045,15 @@ declare global {
       setAgentWindowBounds?: (x: number, y: number, width: number, height: number) => Promise<void>;
       hideAgentOverlay?: () => Promise<void>;
       startManualMeeting?: () => Promise<{ success: boolean; error?: string }>;
-      openControlPanel?: (target?: "setup") => Promise<{ success: boolean }>;
+      openControlPanel?: (
+        target?: "setup" | { settings: { section?: string; panel?: string } }
+      ) => Promise<{ success: boolean }>;
       /** Zooms this renderer only — the control panel's text-size preference. */
       setUiZoom?: (factor: number) => void;
       onOpenHomeSetup?: (callback: () => void) => () => void;
+      onOpenSettingsSection?: (
+        callback: (payload: { section?: string; panel?: string } | undefined) => void
+      ) => () => void;
       toggleControlPanel?: () => Promise<{ success: boolean; visible: boolean }>;
       publishBarStatus?: (status: BarStatusPayload) => void;
       getBarStatus?: () => Promise<BarStatusPayload | null>;

@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { AppWindow, AudioLines, CornerDownLeft, Loader2, TriangleAlert, X } from "lucide-react";
 import { cn } from "./lib/utils";
+import { SETTINGS_SECTIONS } from "./settings/settingsNav";
+import { filterBarPalette, groupBarPalette, type BarPaletteGroup } from "../utils/barPalette";
 import MeetingPanelOverlay from "./MeetingPanelOverlay";
 import { useBarSetupStatus } from "../hooks/useBarSetupStatus";
 import { AgentTitleBar } from "./agent/AgentTitleBar";
@@ -20,6 +22,8 @@ const MIN_WIDTH = 360;
 /** The collapsed bar: an ask field over a control strip — two rows, sized so
  *  the field is readable at a glance. Must match AGENT_OVERLAY_CONFIG.minHeight. */
 const BAR_HEIGHT = 104;
+/** The bar with its palette open: room for every action and settings row. */
+const PALETTE_HEIGHT = 440;
 /** First expansion; a hand-resized height is remembered over this. */
 const DEFAULT_EXPANDED_HEIGHT = 480;
 /** The cue card the bar morphs into while a meeting records. */
@@ -210,6 +214,30 @@ export default function AgentOverlay() {
   // when the answer exists to fill it.
   const expanded = messages.length > 0 || (agentState !== "idle" && agentState !== "listening");
 
+  // The command palette: clicking the ask field reveals the app's map —
+  // actions and settings destinations — under the field, the way the
+  // reference product's bar opens. Closed by Escape, by activating a row, by
+  // sending an ask, and by the chat expanding over it. Deliberately NOT
+  // closed on input blur: the palette closing mid-click would resize the
+  // window under the cursor and swallow the click it was resizing for.
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const paletteOpenRef = useRef(false);
+  useEffect(() => {
+    paletteOpenRef.current = paletteOpen;
+  }, [paletteOpen]);
+  useEffect(() => {
+    if (expanded || meetingActive) setPaletteOpen(false);
+  }, [expanded, meetingActive]);
+  // Hiding the window (X, second Escape, tray) folds the palette with it, so
+  // the next summon is the clean two-row bar, not a stale open menu.
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") setPaletteOpen(false);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
   // The window follows the mode. Height is remembered across one
   // expand-collapse cycle so a hand-resized chat column comes back at the
   // size the user gave it, not the default.
@@ -224,8 +252,15 @@ export default function AgentOverlay() {
         window.electronAPI?.resizeAgentWindow?.(width, MEETING_CARD_HEIGHT);
       } else if (expanded) {
         window.electronAPI?.resizeAgentWindow?.(width, lastExpandedHeightRef.current);
+      } else if (paletteOpen) {
+        window.electronAPI?.resizeAgentWindow?.(width, PALETTE_HEIGHT);
       } else {
-        if (bounds?.height && bounds.height > BAR_HEIGHT && bounds.height !== MEETING_CARD_HEIGHT) {
+        if (
+          bounds?.height &&
+          bounds.height > BAR_HEIGHT &&
+          bounds.height !== MEETING_CARD_HEIGHT &&
+          bounds.height !== PALETTE_HEIGHT
+        ) {
           lastExpandedHeightRef.current = bounds.height;
         }
         window.electronAPI?.resizeAgentWindow?.(width, BAR_HEIGHT);
@@ -234,7 +269,7 @@ export default function AgentOverlay() {
     return () => {
       cancelled = true;
     };
-  }, [expanded, meetingActive]);
+  }, [expanded, meetingActive, paletteOpen]);
 
   const handleResizeStart = useCallback((e: React.MouseEvent, direction: string) => {
     e.preventDefault();
@@ -282,9 +317,13 @@ export default function AgentOverlay() {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Never while recording: a stray Escape must not hide the one on-screen
       // indicator that a meeting is being captured.
-      if (e.key === "Escape" && !meetingActiveRef.current) {
-        window.electronAPI?.hideAgentOverlay?.();
+      if (e.key !== "Escape" || meetingActiveRef.current) return;
+      // Escape peels one layer at a time: first the palette, then the window.
+      if (paletteOpenRef.current) {
+        setPaletteOpen(false);
+        return;
       }
+      window.electronAPI?.hideAgentOverlay?.();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
@@ -328,6 +367,7 @@ export default function AgentOverlay() {
     const text = barText.trim();
     if (!text) return;
     setBarText("");
+    setPaletteOpen(false);
     void handleSend(text);
   }, [barText, handleSend]);
 
@@ -370,6 +410,59 @@ export default function AgentOverlay() {
 
   const handleToggleApp = useCallback(() => {
     void window.electronAPI?.toggleControlPanel?.();
+  }, []);
+
+  /**
+   * The palette's rows, in render order (actions before settings, so the flat
+   * highlight index and the grouped rendering agree). Labels arrive
+   * translated because filtering matches what the user reads. The settings
+   * rows come straight from SETTINGS_SECTIONS — the same IA the Settings
+   * modal renders — so the palette can never offer a section that does not
+   * exist.
+   */
+  const paletteRows = useMemo(
+    () => [
+      {
+        id: "startMeeting",
+        group: "actions" as BarPaletteGroup,
+        label: t("agentMode.bar.startMeeting"),
+        icon: AudioLines,
+        disabled: downloadBlocksMeetingStart,
+        run: handleListen,
+      },
+      {
+        id: "appWindow",
+        group: "actions" as BarPaletteGroup,
+        label: t("agentMode.bar.appWindow"),
+        icon: AppWindow,
+        disabled: false,
+        run: handleToggleApp,
+      },
+      ...SETTINGS_SECTIONS.map((section) => ({
+        id: `settings-${section.id}`,
+        group: "settings" as BarPaletteGroup,
+        label: t(section.labelKey),
+        icon: section.icon,
+        disabled: false,
+        run: () =>
+          void window.electronAPI?.openControlPanel?.({ settings: { section: section.id } }),
+      })),
+    ],
+    [t, downloadBlocksMeetingStart, handleListen, handleToggleApp]
+  );
+  const visiblePaletteRows = useMemo(
+    () => filterBarPalette(paletteRows, barText),
+    [paletteRows, barText]
+  );
+  const [paletteHighlight, setPaletteHighlight] = useState(0);
+  useEffect(() => {
+    setPaletteHighlight(0);
+  }, [barText, paletteOpen]);
+
+  const runPaletteRow = useCallback((row: { disabled: boolean; run: () => void }) => {
+    if (row.disabled) return;
+    setPaletteOpen(false);
+    row.run();
   }, []);
 
   const isRecordingVoice = isVoiceRecording;
@@ -509,10 +602,12 @@ export default function AgentOverlay() {
               <>
                 {/* Row 1 — the ask field. A tonal fill, no stroke: the field
                     reads as a soft well in the card, and focus brightens the
-                    well instead of drawing a ring around it. */}
+                    well instead of drawing a ring around it. Clicking in also
+                    opens the palette below — the app's map, one focus away. */}
                 <div
                   className={cn(
-                    "flex min-h-0 flex-1 items-center gap-2 rounded-xl px-3.5",
+                    "flex items-center gap-2 rounded-xl px-3.5",
+                    paletteOpen ? "h-11 shrink-0" : "min-h-0 flex-1",
                     "bg-surface-2 transition-colors duration-150 focus-within:bg-surface-3"
                   )}
                   style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
@@ -522,10 +617,26 @@ export default function AgentOverlay() {
                     type="text"
                     value={barText}
                     onChange={(e) => setBarText(e.target.value)}
+                    onFocus={() => setPaletteOpen(true)}
+                    onClick={() => setPaletteOpen(true)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
-                        handleBarSubmit();
+                        if (barText.trim()) {
+                          handleBarSubmit();
+                        } else if (paletteOpen) {
+                          const row = visiblePaletteRows[paletteHighlight];
+                          if (row) runPaletteRow(row);
+                        }
+                        return;
+                      }
+                      if (paletteOpen && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+                        e.preventDefault();
+                        const count = visiblePaletteRows.length;
+                        if (count === 0) return;
+                        setPaletteHighlight((i) =>
+                          e.key === "ArrowDown" ? (i + 1) % count : (i - 1 + count) % count
+                        );
                       }
                     }}
                     placeholder={
@@ -556,6 +667,55 @@ export default function AgentOverlay() {
                     <CornerDownLeft className="size-4" strokeWidth={1.75} />
                   </button>
                 </div>
+
+                {/* The palette — the app's map under the field, exactly the
+                    reference product's click-in dropdown: quick actions, then
+                    every Settings destination. Typing in the field filters
+                    it; Enter with text still asks the agent (the field's
+                    first job never changes). Rows preventDefault on
+                    mousedown so activating one never blurs the field. */}
+                {paletteOpen && (
+                  <div
+                    className="min-h-0 flex-1 overflow-y-auto rounded-xl bg-surface-1 p-1.5"
+                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+                  >
+                    {groupBarPalette(visiblePaletteRows).map(({ group, rows }) => (
+                      <div key={group} className="mb-1 last:mb-0">
+                        <p className="px-2 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                          {group === "actions" ? t("common.actions") : t("settingsModal.title")}
+                        </p>
+                        {rows.map((row) => {
+                          const flatIndex = visiblePaletteRows.indexOf(row);
+                          const Icon = row.icon;
+                          return (
+                            <button
+                              key={row.id}
+                              type="button"
+                              disabled={row.disabled}
+                              onMouseDown={(e) => e.preventDefault()}
+                              onClick={() => runPaletteRow(row)}
+                              onMouseEnter={() => setPaletteHighlight(flatIndex)}
+                              className={cn(
+                                "flex h-8 w-full items-center gap-2.5 rounded-lg px-2 text-left",
+                                "text-[13px] text-foreground/90 transition-colors duration-100",
+                                flatIndex === paletteHighlight && "bg-surface-3 text-foreground",
+                                "disabled:cursor-default disabled:opacity-40"
+                              )}
+                            >
+                              <Icon className="size-3.5 shrink-0 text-muted-foreground" />
+                              {row.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ))}
+                    {visiblePaletteRows.length === 0 && (
+                      <p className="px-2 py-3 text-[12px] text-muted-foreground">
+                        {t("agentMode.palette.askHint")}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Row 2 — the control strip. Everything the field displaced:
                     warnings and download progress on the left; the meeting

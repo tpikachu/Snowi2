@@ -3278,7 +3278,14 @@
       "noResults": "結果が見つかりません",
       "error": "ツールエラー",
       "unknownTool": "不明なツール: {{name}}",
-      "invalidArgs": "{{name}} のツール引数が無効です"
+      "invalidArgs": "{{name}} のツール引数が無効です",
+      "get_app_settingsStatus": "アプリ設定を読み取り中...",
+      "set_hotkeyStatus": "ホットキーを更新中...",
+      "open_settingsStatus": "設定を開いています...",
+      "appSettingsRead": "アプリの現在の設定を読み取りました",
+      "hotkeySet": "{{label}}を{{hotkey}}に設定しました",
+      "hotkeyCleared": "{{label}}を解除しました",
+      "settingsOpened": "設定 → {{section}} を開きました"
     },
     "bar": {
       "placeholder": "何でも質問・検索",
@@ -3311,6 +3318,9 @@
       "overrideOn": "高速回答は下で選んだモデルを使用します。",
       "overrideAuto": "現在 Snowy は {{model}} を自動選択しています — チャットプロバイダーの軽量モデルです。",
       "overrideSame": "高速回答は現在チャットモデルで実行されています。より速いモデルを選ぶにはオンにしてください。"
+    },
+    "palette": {
+      "askHint": "Enterキーで Snowy に質問"
     }
   },
   "integrations": {

@@ -3443,7 +3443,14 @@
       "noResults": "Keine Ergebnisse",
       "error": "Werkzeugfehler",
       "unknownTool": "Unbekanntes Werkzeug: {{name}}",
-      "invalidArgs": "Ungültige Tool-Argumente für {{name}}"
+      "invalidArgs": "Ungültige Tool-Argumente für {{name}}",
+      "get_app_settingsStatus": "App-Einstellungen werden gelesen...",
+      "set_hotkeyStatus": "Hotkey wird aktualisiert...",
+      "open_settingsStatus": "Einstellungen werden geöffnet...",
+      "appSettingsRead": "Aktuelle App-Einstellungen gelesen",
+      "hotkeySet": "{{label}} ist jetzt {{hotkey}}",
+      "hotkeyCleared": "{{label}} entfernt",
+      "settingsOpened": "Einstellungen → {{section}} geöffnet"
     },
     "bar": {
       "placeholder": "Frag oder such einfach",
@@ -3476,6 +3483,9 @@
       "overrideOn": "Schnelle Antworten nutzen das unten gewählte Modell.",
       "overrideAuto": "Snowy wählt derzeit automatisch {{model}} — das flinke Modell deines Chat-Anbieters.",
       "overrideSame": "Schnelle Antworten laufen derzeit auf deinem Chat-Modell. Schalte dies ein, um ein flinkeres zu wählen."
+    },
+    "palette": {
+      "askHint": "Enter drücken, um Snowy zu fragen"
     }
   },
   "integrations": {

@@ -8294,24 +8294,34 @@ class IPCHandlers {
       return { success: true };
     });
 
-    // The bar's setup warning: surface the main window (which shows
-    // onboarding until it is completed) from a window that has no other way
-    // in. target "setup" additionally lands the renderer on Home with the
-    // capabilities card open — the app's own setup guide.
+    // Surface the main window (which shows onboarding until it is completed)
+    // from a window that has no other way in. Two deep-link targets ride
+    // along: "setup" lands the renderer on Home with the capabilities card
+    // open — the app's own setup guide — and { settings: { section, panel } }
+    // opens the Settings modal at a named section (the bar's palette rows and
+    // the agent's open_settings tool both use it).
     ipcMain.handle("open-control-panel", async (_event, target) => {
       await this.windowManager.createControlPanelWindow();
-      if (target === "setup") {
-        const win = this.windowManager.controlPanelWindow;
-        if (win && !win.isDestroyed()) {
-          const send = () => {
-            if (!win.isDestroyed()) win.webContents.send("open-home-setup");
-          };
-          if (win.webContents.isLoading()) {
-            win.webContents.once("did-finish-load", send);
-          } else {
-            send();
-          }
+      const win = this.windowManager.controlPanelWindow;
+      const sendWhenReady = (channel, payload) => {
+        if (!win || win.isDestroyed()) return;
+        const send = () => {
+          if (!win.isDestroyed()) win.webContents.send(channel, payload);
+        };
+        if (win.webContents.isLoading()) {
+          win.webContents.once("did-finish-load", send);
+        } else {
+          send();
         }
+      };
+      if (target === "setup") {
+        sendWhenReady("open-home-setup");
+      } else if (target && typeof target === "object" && target.settings) {
+        sendWhenReady("open-settings-section", {
+          section:
+            typeof target.settings.section === "string" ? target.settings.section : undefined,
+          panel: typeof target.settings.panel === "string" ? target.settings.panel : undefined,
+        });
       }
       return { success: true };
     });
