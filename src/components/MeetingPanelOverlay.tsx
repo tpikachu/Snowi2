@@ -44,9 +44,12 @@ import { cn } from "./lib/utils";
  * remaining pixel goes to the assistant, which is the reason to keep the
  * panel open.
  *
- * The visual language is one dark surface, tonal rather than drawn: the
- * window edge carries the only border, and everything inside is a fill —
- * chips, wells, and buttons are lighter washes on the surface, never boxes.
+ * The visual language is one dark glass surface (see .hud-surface — a deep
+ * tint with a sliver of desktop showing through), tonal rather than drawn:
+ * the window edge carries the only border, and everything inside is a fill —
+ * chips, wells, and buttons are lighter washes on the glass, never boxes.
+ * Fills sit a notch brighter than they would on paint, because a wash on a
+ * translucent ground loses a step of contrast to whatever is behind it.
  * Three type registers only: 14px for anything read or typed (suggestion,
  * answer, the ask input), 12px for buttons and chips, 11px for the few
  * uppercase labels. Muted text never drops below the hud-muted token itself
@@ -103,12 +106,12 @@ const ANSWER_MARKDOWN_COMPONENTS: Components = {
   ),
   em: ({ children }) => <em className="italic">{children}</em>,
   code: ({ children }) => (
-    <code className="rounded-md bg-white/[0.09] px-1.5 py-0.5 font-mono text-[13px] leading-relaxed text-hud-foreground">
+    <code className="rounded-md bg-white/[0.1] px-1.5 py-0.5 font-mono text-[13px] leading-relaxed text-hud-foreground">
       {children}
     </code>
   ),
   pre: ({ children }) => (
-    <pre className="mb-2.5 overflow-x-auto rounded-lg bg-white/[0.09] p-2 font-mono text-[13px] last:mb-0">
+    <pre className="mb-2.5 overflow-x-auto rounded-lg bg-white/[0.1] p-2 font-mono text-[13px] last:mb-0">
       {children}
     </pre>
   ),
@@ -166,7 +169,7 @@ function ModeToggle({
     <div
       role="radiogroup"
       aria-label={t("notes.meetingPanel.mode.label")}
-      className="flex shrink-0 items-center gap-px rounded-full bg-white/[0.06] p-0.5"
+      className="flex shrink-0 items-center gap-px rounded-full bg-white/[0.08] p-0.5"
     >
       {options.map(({ id, icon: Icon, label, hint }) => (
         <button
@@ -268,9 +271,9 @@ function QuickActions({
           onClick={() => onAsk(label, mode)}
           disabled={!ready}
           className={cn(
-            "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.08] px-3",
+            "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.1] px-3",
             "text-[12px] font-medium text-hud-foreground transition-colors duration-150",
-            "hover:bg-white/[0.14]",
+            "hover:bg-white/[0.16]",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
             "disabled:cursor-not-allowed disabled:opacity-40"
           )}
@@ -564,7 +567,7 @@ export default function MeetingPanelOverlay() {
                 "ml-0.5 flex h-7 items-center justify-center gap-1.5 rounded-lg px-2.5",
                 "text-[12px] font-medium transition-colors duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-                "bg-hud-danger/15 text-hud-danger hover:bg-hud-danger/25",
+                "bg-hud-danger/20 text-hud-danger hover:bg-hud-danger/30",
                 "disabled:cursor-not-allowed disabled:opacity-50"
               )}
             >
@@ -662,9 +665,9 @@ export default function MeetingPanelOverlay() {
                         type="button"
                         onClick={() => void send("configureModels")}
                         className={cn(
-                          "mt-2 flex h-7 items-center gap-1.5 rounded-full bg-white/[0.08] px-2.5",
+                          "mt-2 flex h-7 items-center gap-1.5 rounded-full bg-white/[0.1] px-2.5",
                           "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
-                          "hover:bg-white/[0.14] hover:text-hud-foreground",
+                          "hover:bg-white/[0.16] hover:text-hud-foreground",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
                         )}
                       >
@@ -705,9 +708,9 @@ export default function MeetingPanelOverlay() {
                         disabled={!assistReady}
                         title={t("notes.meetingPanel.ask.thinkDeeperHint")}
                         className={cn(
-                          "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.08] px-2.5",
+                          "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.1] px-2.5",
                           "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
-                          "hover:bg-white/[0.14] hover:text-hud-foreground",
+                          "hover:bg-white/[0.16] hover:text-hud-foreground",
                           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
                           "disabled:cursor-not-allowed disabled:opacity-40"
                         )}
@@ -724,8 +727,8 @@ export default function MeetingPanelOverlay() {
                       aria-label={copied ? t("common.copied") : t("common.copy")}
                       title={copied ? t("common.copied") : t("common.copy")}
                       className={cn(
-                        "flex size-7 items-center justify-center rounded-full bg-white/[0.08]",
-                        "transition-colors duration-150 hover:bg-white/[0.14]",
+                        "flex size-7 items-center justify-center rounded-full bg-white/[0.1]",
+                        "transition-colors duration-150 hover:bg-white/[0.16]",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
                         copied ? "text-hud-accent" : "text-hud-muted hover:text-hud-foreground"
                       )}
@@ -750,9 +753,9 @@ export default function MeetingPanelOverlay() {
                     type="button"
                     onClick={() => void send("configureModels")}
                     className={cn(
-                      "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.08] px-2.5",
+                      "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.1] px-2.5",
                       "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
-                      "hover:bg-white/[0.14] hover:text-hud-foreground",
+                      "hover:bg-white/[0.16] hover:text-hud-foreground",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
                     )}
                   >
@@ -785,8 +788,8 @@ export default function MeetingPanelOverlay() {
               className={cn(
                 // A tonal well, no stroke — focus brightens the fill instead
                 // of drawing a ring (matches the assistant bar's field).
-                "flex shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.08] p-1.5 pl-2",
-                "transition-colors duration-150 focus-within:bg-white/[0.12]"
+                "flex shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.1] p-1.5 pl-2",
+                "transition-colors duration-150 focus-within:bg-white/[0.14]"
               )}
               onSubmit={(event) => {
                 event.preventDefault();

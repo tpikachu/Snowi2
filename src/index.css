@@ -533,12 +533,18 @@ a:focus-visible {
 }
 
 /* ---- Floating HUD ---------------------------------------------------------
-   The dictation panel is an always-on-top window over arbitrary desktops, so
-   it carries its own opaque dark ground in BOTH themes. The outer hairline is
-   light and the shadow is deep, so the object survives a white document and a
-   black editor alike. */
+   The HUD family (cue card, dictation pill) floats always-on-top over
+   arbitrary desktops, so it carries its own dark ground in BOTH themes — but
+   as glass, not paint: a deep tint with a sliver of see-through, the way the
+   reference product's card sits on the desktop. 0.86 alpha is the floor —
+   below it, hud-muted text stops clearing WCAG contrast over a white
+   document. (backdrop-filter cannot blur the desktop behind a transparent
+   Electron window; it is here for the window's own layered content.) The
+   outer hairline is light and the shadow is deep, so the object survives a
+   white document and a black editor alike. */
 .hud-surface {
-  background: var(--color-hud-surface);
+  background: oklch(from var(--color-hud-surface) l c h / 0.86);
+  backdrop-filter: blur(24px) saturate(1.15);
   border: 1px solid var(--color-hud-border);
   box-shadow:
     inset 0 1px 0 oklch(1 0 0 / 0.06),
