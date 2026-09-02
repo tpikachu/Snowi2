@@ -16,6 +16,7 @@ import { resolveMessageSources } from "./messageSources";
 import { extractNoteCards } from "./noteCards";
 import { renderCitations, renderStreamingCitations } from "../../utils/chatCitations";
 import { toolIcons } from "./toolIcons";
+import { groupToolCalls } from "../../utils/toolCallGroups";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -26,17 +27,39 @@ interface ChatMessageProps {
   onOpenNote?: (noteId: number) => void;
 }
 
-function ToolCallStep({ toolCall }: { toolCall: ToolCallInfo }) {
+/**
+ * One activity row per tool NAME, not per call: `calls` is a group from
+ * groupToolCalls. An agent that reads four notes shows one "Reading note…"
+ * shimmer while it works and one settled row with a ×4 count after — four
+ * stacked identical rows read as stutter, which the client called out.
+ */
+function ToolCallStep({ calls }: { calls: ToolCallInfo[] }) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
-  const Icon = toolIcons[toolCall.name] || Search;
-  const isExecuting = toolCall.status === "executing";
-  const isError = toolCall.status === "error";
-  const isCompleted = toolCall.status === "completed";
-  const isClipboard = toolCall.name === "copy_to_clipboard" && isCompleted;
+  const name = calls[0].name;
+  const count = calls.length;
+  const Icon = toolIcons[name] || Search;
+  const isExecuting = calls.some((call) => call.status === "executing");
+  const firstError = calls.find((call) => call.status === "error");
+  const isError = !isExecuting && !!firstError;
+  const isCompleted = !isExecuting && !isError;
+  const isClipboard = name === "copy_to_clipboard" && isCompleted;
 
-  const resultLines = toolCall.result?.split("\n") ?? [];
-  const hasDetail = resultLines.length > 1 && !isClipboard;
+  // The settled row leads with the freshest result; expanding lists every
+  // call's result, one per line, so nothing the agent did is hidden.
+  const lastResult = [...calls].reverse().find((call) => call.result)?.result;
+  const detailText = calls
+    .map((call) => call.result)
+    .filter(Boolean)
+    .join("\n");
+  const resultLines = detailText.split("\n");
+  const hasDetail = (resultLines.length > 1 || count > 1) && !isClipboard;
+
+  const countBadge = count > 1 && (
+    <span data-numeric className="shrink-0 text-[11px] text-muted-foreground/50">
+      ×{count}
+    </span>
+  );
 
   return (
     <div
@@ -76,15 +99,19 @@ function ToolCallStep({ toolCall }: { toolCall: ToolCallInfo }) {
         />
 
         {isExecuting ? (
-          <span className="text-[11px] text-muted-foreground/80">
-            {t(`agentMode.tools.${toolCall.name}Status`, { defaultValue: toolCall.name })}
+          <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground/80">
+            <span className="min-w-0 truncate">
+              {t(`agentMode.tools.${name}Status`, { defaultValue: name })}
+            </span>
+            {countBadge}
           </span>
         ) : isError ? (
-          <div className="flex items-center gap-1">
+          <div className="flex min-w-0 items-center gap-1">
             <CircleAlert size={10} className="text-destructive/60 shrink-0" />
-            <span className="text-[11px] text-destructive/70">
-              {toolCall.result || toolCall.name}
+            <span className="min-w-0 truncate text-[11px] text-destructive/70">
+              {firstError?.result || name}
             </span>
+            {countBadge}
           </div>
         ) : isClipboard ? (
           <div className="flex items-center gap-1">
@@ -98,8 +125,9 @@ function ToolCallStep({ toolCall }: { toolCall: ToolCallInfo }) {
             />
           </div>
         ) : (
-          <span className="text-[11px] text-muted-foreground/70">
-            {toolCall.result || toolCall.name}
+          <span className="flex min-w-0 items-center gap-1.5 text-[11px] text-muted-foreground/70">
+            <span className="min-w-0 truncate">{(lastResult || name).split("\n")[0]}</span>
+            {countBadge}
           </span>
         )}
 
@@ -120,7 +148,7 @@ function ToolCallStep({ toolCall }: { toolCall: ToolCallInfo }) {
           style={{ maxHeight: expanded ? `${resultLines.length * 16 + 12}px` : "0px" }}
         >
           <pre className="text-[10px] text-muted-foreground/60 px-2.5 pb-1.5 whitespace-pre-wrap leading-tight">
-            {toolCall.result}
+            {detailText}
           </pre>
         </div>
       )}
@@ -263,8 +291,8 @@ export function ChatMessage({
               (hasContent || sourceItems.length > 0) && "mb-2 pb-1.5 border-b border-border/15"
             )}
           >
-            {toolCalls.map((tc) => (
-              <ToolCallStep key={tc.id} toolCall={tc} />
+            {groupToolCalls(toolCalls).map((group) => (
+              <ToolCallStep key={group.calls[0].id} calls={group.calls} />
             ))}
           </div>
         )}

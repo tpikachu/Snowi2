@@ -121,13 +121,25 @@ function resolveAssistModel(
     const chat = selectResolvedLLMConfig(settings, "chatIntelligence");
     if (!selectLLMConfigReady(settings, chat)) return null;
     resolved = chat;
-    // Thinking mode leaves the user's choice alone.
     disableThinking = chat.disableThinking;
   }
 
   const mode = resolved.mode || "local";
   const isLan = mode === "self-hosted" && !!resolved.remoteUrl;
   const isCustom = mode === "providers" && resolved.provider === "custom";
+
+  // An explicit Thinking ask turns reasoning ON, overriding the scope's
+  // latency-first default: clicking Thinking (or Think deeper) mid-meeting IS
+  // the user choosing to spend seconds on a better-reasoned answer, and a
+  // "thinking" mode that never thinks is the mode's promise broken.
+  // Suggestions (no lane) keep the scope's setting — they run on a background
+  // cadence where the default's latency bias is the point. Local and LAN
+  // models are carved out: with disableThinking false their stream stops
+  // stripping <think> blocks, and raw reasoning text has no place on a
+  // glanceable card.
+  if (options.lane === "thinking" && mode !== "local" && !isLan) {
+    disableThinking = false;
+  }
 
   return {
     model: resolved.model,

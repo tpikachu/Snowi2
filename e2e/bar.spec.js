@@ -129,7 +129,7 @@ test("clicking the ask field opens the palette, filters, and deep-links Settings
   await page.screenshot({ path: test.info().outputPath("palette-deep-link.png") });
 });
 
-test("Escape closes the palette before it hides the bar", async () => {
+test("the palette folds on Escape, on its dismiss button, and on focus loss", async () => {
   ({ app } = await launchApp(test.info()));
   const page = await controlPanelPage(app);
   await skipOnboarding(page);
@@ -137,13 +137,27 @@ test("Escape closes the palette before it hides the bar", async () => {
   await expect(bar.getByRole("button", { name: "Start meeting" })).toBeVisible({
     timeout: 30_000,
   });
+  const askField = bar.getByPlaceholder("Ask or search anything");
+  const paletteRow = bar.getByRole("button", { name: "Preferences" });
 
-  await bar.getByPlaceholder("Ask or search anything").click();
-  await expect(bar.getByRole("button", { name: "Preferences" })).toBeVisible();
+  // One Escape peels the palette only — the bar is still on screen.
+  await askField.click();
+  await expect(paletteRow).toBeVisible();
   await bar.keyboard.press("Escape");
-  await expect(bar.getByRole("button", { name: "Preferences" })).toHaveCount(0);
-  // One Escape peeled the palette only — the bar is still on screen.
+  await expect(paletteRow).toHaveCount(0);
   await expect(bar.getByRole("button", { name: "Start meeting" })).toBeVisible();
+
+  // The dropdown carries its own dismiss button.
+  await askField.click();
+  await expect(paletteRow).toBeVisible();
+  await bar.getByRole("button", { name: "Dismiss" }).click();
+  await expect(paletteRow).toHaveCount(0);
+
+  // Losing focus collapses it automatically.
+  await askField.click();
+  await expect(paletteRow).toBeVisible();
+  await askField.blur();
+  await expect(paletteRow).toHaveCount(0);
 });
 
 test("a speech-model download published by the control panel shows on the bar", async () => {

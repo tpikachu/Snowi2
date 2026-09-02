@@ -215,11 +215,13 @@ export default function AgentOverlay() {
   const expanded = messages.length > 0 || (agentState !== "idle" && agentState !== "listening");
 
   // The command palette: clicking the ask field reveals the app's map —
-  // actions and settings destinations — under the field, the way the
-  // reference product's bar opens. Closed by Escape, by activating a row, by
-  // sending an ask, and by the chat expanding over it. Deliberately NOT
-  // closed on input blur: the palette closing mid-click would resize the
-  // window under the cursor and swallow the click it was resizing for.
+  // actions and settings destinations — as a detached card under the bar,
+  // the way the reference product's dropdown opens. Closed by Escape, the
+  // card's X, activating a row, sending an ask, losing focus (input blur and
+  // window blur), and the chat expanding over it. Blur-close is safe only
+  // because the bar card is pinned to the window's top at a fixed height:
+  // when the window shrinks back, no button moves under the cursor, so a
+  // click on the control strip that caused the blur still lands.
   const [paletteOpen, setPaletteOpen] = useState(false);
   const paletteOpenRef = useRef(false);
   useEffect(() => {
@@ -229,13 +231,19 @@ export default function AgentOverlay() {
     if (expanded || meetingActive) setPaletteOpen(false);
   }, [expanded, meetingActive]);
   // Hiding the window (X, second Escape, tray) folds the palette with it, so
-  // the next summon is the clean two-row bar, not a stale open menu.
+  // the next summon is the clean two-row bar, not a stale open menu — and a
+  // focus loss to another app folds it the same way.
   useEffect(() => {
     const onVisibility = () => {
       if (document.visibilityState === "hidden") setPaletteOpen(false);
     };
+    const onWindowBlur = () => setPaletteOpen(false);
     document.addEventListener("visibilitychange", onVisibility);
-    return () => document.removeEventListener("visibilitychange", onVisibility);
+    window.addEventListener("blur", onWindowBlur);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("blur", onWindowBlur);
+    };
   }, []);
 
   // The window follows the mode. Height is remembered across one
@@ -522,42 +530,49 @@ export default function AgentOverlay() {
     );
   }
 
+  const cardChrome = cn(
+    "bg-surface-0",
+    "border border-border/40 rounded-2xl",
+    "shadow-[var(--shadow-elevated)]",
+    "overflow-hidden"
+  );
+
   return (
     <div className="agent-overlay-window w-screen h-screen bg-transparent relative">
-      <div
-        className={cn(
-          "flex flex-col w-full h-full",
-          "bg-surface-0",
-          "border border-border/40 rounded-2xl",
-          "shadow-[var(--shadow-elevated)]",
-          "overflow-hidden"
-        )}
-      >
-        {expanded ? (
-          <>
-            {/* Collapsing IS starting fresh: the conversation is already in
-                chat history, and "back to the bar" reads as done-with-this. */}
-            <AgentTitleBar onCollapse={handleNewChat} />
-            <AgentChat messages={messages} />
-            {consentRow}
-            <AgentInput
-              agentState={agentState}
-              partialTranscript={partialTranscript}
-              onTextSubmit={handleSend}
-              onCancel={streaming.cancelStream}
-            />
-          </>
-        ) : (
-          /* The bar: an ask field over a control strip. Two rows on purpose —
-             the field is the product's front door and gets a full row of
-             readable 15px text, while every control drops to a quiet toolbar
-             beneath it. The visual language is tonal, not drawn: one border
-             on the window edge, and inside it only fills — a second stroke
-             around the field is what made the old bar read as box-in-a-box.
-             The container drags the window; everything interactive opts out,
-             so the empty toolbar space is the handle. */
+      {expanded ? (
+        <div className={cn(cardChrome, "flex flex-col w-full h-full")}>
+          {/* Collapsing IS starting fresh: the conversation is already in
+              chat history, and "back to the bar" reads as done-with-this. */}
+          <AgentTitleBar onCollapse={handleNewChat} />
+          <AgentChat messages={messages} />
+          {consentRow}
+          <AgentInput
+            agentState={agentState}
+            partialTranscript={partialTranscript}
+            onTextSubmit={handleSend}
+            onCancel={streaming.cancelStream}
+          />
+        </div>
+      ) : (
+        /* The bar: an ask field over a control strip. Two rows on purpose —
+           the field is the product's front door and gets a full row of
+           readable 15px text, while every control drops to a quiet toolbar
+           beneath it. The visual language is tonal, not drawn: one border
+           on the card edge, and inside it only fills — a second stroke
+           around the field is what made the old bar read as box-in-a-box.
+           The container drags the window; everything interactive opts out,
+           so the empty toolbar space is the handle.
+
+           The bar is its OWN card at a fixed height, pinned to the top of
+           the window; the palette is a second, detached card below it. The
+           window grows to make room for the dropdown, but the bar never
+           changes shape — that is what makes the palette read as a menu
+           appearing rather than the bar stretching. */
+        <div className="flex h-full w-full flex-col gap-1.5">
+          {/* h-[104px] = BAR_HEIGHT: fixed so the resize animation cannot
+              stretch the bar while the window grows. */}
           <div
-            className="flex h-full flex-col gap-1 p-2.5"
+            className={cn(cardChrome, "flex h-[104px] shrink-0 flex-col gap-1 p-2.5")}
             style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
           >
             {!setupComplete ? (
@@ -606,8 +621,7 @@ export default function AgentOverlay() {
                     opens the palette below — the app's map, one focus away. */}
                 <div
                   className={cn(
-                    "flex items-center gap-2 rounded-xl px-3.5",
-                    paletteOpen ? "h-11 shrink-0" : "min-h-0 flex-1",
+                    "flex min-h-0 flex-1 items-center gap-2 rounded-xl px-3.5",
                     "bg-surface-2 transition-colors duration-150 focus-within:bg-surface-3"
                   )}
                   style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
@@ -619,6 +633,7 @@ export default function AgentOverlay() {
                     onChange={(e) => setBarText(e.target.value)}
                     onFocus={() => setPaletteOpen(true)}
                     onClick={() => setPaletteOpen(true)}
+                    onBlur={() => setPaletteOpen(false)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
@@ -667,55 +682,6 @@ export default function AgentOverlay() {
                     <CornerDownLeft className="size-4" strokeWidth={1.75} />
                   </button>
                 </div>
-
-                {/* The palette — the app's map under the field, exactly the
-                    reference product's click-in dropdown: quick actions, then
-                    every Settings destination. Typing in the field filters
-                    it; Enter with text still asks the agent (the field's
-                    first job never changes). Rows preventDefault on
-                    mousedown so activating one never blurs the field. */}
-                {paletteOpen && (
-                  <div
-                    className="min-h-0 flex-1 overflow-y-auto rounded-xl bg-surface-1 p-1.5"
-                    style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-                  >
-                    {groupBarPalette(visiblePaletteRows).map(({ group, rows }) => (
-                      <div key={group} className="mb-1 last:mb-0">
-                        <p className="px-2 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
-                          {group === "actions" ? t("common.actions") : t("settingsModal.title")}
-                        </p>
-                        {rows.map((row) => {
-                          const flatIndex = visiblePaletteRows.indexOf(row);
-                          const Icon = row.icon;
-                          return (
-                            <button
-                              key={row.id}
-                              type="button"
-                              disabled={row.disabled}
-                              onMouseDown={(e) => e.preventDefault()}
-                              onClick={() => runPaletteRow(row)}
-                              onMouseEnter={() => setPaletteHighlight(flatIndex)}
-                              className={cn(
-                                "flex h-8 w-full items-center gap-2.5 rounded-lg px-2 text-left",
-                                "text-[13px] text-foreground/90 transition-colors duration-100",
-                                flatIndex === paletteHighlight && "bg-surface-3 text-foreground",
-                                "disabled:cursor-default disabled:opacity-40"
-                              )}
-                            >
-                              <Icon className="size-3.5 shrink-0 text-muted-foreground" />
-                              {row.label}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    ))}
-                    {visiblePaletteRows.length === 0 && (
-                      <p className="px-2 py-3 text-[12px] text-muted-foreground">
-                        {t("agentMode.palette.askHint")}
-                      </p>
-                    )}
-                  </div>
-                )}
 
                 {/* Row 2 — the control strip. Everything the field displaced:
                     warnings and download progress on the left; the meeting
@@ -808,8 +774,69 @@ export default function AgentOverlay() {
               </>
             )}
           </div>
-        )}
-      </div>
+
+          {/* The palette — the app's map in its own card under the bar,
+              exactly the reference product's click-in dropdown: quick
+              actions, then every Settings destination. Typing in the field
+              filters it; Enter with text still asks the agent (the field's
+              first job never changes). The card preventDefaults mousedown so
+              interacting with it never blurs the field — the input's blur is
+              what closes the menu. */}
+          {paletteOpen && setupComplete && (
+            <div
+              onMouseDown={(e) => e.preventDefault()}
+              className={cn(cardChrome, "relative min-h-0 flex-1 overflow-y-auto p-1.5")}
+              style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
+            >
+              {/* "Dismiss", not "Close": the bar's own X (Close) is on screen
+                  at the same time, and two buttons announcing the same name
+                  would be indistinguishable to a screen reader. */}
+              <button
+                type="button"
+                onClick={() => setPaletteOpen(false)}
+                aria-label={t("common.dismiss")}
+                className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-surface-2 hover:text-foreground"
+              >
+                <X className="size-4" strokeWidth={1.75} />
+              </button>
+              {groupBarPalette(visiblePaletteRows).map(({ group, rows }) => (
+                <div key={group} className="mb-1 last:mb-0">
+                  <p className="px-2 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                    {group === "actions" ? t("common.actions") : t("settingsModal.title")}
+                  </p>
+                  {rows.map((row) => {
+                    const flatIndex = visiblePaletteRows.indexOf(row);
+                    const Icon = row.icon;
+                    return (
+                      <button
+                        key={row.id}
+                        type="button"
+                        disabled={row.disabled}
+                        onClick={() => runPaletteRow(row)}
+                        onMouseEnter={() => setPaletteHighlight(flatIndex)}
+                        className={cn(
+                          "flex h-8 w-full items-center gap-2.5 rounded-lg px-2 text-left",
+                          "text-[13px] text-foreground/90 transition-colors duration-100",
+                          flatIndex === paletteHighlight && "bg-surface-3 text-foreground",
+                          "disabled:cursor-default disabled:opacity-40"
+                        )}
+                      >
+                        <Icon className="size-3.5 shrink-0 text-muted-foreground" />
+                        {row.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+              {visiblePaletteRows.length === 0 && (
+                <p className="px-2 py-3 text-[12px] text-muted-foreground">
+                  {t("agentMode.palette.askHint")}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {expanded && (
         <>
