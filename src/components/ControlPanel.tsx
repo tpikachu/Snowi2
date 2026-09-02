@@ -945,6 +945,14 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
           <CommandSearch
             open={showSearch}
             onOpenChange={setShowSearch}
+            // The header's field opens this, so it behaves like the assistant
+            // bar's palette: a dropdown under the header, nothing dimmed.
+            variant="header"
+            onSettingsSelect={(section) => {
+              setSettingsSection(section);
+              setSettingsPanel(undefined);
+              setShowSettings(true);
+            }}
             transcriptions={history}
             onNoteSelect={(id, folderId, spaceId) => {
               if (folderId != null) setActiveFolderId(folderId);

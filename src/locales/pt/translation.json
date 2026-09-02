@@ -1920,9 +1920,10 @@
         "title": "Chaves de API",
         "description": "Os modelos são escolhidos onde você os usa: no chat, no painel da reunião e por ação. Uma chave aqui desbloqueia esse provedor em todo lugar."
       },
-      "currentModel": "Modelo",
-      "currentModelHint": "Escolha aqui ou onde você o usa — a escolha é compartilhada e salva.",
-      "advancedSetup": "Configuração avançada"
+      "advancedSetup": "Configuração avançada",
+      "advanced": {
+        "description": "Modelos locais, endpoints LAN, APIs personalizadas e roteamento corporativo para o chat e as ações."
+      }
     },
     "transcription": {
       "customSetup": "Configuração personalizada",
@@ -2245,8 +2246,7 @@
       "actionsTitle": "Ações",
       "actionsDescription": "Tudo o que o Snowy escreve por você. Gerar notas roda em toda reunião que você guarda; o resto, quando você pede.",
       "actionsRowDescription": "Crie, edite e reordene as ações que você pode rodar em uma nota.",
-      "manageActions": "Gerenciar",
-      "modelDescription": "Todas as ações usam este modelo, inclusive o resumo no fim de uma reunião."
+      "manageActions": "Gerenciar"
     }
   },
   "models": {
@@ -2971,6 +2971,13 @@
       "answer": {
         "fromMeeting": "Desta reunião",
         "checkedNotes": "Consultou suas notas"
+      },
+      "thread": {
+        "clear": "Limpar"
+      },
+      "observe": {
+        "enable": "Observar minha tela — as respostas podem usar o que está nela",
+        "disable": "Observando sua tela — clique para parar"
       }
     },
     "transcript": {

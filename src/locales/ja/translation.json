@@ -1941,9 +1941,10 @@
         "title": "APIキー",
         "description": "モデルは使う場所で選べます — チャット、会議パネル、各アクション。ここでキーを設定すると、そのプロバイダーがどこでも使えます。"
       },
-      "currentModel": "モデル",
-      "currentModelHint": "ここでも、使う場所でも選べます。選択は共有され保存されます。",
-      "advancedSetup": "詳細設定"
+      "advancedSetup": "詳細設定",
+      "advanced": {
+        "description": "ローカルモデル、LAN エンドポイント、カスタム API、チャットとアクションのエンタープライズルーティング。"
+      }
     },
     "transcription": {
       "customSetup": "カスタム設定",
@@ -2266,8 +2267,7 @@
       "actionsTitle": "アクション",
       "actionsDescription": "Snowy が書くもの全般。「ノートを生成」は保存した会議ごとに自動で実行され、ほかは必要なときに実行します。",
       "actionsRowDescription": "ノートに対して実行できるアクションの作成・編集・並べ替え。",
-      "manageActions": "管理",
-      "modelDescription": "会議終了時の議事録を含め、すべてのアクションはこのモデルで動きます。"
+      "manageActions": "管理"
     }
   },
   "models": {
@@ -2899,6 +2899,13 @@
       "answer": {
         "fromMeeting": "この会議から",
         "checkedNotes": "ノートを確認済み"
+      },
+      "thread": {
+        "clear": "クリア"
+      },
+      "observe": {
+        "enable": "画面を見せる — 回答が画面の内容を利用できます",
+        "disable": "画面を見ています — クリックで停止"
       }
     },
     "transcript": {

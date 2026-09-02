@@ -79,6 +79,15 @@ test("configuring a model mid-meeting reaches the panel", () => {
   assert.equal(assistStatesEqual(IDLE_ASSIST, { ...IDLE_ASSIST, configured: true }), false);
 });
 
+test("an answer filed into history is a change; identical history is not", () => {
+  const past = withAnswer().answer;
+  const withHistory = () => ({ ...withAnswer(), answerHistory: [past] });
+  // The bridge must ship the filing (the panel's thread grows)...
+  assert.equal(assistStatesEqual(withAnswer(), withHistory()), false);
+  // ...but a rebuilt state with the same entries is still not worth a hop.
+  assert.equal(assistStatesEqual(withHistory(), withHistory()), true);
+});
+
 test("a suggestion being prepared is distinct from none at all", () => {
   assert.equal(assistStatesEqual(IDLE_ASSIST, { ...IDLE_ASSIST, suggestionPending: true }), false);
 });

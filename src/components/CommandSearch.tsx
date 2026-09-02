@@ -8,6 +8,7 @@ import {
   Mic,
   Folder,
   Lock,
+  Settings,
   Users,
   Upload,
   MessageSquare,
@@ -25,6 +26,7 @@ import {
 } from "./ui/dropdown-menu";
 import type { NoteItem, FolderItem, SpaceItem, TranscriptionItem } from "../types/electron.js";
 import { formatRelativeTime } from "../utils/dateFormatting";
+import { SETTINGS_SECTIONS, type SettingsSectionType } from "./settings/settingsNav";
 
 interface ConversationResult {
   id: number;
@@ -45,15 +47,31 @@ export interface CommandSearchProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mode?: "all" | "conversations";
+  /**
+   * "modal" is the centered dialog over a dimmed backdrop (chat history).
+   * "header" drops the panel from under the window header with no dimming —
+   * the same shape as the assistant bar's palette, which is where the
+   * header's search field learned its manners.
+   */
+  variant?: "modal" | "header";
   transcriptions?: TranscriptionItem[];
   onNoteSelect?: (noteId: number, folderId: number | null, spaceId?: number) => void;
   onContainerSelect?: (spaceId: number, folderId: number | null) => void;
   onTranscriptSelect?: (transcriptId: number) => void;
   onConversationSelect?: (conversationId: number) => void;
+  /** Offered when set: typing a Settings destination's name surfaces it. */
+  onSettingsSelect?: (section: SettingsSectionType) => void;
+}
+
+interface SettingsTarget {
+  id: SettingsSectionType;
+  label: string;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
 }
 
 type FlatItem =
   | { kind: "container"; target: JumpTarget }
+  | { kind: "settings"; target: SettingsTarget }
   | { kind: "note"; note: NoteItem }
   | { kind: "transcript"; transcript: TranscriptionItem }
   | { kind: "conversation"; conversation: ConversationResult };
@@ -100,11 +118,13 @@ export default function CommandSearch({
   open,
   onOpenChange,
   mode = "all",
+  variant = "modal",
   transcriptions = [],
   onNoteSelect,
   onContainerSelect,
   onTranscriptSelect,
   onConversationSelect,
+  onSettingsSelect,
 }: CommandSearchProps) {
   const { t } = useTranslation();
   // Same guard the shared DialogContent carries: an outside click that
@@ -317,27 +337,57 @@ export default function CommandSearch({
     return slice.slice(0, 5);
   }, [transcriptions, query]);
 
+  // Settings destinations, same IA as the assistant bar's palette (both draw
+  // from SETTINGS_SECTIONS). Query-gated: an empty query browses notes, and a
+  // list of Settings rows above them would push the content down for a need
+  // the sidebar already serves.
+  const settingsTargets = useMemo<SettingsTarget[]>(() => {
+    const q = query.trim().toLowerCase();
+    if (!q || isConversationsMode || !onSettingsSelect) return [];
+    return SETTINGS_SECTIONS.map((section) => ({
+      id: section.id,
+      label: t(section.labelKey),
+      icon: section.icon,
+    })).filter((target) => target.label.toLowerCase().includes(q));
+  }, [query, isConversationsMode, onSettingsSelect, t]);
+
   const flatItems = useMemo<FlatItem[]>(() => {
     if (isConversationsMode) {
       return conversations.map((c) => ({ kind: "conversation" as const, conversation: c }));
     }
     const items: FlatItem[] = [];
     for (const target of jumpTargets) items.push({ kind: "container", target });
+    for (const target of settingsTargets) items.push({ kind: "settings", target });
     for (const note of scopedNotes) items.push({ kind: "note", note });
     for (const transcript of filteredTranscripts) items.push({ kind: "transcript", transcript });
     return items;
-  }, [jumpTargets, scopedNotes, filteredTranscripts, conversations, isConversationsMode]);
+  }, [
+    jumpTargets,
+    settingsTargets,
+    scopedNotes,
+    filteredTranscripts,
+    conversations,
+    isConversationsMode,
+  ]);
 
   const selectItem = useCallback(
     (item: FlatItem) => {
       if (item.kind === "container") onContainerSelect?.(item.target.spaceId, item.target.folderId);
+      else if (item.kind === "settings") onSettingsSelect?.(item.target.id);
       else if (item.kind === "note")
         onNoteSelect?.(item.note.id, item.note.folder_id ?? null, item.note.space_id);
       else if (item.kind === "transcript") onTranscriptSelect?.(item.transcript.id);
       else if (item.kind === "conversation") onConversationSelect?.(item.conversation.id);
       onOpenChange(false);
     },
-    [onNoteSelect, onContainerSelect, onTranscriptSelect, onConversationSelect, onOpenChange]
+    [
+      onNoteSelect,
+      onContainerSelect,
+      onTranscriptSelect,
+      onConversationSelect,
+      onSettingsSelect,
+      onOpenChange,
+    ]
   );
 
   const handleKeyDown = useCallback(
@@ -367,18 +417,38 @@ export default function CommandSearch({
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        {/* The header variant dims nothing: it reads as a dropdown unfolding
+            from the header's field — the bar palette's manner — and the page
+            behind stays the page. The overlay still exists (transparent) so
+            an outside click closes it. */}
+        <DialogPrimitive.Overlay
+          className={cn(
+            "fixed inset-0 z-50",
+            variant === "modal" &&
+              "bg-black/50 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          )}
+        />
         <DialogPrimitive.Content
           ref={setContentRef}
           onInteractOutside={guardInteractOutside}
           className={cn(
-            "fixed left-[50%] top-[18%] z-50 w-full max-w-xl translate-x-[-50%]",
-            "rounded-xl border border-border bg-popover shadow-(--shadow-modal) overflow-hidden",
+            "fixed left-[50%] z-50 w-full max-w-xl translate-x-[-50%]",
+            "rounded-xl border border-border bg-popover overflow-hidden",
             "data-[state=open]:animate-in data-[state=closed]:animate-out",
             "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-            "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-            "data-[state=open]:slide-in-from-top-[44%] data-[state=closed]:slide-out-to-top-[44%]",
-            "data-[state=open]:slide-in-from-left-1/2 data-[state=closed]:slide-out-to-left-1/2"
+            "data-[state=open]:slide-in-from-left-1/2 data-[state=closed]:slide-out-to-left-1/2",
+            variant === "modal"
+              ? cn(
+                  "top-[18%] shadow-(--shadow-modal)",
+                  "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+                  "data-[state=open]:slide-in-from-top-[44%] data-[state=closed]:slide-out-to-top-[44%]"
+                )
+              : cn(
+                  // Just under the window header, where the field that opened
+                  // it lives; a short slide sells the "menu appearing" read.
+                  "top-[46px] shadow-(--shadow-elevated)",
+                  "data-[state=open]:slide-in-from-top-2 data-[state=closed]:slide-out-to-top-2"
+                )
           )}
         >
           <DialogPrimitive.Title className="sr-only">
@@ -525,8 +595,39 @@ export default function CommandSearch({
                   </div>
                 )}
 
-                {scopedNotes.length > 0 && (
+                {settingsTargets.length > 0 && (
                   <div className={jumpTargets.length > 0 ? "mt-0.5" : ""}>
+                    <SectionHeader icon={<Settings size={11} />} label={t("settingsModal.title")} />
+                    {settingsTargets.map((target) => {
+                      const idx = flatItems.findIndex(
+                        (fi) => fi.kind === "settings" && fi.target.id === target.id
+                      );
+                      const TargetIcon = target.icon;
+                      return (
+                        <button
+                          key={target.id}
+                          type="button"
+                          data-idx={idx}
+                          aria-selected={selectedIndex === idx}
+                          onClick={() => selectItem({ kind: "settings", target })}
+                          onMouseEnter={() => setSelectedIndex(idx)}
+                          className={commandRowClass(selectedIndex === idx)}
+                        >
+                          <TargetIcon size={13} className={rowIconClass(selectedIndex === idx)} />
+                          <p className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
+                            {target.label}
+                          </p>
+                          <EnterHint isSelected={selectedIndex === idx} />
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {scopedNotes.length > 0 && (
+                  <div
+                    className={jumpTargets.length > 0 || settingsTargets.length > 0 ? "mt-0.5" : ""}
+                  >
                     <SectionHeader
                       icon={<FileText size={11} />}
                       label={t("commandSearch.sections.notes")}
@@ -552,7 +653,13 @@ export default function CommandSearch({
                 )}
 
                 {filteredTranscripts.length > 0 && (
-                  <div className={jumpTargets.length > 0 || scopedNotes.length > 0 ? "mt-0.5" : ""}>
+                  <div
+                    className={
+                      jumpTargets.length > 0 || settingsTargets.length > 0 || scopedNotes.length > 0
+                        ? "mt-0.5"
+                        : ""
+                    }
+                  >
                     <SectionHeader
                       icon={<Mic size={11} />}
                       label={t("commandSearch.sections.transcripts")}

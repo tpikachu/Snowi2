@@ -5,7 +5,10 @@ import {
   Brain,
   Check,
   Copy,
+  Eraser,
   ExternalLink,
+  Eye,
+  EyeOff,
   History,
   Lightbulb,
   MessageSquareText,
@@ -17,8 +20,10 @@ import {
   Zap,
 } from "lucide-react";
 import ModelPickerChip from "./ModelPickerChip";
+import { useSettingsStore } from "../stores/settingsStore";
 import { capturedMsAt, type MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
 import type {
+  AssistAnswer,
   AssistLastTime,
   AssistMode,
   AssistNoteRef,
@@ -288,6 +293,35 @@ function QuickActions({
 }
 
 /**
+ * A settled answer from earlier in the meeting, scrolled back to.
+ *
+ * Same anatomy as the live answer — the asker's pill, provenance, the text —
+ * with none of its verbs: history is for re-reading, and the buttons that act
+ * (Think deeper, Copy, Clear) belong to the thread's live end.
+ */
+function HistoryAnswer({ answer }: { answer: AssistAnswer }) {
+  const { t } = useTranslation();
+  return (
+    <div className="mb-4">
+      <div className="flex justify-end">
+        <p className="max-w-[85%] rounded-2xl bg-hud-accent/75 px-3 py-1.5 text-[12px] font-medium leading-snug text-hud-surface">
+          {answer.question}
+        </p>
+      </div>
+      <p className="mt-2 text-[11px] text-hud-muted">
+        {answer.mode === "thinking"
+          ? t("notes.meetingPanel.answer.checkedNotes")
+          : t("notes.meetingPanel.answer.fromMeeting")}
+      </p>
+      <div className="mt-1.5 text-[14px] leading-relaxed text-hud-foreground/90">
+        <Markdown components={ANSWER_MARKDOWN_COMPONENTS}>{answer.text}</Markdown>
+      </div>
+      <SourceLine sources={answer.sources} />
+    </div>
+  );
+}
+
+/**
  * Which past notes this was built from.
  *
  * One muted line, not a chip per note: mid-call there is no time to follow a
@@ -340,6 +374,13 @@ export default function MeetingPanelOverlay() {
   const [mode, setMode] = useState<AssistMode>("fast");
   const [isCompact, setIsCompact] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // The screen-observe opt-in lives in settings, written from this window and
+  // read (via the store's cross-window localStorage sync) by the control-panel
+  // renderer that actually captures and asks. Off by default — a screenshot of
+  // whatever is on screen only ever rides an ask the user opted into.
+  const meetingScreenObserve = useSettingsStore((s) => s.meetingScreenObserve);
+  const setMeetingScreenObserve = useSettingsStore((s) => s.setMeetingScreenObserve);
 
   const answerRef = useRef<HTMLDivElement | null>(null);
 
@@ -405,11 +446,12 @@ export default function MeetingPanelOverlay() {
   }, [snapshot]);
 
   // An answer streams in from the bottom, so the newest sentence stays visible
-  // without the user reaching for a scrollbar mid-call.
+  // without the user reaching for a scrollbar mid-call. History filing counts
+  // as new content too: the thread grows above and the live end must stay put.
   useEffect(() => {
     const element = answerRef.current;
     if (element) element.scrollTop = element.scrollHeight;
-  }, [assist?.answer?.text]);
+  }, [assist?.answer?.text, assist?.answerHistory?.length]);
 
   const send = useCallback(async (command: MeetingPanelCommand) => {
     setIsBusy(true);
@@ -465,6 +507,9 @@ export default function MeetingPanelOverlay() {
 
   const suggestion = assist?.suggestion ?? null;
   const answer = assist?.answer ?? null;
+  // Guarded: an assist payload from a main process that predates history
+  // (dev live-reload) simply renders a thread of one.
+  const history = assist?.answerHistory ?? [];
   // Three states, not two: configured, known to need a model, and not yet
   // heard from. Only the middle one may accuse the user of skipping setup.
   const assistReady = assist?.configured === true;
@@ -636,73 +681,87 @@ export default function MeetingPanelOverlay() {
             {/* The assistant. This is what the leftover height goes to, because
                 it is the reason to keep the panel open — a question you need
                 answered now, and the room to read the answer. */}
-            {answer ? (
+            {answer || history.length > 0 ? (
               <div ref={answerRef} className="min-h-0 flex-1 overflow-y-auto">
-                {/* The question, as the asker's pill — right-aligned and solid
+                {/* Settled answers stay: the thread scrolls, the live answer
+                    at the bottom end, so advice from ten minutes ago is one
+                    scroll away instead of erased by the next question. */}
+                {history.map((past, index) => (
+                  <HistoryAnswer key={`${index}:${past.question}`} answer={past} />
+                ))}
+                {answer && (
+                  <>
+                    {/* The question, as the asker's pill — right-aligned and solid
                     accent, the one place the surface reads as a chat, so the
                     answer below never needs a label saying what it answers. */}
-                <div className="flex justify-end">
-                  <p className="max-w-[85%] rounded-2xl bg-hud-accent px-3 py-1.5 text-[12px] font-medium leading-snug text-hud-surface">
-                    {answer.question}
-                  </p>
-                </div>
-                {/* Provenance, not a mode name: which world the answer drew
+                    <div className="flex justify-end">
+                      <p className="max-w-[85%] rounded-2xl bg-hud-accent px-3 py-1.5 text-[12px] font-medium leading-snug text-hud-surface">
+                        {answer.question}
+                      </p>
+                    </div>
+                    {/* Provenance, not a mode name: which world the answer drew
                     on — so a transcript-only answer is never mistaken for one
                     that checked the notes. */}
-                <p className="mt-2 text-[11px] text-hud-muted">
-                  {answer.mode === "thinking"
-                    ? t("notes.meetingPanel.answer.checkedNotes")
-                    : t("notes.meetingPanel.answer.fromMeeting")}
-                </p>
-                {answer.errorKey ? (
-                  <>
-                    <p className="mt-1 text-[12px] leading-relaxed text-hud-warning">
-                      {t(answer.errorKey)}
+                    <p className="mt-2 text-[11px] text-hud-muted">
+                      {answer.mode === "thinking"
+                        ? t("notes.meetingPanel.answer.checkedNotes")
+                        : t("notes.meetingPanel.answer.fromMeeting")}
                     </p>
-                    {/* A missing model is not retryable — the fix lives in
+                    {answer.errorKey ? (
+                      <>
+                        <p className="mt-1 text-[12px] leading-relaxed text-hud-warning">
+                          {t(answer.errorKey)}
+                        </p>
+                        {/* A missing model is not retryable — the fix lives in
                         Settings, so the error carries the trip there. */}
-                    {assistNeedsModel && (
-                      <button
-                        type="button"
-                        onClick={() => void send("configureModels")}
-                        className={cn(
-                          "mt-2 flex h-7 items-center gap-1.5 rounded-full bg-white/[0.1] px-2.5",
-                          "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
-                          "hover:bg-white/[0.16] hover:text-hud-foreground",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
+                        {assistNeedsModel && (
+                          <button
+                            type="button"
+                            onClick={() => void send("configureModels")}
+                            className={cn(
+                              "mt-2 flex h-7 items-center gap-1.5 rounded-full bg-white/[0.1] px-2.5",
+                              "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
+                              "hover:bg-white/[0.16] hover:text-hud-foreground",
+                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
+                            )}
+                          >
+                            <Settings2 size={11} />
+                            {t("notes.meetingPanel.ask.configureModels")}
+                          </button>
                         )}
-                      >
-                        <Settings2 size={11} />
-                        {t("notes.meetingPanel.ask.configureModels")}
-                      </button>
-                    )}
-                  </>
-                ) : answer.streaming && !answer.text && answer.mode === "thinking" ? (
-                  /* Thinking pays its latency up front, in retrieval, before
+                      </>
+                    ) : answer.streaming && !answer.text && answer.mode === "thinking" ? (
+                      /* Thinking pays its latency up front, in retrieval, before
                      a single token exists to stream. Saying what the wait is
                      makes it deliberate instead of broken. */
-                  <p className="mt-1 animate-pulse text-[12px] leading-relaxed text-hud-muted">
-                    {t("notes.meetingPanel.ask.searchingNotes")}
-                  </p>
-                ) : (
-                  <div className="mt-1.5 text-[14px] leading-relaxed text-hud-foreground/90">
-                    <Markdown components={ANSWER_MARKDOWN_COMPONENTS}>{answer.text}</Markdown>
-                    {/* The caret is the only "it is working" signal an
+                      <p className="mt-1 animate-pulse text-[12px] leading-relaxed text-hud-muted">
+                        {t("notes.meetingPanel.ask.searchingNotes")}
+                      </p>
+                    ) : (
+                      <div className="mt-1.5 text-[14px] leading-relaxed text-hud-foreground/90">
+                        <Markdown components={ANSWER_MARKDOWN_COMPONENTS}>{answer.text}</Markdown>
+                        {/* The caret is the only "it is working" signal an
                         answer needs: the text itself is the progress bar. */}
-                    {answer.streaming && (
-                      <span className="ml-0.5 inline-block h-3 w-[2px] translate-y-[2px] animate-pulse bg-hud-accent" />
+                        {answer.streaming && (
+                          <span className="ml-0.5 inline-block h-3 w-[2px] translate-y-[2px] animate-pulse bg-hud-accent" />
+                        )}
+                      </div>
                     )}
-                  </div>
+                    {!answer.streaming && <SourceLine sources={answer.sources} />}
+                  </>
                 )}
-                {!answer.streaming && <SourceLine sources={answer.sources} />}
-                {!answer.streaming && !answer.errorKey && (
+                {/* The thread's footer — the verbs of the live end, plus
+                    Clear, which acts on the whole thread and so sits apart
+                    on the right. Hidden while an answer streams: the one
+                    action that matters then is reading. */}
+                {(!answer || !answer.streaming) && (
                   <div className="mt-2 flex items-center gap-1.5">
                     {/* The escalation. Only on a settled fast answer: it is
                         the "that was not in this meeting" next step, and
                         offering to re-check the notes under an answer that
                         already checked them would be a button that does
                         nothing. */}
-                    {answer.mode === "fast" && (
+                    {answer && !answer.errorKey && answer.mode === "fast" && (
                       <button
                         type="button"
                         onClick={() => askAgainWithNotes(answer.question)}
@@ -722,19 +781,34 @@ export default function MeetingPanelOverlay() {
                     )}
                     {/* Copy, because the answer is often destined for the
                         chat box of the very meeting it was asked in. */}
+                    {answer && !answer.errorKey && (
+                      <button
+                        type="button"
+                        onClick={() => copyAnswer(answer.text)}
+                        aria-label={copied ? t("common.copied") : t("common.copy")}
+                        title={copied ? t("common.copied") : t("common.copy")}
+                        className={cn(
+                          "flex size-7 items-center justify-center rounded-full bg-white/[0.1]",
+                          "transition-colors duration-150 hover:bg-white/[0.16]",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+                          copied ? "text-hud-accent" : "text-hud-muted hover:text-hud-foreground"
+                        )}
+                      >
+                        {copied ? <Check size={12} /> : <Copy size={12} />}
+                      </button>
+                    )}
                     <button
                       type="button"
-                      onClick={() => copyAnswer(answer.text)}
-                      aria-label={copied ? t("common.copied") : t("common.copy")}
-                      title={copied ? t("common.copied") : t("common.copy")}
+                      onClick={() => void send("clearAsks")}
                       className={cn(
-                        "flex size-7 items-center justify-center rounded-full bg-white/[0.1]",
-                        "transition-colors duration-150 hover:bg-white/[0.16]",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-                        copied ? "text-hud-accent" : "text-hud-muted hover:text-hud-foreground"
+                        "ml-auto flex h-7 items-center gap-1.5 rounded-full px-2.5",
+                        "text-[11px] font-medium text-hud-muted transition-colors duration-150",
+                        "hover:bg-white/[0.1] hover:text-hud-foreground",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
                       )}
                     >
-                      {copied ? <Check size={12} /> : <Copy size={12} />}
+                      <Eraser size={11} />
+                      {t("notes.meetingPanel.thread.clear")}
                     </button>
                   </div>
                 )}
@@ -827,6 +901,36 @@ export default function MeetingPanelOverlay() {
                   cross-window sync. Also the fix when no model is set: the
                   chip is enabled even while the panel says "needs model". */}
               <ModelPickerChip scope="chatIntelligence" variant="hud" />
+              {/* Observe my screen: opt-in, and each ask then carries a
+                  screenshot of the display under the cursor, parsed by the
+                  same chat model. A setting, not meeting state — it stays
+                  the way the user left it. Enabled even before the assistant
+                  connects, because it is configuration, not an ask. */}
+              <button
+                type="button"
+                onClick={() => setMeetingScreenObserve(!meetingScreenObserve)}
+                aria-pressed={meetingScreenObserve}
+                aria-label={
+                  meetingScreenObserve
+                    ? t("notes.meetingPanel.observe.disable")
+                    : t("notes.meetingPanel.observe.enable")
+                }
+                title={
+                  meetingScreenObserve
+                    ? t("notes.meetingPanel.observe.disable")
+                    : t("notes.meetingPanel.observe.enable")
+                }
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center rounded-full",
+                  "transition-colors duration-150",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+                  meetingScreenObserve
+                    ? "bg-hud-accent/20 text-hud-accent hover:bg-hud-accent/30"
+                    : "bg-white/[0.08] text-hud-muted hover:bg-white/[0.12] hover:text-hud-foreground"
+                )}
+              >
+                {meetingScreenObserve ? <Eye size={13} /> : <EyeOff size={13} />}
+              </button>
               <button
                 type="submit"
                 disabled={!assistReady || !question.trim()}

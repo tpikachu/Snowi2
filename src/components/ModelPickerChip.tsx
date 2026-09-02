@@ -72,6 +72,8 @@ const listableCloudProviders = () =>
       models: (REASONING_PROVIDERS[id]?.models ?? []).map((m) => ({
         id: m.value,
         label: m.label,
+        descriptionKey: m.descriptionKey,
+        description: m.description,
       })),
     }));
 
@@ -129,7 +131,13 @@ export default function ModelPickerChip({
       for (const provider of modelRegistry.getAllProviders()) {
         for (const model of provider.models) {
           if (downloaded.has(model.id)) {
-            options.push({ id: model.id, label: model.name, providerId: provider.id });
+            options.push({
+              id: model.id,
+              label: model.name,
+              providerId: provider.id,
+              descriptionKey: model.descriptionKey,
+              description: model.description,
+            });
           }
         }
       }
@@ -190,8 +198,21 @@ export default function ModelPickerChip({
     : (defaultLabel ?? t("agentMode.modelPicker.choose"));
 
   const rowClass = cn(
-    "flex h-8 w-full items-center gap-2 rounded-lg px-2 text-left text-[12px] transition-colors duration-100",
+    "flex min-h-8 w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[12px] transition-colors duration-100",
     hud ? "text-hud-foreground/90 hover:bg-white/10" : "text-foreground/90 hover:bg-surface-2"
+  );
+  // The registry's one-liner ("Fast and cost-efficient"), localized when its
+  // key is translated, English registry text otherwise — never the raw key.
+  const helperText = (model: { descriptionKey?: string; description?: string }): string | null => {
+    if (model.descriptionKey) {
+      const translated = t(model.descriptionKey);
+      if (translated && translated !== model.descriptionKey) return translated;
+    }
+    return model.description ?? null;
+  };
+  const helperClass = cn(
+    "block truncate text-[10.5px] leading-tight",
+    hud ? "text-hud-muted" : "text-muted-foreground"
   );
   const headingClass = cn(
     "px-2 pb-0.5 pt-2 text-[10.5px] font-semibold uppercase tracking-[0.06em]",
@@ -229,7 +250,7 @@ export default function ModelPickerChip({
       <PopoverContent
         align={hud ? "end" : "start"}
         className={cn(
-          "max-h-80 w-60 overflow-y-auto p-1.5",
+          "max-h-80 w-72 overflow-y-auto p-1.5",
           hud &&
             "border-white/10 bg-[oklch(0.21_0.008_230)] text-hud-foreground shadow-[0_8px_24px_-8px_rgb(0_0_0/0.7)]"
         )}
@@ -256,22 +277,28 @@ export default function ModelPickerChip({
           group.hasKey ? (
             <div key={group.providerId}>
               <p className={headingClass}>{group.providerName}</p>
-              {group.models.map((model) => (
-                <button
-                  key={model.id}
-                  type="button"
-                  onClick={() => pick(group, model.id)}
-                  className={rowClass}
-                >
-                  <span className="min-w-0 flex-1 truncate">{model.label}</span>
-                  {current?.model === model.id && (
-                    <Check
-                      size={12}
-                      className={cn("shrink-0", hud ? "text-hud-accent" : "text-primary")}
-                    />
-                  )}
-                </button>
-              ))}
+              {group.models.map((model) => {
+                const helper = helperText(model);
+                return (
+                  <button
+                    key={model.id}
+                    type="button"
+                    onClick={() => pick(group, model.id)}
+                    className={rowClass}
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate leading-tight">{model.label}</span>
+                      {helper && <span className={helperClass}>{helper}</span>}
+                    </span>
+                    {current?.model === model.id && (
+                      <Check
+                        size={12}
+                        className={cn("shrink-0", hud ? "text-hud-accent" : "text-primary")}
+                      />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           ) : (
             /* No key: one row advertising the provider, walking to Settings. */

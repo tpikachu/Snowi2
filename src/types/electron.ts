@@ -5,7 +5,8 @@ import type { PanelTranscript } from "../utils/meetingPanelTranscript";
 import type { AssistMode, MeetingAssistState } from "../utils/meetingAssistState";
 
 /** What the floating meeting panel can ask the control panel to do. */
-export type MeetingPanelCommand = "pause" | "resume" | "stop" | "open" | "configureModels";
+export type MeetingPanelCommand =
+  "pause" | "resume" | "stop" | "open" | "configureModels" | "clearAsks";
 
 /**
  * Setup readiness and download state for the assistant bar, published by the
@@ -2042,7 +2043,11 @@ declare global {
       onCortiSessionEnd?: (callback: (data: { text?: string }) => void) => () => void;
 
       // Agent overlay
-      resizeAgentWindow?: (width: number, height: number) => Promise<void>;
+      resizeAgentWindow?: (
+        width: number,
+        height: number,
+        options?: { animate?: boolean }
+      ) => Promise<void>;
       getAgentWindowBounds?: () => Promise<{
         x: number;
         y: number;

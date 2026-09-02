@@ -1,19 +1,33 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useShallow } from "zustand/react/shallow";
+import { ChevronDown } from "lucide-react";
 import { useSettingsStore } from "../../stores/settingsStore";
 import SettingsGroup, { SettingsPanelBody } from "./SettingsGroup";
 import ApiKeyInput from "../ui/ApiKeyInput";
 import { GetApiKeyLink } from "../ui/GetApiKeyLink";
+import { ProviderGrid } from "../ui/ProviderGrid";
+import InferenceConfigEditor from "./InferenceConfigEditor";
 import { getProviderDisplayName } from "../../models/ModelRegistry";
 import { CLOUD_PROVIDER_KEY_LINKS } from "../../config/providerKeyLinks";
+import { cn } from "../lib/utils";
 
 /**
  * The one thing model setup still needs Settings for: credentials.
  *
  * Models themselves are picked where they are used — the chat composer, the
- * meeting cue card, each action's editor — and a key entered here is what
- * makes a provider appear in those pickers. One row per BYOK provider, a
- * green dot for "unlocked", nothing else: the old per-feature model editors
- * survive behind each feature's Advanced setup disclosure.
+ * meeting cue card, each action's editor — and entering a key here IS the
+ * setup: the scope defaults (scopeModelDefaults.ts) assign each feature a
+ * sensible model from the new provider the moment its key lands.
+ *
+ * Same anatomy as the Speech-to-Text engine page, on purpose — a card per
+ * provider, the selected one's key field below — but with tab semantics, not
+ * radio: there is no "active" LLM provider anymore, only keys that unlock
+ * providers in the pickers. The filled dot means "key saved".
+ *
+ * The old per-scope editors survive below, folded behind Advanced setup:
+ * local model downloads, LAN endpoints, custom APIs and enterprise routing
+ * do not fit in a chip and must stay reachable.
  */
 
 const PROVIDER_ROWS: Array<{
@@ -44,36 +58,22 @@ const PROVIDER_ROWS: Array<{
   { id: "corti", keyField: "cortiApiKey", setter: "setCortiApiKey" },
 ];
 
-function ProviderKeyRow({ id, keyField, setter }: (typeof PROVIDER_ROWS)[number]) {
-  const { t } = useTranslation();
-  const value = useSettingsStore((s) => s[keyField]);
-  const setValue = useSettingsStore((s) => s[setter]);
-  const link = CLOUD_PROVIDER_KEY_LINKS[id];
-  const name = id === "openrouter" ? "OpenRouter" : getProviderDisplayName(id);
-  const configured = !!value?.trim();
-
-  return (
-    <div className="space-y-1.5">
-      <div className="flex items-baseline gap-2">
-        <span
-          aria-hidden="true"
-          className={`inline-block size-1.5 shrink-0 translate-y-[-1px] rounded-full ${
-            configured ? "bg-success" : "bg-border"
-          }`}
-        />
-        <span className="text-sm font-medium text-foreground">{name}</span>
-        {link?.noteKey && (
-          <span className="text-[11px] text-muted-foreground">{t(link.noteKey)}</span>
-        )}
-        <span className="ml-auto">{link && <GetApiKeyLink url={link.url} />}</span>
-      </div>
-      <ApiKeyInput apiKey={value ?? ""} setApiKey={setValue} label="" helpText="" />
-    </div>
-  );
-}
+const providerName = (id: string) =>
+  id === "openrouter" ? "OpenRouter" : getProviderDisplayName(id);
 
 export default function ProviderKeysPanel() {
   const { t } = useTranslation();
+  const [selectedId, setSelectedId] = useState(PROVIDER_ROWS[0].id);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+
+  const selected = PROVIDER_ROWS.find((row) => row.id === selectedId) ?? PROVIDER_ROWS[0];
+  const value = useSettingsStore((s) => s[selected.keyField]);
+  const setValue = useSettingsStore((s) => s[selected.setter]);
+  const configured = useSettingsStore(
+    useShallow((s) => PROVIDER_ROWS.map((row) => !!(s[row.keyField] as string | undefined)?.trim()))
+  );
+  const link = CLOUD_PROVIDER_KEY_LINKS[selected.id];
+
   return (
     <SettingsPanelBody>
       <SettingsGroup
@@ -81,10 +81,69 @@ export default function ProviderKeysPanel() {
         title={t("settingsPage.llms.providers.title")}
         description={t("settingsPage.llms.providers.description")}
       >
-        <div className="space-y-5">
-          {PROVIDER_ROWS.map((row) => (
-            <ProviderKeyRow key={row.id} {...row} />
-          ))}
+        <div className="space-y-4">
+          <ProviderGrid
+            providers={PROVIDER_ROWS.map((row, index) => {
+              const rowLink = CLOUD_PROVIDER_KEY_LINKS[row.id];
+              return {
+                id: row.id,
+                name: providerName(row.id),
+                configured: configured[index],
+                note: rowLink?.noteKey ? t(rowLink.noteKey) : undefined,
+              };
+            })}
+            selectedId={selected.id}
+            onSelect={setSelectedId}
+          />
+
+          <div className="space-y-1.5">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-sm font-medium text-foreground">{t("common.apiKey")}</span>
+              {link && <GetApiKeyLink url={link.url} />}
+            </div>
+            <ApiKeyInput apiKey={value ?? ""} setApiKey={setValue} label="" helpText="" />
+          </div>
+
+          {/* The escape hatch, one quiet line under the keys — the same
+              manner the per-feature disclosure had before it moved here. */}
+          <div className="space-y-3 pt-1">
+            <button
+              type="button"
+              onClick={() => setAdvancedOpen((open) => !open)}
+              aria-expanded={advancedOpen}
+              title={t("settingsPage.llms.advanced.description")}
+              className={cn(
+                "flex items-center gap-1.5 px-1 text-xs font-medium text-muted-foreground",
+                "transition-colors duration-150 hover:text-foreground",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+              )}
+            >
+              <ChevronDown
+                size={12}
+                className={cn("transition-transform duration-200", advancedOpen && "rotate-180")}
+              />
+              {t("settingsPage.llms.advancedSetup")}
+            </button>
+            {advancedOpen && (
+              <div className="space-y-8">
+                <p className="text-xs text-muted-foreground">
+                  {t("settingsPage.llms.advanced.description")}
+                </p>
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                    {t("settingsPage.llms.tabs.chatIntelligence")}
+                  </p>
+                  <InferenceConfigEditor scope="chatIntelligence" />
+                </div>
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-[0.06em] text-muted-foreground">
+                    {t("settingsPage.llms.tabs.actions")}
+                  </p>
+                  <InferenceConfigEditor scope="actions" />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </SettingsGroup>
     </SettingsPanelBody>

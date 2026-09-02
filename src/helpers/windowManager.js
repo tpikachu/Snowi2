@@ -1063,7 +1063,7 @@ class WindowManager {
     return { success: true, bounds };
   }
 
-  resizeAgentWindow(width, height) {
+  resizeAgentWindow(width, height, { animate = true } = {}) {
     if (!this.agentWindow || this.agentWindow.isDestroyed()) return;
 
     const ANIMATION_DURATION_MS = 250;
@@ -1082,6 +1082,27 @@ class WindowManager {
 
     if (currentBounds.height === targetHeight && currentBounds.width === targetWidth) {
       this._clearAgentAnimation();
+      return;
+    }
+
+    // The palette dropdown opens with an instant window grow and lets CSS
+    // animate the card in: stepping the bounds instead reads as the bar
+    // stretching, because the card is fully drawn but clipped by the growing
+    // window edge. The animated path stays for morphs (bar -> chat -> cue
+    // card) where the growth itself is the point.
+    if (!animate) {
+      this._clearAgentAnimation();
+      const display = screen.getDisplayNearestPoint({ x: currentBounds.x, y: currentBounds.y });
+      const workArea = display.workArea || display.bounds;
+      this.agentWindow.setBounds({
+        x: currentBounds.x,
+        y: currentBounds.y,
+        width: targetWidth,
+        height: Math.max(
+          AGENT_OVERLAY_CONFIG.minHeight,
+          Math.min(targetHeight, workArea.y + workArea.height - currentBounds.y)
+        ),
+      });
       return;
     }
 

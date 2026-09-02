@@ -8,7 +8,6 @@ import SettingsGroup, { SettingsPanelBody } from "./SettingsGroup";
 import { SettingsPanel, SettingsPanelRow, SettingsRow } from "../ui/SettingsSection";
 import { Toggle } from "../ui/toggle";
 import InferenceConfigEditor from "./InferenceConfigEditor";
-import ScopeModelSummary from "./ScopeModelSummary";
 
 export default function ChatAgentSettings() {
   const { t } = useTranslation();
@@ -36,19 +35,10 @@ export default function ChatAgentSettings() {
 
   return (
     <SettingsPanelBody>
-      <SettingsGroup
-        id="chatAgentModel"
-        title={t("common.model")}
-        description={t("settingsModal.groupTitles.modelDescription")}
-      >
-        {/* The model is picked where it's used (chat composer, cue card);
-            this row shows the state via the same chip, with the full editor
-            behind Advanced for LAN/custom/enterprise setups. */}
-        <ScopeModelSummary scope="chatIntelligence">
-          <InferenceConfigEditor scope="chatIntelligence" />
-        </ScopeModelSummary>
-      </SettingsGroup>
-
+      {/* No model group here anymore: the model is picked where it's used
+          (chat composer, cue card) and defaulted the moment a provider key
+          lands (scopeModelDefaults.ts). The full editor lives behind
+          Advanced setup on the API keys panel. */}
       <SettingsGroup
         id="chatFastLane"
         title={t("agentMode.fastLane.title")}

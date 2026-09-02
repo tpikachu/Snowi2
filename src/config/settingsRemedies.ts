@@ -16,8 +16,11 @@ export type SettingsRemedy =
   | "configureDictationTranscription";
 
 export const SETTINGS_REMEDIES: Record<SettingsRemedy, SettingsDeepLink> = {
-  configureActions: { section: "llms", panel: "actions" },
-  configureChatIntelligence: { section: "llms", panel: "chatIntelligence" },
+  // Both LLM remedies land on the API keys panel: a model failure's fix is a
+  // key (models default themselves once one lands) or the Advanced editors,
+  // and both live there — the feature tabs no longer hold model config.
+  configureActions: { section: "llms", panel: "providers" },
+  configureChatIntelligence: { section: "llms", panel: "providers" },
   configureMeetingTranscription: { section: "speechToText", panel: "noteRecording" },
   configureUploadTranscription: { section: "speechToText", panel: "upload" },
   configureDictationTranscription: { section: "speechToText", panel: "dictation" },

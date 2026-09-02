@@ -2224,9 +2224,10 @@
         "title": "API-Schlüssel",
         "description": "Modelle wählst du direkt dort, wo du sie nutzt – im Chat, im Meeting-Panel und pro Aktion. Ein Schlüssel hier schaltet den Anbieter überall frei."
       },
-      "currentModel": "Modell",
-      "currentModelHint": "Wähle es hier oder direkt dort, wo du es nutzt – die Wahl gilt überall und bleibt gespeichert.",
-      "advancedSetup": "Erweiterte Einrichtung"
+      "advancedSetup": "Erweiterte Einrichtung",
+      "advanced": {
+        "description": "Lokale Modelle, LAN-Endpunkte, eigene APIs und Enterprise-Routing für Chat und Aktionen."
+      }
     },
     "transcription": {
       "customSetup": "Benutzerdefinierte Einrichtung",
@@ -2354,8 +2355,7 @@
       "actionsTitle": "Aktionen",
       "actionsDescription": "Alles, was Snowy für Sie schreibt. Notizen erzeugen läuft bei jedem behaltenen Meeting; der Rest auf Zuruf.",
       "actionsRowDescription": "Aktionen für Notizen anlegen, bearbeiten und sortieren.",
-      "manageActions": "Verwalten",
-      "modelDescription": "Alle Aktionen laufen auf diesem Modell, auch die Zusammenfassung am Ende eines Meetings."
+      "manageActions": "Verwalten"
     }
   },
   "models": {
@@ -3178,6 +3178,13 @@
       "answer": {
         "fromMeeting": "Aus diesem Meeting",
         "checkedNotes": "Mit deinen Notizen abgeglichen"
+      },
+      "thread": {
+        "clear": "Leeren"
+      },
+      "observe": {
+        "enable": "Meinen Bildschirm beobachten – Antworten können nutzen, was zu sehen ist",
+        "disable": "Dein Bildschirm wird beobachtet – klicke zum Beenden"
       }
     },
     "transcript": {

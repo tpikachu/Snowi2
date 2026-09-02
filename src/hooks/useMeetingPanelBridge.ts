@@ -15,7 +15,7 @@ import {
   panelTranscriptsEqual,
   type PanelTranscript,
 } from "../utils/meetingPanelTranscript";
-import { useMeetingAssistStore } from "../stores/meetingAssistStore";
+import { clearAskThread, useMeetingAssistStore } from "../stores/meetingAssistStore";
 import {
   assistStatesEqual,
   type AssistMode,
@@ -126,6 +126,9 @@ export function useMeetingPanelBridge(
             // window, and this lands the user on the chat model tab.
             else if (command === "configureModels")
               requestSettings(remedyTarget("configureChatIntelligence"));
+            // The panel's Clear button: the ask thread lives in this
+            // renderer's store, so the command comes home to be applied.
+            else if (command === "clearAsks") clearAskThread();
             // "open" only had to surface the control panel, which main did.
           } catch (err) {
             logger.error(

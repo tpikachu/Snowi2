@@ -42,6 +42,7 @@ import { formatNoteClaims, formatOpenCommitments } from "../utils/memoryPrompt";
 import { resolveFastLaneLLMConfig } from "../utils/assistFastLane";
 import { filterGrounding } from "../utils/chatRetrieval";
 import type { AssistLastTime, AssistMode, AssistNoteRef } from "../utils/meetingAssistState";
+import type { ScreenContextImage } from "../types/electron";
 import logger from "../utils/logger";
 
 /**
@@ -78,6 +79,7 @@ interface ResolvedAssistModel {
     baseUrl?: string;
     customApiKey?: string;
     disableThinking?: boolean;
+    screenContext?: ScreenContextImage;
   };
 }
 
@@ -462,6 +464,20 @@ export function useMeetingAssist(): MeetingAssist {
       activityRef.current = "answer";
       startAnswer(trimmed, mode);
 
+      // The cue card's "observe my screen" opt-in: a screenshot of the
+      // display under the cursor rides along with the question, parsed by the
+      // same chat model. Kicked off now so it overlaps retrieval; a failed
+      // capture sends the question text-only rather than failing it, and
+      // ReasoningService already drops the image on routes that cannot carry
+      // one. The screenshot lives in this renderer's memory for one request.
+      const screenPromise: Promise<ScreenContextImage | undefined> =
+        getSettings().meetingScreenObserve && window.electronAPI?.captureScreenContext
+          ? window.electronAPI
+              .captureScreenContext()
+              .then((image) => image ?? undefined)
+              .catch(() => undefined)
+          : Promise.resolve(undefined);
+
       const now = Date.now();
       const state = useMeetingRecordingStore.getState();
       const segments = selectAssistWindow(readSegments(now), now);
@@ -514,6 +530,10 @@ export function useMeetingAssist(): MeetingAssist {
         if (askSeqRef.current === seq) activityRef.current = null;
         return;
       }
+
+      const screenContext = await screenPromise;
+      if (!isCurrent()) return;
+      if (screenContext) resolved.config.screenContext = screenContext;
 
       // A question that hangs is worthless — the moment it was asked for has
       // passed — so it is abandoned rather than left waiting on a provider.

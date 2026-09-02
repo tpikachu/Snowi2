@@ -2224,9 +2224,10 @@
         "title": "API keys",
         "description": "Models are picked right where you use them — in the chat, on the meeting panel, and per action. A key here unlocks that provider everywhere."
       },
-      "currentModel": "Model",
-      "currentModelHint": "Pick it here or right where you use it — the choice is shared and saved.",
-      "advancedSetup": "Advanced setup"
+      "advancedSetup": "Advanced setup",
+      "advanced": {
+        "description": "Local models, LAN endpoints, custom APIs, and enterprise routing for chat and actions."
+      }
     },
     "transcription": {
       "customSetup": "Custom Setup",
@@ -2354,8 +2355,7 @@
       "actionsTitle": "Actions",
       "actionsDescription": "Everything Snowy writes for you. Generate Notes runs on every meeting you keep; the rest run when you ask.",
       "actionsRowDescription": "Create, edit and reorder the actions you can run on a note.",
-      "manageActions": "Manage",
-      "modelDescription": "Every action runs on this model, including the write-up at the end of a meeting."
+      "manageActions": "Manage"
     }
   },
   "models": {
@@ -3178,6 +3178,13 @@
       "answer": {
         "fromMeeting": "From this meeting",
         "checkedNotes": "Checked your notes"
+      },
+      "thread": {
+        "clear": "Clear"
+      },
+      "observe": {
+        "enable": "Watch my screen — answers can use what's on it",
+        "disable": "Watching your screen — click to stop"
       }
     },
     "transcript": {

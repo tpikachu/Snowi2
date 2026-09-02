@@ -73,6 +73,13 @@ export interface AssistLastTime {
   openClaims: number;
 }
 
+/**
+ * How many settled answers the meeting keeps. Enough that scrolling back
+ * covers the questions of a long call, small enough that the 120ms publish
+ * cadence never ships a transcript-sized payload.
+ */
+export const MAX_ANSWER_HISTORY = 10;
+
 export interface MeetingAssistState {
   /**
    * Whether a model is configured for this at all. False makes the panel
@@ -85,6 +92,12 @@ export interface MeetingAssistState {
   /** A suggestion is being prepared. Shown only when there is nothing to replace. */
   suggestionPending: boolean;
   answer: AssistAnswer | null;
+  /**
+   * Settled answers from earlier in this meeting, oldest first. A new question
+   * no longer erases the last answer — it files it here, so the panel scrolls
+   * as a thread. Dies with the meeting, like everything else in this state.
+   */
+  answerHistory: AssistAnswer[];
 }
 
 export const IDLE_ASSIST: MeetingAssistState = {
@@ -93,10 +106,19 @@ export const IDLE_ASSIST: MeetingAssistState = {
   suggestion: null,
   suggestionPending: false,
   answer: null,
+  answerHistory: [],
 };
 
 const noteRefsEqual = (a: readonly AssistNoteRef[], b: readonly AssistNoteRef[]): boolean =>
   a.length === b.length && a.every((note, index) => note.noteId === b[index].noteId);
+
+const answersEqual = (a: AssistAnswer, b: AssistAnswer): boolean =>
+  a.question === b.question &&
+  a.mode === b.mode &&
+  a.text === b.text &&
+  a.streaming === b.streaming &&
+  a.errorKey === b.errorKey &&
+  noteRefsEqual(a.sources, b.sources);
 
 /**
  * Whether a rebuilt state is worth another IPC hop.
@@ -129,13 +151,15 @@ export function assistStatesEqual(
   }
 
   if (!!a.answer !== !!b.answer) return false;
-  if (a.answer && b.answer) {
-    if (a.answer.question !== b.answer.question) return false;
-    if (a.answer.mode !== b.answer.mode) return false;
-    if (a.answer.text !== b.answer.text) return false;
-    if (a.answer.streaming !== b.answer.streaming) return false;
-    if (a.answer.errorKey !== b.answer.errorKey) return false;
-    if (!noteRefsEqual(a.answer.sources, b.answer.sources)) return false;
+  if (a.answer && b.answer && !answersEqual(a.answer, b.answer)) return false;
+
+  if (a.answerHistory.length !== b.answerHistory.length) return false;
+  // Entries are settled and never edited in place, so in the common case this
+  // walk short-circuits on the identical references the store reuses.
+  for (let i = 0; i < a.answerHistory.length; i++) {
+    const x = a.answerHistory[i];
+    const y = b.answerHistory[i];
+    if (x !== y && !answersEqual(x, y)) return false;
   }
 
   return true;

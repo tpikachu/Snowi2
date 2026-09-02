@@ -16,6 +16,10 @@
 export interface PickerModel {
   id: string;
   label: string;
+  /** i18n key for the one-line helper under the label ("Fast and cost-efficient"). */
+  descriptionKey?: string;
+  /** English fallback for the helper, straight from the registry. */
+  description?: string;
 }
 
 export interface PickerCloudProviderInput {
@@ -29,6 +33,8 @@ export interface PickerLocalModelInput {
   label: string;
   /** Registry provider id, needed to persist a local selection. */
   providerId: string;
+  descriptionKey?: string;
+  description?: string;
 }
 
 export interface ModelPickerGroup {
@@ -70,7 +76,12 @@ export function buildModelPickerGroups(input: {
             providerId: "local",
             providerName: input.localGroupName,
             hasKey: true,
-            models: input.localModels.map(({ id, label }) => ({ id, label })),
+            models: input.localModels.map(({ id, label, descriptionKey, description }) => ({
+              id,
+              label,
+              descriptionKey,
+              description,
+            })),
           },
         ]
       : [];

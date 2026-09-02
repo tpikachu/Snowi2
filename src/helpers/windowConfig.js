@@ -349,7 +349,9 @@ const AGENT_OVERLAY_CONFIG = {
   height: 104,
   minWidth: 360,
   minHeight: 104,
-  maxWidth: 800,
+  // Wide enough for a hand-widened cue card; the resize paths clamp to the
+  // work area anyway, so this is a sanity ceiling, not a layout choice.
+  maxWidth: 1200,
   maxHeight: 10000,
   frame: false,
   alwaysOnTop: true,

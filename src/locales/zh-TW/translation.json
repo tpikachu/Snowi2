@@ -1941,9 +1941,10 @@
         "title": "API 金鑰",
         "description": "模型在使用處選擇——聊天、會議面板和每個動作中。在這裡填入金鑰即可在所有位置解鎖該供應商。"
       },
-      "currentModel": "模型",
-      "currentModelHint": "可以在這裡選,也可以在使用處選——選擇會共享並保存。",
-      "advancedSetup": "進階設定"
+      "advancedSetup": "進階設定",
+      "advanced": {
+        "description": "本地模型、區域網路端點、自訂 API，以及聊天和動作的企業路由。"
+      }
     },
     "transcription": {
       "customSetup": "自訂設定",
@@ -2266,8 +2267,7 @@
       "actionsTitle": "操作",
       "actionsDescription": "Snowy 替你寫的所有內容。「產生筆記」會在每場保留的會議後自動執行，其餘的按需執行。",
       "actionsRowDescription": "建立、編輯和排序可在筆記上執行的操作。",
-      "manageActions": "管理",
-      "modelDescription": "所有操作都使用這個模型，包括會議結束時的紀錄。"
+      "manageActions": "管理"
     }
   },
   "models": {
@@ -2971,6 +2971,13 @@
       "answer": {
         "fromMeeting": "來自本次會議",
         "checkedNotes": "已查閱你的筆記"
+      },
+      "thread": {
+        "clear": "清除"
+      },
+      "observe": {
+        "enable": "觀察我的螢幕——回答可以利用螢幕內容",
+        "disable": "正在觀察螢幕——點擊停止"
       }
     },
     "transcript": {

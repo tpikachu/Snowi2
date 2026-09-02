@@ -17,9 +17,11 @@ export function AgentTitleBar({ onCollapse }: AgentTitleBarProps) {
     <div
       className={cn(
         "flex items-center justify-between h-8 px-3",
-        "bg-surface-1",
-        "border-b border-border/20",
-        "shadow-[0_1px_2px_0_oklch(0_0_0/0.04)]",
+        // A translucent strip, not an opaque surface: the overlay card is the
+        // cue card's glass, and any opaque fill here would sit on it as a
+        // solid patch.
+        "bg-white/[0.06]",
+        "border-b border-white/10",
         "select-none"
       )}
       style={{ WebkitAppRegion: "drag" } as React.CSSProperties}

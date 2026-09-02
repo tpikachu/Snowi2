@@ -583,6 +583,30 @@ a:focus-visible {
   }
 }
 
+/* The bar's palette dropdown: the window grows in one frame and this card
+   animates in - a fade with a short downward settle, the way a native menu
+   opens. Animating the window bounds instead read as the bar stretching. */
+@keyframes palette-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.palette-pop {
+  animation: palette-pop 150ms var(--ease-out-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .palette-pop {
+    animation: none;
+  }
+}
+
 /* Model picker LED pulse animation */
 @keyframes pulse-glow {
   0%,

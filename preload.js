@@ -890,7 +890,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
     (callback) => (_event, payload) => callback(payload)
   ),
   toggleControlPanel: () => ipcRenderer.invoke("toggle-control-panel"),
-  resizeAgentWindow: (width, height) => ipcRenderer.invoke("resize-agent-window", width, height),
+  resizeAgentWindow: (width, height, options) =>
+    ipcRenderer.invoke("resize-agent-window", width, height, options),
   getAgentWindowBounds: () => ipcRenderer.invoke("get-agent-window-bounds"),
   setAgentWindowBounds: (x, y, width, height) =>
     ipcRenderer.invoke("set-agent-window-bounds", x, y, width, height),

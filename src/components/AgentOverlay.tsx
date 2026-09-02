@@ -18,6 +18,94 @@ import type { ScreenContextImage } from "../types/electron";
 
 const MIN_HEIGHT = 200;
 const MIN_WIDTH = 360;
+/** The cue card may be hand-shrunk further than the chat column — down to the
+ *  header-only compact bar (MeetingPanelOverlay folds its panes below 140px).
+ *  Matches AGENT_OVERLAY_CONFIG.minHeight, the window's hard floor. */
+const MEETING_CARD_MIN_HEIGHT = 104;
+
+/** The hand-set cue card size, remembered across meetings (and app runs). */
+const MEETING_CARD_SIZE_KEY = "meetingCardSize";
+
+function readMeetingCardSize(): { width: number; height: number } | null {
+  try {
+    const raw = localStorage.getItem(MEETING_CARD_SIZE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { width?: unknown; height?: unknown };
+    const width = Number(parsed?.width);
+    const height = Number(parsed?.height);
+    if (!Number.isFinite(width) || !Number.isFinite(height)) return null;
+    return { width, height };
+  } catch {
+    return null;
+  }
+}
+
+function saveMeetingCardSize(width: number, height: number): void {
+  try {
+    localStorage.setItem(MEETING_CARD_SIZE_KEY, JSON.stringify({ width, height }));
+  } catch {
+    /* a size that cannot persist is still applied for this meeting */
+  }
+}
+
+/**
+ * The window-edge resize grips, shared by the chat column and the cue card.
+ * no-drag explicitly: the cue card's whole surface is a drag region, and a
+ * grip that drags the window instead of resizing it is a grip that lies.
+ */
+function ResizeHandles({
+  onResizeStart,
+}: {
+  onResizeStart: (e: React.MouseEvent, direction: string) => void;
+}) {
+  const noDrag = { WebkitAppRegion: "no-drag" } as React.CSSProperties;
+  return (
+    <>
+      {/* Edges */}
+      <div
+        className="absolute top-0 left-2 right-2 h-[5px] cursor-n-resize"
+        style={noDrag}
+        onMouseDown={(e) => onResizeStart(e, "n")}
+      />
+      <div
+        className="absolute bottom-0 left-2 right-2 h-[5px] cursor-s-resize"
+        style={noDrag}
+        onMouseDown={(e) => onResizeStart(e, "s")}
+      />
+      <div
+        className="absolute left-0 top-2 bottom-2 w-[5px] cursor-w-resize"
+        style={noDrag}
+        onMouseDown={(e) => onResizeStart(e, "w")}
+      />
+      <div
+        className="absolute right-0 top-2 bottom-2 w-[5px] cursor-e-resize"
+        style={noDrag}
+        onMouseDown={(e) => onResizeStart(e, "e")}
+      />
+      {/* Corners */}
+      <div
+        className="absolute top-0 left-0 w-[10px] h-[10px] cursor-nw-resize"
+        style={noDrag}
+        onMouseDown={(e) => onResizeStart(e, "nw")}
+      />
+      <div
+        className="absolute top-0 right-0 w-[10px] h-[10px] cursor-ne-resize"
+        style={noDrag}
+        onMouseDown={(e) => onResizeStart(e, "ne")}
+      />
+      <div
+        className="absolute bottom-0 left-0 w-[10px] h-[10px] cursor-sw-resize"
+        style={noDrag}
+        onMouseDown={(e) => onResizeStart(e, "sw")}
+      />
+      <div
+        className="absolute bottom-0 right-0 w-[10px] h-[10px] cursor-se-resize"
+        style={noDrag}
+        onMouseDown={(e) => onResizeStart(e, "se")}
+      />
+    </>
+  );
+}
 
 /** The collapsed bar: an ask field over a control strip — two rows, sized so
  *  the field is readable at a glance. Must match AGENT_OVERLAY_CONFIG.minHeight. */
@@ -237,7 +325,14 @@ export default function AgentOverlay() {
     const onVisibility = () => {
       if (document.visibilityState === "hidden") setPaletteOpen(false);
     };
-    const onWindowBlur = () => setPaletteOpen(false);
+    const onWindowBlur = () => {
+      setPaletteOpen(false);
+      // Drop the field's element focus too. Without this the input silently
+      // stays the window's focused element, so ANY later click on the bar
+      // re-activates the window, Chromium restores focus to the input, and
+      // the palette pops back open on every bar click.
+      barInputRef.current?.blur();
+    };
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("blur", onWindowBlur);
     return () => {
@@ -250,28 +345,42 @@ export default function AgentOverlay() {
   // expand-collapse cycle so a hand-resized chat column comes back at the
   // size the user gave it, not the default.
   const lastExpandedHeightRef = useRef(DEFAULT_EXPANDED_HEIGHT);
+  // Which shape the window was last asked to take. The palette opens and
+  // closes with an instant window resize — a menu pops, it does not stretch —
+  // while the other transitions are morphs and keep the animated path.
+  const lastModeRef = useRef<"bar" | "palette" | "expanded" | "meeting">("bar");
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const bounds = await window.electronAPI?.getAgentWindowBounds?.();
       if (cancelled) return;
       const width = bounds?.width ?? 560;
+      const from = lastModeRef.current;
       if (meetingActive) {
-        window.electronAPI?.resizeAgentWindow?.(width, MEETING_CARD_HEIGHT);
+        lastModeRef.current = "meeting";
+        // The cue card comes back at the size a hand last gave it.
+        const saved = readMeetingCardSize();
+        window.electronAPI?.resizeAgentWindow?.(
+          saved?.width ?? width,
+          saved?.height ?? MEETING_CARD_HEIGHT
+        );
       } else if (expanded) {
+        lastModeRef.current = "expanded";
         window.electronAPI?.resizeAgentWindow?.(width, lastExpandedHeightRef.current);
       } else if (paletteOpen) {
-        window.electronAPI?.resizeAgentWindow?.(width, PALETTE_HEIGHT);
+        lastModeRef.current = "palette";
+        window.electronAPI?.resizeAgentWindow?.(width, PALETTE_HEIGHT, { animate: false });
       } else {
-        if (
-          bounds?.height &&
-          bounds.height > BAR_HEIGHT &&
-          bounds.height !== MEETING_CARD_HEIGHT &&
-          bounds.height !== PALETTE_HEIGHT
-        ) {
+        // Only a height the chat column actually held is worth remembering —
+        // keyed on where the window came FROM, so a cue card's or palette's
+        // height never becomes the chat's next opening size.
+        if (from === "expanded" && bounds?.height && bounds.height > BAR_HEIGHT) {
           lastExpandedHeightRef.current = bounds.height;
         }
-        window.electronAPI?.resizeAgentWindow?.(width, BAR_HEIGHT);
+        lastModeRef.current = "bar";
+        window.electronAPI?.resizeAgentWindow?.(width, BAR_HEIGHT, {
+          animate: from !== "palette",
+        });
       }
     })();
     return () => {
@@ -306,7 +415,7 @@ export default function AgentOverlay() {
         }
 
         width = Math.max(MIN_WIDTH, width);
-        height = Math.max(MIN_HEIGHT, height);
+        height = Math.max(meetingActiveRef.current ? MEETING_CARD_MIN_HEIGHT : MIN_HEIGHT, height);
 
         window.electronAPI?.setAgentWindowBounds?.(x, y, width, height);
       };
@@ -314,6 +423,13 @@ export default function AgentOverlay() {
       const handleMouseUp = () => {
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
+        // The size a hand gives the cue card is the size the next meeting
+        // morph should honor.
+        if (meetingActiveRef.current) {
+          void window.electronAPI?.getAgentWindowBounds?.().then((b) => {
+            if (b) saveMeetingCardSize(b.width, b.height);
+          });
+        }
       };
 
       document.addEventListener("mousemove", handleMouseMove);
@@ -470,6 +586,9 @@ export default function AgentOverlay() {
   const runPaletteRow = useCallback((row: { disabled: boolean; run: () => void }) => {
     if (row.disabled) return;
     setPaletteOpen(false);
+    // Running a row is leaving the field: drop its focus so the window
+    // re-activating afterwards cannot restore it and reopen the menu.
+    barInputRef.current?.blur();
     row.run();
   }, []);
 
@@ -496,7 +615,7 @@ export default function AgentOverlay() {
     ) : null;
 
   const consentRow = !agentScreenContextPrompted && (
-    <div className="flex items-center gap-2 border-t border-border/50 bg-surface-1 px-3 py-2">
+    <div className="flex items-center gap-2 border-t border-white/10 bg-white/[0.06] px-3 py-2">
       <p className="min-w-0 flex-1 text-[11px] leading-snug text-muted-foreground">
         {t("agentMode.screenConsent.question")}
       </p>
@@ -521,24 +640,27 @@ export default function AgentOverlay() {
   );
 
   // The cue card takes the whole window while a meeting records — one
-  // surface, morphing, exactly as it reads to the user.
+  // surface, morphing, exactly as it reads to the user. Resizable like the
+  // chat column; the grips sit over the card's own drag surface.
   if (meetingActive) {
     return (
-      <div className="agent-overlay-window h-screen w-screen bg-transparent">
+      <div className="agent-overlay-window h-screen w-screen bg-transparent relative">
         <MeetingPanelOverlay />
+        <ResizeHandles onResizeStart={handleResizeStart} />
       </div>
     );
   }
 
-  const cardChrome = cn(
-    "bg-surface-0",
-    "border border-border/40 rounded-2xl",
-    "shadow-[var(--shadow-elevated)]",
-    "overflow-hidden"
-  );
+  // The cue card's material, exactly: dark glass with the one border on the
+  // window edge (see .hud-surface) at the cue card's radius. Like the cue
+  // card, the bar floats over other apps and never follows the app theme —
+  // the root's `dark` scope below pins every token inside to the dark
+  // palette, so the chat column and shared chat components render on glass
+  // without their own restyling.
+  const cardChrome = cn("hud-surface rounded-[13px]", "overflow-hidden");
 
   return (
-    <div className="agent-overlay-window w-screen h-screen bg-transparent relative">
+    <div className="agent-overlay-window dark w-screen h-screen bg-transparent relative">
       {expanded ? (
         <div className={cn(cardChrome, "flex flex-col w-full h-full")}>
           {/* Collapsing IS starting fresh: the conversation is already in
@@ -606,7 +728,7 @@ export default function AgentOverlay() {
                     type="button"
                     onClick={handleClose}
                     aria-label={t("agentMode.titleBar.close")}
-                    className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-surface-2 hover:text-foreground"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-white/[0.1] hover:text-foreground"
                     style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
                   >
                     <X className="size-4" strokeWidth={1.75} />
@@ -622,7 +744,7 @@ export default function AgentOverlay() {
                 <div
                   className={cn(
                     "flex min-h-0 flex-1 items-center gap-2 rounded-xl px-3.5",
-                    "bg-surface-2 transition-colors duration-150 focus-within:bg-surface-3"
+                    "bg-white/[0.08] transition-colors duration-150 focus-within:bg-white/[0.12]"
                   )}
                   style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
                 >
@@ -727,7 +849,7 @@ export default function AgentOverlay() {
                       "flex h-7 shrink-0 items-center gap-1.5 rounded-full px-3",
                       "bg-primary text-[12px] font-semibold text-primary-foreground",
                       "transition-colors duration-150 hover:bg-primary/90",
-                      "disabled:cursor-default disabled:bg-surface-2 disabled:text-muted-foreground"
+                      "disabled:cursor-default disabled:bg-white/[0.08] disabled:text-muted-foreground"
                     )}
                     style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
                   >
@@ -756,7 +878,7 @@ export default function AgentOverlay() {
                     onClick={handleToggleApp}
                     title={t("agentMode.bar.appWindow")}
                     aria-label={t("agentMode.bar.appWindow")}
-                    className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-surface-2 hover:text-foreground"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-white/[0.1] hover:text-foreground"
                     style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
                   >
                     <AppWindow className="size-4" strokeWidth={1.75} />
@@ -765,7 +887,7 @@ export default function AgentOverlay() {
                     type="button"
                     onClick={handleClose}
                     aria-label={t("agentMode.titleBar.close")}
-                    className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-surface-2 hover:text-foreground"
+                    className="flex size-7 shrink-0 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-white/[0.1] hover:text-foreground"
                     style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
                   >
                     <X className="size-4" strokeWidth={1.75} />
@@ -785,7 +907,10 @@ export default function AgentOverlay() {
           {paletteOpen && setupComplete && (
             <div
               onMouseDown={(e) => e.preventDefault()}
-              className={cn(cardChrome, "relative min-h-0 flex-1 overflow-y-auto p-1.5")}
+              className={cn(
+                cardChrome,
+                "palette-pop relative min-h-0 flex-1 overflow-y-auto p-1.5"
+              )}
               style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
             >
               {/* "Dismiss", not "Close": the bar's own X (Close) is on screen
@@ -795,7 +920,7 @@ export default function AgentOverlay() {
                 type="button"
                 onClick={() => setPaletteOpen(false)}
                 aria-label={t("common.dismiss")}
-                className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-surface-2 hover:text-foreground"
+                className="absolute right-1.5 top-1.5 flex size-7 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-white/[0.1] hover:text-foreground"
               >
                 <X className="size-4" strokeWidth={1.75} />
               </button>
@@ -817,7 +942,7 @@ export default function AgentOverlay() {
                         className={cn(
                           "flex h-8 w-full items-center gap-2.5 rounded-lg px-2 text-left",
                           "text-[13px] text-foreground/90 transition-colors duration-100",
-                          flatIndex === paletteHighlight && "bg-surface-3 text-foreground",
+                          flatIndex === paletteHighlight && "bg-white/[0.1] text-foreground",
                           "disabled:cursor-default disabled:opacity-40"
                         )}
                       >
@@ -838,45 +963,7 @@ export default function AgentOverlay() {
         </div>
       )}
 
-      {expanded && (
-        <>
-          {/* Resize handles -- edges */}
-          <div
-            className="absolute top-0 left-2 right-2 h-[5px] cursor-n-resize"
-            onMouseDown={(e) => handleResizeStart(e, "n")}
-          />
-          <div
-            className="absolute bottom-0 left-2 right-2 h-[5px] cursor-s-resize"
-            onMouseDown={(e) => handleResizeStart(e, "s")}
-          />
-          <div
-            className="absolute left-0 top-2 bottom-2 w-[5px] cursor-w-resize"
-            onMouseDown={(e) => handleResizeStart(e, "w")}
-          />
-          <div
-            className="absolute right-0 top-2 bottom-2 w-[5px] cursor-e-resize"
-            onMouseDown={(e) => handleResizeStart(e, "e")}
-          />
-
-          {/* Resize handles -- corners */}
-          <div
-            className="absolute top-0 left-0 w-[10px] h-[10px] cursor-nw-resize"
-            onMouseDown={(e) => handleResizeStart(e, "nw")}
-          />
-          <div
-            className="absolute top-0 right-0 w-[10px] h-[10px] cursor-ne-resize"
-            onMouseDown={(e) => handleResizeStart(e, "ne")}
-          />
-          <div
-            className="absolute bottom-0 left-0 w-[10px] h-[10px] cursor-sw-resize"
-            onMouseDown={(e) => handleResizeStart(e, "sw")}
-          />
-          <div
-            className="absolute bottom-0 right-0 w-[10px] h-[10px] cursor-se-resize"
-            onMouseDown={(e) => handleResizeStart(e, "se")}
-          />
-        </>
-      )}
+      {expanded && <ResizeHandles onResizeStart={handleResizeStart} />}
     </div>
   );
 }

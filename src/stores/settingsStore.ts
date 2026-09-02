@@ -28,6 +28,7 @@ import {
 } from "../config/inferenceScopes";
 import { normalizeChineseScriptPreference } from "../utils/chineseScript";
 import { adjustBedrockModelForRegion } from "../utils/bedrockRegions";
+import { DEFAULTABLE_SCOPES, defaultModelForScope } from "../utils/scopeModelDefaults";
 import modelRegistryData from "../models/modelRegistryData.json";
 import type {
   TranscriptionSettings,
@@ -254,6 +255,7 @@ const BOOLEAN_SETTINGS = new Set([
   "voiceAgentScreenContext",
   "agentScreenContext",
   "agentScreenContextPrompted",
+  "meetingScreenObserve",
   "useDictationAgentVisionModel",
   "useDictationTranslation",
   "translationDisableThinking",
@@ -799,6 +801,11 @@ export interface SettingsState
   // bar never asks twice regardless of which answer it got.
   agentScreenContext: boolean;
   agentScreenContextPrompted: boolean;
+  // Meeting cue card's "observe my screen": opt-in screenshot attached to
+  // each mid-meeting ask, parsed by the same chat model. Toggled on the cue
+  // card itself; the cross-window sync carries it to the renderer that runs
+  // the assistant.
+  meetingScreenObserve: boolean;
   useDictationAgentVisionModel: boolean;
   dictationAgentVisionMode: InferenceMode;
   dictationAgentVisionProvider: string;
@@ -844,6 +851,7 @@ export interface SettingsState
   setVoiceAgentScreenContext: (value: boolean) => void;
   setAgentScreenContext: (value: boolean) => void;
   setAgentScreenContextPrompted: (value: boolean) => void;
+  setMeetingScreenObserve: (value: boolean) => void;
   setUseDictationAgentVisionModel: (value: boolean) => void;
   setDictationAgentVisionMode: (mode: InferenceMode) => void;
   setDictationAgentVisionProvider: (value: string) => void;
@@ -1308,6 +1316,43 @@ function createSecretSetter(
   };
 }
 
+/**
+ * The moment a provider key first arrives, features that cannot currently
+ * serve adopt that provider's default model (scopeModelDefaults.ts) —
+ * entering a key IS the whole setup, and Settings never asks for a model.
+ * Ready scopes are untouched: adding a second key never overrides a model
+ * someone picked, and enterprise-managed scopes are never touched at all.
+ */
+export function applyDefaultModelsForNewKey(providerId: string): void {
+  const state = useSettingsStore.getState();
+  for (const scope of DEFAULTABLE_SCOPES) {
+    const model = defaultModelForScope(providerId, scope);
+    if (!model) continue;
+    const resolved = selectResolvedLLMConfig(state, scope);
+    if ((resolved.mode || "") === "enterprise") continue;
+    if (selectLLMConfigReady(state, resolved)) continue;
+    setResolvedLLMConfig(scope, { mode: "providers", provider: providerId, model });
+  }
+}
+
+/** A BYOK provider key setter that also applies the scope defaults above on
+ *  the empty→set transition — the state write in createSecretSetter is
+ *  synchronous, so the readiness check runs against the new key. */
+function createProviderKeySetter(
+  providerId: string,
+  storeKey: string,
+  saver: SecretProvider,
+  cacheProvider?: Parameters<typeof invalidateApiKeyCaches>[0]
+) {
+  const base = createSecretSetter(storeKey, saver, cacheProvider);
+  return (key: string) => {
+    const previous = (useSettingsStore.getState() as unknown as Record<string, unknown>)[storeKey];
+    const hadKey = typeof previous === "string" && !!previous.trim();
+    base(key);
+    if (!hadKey && key.trim()) applyDefaultModelsForNewKey(providerId);
+  };
+}
+
 export const MAX_TRANSLATION_TARGETS = 5;
 
 export const useSettingsStore = create<SettingsState>()((set, get) => ({
@@ -1705,6 +1750,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   voiceAgentScreenContext: readBoolean("voiceAgentScreenContext", false),
   agentScreenContext: readBoolean("agentScreenContext", false),
   agentScreenContextPrompted: readBoolean("agentScreenContextPrompted", false),
+  meetingScreenObserve: readBoolean("meetingScreenObserve", false),
   useDictationAgentVisionModel: readBoolean("useDictationAgentVisionModel", false),
   // Fast-lane override, BYOK providers only — same shape as the vision
   // override. Off by default: the fast lane derives its model automatically.
@@ -1756,6 +1802,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setVoiceAgentScreenContext: createBooleanSetter("voiceAgentScreenContext"),
   setAgentScreenContext: createBooleanSetter("agentScreenContext"),
   setAgentScreenContextPrompted: createBooleanSetter("agentScreenContextPrompted"),
+  setMeetingScreenObserve: createBooleanSetter("meetingScreenObserve"),
   setUseDictationAgentVisionModel: createBooleanSetter("useDictationAgentVisionModel"),
   setDictationAgentVisionMode: createStringSetter("dictationAgentVisionMode") as (
     mode: InferenceMode
@@ -1976,10 +2023,15 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     }
   },
 
-  setOpenaiApiKey: createSecretSetter("openaiApiKey", "openai", "openai"),
-  setAnthropicApiKey: createSecretSetter("anthropicApiKey", "anthropic", "anthropic"),
-  setGeminiApiKey: createSecretSetter("geminiApiKey", "gemini", "gemini"),
-  setGroqApiKey: createSecretSetter("groqApiKey", "groq", "groq"),
+  setOpenaiApiKey: createProviderKeySetter("openai", "openaiApiKey", "openai", "openai"),
+  setAnthropicApiKey: createProviderKeySetter(
+    "anthropic",
+    "anthropicApiKey",
+    "anthropic",
+    "anthropic"
+  ),
+  setGeminiApiKey: createProviderKeySetter("gemini", "geminiApiKey", "gemini", "gemini"),
+  setGroqApiKey: createProviderKeySetter("groq", "groqApiKey", "groq", "groq"),
   setXaiApiKey: createSecretSetter("xaiApiKey", "xai"),
   setMistralApiKey: createSecretSetter("mistralApiKey", "mistral", "mistral"),
   setOpenrouterApiKey: createSecretSetter("openrouterApiKey", "openrouter", "openrouter"),
@@ -1993,10 +2045,10 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
     debouncedSaveSecret("cortiClientSecret", key);
     invalidateApiKeyCaches("corti");
   },
-  setCortiApiKey: createSecretSetter("cortiApiKey", "cortiApiKey", "corti"),
+  setCortiApiKey: createProviderKeySetter("corti", "cortiApiKey", "cortiApiKey", "corti"),
   setCortiEnvironment: createStringSetter("cortiEnvironment"),
   setCortiTenant: createStringSetter("cortiTenant"),
-  setTinfoilApiKey: createSecretSetter("tinfoilApiKey", "tinfoil", "tinfoil"),
+  setTinfoilApiKey: createProviderKeySetter("tinfoil", "tinfoilApiKey", "tinfoil", "tinfoil"),
   setCustomTranscriptionApiKey: (key: string) => {
     set({ customTranscriptionApiKey: key });
     debouncedSaveSecret("customTranscription", key);

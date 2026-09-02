@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import {
   IDLE_ASSIST,
+  MAX_ANSWER_HISTORY,
   type AssistAnswer,
   type AssistLastTime,
   type AssistMode,
@@ -57,7 +58,13 @@ export function markSuggestionStale(stale: boolean): void {
 }
 
 export function startAnswer(question: string, mode: AssistMode): void {
+  const { answer, answerHistory } = useMeetingAssistStore.getState();
+  // A settled answer becomes history the moment the next question starts, so
+  // the panel reads as a thread. A streaming or failed one just disappears —
+  // it was never finished advice worth scrolling back to.
+  const settled = answer && !answer.streaming && !answer.errorKey && answer.text.trim();
   useMeetingAssistStore.setState({
+    answerHistory: settled ? [...answerHistory, answer].slice(-MAX_ANSWER_HISTORY) : answerHistory,
     answer: { question, mode, text: "", streaming: true, sources: [], errorKey: null },
   });
 }
@@ -72,6 +79,16 @@ export function updateAnswer(patch: Partial<AssistAnswer>): void {
 export function clearAnswer(): void {
   if (!useMeetingAssistStore.getState().answer) return;
   useMeetingAssistStore.setState({ answer: null });
+}
+
+/**
+ * The panel's Clear button: the whole ask thread, history included. Clearing
+ * mid-stream is safe — the orphaned stream's updateAnswer no-ops on null.
+ */
+export function clearAskThread(): void {
+  const { answer, answerHistory } = useMeetingAssistStore.getState();
+  if (!answer && answerHistory.length === 0) return;
+  useMeetingAssistStore.setState({ answer: null, answerHistory: [] });
 }
 
 /** Back to nothing, for the end of a meeting. The next one starts empty. */
