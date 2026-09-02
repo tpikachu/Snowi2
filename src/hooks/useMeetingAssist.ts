@@ -39,6 +39,7 @@ import {
   type AssistNote,
 } from "../utils/meetingAssistPrompt";
 import { formatNoteClaims, formatOpenCommitments } from "../utils/memoryPrompt";
+import { appendScreenContextSuffix } from "../config/prompts";
 import { resolveFastLaneLLMConfig } from "../utils/assistFastLane";
 import { filterGrounding } from "../utils/chatRetrieval";
 import type { AssistLastTime, AssistMode, AssistNoteRef } from "../utils/meetingAssistState";
@@ -80,6 +81,7 @@ interface ResolvedAssistModel {
     customApiKey?: string;
     disableThinking?: boolean;
     screenContext?: ScreenContextImage;
+    textOnlySystemPrompt?: string;
   };
 }
 
@@ -474,8 +476,22 @@ export function useMeetingAssist(): MeetingAssist {
         getSettings().meetingScreenObserve && window.electronAPI?.captureScreenContext
           ? window.electronAPI
               .captureScreenContext()
-              .then((image) => image ?? undefined)
-              .catch(() => undefined)
+              .then((image) => {
+                // Observe is ON: a null capture must be visible in the logs,
+                // or "the answer ignores my screen" is undiagnosable.
+                if (!image) {
+                  logger.warn("Screen observe: capture returned nothing", {}, "meeting");
+                }
+                return image ?? undefined;
+              })
+              .catch((error) => {
+                logger.warn(
+                  "Screen observe: capture failed",
+                  { error: (error as Error).message },
+                  "meeting"
+                );
+                return undefined;
+              })
           : Promise.resolve(undefined);
 
       const now = Date.now();
@@ -513,7 +529,14 @@ export function useMeetingAssist(): MeetingAssist {
       if (!isCurrent()) return;
       updateAnswer({ sources: toRefs(notes) });
 
-      const { systemPrompt, messages } = buildAnswerMessages({
+      // The capture is awaited BEFORE the prompt is built: the system prompt
+      // must say a screenshot is attached when one is, or the model — told
+      // to answer from the transcript — rightly ignores the image. That was
+      // exactly the "screen observe does nothing" bug.
+      const screenContext = await screenPromise;
+      if (!isCurrent()) return;
+
+      const built = buildAnswerMessages({
         meetingTitle: state.recordingNoteTitle,
         segments,
         notes,
@@ -522,6 +545,12 @@ export function useMeetingAssist(): MeetingAssist {
         mode,
         draft,
       });
+      const systemPrompt = screenContext
+        ? appendScreenContextSuffix(built.systemPrompt, getSettings().uiLanguage)
+        : built.systemPrompt;
+      const messages = screenContext
+        ? built.messages.map((m) => (m.role === "system" ? { ...m, content: systemPrompt } : m))
+        : built.messages;
 
       const resolved = resolveAssistModel(systemPrompt, { lane: mode });
       if (!resolved) {
@@ -531,9 +560,12 @@ export function useMeetingAssist(): MeetingAssist {
         return;
       }
 
-      const screenContext = await screenPromise;
-      if (!isCurrent()) return;
-      if (screenContext) resolved.config.screenContext = screenContext;
+      if (screenContext) {
+        resolved.config.screenContext = screenContext;
+        // For the text-only pass (route drop or rejected-image retry): the
+        // promise of a screenshot must leave the prompt with the image.
+        resolved.config.textOnlySystemPrompt = built.systemPrompt;
+      }
 
       // A question that hangs is worthless — the moment it was asked for has
       // passed — so it is abandoned rather than left waiting on a provider.

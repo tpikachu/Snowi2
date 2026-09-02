@@ -3,7 +3,11 @@ import { useTranslation } from "react-i18next";
 import ReasoningService, { type AgentStreamChunk } from "../../services/ReasoningService";
 import { isEnterpriseProvider } from "../../models/ModelRegistry";
 import { getSettings } from "../../stores/settingsStore";
-import { getAgentPromptSections, renderAgentPromptSections } from "../../config/prompts";
+import {
+  getAgentPromptSections,
+  renderAgentPromptSections,
+  appendScreenContextSuffix,
+} from "../../config/prompts";
 import {
   buildNoteAnchorText,
   dedupeAgainstAnchor,
@@ -346,7 +350,13 @@ export function useChatStreaming({
         noteClaims: pinnedMemory.noteClaims || undefined,
         focusNote: focusNoteRef.current,
       });
-      const systemPrompt = renderAgentPromptSections(sections);
+      // When a screenshot rides along, the prompt must say so — a model told
+      // nothing about an attached image tends to ignore it (or deny having
+      // it). The unsuffixed prompt is kept for the text-only retry.
+      const baseSystemPrompt = renderAgentPromptSections(sections);
+      const systemPrompt = options?.screenContext
+        ? appendScreenContextSuffix(baseSystemPrompt, settings.uiLanguage)
+        : baseSystemPrompt;
 
       const llmMessages = [
         { role: "system", content: systemPrompt },
@@ -438,8 +448,10 @@ export function useChatStreaming({
             disableThinking: laneResolution.disableThinking,
             // The bar's opt-in screenshot. Lives in renderer memory for this
             // one request; ReasoningService drops it on routes that cannot
-            // carry an image and retries text-only if a provider rejects it.
+            // carry an image and retries text-only if a provider rejects it —
+            // swapping back the unsuffixed prompt so it stops promising one.
             screenContext: options?.screenContext,
+            textOnlySystemPrompt: options?.screenContext ? baseSystemPrompt : undefined,
           },
           aiTools
         );

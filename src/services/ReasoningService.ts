@@ -783,7 +783,16 @@ class ReasoningService extends BaseReasoningService {
             }
           : {
               role: m.role as "system" | "user" | "assistant",
-              content: m.content,
+              // The suffixed prompt promises a screenshot; any text-only pass
+              // (local/LAN drop, or the rejected-image retry) must not keep
+              // that promise around for the model to hallucinate against.
+              content:
+                !withImage &&
+                config.screenContext &&
+                m.role === "system" &&
+                config.textOnlySystemPrompt
+                  ? config.textOnlySystemPrompt
+                  : m.content,
             }
       ) as import("ai").ModelMessage[];
 
