@@ -18,6 +18,14 @@ interface NoteBottomBarProps {
   hideInput?: boolean;
   /** False hides the record control. */
   canRecord?: boolean;
+  /**
+   * Labels the idle record control as a resume ("Resume meeting") instead of
+   * a bare mic. On click the same slot morphs into the elapsed/stop control,
+   * so resuming and stopping live in one place.
+   */
+  resumeLabel?: string;
+  /** Tooltip for the resume control. */
+  resumeHint?: string;
 }
 
 export default function NoteBottomBar({
@@ -31,6 +39,8 @@ export default function NoteBottomBar({
   actionPicker,
   hideInput,
   canRecord = true,
+  resumeLabel,
+  resumeHint,
 }: NoteBottomBarProps) {
   const { t } = useTranslation();
   const [inputText, setInputText] = useState("");
@@ -148,6 +158,22 @@ export default function NoteBottomBar({
               >
                 <Loader2 size={14} className="animate-spin" />
               </div>
+            ) : resumeLabel ? (
+              <button
+                onClick={onStartRecording}
+                title={resumeHint}
+                className={cn(
+                  "flex items-center gap-2 h-10 px-3.5 rounded-xl whitespace-nowrap",
+                  "bg-input border border-border-subtle text-muted-foreground",
+                  "text-[12px] font-medium",
+                  "transition-colors duration-150",
+                  "hover:bg-muted hover:text-foreground hover:border-border",
+                  "outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                )}
+              >
+                <Mic size={13} />
+                {resumeLabel}
+              </button>
             ) : (
               <button
                 onClick={onStartRecording}

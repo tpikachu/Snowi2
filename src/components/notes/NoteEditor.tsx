@@ -9,12 +9,7 @@ import {
   Sparkles,
   MessageSquareText,
   Mic,
-  Calendar,
   LinkIcon,
-  FolderOpen,
-  Search,
-  Plus,
-  Check,
   Users,
 } from "lucide-react";
 import { buildMeetingRecap } from "../../utils/meetingRecap";
@@ -33,16 +28,15 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
 } from "../ui/dropdown-menu";
 import { cn } from "../lib/utils";
-import type { NoteItem, FolderItem } from "../../types/electron";
+import type { NoteItem } from "../../types/electron";
 import type { ActionProcessingState } from "../../hooks/useActionProcessing";
 import ActionProcessingOverlay from "./ActionProcessingOverlay";
 import NoteBottomBar from "./NoteBottomBar";
 import EmbeddedChat, { type EmbeddedChatMode } from "./EmbeddedChat";
 import { useEmbeddedChat } from "../../hooks/useEmbeddedChat";
-import { normalizeDbDate, formatShortDate } from "../../utils/dateFormatting";
+import { normalizeDbDate, formatShortDate, formatDateTime } from "../../utils/dateFormatting";
 import { parseTranscriptSegments } from "../../utils/parseTranscriptSegments";
 import {
   applyTranscriptSpeakerPatch,
@@ -60,18 +54,6 @@ const CHIP_BUTTON_CLASS =
 // Inactive/active states for one segment of the view-mode switcher.
 const SEGMENT_BUTTON_CLASS =
   "relative z-1 flex h-6 items-center gap-1.5 rounded-md px-2 text-[11px] font-medium transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring";
-
-function formatNoteDate(dateStr: string): string {
-  const date = normalizeDbDate(dateStr);
-  if (Number.isNaN(date.getTime())) return "";
-  const datePart = date.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-  const timePart = date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-  return `${datePart} \u00b7 ${timePart}`;
-}
 
 export interface Enhancement {
   content: string;
@@ -162,11 +144,7 @@ interface NoteEditorProps {
   userTouchedStepper?: boolean;
   onSetSessionDiarizationEnabled?: (enabled: boolean) => void;
   onSetSessionExpectedCount?: (count: number) => void;
-  folderName?: string | null;
   calendarEventName?: string | null;
-  folders?: FolderItem[];
-  onMoveToFolder?: (noteId: number, folderId: number) => void;
-  onCreateFolderAndMove?: (noteId: number, folderName: string) => void;
 }
 
 export default function NoteEditor({
@@ -191,11 +169,7 @@ export default function NoteEditor({
   userTouchedStepper,
   onSetSessionDiarizationEnabled,
   onSetSessionExpectedCount,
-  folderName,
   calendarEventName,
-  folders,
-  onMoveToFolder,
-  onCreateFolderAndMove,
 }: NoteEditorProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -214,9 +188,6 @@ export default function NoteEditor({
   );
   const [chatMode, setChatMode] = useState<EmbeddedChatMode>("hidden");
   const [showFollowUpEmail, setShowFollowUpEmail] = useState(false);
-  const [folderSearch, setFolderSearch] = useState("");
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false);
-  const [newFolderName, setNewFolderName] = useState("");
   const [isDiarizing, setIsDiarizing] = useState(false);
   const spaces = useSpaces();
   const space = useMemo(
@@ -250,14 +221,6 @@ export default function NoteEditor({
   }, []);
 
   const hasMeetingTranscript = !!note.transcript;
-
-  const filteredFolders = useMemo(
-    () =>
-      folderSearch && folders
-        ? folders.filter((f) => f.name.toLowerCase().includes(folderSearch.toLowerCase()))
-        : (folders ?? []),
-    [folders, folderSearch]
-  );
 
   const displaySegments = useMemo<TranscriptSegment[]>(() => {
     if (diarizedSegments && diarizedSegments.length > 0) return diarizedSegments;
@@ -618,12 +581,30 @@ export default function NoteEditor({
     }
   }, [chatMode]);
 
-  const noteDate = formatNoteDate(note.created_at);
   const shortDate = formatShortDate(note.created_at);
+
+  // When this meeting last happened, shown above the title. Derived from the
+  // transcript's own clock rather than a stored column, so a resumed session
+  // moves it forward the moment its lines land — and a discarded session
+  // (which restores the seed transcript) moves it back. Live recording shows
+  // the present; a note with no transcript falls back to its creation time.
+  const lastSessionAt = useMemo<Date | null>(() => {
+    if (isRecording) return new Date();
+    for (let i = displaySegments.length - 1; i >= 0; i--) {
+      const ts = displaySegments[i]?.timestamp;
+      if (ts != null) return new Date(ts);
+    }
+    return note.created_at ? normalizeDbDate(note.created_at) : null;
+  }, [isRecording, displaySegments, note.created_at]);
+  const lastSessionLabel =
+    lastSessionAt && !Number.isNaN(lastSessionAt.getTime()) ? formatDateTime(lastSessionAt) : "";
 
   // The recap someone else reads: title, date, attendees, then the write-up —
   // ready to paste into Slack or an email without hand-trimming the app out.
   const canCopyRecap = note.note_type === "meeting" && !!enhancement?.content?.trim();
+
+  const canResume =
+    !isRecording && !isProcessing && hasMeetingTranscript && displaySegments.length > 0;
   const handleCopyRecap = useCallback(async () => {
     const recap = buildMeetingRecap({
       title: note.title,
@@ -645,6 +626,14 @@ export default function NoteEditor({
     <div className="flex h-full min-h-0">
       <div className="flex-1 min-w-0 flex flex-col">
         <div className="px-5 pt-4 pb-0">
+          {/* When this meeting (last) happened, leading the page — a resumed
+              session updates it, because "when" means the meeting's latest
+              words, not the note row's birthday. */}
+          {lastSessionLabel && (
+            <div data-numeric className="mb-0.5 text-[11px] text-muted-foreground">
+              {lastSessionLabel}
+            </div>
+          )}
           <div
             ref={titleRef}
             contentEditable
@@ -658,15 +647,6 @@ export default function NoteEditor({
             aria-label={t("notes.editor.noteTitle")}
           />
           <div className="flex items-center gap-1.5 mt-2">
-            {shortDate && (
-              <span
-                className="inline-flex h-5 items-center gap-1.5 text-[11px] text-muted-foreground"
-                title={noteDate}
-              >
-                <Calendar size={11} className="shrink-0 opacity-70" />
-                <span data-numeric>{shortDate}</span>
-              </span>
-            )}
             {calendarEventName && (
               <span
                 className="inline-flex h-5 items-center gap-1.5 text-[11px] text-muted-foreground"
@@ -676,7 +656,11 @@ export default function NoteEditor({
                 <span className="truncate max-w-40">{calendarEventName}</span>
               </span>
             )}
-            <NoteParticipants noteId={note.id} participants={parsedParticipants} />
+            {/* Attendees show only once someone is on the list (a calendar
+                link fills it); the empty "Add attendees" chip was clutter. */}
+            {parsedParticipants.length > 0 && (
+              <NoteParticipants noteId={note.id} participants={parsedParticipants} />
+            )}
             {isTeamNote && space && (
               <>
                 <button
@@ -693,112 +677,10 @@ export default function NoteEditor({
                   )}
                   <span className="truncate max-w-32">{space.name}</span>
                 </button>
-                {folders && onMoveToFolder && (
-                  <span aria-hidden="true" className="text-[11px] text-foreground/25">
-                    /
-                  </span>
-                )}
               </>
             )}
-            {folders && onMoveToFolder && (
-              <DropdownMenu
-                onOpenChange={(open) => {
-                  if (!open) {
-                    setFolderSearch("");
-                    setIsCreatingFolder(false);
-                    setNewFolderName("");
-                  }
-                }}
-              >
-                <DropdownMenuTrigger asChild>
-                  <button className={CHIP_BUTTON_CLASS}>
-                    <FolderOpen size={11} className="shrink-0" />
-                    {folderName || t("notes.editor.noFolder")}
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" sideOffset={6} className="min-w-44 p-1">
-                  {folders.length > 5 && (
-                    <>
-                      <div className="relative px-1.5 py-0.5">
-                        <Search
-                          size={9}
-                          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground/15 pointer-events-none"
-                        />
-                        <input
-                          value={folderSearch}
-                          onChange={(e) => setFolderSearch(e.target.value)}
-                          onKeyDown={(e) => e.stopPropagation()}
-                          placeholder={t("notes.context.searchFolders")}
-                          className="input-inline w-full pl-4.5 pr-1 py-0.5 text-xs text-foreground placeholder:text-foreground/15 outline-none border-none appearance-none"
-                        />
-                      </div>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  <div className="overflow-y-auto max-h-48">
-                    {filteredFolders.map((folder) => {
-                      const isCurrent = folder.id === note.folder_id;
-                      return (
-                        <DropdownMenuItem
-                          key={folder.id}
-                          disabled={isCurrent}
-                          onClick={() => onMoveToFolder(note.id, folder.id)}
-                          className="text-xs gap-2 rounded-md px-2 py-1.5"
-                        >
-                          <FolderOpen size={11} className="text-foreground/30 shrink-0" />
-                          <span className="truncate flex-1">{folder.name}</span>
-                          {isCurrent && <Check size={9} className="text-primary shrink-0" />}
-                        </DropdownMenuItem>
-                      );
-                    })}
-                    {folderSearch && filteredFolders.length === 0 && (
-                      <p className="text-xs text-foreground/20 text-center py-1.5">
-                        {t("notes.context.noResults")}
-                      </p>
-                    )}
-                  </div>
-                  {onCreateFolderAndMove && (
-                    <>
-                      <DropdownMenuSeparator />
-                      {isCreatingFolder ? (
-                        <div className="px-1">
-                          <input
-                            autoFocus
-                            value={newFolderName}
-                            onChange={(e) => setNewFolderName(e.target.value)}
-                            onKeyDown={(e) => {
-                              e.stopPropagation();
-                              if (e.key === "Enter" && newFolderName.trim()) {
-                                onCreateFolderAndMove(note.id, newFolderName.trim());
-                                setNewFolderName("");
-                                setIsCreatingFolder(false);
-                              }
-                              if (e.key === "Escape") {
-                                setIsCreatingFolder(false);
-                                setNewFolderName("");
-                              }
-                            }}
-                            placeholder={t("notes.folders.folderName")}
-                            className="input-inline w-full px-2 py-1.5 rounded-md bg-transparent text-xs text-foreground placeholder:text-foreground/20 outline-none border-none appearance-none"
-                          />
-                        </div>
-                      ) : (
-                        <DropdownMenuItem
-                          onSelect={(e) => {
-                            e.preventDefault();
-                            setIsCreatingFolder(true);
-                          }}
-                          className="text-xs gap-2 rounded-md px-2 py-1.5 text-foreground/40"
-                        >
-                          <Plus size={10} />
-                          {t("notes.context.newFolder")}
-                        </DropdownMenuItem>
-                      )}
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            {/* No folder chip: notes file themselves (the Meetings folder is
+                automatic) and the sidebar tree handles reorganizing. */}
             {isSaving && (
               <span className="inline-flex h-5 items-center gap-1.5 text-[11px] text-muted-foreground">
                 <Loader2 size={9} className="animate-spin" />
@@ -874,38 +756,20 @@ export default function NoteEditor({
                   </div>
                 </div>
               )}
-              {/* A meeting can pick back up — several sessions under one
-                  topic land in one note. Resume seeds the recorder with the
-                  transcript on screen (PersonalNotesView.startRecording), so
-                  it is only offered when that transcript actually parses:
-                  a legacy plain-text transcript would seed nothing and be
-                  overwritten by the first autosave. */}
-              {!isRecording &&
-                !isProcessing &&
-                hasMeetingTranscript &&
-                displaySegments.length > 0 &&
-                onStartRecording && (
-                  <button
-                    type="button"
-                    onClick={onStartRecording}
-                    title={t("notes.editor.resumeMeetingHint")}
-                    className="shrink-0 h-7 flex items-center gap-1.5 rounded-lg border border-border-subtle bg-input px-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <Mic size={11} />
-                    {t("notes.editor.resumeMeeting")}
-                  </button>
-                )}
-              {/* The two things people actually do with a finished write-up,
-                  as visible verbs rather than dropdown archaeology. */}
+              {/* Copy is a quiet icon like Export; Follow-up email keeps its
+                  label because it is the one act a finished write-up exists
+                  for. Resume lives in the bottom bar, next to where recording
+                  is controlled. */}
               {canCopyRecap && (
                 <>
                   <button
                     type="button"
                     onClick={() => void handleCopyRecap()}
-                    className="shrink-0 h-7 flex items-center gap-1.5 rounded-lg border border-border-subtle bg-input px-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    title={t("notes.recap.copy")}
+                    aria-label={t("notes.recap.copy")}
+                    className="shrink-0 h-7 w-7 flex items-center justify-center rounded-lg border border-border-subtle bg-input text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <ClipboardCopy size={11} />
-                    {t("notes.recap.copy")}
+                    <ClipboardCopy size={12} />
                   </button>
                   <button
                     type="button"
@@ -1080,10 +944,16 @@ export default function NoteEditor({
             onStopRecording={onStopRecording}
             onAskSubmit={handleAskSubmit}
             onInputFocus={handleChatInputFocus}
-            // No idle mic in the composer (client direction, 2026-09):
-            // recordings start from Start meeting or the header's Resume.
-            // While one runs, the bar still carries the elapsed/stop control.
-            canRecord={isRecording}
+            // No bare dictation mic (client direction, 2026-09). The slot
+            // instead carries "Resume meeting" on a meeting note — several
+            // sessions under one topic land in one note — and the resume is
+            // only offered when the stored transcript parses: a legacy
+            // plain-text transcript would seed nothing and be overwritten by
+            // the first autosave. While recording, the same slot is the
+            // elapsed/stop control.
+            canRecord={isRecording || canResume}
+            resumeLabel={canResume ? t("notes.editor.resumeMeeting") : undefined}
+            resumeHint={canResume ? t("notes.editor.resumeMeetingHint") : undefined}
             actionPicker={isRecording ? undefined : actionPicker}
             hideInput={chatMode !== "hidden"}
           />

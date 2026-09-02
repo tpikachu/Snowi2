@@ -10,6 +10,18 @@ export function formatShortDate(dateStr: string): string {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+/** "Sep 1, 2:05 PM" — with the year when it isn't this year. */
+export function formatDateTime(date: Date): string {
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    ...(date.getFullYear() !== new Date().getFullYear() ? { year: "numeric" as const } : {}),
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
 export function formatRelativeTime(
   dateStr: string,
   t: (key: string, options?: Record<string, unknown>) => string

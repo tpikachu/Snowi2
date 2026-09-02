@@ -208,19 +208,6 @@ export default function PersonalNotesView({
 
   const activeNote = useActiveNote();
 
-  // Derive folder name and calendar event name for the metadata chips
-  const activeFolderName = useMemo(() => {
-    if (!activeNote?.folder_id) return null;
-    return folders.find((f) => f.id === activeNote.folder_id)?.name ?? null;
-  }, [activeNote?.folder_id, folders]);
-
-  // The editor's move-to-folder chip only offers folders in the note's own
-  // space; cross-space moves change the audience and need an explicit confirm.
-  const editorFolders = useMemo(
-    () => (activeNote ? folders.filter((f) => f.space_id === activeNote.space_id) : folders),
-    [activeNote, folders]
-  );
-
   const [calendarEventName, setCalendarEventName] = useState<string | null>(null);
   useEffect(() => {
     if (!activeNote?.calendar_event_id) {
@@ -630,11 +617,7 @@ export default function PersonalNotesView({
               userTouchedStepper={userTouchedStepper}
               onSetSessionDiarizationEnabled={setSessionDiarizationEnabled}
               onSetSessionExpectedCount={setSessionExpectedCount}
-              folderName={activeFolderName}
               calendarEventName={calendarEventName}
-              folders={editorFolders}
-              onMoveToFolder={handleMoveToFolder}
-              onCreateFolderAndMove={handleCreateFolderAndMove}
               actionProcessingState={actionProcessingState}
               actionName={actionName}
               actionPicker={
