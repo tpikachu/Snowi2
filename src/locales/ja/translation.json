@@ -188,7 +188,8 @@
       "useCase": "あなたについて",
       "meeting": "会議",
       "finish": "完了",
-      "voiceAgent": "ボイスエージェント"
+      "voiceAgent": "ボイスエージェント",
+      "textSize": "見やすさ"
     },
     "rail": {
       "ariaLabel": "セットアップの手順",
@@ -348,6 +349,14 @@
       "downloadStillRunning": "音声モデル（{{model}}）はまだダウンロード中です — {{percent}}% 完了。残りは Snowy がバックグラウンドで進めます。",
       "launchAtLogin": "ログイン時にSnowyを起動",
       "launchAtLoginDescription": "Snowyバーが画面上部で待機し、ワンクリックで録音できます。"
+    },
+    "textSize": {
+      "title": "文字の大きさはどうしますか？",
+      "description": "アプリ全体がこの選択に従います。今すぐ反映されるので、見たままが結果です。",
+      "previewLabel": "プレビュー",
+      "previewHeading": "週次ミーティング — まとめ",
+      "previewBody": "サラは金曜までに修正版の予算を送ります。ローンチは 10 月第 1 週に変更。",
+      "changeLater": "設定 → 環境設定でいつでも変更できます。"
     }
   },
   "streaming": {
@@ -1937,13 +1946,13 @@
         "actions": "アクション",
         "providers": "APIキー"
       },
-      "providers": {
-        "title": "APIキー",
-        "description": "モデルは使う場所で選べます — チャット、会議パネル、各アクション。ここでキーを設定すると、そのプロバイダーがどこでも使えます。"
-      },
       "advancedSetup": "詳細設定",
       "advanced": {
         "description": "ローカルモデル、LAN エンドポイント、カスタム API、チャットとアクションのエンタープライズルーティング。"
+      },
+      "engine": {
+        "title": "エンジン",
+        "description": "チャットと会議のまとめが動く場所。1 つの選択で両方に適用され、モデル自体は使う場所で選べます。"
       }
     },
     "transcription": {
@@ -2264,8 +2273,6 @@
     "actions": {
       "autoGenerateTitle": "ノートのタイトルを自動生成",
       "autoGenerateTitleDescription": "文字起こしや改善後にAIを使用してノートの短いタイトルを生成します",
-      "actionsTitle": "アクション",
-      "actionsDescription": "Snowy が書くもの全般。「ノートを生成」は保存した会議ごとに自動で実行され、ほかは必要なときに実行します。",
       "actionsRowDescription": "ノートに対して実行できるアクションの作成・編集・並べ替え。",
       "manageActions": "管理"
     }
@@ -3313,8 +3320,7 @@
       "setup": {
         "microphone": "マイクへのアクセスがまだ必要です",
         "speech": "文字起こしにはAPIキーが必要です",
-        "actions": "会議のまとめには AI モデルが必要です",
-        "chatIntelligence": "会議中の回答には AI モデルが必要です"
+        "intelligence": "まとめとチャットには AI モデルが必要です"
       },
       "appWindow": "Snowyウィンドウの表示/非表示",
       "startMeeting": "会議を開始",
@@ -3915,15 +3921,10 @@
           "title": "録音と文字起こし",
           "ready": "会議はこの端末で記録され、テキストになります。"
         },
-        "chatIntelligence": {
-          "title": "会議中に答えが返る",
-          "ready": "会議パネルが次の一言を提案し、過去のノートから質問に答えます。",
-          "missing": "会議パネルが次に何と言えばよいかを提案し、過去のノートをもとに質問へ答えます。通話を離れる必要はありません。"
-        },
-        "actions": {
-          "title": "アクション",
-          "ready": "保存した会議ごとに「ノートを生成」が実行され、要約・決定事項・担当がまとまります。自作のアクションも同じモデルで動きます。",
-          "missing": "何も書き起こしがまとまりません。「ノートを生成」もほかのアクションも言語モデルがないと動かないため、会議は素の文字起こしのまま残ります。"
+        "intelligence": {
+          "title": "AI モデル",
+          "ready": "まとめ、チャット、会議中の回答は 1 つのモデルで動きます。保存した会議ごとに Generate Notes が実行されます。",
+          "missing": "何もまとめられず、アシスタントも回答できません。キー 1 つ（またはローカルモデル）で、まとめ・チャット・会議中の回答が動きます。"
         }
       },
       "descriptionAllSet": "すべて設定済みです。それぞれが使っているものはこちらです。",

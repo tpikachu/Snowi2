@@ -167,7 +167,8 @@
       "useCase": "Sobre você",
       "meeting": "Reuniões",
       "finish": "Concluir",
-      "voiceAgent": "Agente de voz"
+      "voiceAgent": "Agente de voz",
+      "textSize": "Conforto"
     },
     "rail": {
       "ariaLabel": "Etapas de configuração",
@@ -327,6 +328,14 @@
       "downloadStillRunning": "Seu modelo de fala ({{model}}) ainda está baixando — {{percent}}% concluído. O Snowy terminará em segundo plano.",
       "launchAtLogin": "Iniciar o Snowy ao fazer login",
       "launchAtLoginDescription": "A barra do Snowy estará esperando no topo da tela — um clique para gravar."
+    },
+    "textSize": {
+      "title": "Qual tamanho de texto você prefere?",
+      "description": "Todo o aplicativo segue esta escolha — e ela vale agora mesmo: o que você vê é o que terá.",
+      "previewLabel": "Prévia",
+      "previewHeading": "Reunião semanal — resumo",
+      "previewBody": "Sarah enviará o orçamento revisado até sexta-feira. O lançamento passa para a primeira semana de outubro.",
+      "changeLater": "Você pode mudar isso a qualquer momento em Configurações → Preferências."
     }
   },
   "streaming": {
@@ -1916,13 +1925,13 @@
         "actions": "Ações",
         "providers": "Chaves de API"
       },
-      "providers": {
-        "title": "Chaves de API",
-        "description": "Os modelos são escolhidos onde você os usa: no chat, no painel da reunião e por ação. Uma chave aqui desbloqueia esse provedor em todo lugar."
-      },
       "advancedSetup": "Configuração avançada",
       "advanced": {
         "description": "Modelos locais, endpoints LAN, APIs personalizadas e roteamento corporativo para o chat e as ações."
+      },
+      "engine": {
+        "title": "Motor",
+        "description": "Onde o chat e os resumos de reuniões são executados. Uma escolha alimenta os dois — o modelo é escolhido onde você o usa."
       }
     },
     "transcription": {
@@ -2243,8 +2252,6 @@
     "actions": {
       "autoGenerateTitle": "Gerar títulos de notas automaticamente",
       "autoGenerateTitleDescription": "Usar IA para gerar um título curto para notas após transcrição ou aprimoramento",
-      "actionsTitle": "Ações",
-      "actionsDescription": "Tudo o que o Snowy escreve por você. Gerar notas roda em toda reunião que você guarda; o resto, quando você pede.",
       "actionsRowDescription": "Crie, edite e reordene as ações que você pode rodar em uma nota.",
       "manageActions": "Gerenciar"
     }
@@ -3313,8 +3320,7 @@
       "setup": {
         "microphone": "Ainda falta o acesso ao microfone",
         "speech": "A transcrição precisa de uma chave de API",
-        "actions": "Os resumos de reuniões precisam de um modelo de IA",
-        "chatIntelligence": "As respostas durante a reunião precisam de um modelo de IA"
+        "intelligence": "Os resumos e o chat precisam de um modelo de IA"
       },
       "appWindow": "Mostrar ou ocultar a janela do Snowy",
       "startMeeting": "Iniciar reunião",
@@ -3915,15 +3921,10 @@
           "title": "Gravação e transcrição",
           "ready": "As reuniões são capturadas e viram texto nesta máquina."
         },
-        "chatIntelligence": {
-          "title": "Respostas durante a reunião",
-          "ready": "O painel sugere o que dizer e responde a partir das suas notas.",
-          "missing": "O painel da reunião pode sugerir o que dizer e responder a perguntas com base nas suas notas anteriores — sem sair da chamada."
-        },
-        "actions": {
-          "title": "Ações",
-          "ready": "Gerar notas roda em toda reunião que você guarda: um resumo, as decisões e quem ficou com o quê. Suas próprias ações usam o mesmo modelo.",
-          "missing": "Nada é redigido. Gerar notas e todas as outras ações precisam de um modelo de linguagem, então as reuniões ficam só como transcrições."
+        "intelligence": {
+          "title": "Modelo de IA",
+          "ready": "Resumos, chat e respostas na reunião rodam no mesmo modelo. O Generate Notes roda em cada reunião que você mantém.",
+          "missing": "Nada é redigido e o assistente não pode responder. Uma chave — ou um modelo local — alimenta resumos, chat e respostas na reunião."
         }
       },
       "descriptionAllSet": "Tudo configurado. Veja o que cada parte está usando.",

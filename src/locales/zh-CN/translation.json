@@ -188,7 +188,8 @@
       "useCase": "关于你",
       "meeting": "会议",
       "finish": "完成",
-      "voiceAgent": "语音助手"
+      "voiceAgent": "语音助手",
+      "textSize": "舒适度"
     },
     "rail": {
       "ariaLabel": "设置步骤",
@@ -348,6 +349,14 @@
       "downloadStillRunning": "语音模型（{{model}}）仍在下载 — 已完成 {{percent}}%。Snowy 会在后台完成下载。",
       "launchAtLogin": "登录时启动 Snowy",
       "launchAtLoginDescription": "Snowy 小条将在屏幕顶部等候，一键即可录制。"
+    },
+    "textSize": {
+      "title": "文字要多大？",
+      "description": "整个应用都会遵循这个选择——立即生效，所见即所得。",
+      "previewLabel": "预览",
+      "previewHeading": "每周同步会——纪要",
+      "previewBody": "Sarah 会在周五前发送修订后的预算。发布推迟到十月第一周。",
+      "changeLater": "随时可以在设置 → 偏好中更改。"
     }
   },
   "streaming": {
@@ -1937,13 +1946,13 @@
         "actions": "操作",
         "providers": "API 密钥"
       },
-      "providers": {
-        "title": "API 密钥",
-        "description": "模型在使用处选择——聊天、会议面板和每个操作中。在这里填入密钥即可在所有位置解锁该提供商。"
-      },
       "advancedSetup": "高级设置",
       "advanced": {
         "description": "本地模型、局域网端点、自定义 API，以及聊天和操作的企业路由。"
+      },
+      "engine": {
+        "title": "引擎",
+        "description": "聊天和会议纪要的运行位置。一次选择同时作用于两者——模型本身在使用处选择。"
       }
     },
     "transcription": {
@@ -2264,8 +2273,6 @@
     "actions": {
       "autoGenerateTitle": "自动生成笔记标题",
       "autoGenerateTitleDescription": "使用 AI 在转录或增强后为笔记生成简短标题",
-      "actionsTitle": "操作",
-      "actionsDescription": "Snowy 替你写的所有内容。「生成笔记」会在每场保留的会议后自动运行，其余的按需运行。",
       "actionsRowDescription": "创建、编辑和排序可在笔记上运行的操作。",
       "manageActions": "管理"
     }
@@ -3313,8 +3320,7 @@
       "setup": {
         "microphone": "仍需要麦克风权限",
         "speech": "转写需要 API 密钥",
-        "actions": "会议纪要需要一个 AI 模型",
-        "chatIntelligence": "会议中的回答需要一个 AI 模型"
+        "intelligence": "纪要和聊天需要 AI 模型"
       },
       "appWindow": "显示或隐藏 Snowy 窗口",
       "startMeeting": "开始会议",
@@ -3915,15 +3921,10 @@
           "title": "录音与转写",
           "ready": "会议在这台机器上被录下并转成文字。"
         },
-        "chatIntelligence": {
-          "title": "会议进行中就能得到答案",
-          "ready": "会议面板会提示该说什么，并根据你的笔记回答问题。",
-          "missing": "会议面板可以提示你接下来该说什么，并根据你的历史笔记回答问题——不用离开通话。"
-        },
-        "actions": {
-          "title": "操作",
-          "ready": "每场保留的会议都会自动运行「生成笔记」：摘要、决定事项和责任人。你自定义的操作也使用同一个模型。",
-          "missing": "不会整理出任何内容。「生成笔记」和其他所有操作都需要语言模型才能运行，会议只会停留在原始转写。"
+        "intelligence": {
+          "title": "AI 模型",
+          "ready": "纪要、聊天和会议中的回答共用一个模型。每次保留的会议都会运行 Generate Notes。",
+          "missing": "什么都不会被整理，助手也无法回答。一个密钥——或一个本地模型——即可驱动纪要、聊天和会议中的回答。"
         }
       },
       "descriptionAllSet": "都已配置完成。以下是各部分正在使用的模型。",

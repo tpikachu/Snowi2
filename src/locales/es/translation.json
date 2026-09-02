@@ -188,7 +188,8 @@
       "useCase": "Sobre ti",
       "meeting": "Reuniones",
       "finish": "Listo",
-      "voiceAgent": "Agente de voz"
+      "voiceAgent": "Agente de voz",
+      "textSize": "Comodidad"
     },
     "rail": {
       "ariaLabel": "Pasos de configuración",
@@ -348,6 +349,14 @@
       "downloadStillRunning": "Tu modelo de voz ({{model}}) sigue descargándose — {{percent}}% completado. Snowy lo terminará en segundo plano.",
       "launchAtLogin": "Iniciar Snowy al iniciar sesión",
       "launchAtLoginDescription": "La barra de Snowy te esperará en la parte superior de la pantalla: un clic para grabar."
+    },
+    "textSize": {
+      "title": "¿Qué tamaño de texto prefieres?",
+      "description": "Toda la aplicación sigue esta elección, y se aplica ahora mismo: lo que ves es lo que tendrás.",
+      "previewLabel": "Vista previa",
+      "previewHeading": "Reunión semanal: resumen",
+      "previewBody": "Sarah enviará el presupuesto revisado antes del viernes. El lanzamiento pasa a la primera semana de octubre.",
+      "changeLater": "Puedes cambiarlo en cualquier momento en Ajustes → Preferencias."
     }
   },
   "streaming": {
@@ -1985,13 +1994,13 @@
         "actions": "Acciones",
         "providers": "Claves API"
       },
-      "providers": {
-        "title": "Claves API",
-        "description": "Los modelos se eligen justo donde los usas: en el chat, en el panel de reunión y por acción. Una clave aquí desbloquea ese proveedor en todas partes."
-      },
       "advancedSetup": "Configuración avanzada",
       "advanced": {
         "description": "Modelos locales, endpoints LAN, APIs personalizadas y enrutamiento empresarial para el chat y las acciones."
+      },
+      "engine": {
+        "title": "Motor",
+        "description": "Dónde se ejecutan el chat y los resúmenes de reuniones. Una sola elección impulsa ambos: el modelo se elige justo donde lo usas."
       }
     },
     "transcription": {
@@ -2312,8 +2321,6 @@
     "actions": {
       "autoGenerateTitle": "Generar títulos de notas automáticamente",
       "autoGenerateTitleDescription": "Usar IA para generar un título corto para las notas después de la transcripción o mejora",
-      "actionsTitle": "Acciones",
-      "actionsDescription": "Todo lo que Snowy redacta por ti. Generar notas se ejecuta en cada reunión que guardas; el resto, cuando tú lo pides.",
       "actionsRowDescription": "Crea, edita y reordena las acciones que puedes ejecutar en una nota.",
       "manageActions": "Gestionar"
     }
@@ -3361,8 +3368,7 @@
       "setup": {
         "microphone": "Aún falta el acceso al micrófono",
         "speech": "La transcripción necesita una clave de API",
-        "actions": "Los resúmenes de reuniones necesitan un modelo de IA",
-        "chatIntelligence": "Las respuestas durante la reunión necesitan un modelo de IA"
+        "intelligence": "Los resúmenes y el chat necesitan un modelo de IA"
       },
       "appWindow": "Mostrar u ocultar la ventana de Snowy",
       "startMeeting": "Iniciar reunión",
@@ -3915,15 +3921,10 @@
           "title": "Grabación y transcripción",
           "ready": "Las reuniones se capturan y se convierten en texto en este equipo."
         },
-        "chatIntelligence": {
-          "title": "Respuestas durante la reunión",
-          "ready": "El panel sugiere qué decir y responde preguntas a partir de tus notas.",
-          "missing": "El panel de reunión puede sugerir qué decir y responder preguntas basándose en tus notas anteriores, sin salir de la llamada."
-        },
-        "actions": {
-          "title": "Acciones",
-          "ready": "Generar notas se ejecuta en cada reunión que guardas: un resumen, las decisiones y quién debe qué. Tus propias acciones usan el mismo modelo.",
-          "missing": "No se redacta nada. Generar notas y todas las demás acciones necesitan un modelo de lenguaje para ejecutarse, así que las reuniones se quedan en transcripciones sin más."
+        "intelligence": {
+          "title": "Modelo de IA",
+          "ready": "Los resúmenes, el chat y las respuestas durante la reunión usan un mismo modelo. Generate Notes se ejecuta en cada reunión que guardas.",
+          "missing": "Nada se redacta y el asistente no puede responder. Una clave —o un modelo local— impulsa los resúmenes, el chat y las respuestas en la reunión."
         }
       },
       "descriptionAllSet": "Todo está configurado. Esto es lo que usa cada parte.",

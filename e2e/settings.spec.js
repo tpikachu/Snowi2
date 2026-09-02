@@ -3,11 +3,11 @@ const { test, expect } = require("@playwright/test");
 const { launchApp, controlPanelPage, skipOnboarding } = require("./launch");
 
 /**
- * The settings surfaces reworked in the Cluely pass: the keybinds page (a
- * reviewable keymap — caps on closed rows, editors behind a click) and the
- * text-size preference (renderer zoom on the control panel window only).
- * Assertions lean on user-visible copy from src/locales/en, so a copy change
- * updates them knowingly.
+ * The settings surfaces reworked in the Cluely pass: the keymap (flat rows,
+ * caps on the right, recorded in place), the one-page Language Models setup
+ * (engine choice + keys), and the text-size preference (renderer zoom on the
+ * control panel window only). Assertions lean on user-visible copy from
+ * src/locales/en, so a copy change updates them knowingly.
  */
 
 /** @type {import("playwright").ElectronApplication | null} */
@@ -20,7 +20,7 @@ test.afterEach(async () => {
   }
 });
 
-test("the keybinds page reads as caps, and opens an editor on click", async () => {
+test("the keymap reads as caps and records in place", async () => {
   ({ app } = await launchApp(test.info()));
   const page = await controlPanelPage(app);
   await skipOnboarding(page);
@@ -28,21 +28,29 @@ test("the keybinds page reads as caps, and opens an editor on click", async () =
   await page.getByRole("button", { name: "Settings" }).first().click();
   await page.getByRole("button", { name: "Hotkeys" }).first().click();
 
-  // Meeting mode ships bound by default, so its row shows keycaps...
-  await expect(page.locator("kbd").first()).toBeVisible({ timeout: 15_000 });
-  // ...while the opt-in slots show their unbound state instead of an editor.
+  // Nothing ships bound on a fresh profile: both rows show the unbound chip
+  // with a one-click suggestion, and the meeting row's layout select sits
+  // inline beneath it — no editor to open, nothing folded away.
+  await expect(page.getByText("Not set").first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByRole("button", { name: "Use Ctrl+Shift+M" })).toBeVisible();
+  await expect(page.getByText("When triggered by hotkey, open in:")).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("keymap.png") });
+
+  // Clicking the chip turns it into a recorder, right there in the row —
+  // the reference product's manner. Deliberately not committed: actually
+  // registering a combo would race whatever already owns it on the machine
+  // running this suite (Ctrl+Shift+M lost that race once already).
+  await page.getByText("Not set").first().click();
+  await expect(page.locator("[data-capturing]")).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("keymap-recording.png") });
+
+  // Clicking away stops the recorder and the chip returns.
+  await page.getByRole("button", { name: "Hotkeys" }).first().click();
+  await expect(page.locator("[data-capturing]")).toHaveCount(0);
   await expect(page.getByText("Not set").first()).toBeVisible();
-
-  await page.screenshot({ path: test.info().outputPath("keybinds-closed.png") });
-
-  // A closed row hides its editor; clicking the row reveals it.
-  const meetingRow = page.getByRole("button", { name: /Meeting mode/ }).first();
-  await meetingRow.click();
-  await expect(meetingRow).toHaveAttribute("aria-expanded", "true");
-  await page.screenshot({ path: test.info().outputPath("keybinds-open.png") });
 });
 
-test("models are picked at point of use; Settings leads with API keys", async () => {
+test("models are picked at point of use; Settings is engine plus keys", async () => {
   ({ app } = await launchApp(test.info()));
   const page = await controlPanelPage(app);
   await skipOnboarding(page);
@@ -60,12 +68,15 @@ test("models are picked at point of use; Settings leads with API keys", async ()
   await page.screenshot({ path: test.info().outputPath("model-chip-popover.png") });
   await page.keyboard.press("Escape");
 
-  // Settings → Language Models now lands on the API keys panel first.
+  // Settings → Language Models is one page: the engine choice leads. A fresh
+  // install resolves local, so the cloud grid appears on flipping the card —
+  // which also routes chat and actions to providers mode in one stroke.
   await page.getByRole("button", { name: "Settings" }).first().click();
   await page.getByRole("button", { name: "Language Models" }).first().click();
-  await expect(page.getByText("API keys").first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Cloud Providers").first()).toBeVisible({ timeout: 15_000 });
+  await page.getByText("Cloud Providers").first().click();
   await expect(page.getByText("OpenAI").first()).toBeVisible();
-  await page.screenshot({ path: test.info().outputPath("provider-keys-panel.png") });
+  await page.screenshot({ path: test.info().outputPath("language-models-panel.png") });
 });
 
 test("the text-size preference zooms the control panel window", async () => {

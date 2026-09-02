@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
-import ActionManagerDialog from "./notes/ActionManagerDialog";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
 import {
@@ -61,7 +60,6 @@ import { useClipboard } from "../hooks/useClipboard";
 import { useUpdater } from "../hooks/useUpdater";
 
 import PromptStudio from "./ui/PromptStudio";
-import { HotkeyListInput } from "./ui/HotkeyListInput";
 import { useHotkeyRegistration } from "../hooks/useHotkeyRegistration";
 import { useHotkeyModeInfo } from "../hooks/useHotkeyModeInfo";
 import { validateHotkeyForSlot } from "../utils/hotkeyValidation";
@@ -74,11 +72,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import LinuxPttSetupInfo from "./ui/LinuxPttSetupInfo";
 import { Toggle } from "./ui/toggle";
 import DeveloperSection from "./DeveloperSection";
-import ChatAgentSettings from "./settings/ChatAgentSettings";
 import DictationAgentSettings from "./settings/DictationAgentSettings";
 import DictationTranslationSettings from "./settings/DictationTranslationSettings";
 import InferenceConfigEditor from "./settings/InferenceConfigEditor";
-import ProviderKeysPanel from "./settings/ProviderKeysPanel";
+import LanguageModelsPanel from "./settings/LanguageModelsPanel";
 import { MeetingTranscriptionPanel } from "./settings/MeetingSettings";
 import { UploadTranscriptionPanel } from "./settings/UploadSettings";
 import LanguageSelector from "./ui/LanguageSelector";
@@ -352,58 +349,10 @@ const CLEANUP_MODE_TOAST_KEY: Record<InferenceMode, string> = {
   enterprise: "switchedEnterprise",
 };
 
-function ActionsSettings() {
-  const { t } = useTranslation();
-  const autoGenerateNoteTitle = useSettingsStore((s) => s.autoGenerateNoteTitle);
-  const setAutoGenerateNoteTitle = useSettingsStore((s) => s.setAutoGenerateNoteTitle);
-  const [showActionManager, setShowActionManager] = useState(false);
-
-  // Actions first: this panel is about them. Writing up a meeting is not a
-  // separate feature from "Generate Notes" — it *is* that action, run
-  // automatically — so the panel leads with the actions, then names the model
-  // they all run on, then the odds and ends.
-  return (
-    <SettingsPanelBody>
-      <SettingsGroup
-        id="actionsList"
-        title={t("settingsPage.actions.actionsTitle")}
-        description={t("settingsPage.actions.actionsDescription")}
-      >
-        <SettingsPanel>
-          <SettingsPanelRow>
-            <SettingsRow
-              label={t("notes.actions.manageTitle")}
-              description={t("settingsPage.actions.actionsRowDescription")}
-            >
-              <Button variant="outline" size="sm" onClick={() => setShowActionManager(true)}>
-                {t("settingsPage.actions.manageActions")}
-              </Button>
-            </SettingsRow>
-          </SettingsPanelRow>
-        </SettingsPanel>
-      </SettingsGroup>
-
-      {/* No model group here anymore: the actions default is assigned when a
-          provider key lands (scopeModelDefaults.ts), each action can override
-          it in its own editor, and the full scope editor lives behind
-          Advanced setup on the API keys panel. */}
-      <SettingsGroup id="actionsOptions" title={t("settingsModal.groupTitles.options")}>
-        <SettingsPanel>
-          <SettingsPanelRow>
-            <SettingsRow
-              label={t("settingsPage.actions.autoGenerateTitle")}
-              description={t("settingsPage.actions.autoGenerateTitleDescription")}
-            >
-              <Toggle checked={autoGenerateNoteTitle} onChange={setAutoGenerateNoteTitle} />
-            </SettingsRow>
-          </SettingsPanelRow>
-        </SettingsPanel>
-      </SettingsGroup>
-
-      <ActionManagerDialog open={showActionManager} onOpenChange={setShowActionManager} />
-    </SettingsPanelBody>
-  );
-}
+// The former ActionsSettings tab is gone (client direction, 2026-09): actions
+// share the chat LLM, are managed from the notes surface's own dialog, and
+// their remaining odds and ends live behind the Language Models page's
+// Advanced disclosure (LanguageModelsPanel.tsx).
 
 function AiModelsSection({ useCleanupModel, setUseCleanupModel, toast }: AiModelsSectionProps) {
   const { t } = useTranslation();
@@ -829,7 +778,8 @@ export default function SettingsPage({
     });
 
   // Agent hotkey setters resolve to false when main-process registration fails;
-  // surface it and return the result so HotkeyListInput rolls the row back.
+  // surface it and return the result — the store not updating is what leaves
+  // the keymap's chips unchanged.
   const [isAgentHotkeyCommitting, setIsAgentHotkeyCommitting] = useState(false);
   const commitAgentHotkey = useCallback(
     async (setter: (key: string) => Promise<boolean>, key: string) => {
@@ -2342,32 +2292,23 @@ EOF`,
             icon: Mic,
             label: t("settingsPage.hotkeys.slots.dictation"),
             description: t("settingsPage.general.hotkey.description"),
-            control: (
-              <HotkeyListInput
-                value={dictationKey}
-                onChange={(list) => registerHotkey(list)}
-                validate={validateDictationHotkey}
-                disabled={isHotkeyRegistering}
-                maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
-                required
-                footerEnd={
-                  effectiveDefaultHotkey &&
-                  dictationKey &&
-                  dictationKey !== effectiveDefaultHotkey ? (
-                    <button
-                      type="button"
-                      onClick={() => registerHotkey(effectiveDefaultHotkey)}
-                      disabled={isHotkeyRegistering}
-                      className="rounded-sm text-xs text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                    >
-                      {t("settingsPage.general.hotkey.resetToDefault", {
-                        hotkey: formatHotkeyLabel(effectiveDefaultHotkey),
-                      })}
-                    </button>
-                  ) : null
-                }
-              />
-            ),
+            onChange: (list: string) => registerHotkey(list),
+            validate: validateDictationHotkey,
+            disabled: isHotkeyRegistering,
+            maxHotkeys: isUsingNativeShortcut ? 1 : undefined,
+            footerEnd:
+              effectiveDefaultHotkey && dictationKey && dictationKey !== effectiveDefaultHotkey ? (
+                <button
+                  type="button"
+                  onClick={() => registerHotkey(effectiveDefaultHotkey)}
+                  disabled={isHotkeyRegistering}
+                  className="rounded-sm text-xs text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                >
+                  {t("settingsPage.general.hotkey.resetToDefault", {
+                    hotkey: formatHotkeyLabel(effectiveDefaultHotkey),
+                  })}
+                </button>
+              ) : null,
             extra:
               !isUsingNativeShortcut || getCachedPlatform() === "linux" ? (
                 <>
@@ -2391,16 +2332,11 @@ EOF`,
             icon: Wand2,
             label: t("settingsPage.hotkeys.slots.voiceAgent"),
             description: t("settingsPage.general.voiceAgentHotkey.description"),
-            control: (
-              <HotkeyListInput
-                value={voiceAgentKey}
-                onChange={(list) => commitAgentHotkey(setVoiceAgentKey, list)}
-                onClear={() => commitAgentHotkey(setVoiceAgentKey, "")}
-                validate={validateVoiceAgentHotkey}
-                disabled={isAgentHotkeyCommitting}
-                maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
-              />
-            ),
+            onChange: (list: string) => commitAgentHotkey(setVoiceAgentKey, list),
+            onClear: () => commitAgentHotkey(setVoiceAgentKey, ""),
+            validate: validateVoiceAgentHotkey,
+            disabled: isAgentHotkeyCommitting,
+            maxHotkeys: isUsingNativeShortcut ? 1 : undefined,
             suggestion: voiceAgentKey
               ? undefined
               : {
@@ -2416,16 +2352,11 @@ EOF`,
             icon: Languages,
             label: t("settingsPage.hotkeys.slots.translation"),
             description: t("settingsPage.general.translationHotkey.description"),
-            control: (
-              <HotkeyListInput
-                value={translationKey}
-                onChange={(list) => commitAgentHotkey(setTranslationKey, list)}
-                onClear={() => commitAgentHotkey(setTranslationKey, "")}
-                validate={validateTranslationHotkey}
-                disabled={isAgentHotkeyCommitting}
-                maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
-              />
-            ),
+            onChange: (list: string) => commitAgentHotkey(setTranslationKey, list),
+            onClear: () => commitAgentHotkey(setTranslationKey, ""),
+            validate: validateTranslationHotkey,
+            disabled: isAgentHotkeyCommitting,
+            maxHotkeys: isUsingNativeShortcut ? 1 : undefined,
             suggestion: translationKey
               ? undefined
               : {
@@ -2441,19 +2372,14 @@ EOF`,
             icon: Video,
             label: t("settingsPage.hotkeys.slots.meeting"),
             description: t("settingsPage.general.meetingHotkey.description"),
-            control: (
-              <HotkeyListInput
-                value={meetingKey}
-                onChange={(list) => registerMeetingHotkey(list)}
-                onClear={async () => {
-                  await window.electronAPI?.registerMeetingHotkey?.("");
-                  setMeetingKey("");
-                }}
-                validate={validateMeetingHotkey}
-                disabled={isMeetingHotkeyRegistering}
-                maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
-              />
-            ),
+            onChange: (list: string) => registerMeetingHotkey(list),
+            onClear: async () => {
+              await window.electronAPI?.registerMeetingHotkey?.("");
+              setMeetingKey("");
+            },
+            validate: validateMeetingHotkey,
+            disabled: isMeetingHotkeyRegistering,
+            maxHotkeys: isUsingNativeShortcut ? 1 : undefined,
             suggestion: meetingKey
               ? undefined
               : {
@@ -2499,16 +2425,11 @@ EOF`,
             icon: MessageSquare,
             label: t("settingsPage.hotkeys.slots.chatAgent"),
             description: t("agentMode.settings.hotkeyDescription"),
-            control: (
-              <HotkeyListInput
-                value={chatAgentKey}
-                onChange={(list) => commitAgentHotkey(setChatAgentKey, list)}
-                onClear={() => commitAgentHotkey(setChatAgentKey, "")}
-                validate={validateChatAgentHotkey}
-                disabled={isAgentHotkeyCommitting}
-                maxHotkeys={isUsingNativeShortcut ? 1 : undefined}
-              />
-            ),
+            onChange: (list: string) => commitAgentHotkey(setChatAgentKey, list),
+            onClear: () => commitAgentHotkey(setChatAgentKey, ""),
+            validate: validateChatAgentHotkey,
+            disabled: isAgentHotkeyCommitting,
+            maxHotkeys: isUsingNativeShortcut ? 1 : undefined,
             suggestion: chatAgentKey
               ? undefined
               : {
@@ -3160,8 +3081,12 @@ EOF`,
 
       {hasMountedLlms && (
         <TabPanel active={activeSection === "llms"}>
+          {/* The whole Language Models setup is one page now: engine (cloud
+              or local), keys, and the advanced escape hatch. Chat and actions
+              share that one LLM; their former tabs are gone, and their models
+              are changed at point of use. */}
           <TabPanel active={llmTab === "providers"}>
-            <ProviderKeysPanel />
+            <LanguageModelsPanel />
           </TabPanel>
 
           <TabPanel active={llmTab === "dictationCleanup"}>
@@ -3189,14 +3114,6 @@ EOF`,
 
           <TabPanel active={llmTab === "dictationTranslation"}>
             <DictationTranslationSettings />
-          </TabPanel>
-
-          <TabPanel active={llmTab === "actions"}>
-            <ActionsSettings />
-          </TabPanel>
-
-          <TabPanel active={llmTab === "chatIntelligence"}>
-            <ChatAgentSettings />
           </TabPanel>
         </TabPanel>
       )}

@@ -179,7 +179,7 @@ function mapKeyboardEventToHotkey(e: KeyboardEvent): string | null {
 }
 
 export interface HotkeyInputVariant {
-  variant?: "default" | "hero";
+  variant?: "default" | "hero" | "chip";
 }
 
 export function HotkeyInput({
@@ -495,6 +495,54 @@ export function HotkeyInput({
         <Trash2 className="w-3.5 h-3.5" />
       </button>
     ) : null;
+
+  // Chip variant: the keymap's inline recorder. Mounted in place of the
+  // binding's keycaps the moment the row is clicked (autoFocus starts
+  // capture), unmounted by its owner on blur or on a captured combo — so it
+  // only ever has to draw the recording state, at keycap scale.
+  if (variant === "chip") {
+    return (
+      <div
+        ref={containerRef}
+        tabIndex={disabled ? -1 : 0}
+        role="button"
+        aria-label={t("hotkeyInput.ariaLabel")}
+        data-capturing={isCapturing || undefined}
+        onKeyDown={handleKeyDown}
+        onKeyUp={handleKeyUp}
+        onMouseDown={handleMouseDown}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        className={`
+          relative inline-flex min-h-7 select-none items-center gap-1.5 rounded-lg border px-2 py-1
+          transition-colors duration-100 ease-snap focus-ring
+          ${isCapturing ? "border-border-active bg-input" : "border-border-control bg-input"}
+        `}
+      >
+        <div className="size-1.5 shrink-0 rounded-full bg-primary animate-pulse" />
+        {activeModifiers.size > 0 ? (
+          <span className="flex items-center gap-1">
+            {Array.from(activeModifiers).map((mod) => (
+              <kbd key={mod} className="border-primary/35 bg-primary/10 text-primary">
+                {mod}
+              </kbd>
+            ))}
+            <span className="text-[11px] text-primary/50">+</span>
+          </span>
+        ) : (
+          <span className="whitespace-nowrap text-[11px] font-medium text-muted-foreground">
+            {t("hotkeyInput.recording")}
+          </span>
+        )}
+        {validationWarning && (
+          <div className="absolute right-0 top-full z-10 mt-1.5 flex items-center gap-1.5 whitespace-nowrap rounded-md border border-border-subtle bg-surface-1 px-2.5 py-1.5 shadow-[var(--shadow-panel),inset_2px_0_0_var(--color-warning)]">
+            <AlertTriangle className="size-3 shrink-0 text-warning" strokeWidth={1.75} />
+            <span className="text-xs text-foreground">{validationWarning}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   // Hero variant: large centered key display for onboarding
   if (variant === "hero") {

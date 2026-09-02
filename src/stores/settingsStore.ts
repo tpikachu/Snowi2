@@ -2812,6 +2812,69 @@ export function setResolvedLLMConfig(
   if (Object.keys(updates).length > 0) useSettingsStore.setState(updates);
 }
 
+// Mirrors ModelRegistry.isProviderValidForMode for the two core modes.
+// Duplicated against the raw registry data on purpose: importing
+// ModelRegistry here would close a module cycle (it imports getSettings
+// from this file).
+function providerValidForCoreMode(provider: string, mode: InferenceMode): boolean {
+  if (!provider) return false;
+  if (mode === "providers") {
+    return (
+      provider === "custom" ||
+      provider === "openrouter" ||
+      modelRegistryData.cloudProviders.some((p) => p.id === provider)
+    );
+  }
+  if (mode === "local") return modelRegistryData.localProviders.some((p) => p.id === provider);
+  return true;
+}
+
+/** The first keyed provider that has scope defaults — seed for engine flips. */
+function firstKeyedDefaultableProvider(state: SettingsState): string | null {
+  for (const [id, field] of Object.entries(BYOK_PROVIDER_KEY_FIELDS)) {
+    if (!field) continue;
+    if (!defaultModelForScope(id, "chatIntelligence")) continue;
+    if ((state[field] as string | undefined)?.trim()) return id;
+  }
+  return null;
+}
+
+/**
+ * The Language Models page's engine choice — cloud or local — applied to the
+ * one LLM chat and actions share. Explicitly a radio: flipping to local
+ * routes both scopes at whatever local model is (or gets) selected below the
+ * cards, and flipping to cloud routes both back to providers, seeding the
+ * first keyed provider's defaults into any scope whose cloud pick could not
+ * serve. Enterprise-managed scopes are never touched, and a provider id left
+ * over from the other mode is cleared rather than sent somewhere it cannot
+ * resolve.
+ */
+export function setCoreLlmEngine(engine: "cloud" | "local"): void {
+  const mode: InferenceMode = engine === "local" ? "local" : "providers";
+  for (const scope of DEFAULTABLE_SCOPES) {
+    const state = useSettingsStore.getState();
+    const resolved = selectResolvedLLMConfig(state, scope);
+    if ((resolved.mode || "") === "enterprise") continue;
+    const patch: Partial<Omit<ResolvedLLMConfig, "scope">> = { mode };
+    if (mode === "providers") patch.cloudMode = "byok";
+    if (!providerValidForCoreMode(resolved.provider, mode)) {
+      patch.provider = "";
+      patch.model = "";
+    }
+    setResolvedLLMConfig(scope, patch);
+    if (mode === "providers") {
+      const next = useSettingsStore.getState();
+      if (!selectLLMConfigReady(next, selectResolvedLLMConfig(next, scope))) {
+        const provider = firstKeyedDefaultableProvider(next);
+        const model = provider ? defaultModelForScope(provider, scope) : null;
+        if (provider && model) setResolvedLLMConfig(scope, { provider, model });
+      }
+    }
+  }
+  // Leaving local frees the llama server's RAM; arriving starts on demand.
+  if (mode !== "local") void window.electronAPI?.llamaServerStop?.();
+}
+
 // --- Convenience getters for non-React code ---
 
 interface TranscriptionContextKeys {

@@ -188,7 +188,8 @@
       "useCase": "關於你",
       "meeting": "會議",
       "finish": "完成",
-      "voiceAgent": "語音助手"
+      "voiceAgent": "語音助手",
+      "textSize": "舒適度"
     },
     "rail": {
       "ariaLabel": "設定步驟",
@@ -348,6 +349,14 @@
       "downloadStillRunning": "語音模型（{{model}}）仍在下載 — 已完成 {{percent}}%。Snowy 會在背景完成下載。",
       "launchAtLogin": "登入時啟動 Snowy",
       "launchAtLoginDescription": "Snowy 小列會在螢幕頂部待命，一鍵即可錄製。"
+    },
+    "textSize": {
+      "title": "文字要多大？",
+      "description": "整個應用都會遵循這個選擇——立即生效，所見即所得。",
+      "previewLabel": "預覽",
+      "previewHeading": "每週同步會——紀要",
+      "previewBody": "Sarah 會在週五前傳送修訂後的預算。發布延到十月第一週。",
+      "changeLater": "隨時可以在設定 → 偏好中變更。"
     }
   },
   "streaming": {
@@ -1937,13 +1946,13 @@
         "actions": "操作",
         "providers": "API 金鑰"
       },
-      "providers": {
-        "title": "API 金鑰",
-        "description": "模型在使用處選擇——聊天、會議面板和每個動作中。在這裡填入金鑰即可在所有位置解鎖該供應商。"
-      },
       "advancedSetup": "進階設定",
       "advanced": {
         "description": "本地模型、區域網路端點、自訂 API，以及聊天和動作的企業路由。"
+      },
+      "engine": {
+        "title": "引擎",
+        "description": "聊天和會議紀要的執行位置。一次選擇同時作用於兩者——模型本身在使用處選擇。"
       }
     },
     "transcription": {
@@ -2264,8 +2273,6 @@
     "actions": {
       "autoGenerateTitle": "自動產生筆記標題",
       "autoGenerateTitleDescription": "使用 AI 在轉錄或增強後為筆記產生簡短標題",
-      "actionsTitle": "操作",
-      "actionsDescription": "Snowy 替你寫的所有內容。「產生筆記」會在每場保留的會議後自動執行，其餘的按需執行。",
       "actionsRowDescription": "建立、編輯和排序可在筆記上執行的操作。",
       "manageActions": "管理"
     }
@@ -3313,8 +3320,7 @@
       "setup": {
         "microphone": "仍需要麥克風權限",
         "speech": "轉錄需要 API 金鑰",
-        "actions": "會議紀要需要一個 AI 模型",
-        "chatIntelligence": "會議中的回答需要一個 AI 模型"
+        "intelligence": "紀要和聊天需要 AI 模型"
       },
       "appWindow": "顯示或隱藏 Snowy 視窗",
       "startMeeting": "開始會議",
@@ -3915,15 +3921,10 @@
           "title": "錄音與轉錄",
           "ready": "會議會在這台電腦上錄下並轉成文字。"
         },
-        "chatIntelligence": {
-          "title": "會議進行中就能得到答案",
-          "ready": "會議面板會提示該說什麼，並根據你的筆記回答問題。",
-          "missing": "會議面板可以提示你接下來該說什麼，並根據你的歷史筆記回答問題——不用離開通話。"
-        },
-        "actions": {
-          "title": "操作",
-          "ready": "每場保留的會議都會自動執行「產生筆記」：摘要、決議事項和負責人。你自訂的操作也使用同一個模型。",
-          "missing": "不會整理出任何內容。「產生筆記」和其他所有操作都需要語言模型才能執行，會議只會停留在原始轉錄。"
+        "intelligence": {
+          "title": "AI 模型",
+          "ready": "紀要、聊天和會議中的回答共用一個模型。每次保留的會議都會執行 Generate Notes。",
+          "missing": "什麼都不會被整理，助手也無法回答。一個金鑰——或一個本地模型——即可驅動紀要、聊天和會議中的回答。"
         }
       },
       "descriptionAllSet": "都已設定完成。以下是各部分正在使用的模型。",

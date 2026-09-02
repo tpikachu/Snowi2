@@ -67,8 +67,9 @@ test("the bar's setup warning opens Home with the capabilities card forced open"
 
   const bar = await agentBarPage(app);
   // On a fresh profile no AI model is configured, so the pulsing warning is
-  // up; its accessible name lists every gap.
-  const warning = bar.getByLabel(/write-ups need an AI model/i);
+  // up; its accessible name lists every gap — write-ups and chat share one
+  // model now, so they share one line.
+  const warning = bar.getByLabel(/write-ups and chat need an AI model/i);
   await expect(warning).toBeVisible({ timeout: 30_000 });
 
   await warning.click();

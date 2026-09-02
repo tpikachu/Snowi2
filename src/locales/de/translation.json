@@ -188,7 +188,8 @@
       "useCase": "Über dich",
       "meeting": "Meetings",
       "finish": "Fertig",
-      "voiceAgent": "Sprachagent"
+      "voiceAgent": "Sprachagent",
+      "textSize": "Komfort"
     },
     "rail": {
       "ariaLabel": "Einrichtungsschritte",
@@ -348,6 +349,14 @@
       "downloadStillRunning": "Ihr Sprachmodell ({{model}}) wird noch heruntergeladen — {{percent}} % fertig. Snowy schließt es im Hintergrund ab.",
       "launchAtLogin": "Snowy beim Anmelden starten",
       "launchAtLoginDescription": "Die Snowy-Leiste wartet oben auf deinem Bildschirm — ein Klick zum Aufnehmen."
+    },
+    "textSize": {
+      "title": "Wie groß soll der Text sein?",
+      "description": "Die ganze App folgt dieser Wahl – sie gilt sofort, du siehst also genau das Ergebnis.",
+      "previewLabel": "Vorschau",
+      "previewHeading": "Weekly Sync – Zusammenfassung",
+      "previewBody": "Sarah schickt das überarbeitete Budget bis Freitag. Der Launch rückt in die erste Oktoberwoche.",
+      "changeLater": "Du kannst das jederzeit unter Einstellungen → Präferenzen ändern."
     }
   },
   "streaming": {
@@ -2220,13 +2229,13 @@
         "actions": "Aktionen",
         "providers": "API-Schlüssel"
       },
-      "providers": {
-        "title": "API-Schlüssel",
-        "description": "Modelle wählst du direkt dort, wo du sie nutzt – im Chat, im Meeting-Panel und pro Aktion. Ein Schlüssel hier schaltet den Anbieter überall frei."
-      },
       "advancedSetup": "Erweiterte Einrichtung",
       "advanced": {
         "description": "Lokale Modelle, LAN-Endpunkte, eigene APIs und Enterprise-Routing für Chat und Aktionen."
+      },
+      "engine": {
+        "title": "Engine",
+        "description": "Wo Chat und Meeting-Zusammenfassungen laufen. Eine Wahl treibt beides an – das Modell wählst du direkt dort, wo du es nutzt."
       }
     },
     "transcription": {
@@ -2352,8 +2361,6 @@
     "actions": {
       "autoGenerateTitle": "Notiztitel automatisch generieren",
       "autoGenerateTitleDescription": "KI verwenden, um nach der Transkription oder Verbesserung einen kurzen Titel für Notizen zu generieren",
-      "actionsTitle": "Aktionen",
-      "actionsDescription": "Alles, was Snowy für Sie schreibt. Notizen erzeugen läuft bei jedem behaltenen Meeting; der Rest auf Zuruf.",
       "actionsRowDescription": "Aktionen für Notizen anlegen, bearbeiten und sortieren.",
       "manageActions": "Verwalten"
     }
@@ -3478,8 +3485,7 @@
       "setup": {
         "microphone": "Der Mikrofonzugriff fehlt noch",
         "speech": "Die Transkription braucht einen API-Schlüssel",
-        "actions": "Meeting-Zusammenfassungen brauchen ein KI-Modell",
-        "chatIntelligence": "Antworten während des Meetings brauchen ein KI-Modell"
+        "intelligence": "Zusammenfassungen und Chat brauchen ein KI-Modell"
       },
       "appWindow": "Snowy-Fenster anzeigen oder ausblenden",
       "startMeeting": "Meeting starten",
@@ -3915,15 +3921,10 @@
           "title": "Aufnahme und Transkription",
           "ready": "Meetings werden auf diesem Rechner aufgezeichnet und in Text umgewandelt."
         },
-        "chatIntelligence": {
-          "title": "Antworten während des Meetings",
-          "ready": "Das Meeting-Panel schlägt vor, was Sie sagen können, und antwortet aus Ihren Notizen.",
-          "missing": "Das Meeting-Panel kann vorschlagen, was Sie als Nächstes sagen, und Fragen aus Ihren früheren Notizen beantworten — ohne den Call zu verlassen."
-        },
-        "actions": {
-          "title": "Aktionen",
-          "ready": "Notizen erzeugen läuft bei jedem behaltenen Meeting: Zusammenfassung, Entscheidungen und Zuständigkeiten. Eigene Aktionen nutzen dasselbe Modell.",
-          "missing": "Es wird nichts ausformuliert. Notizen erzeugen und alle anderen Aktionen brauchen ein Sprachmodell, also bleiben Meetings reine Transkripte."
+        "intelligence": {
+          "title": "KI-Modell",
+          "ready": "Zusammenfassungen, Chat und Antworten im Meeting laufen auf einem Modell. Generate Notes läuft bei jedem behaltenen Meeting.",
+          "missing": "Nichts wird zusammengefasst und der Assistent kann nicht antworten. Ein Schlüssel – oder ein lokales Modell – treibt Zusammenfassungen, Chat und Meeting-Antworten an."
         }
       },
       "descriptionAllSet": "Alles ist eingerichtet. Das läuft jeweils darunter.",

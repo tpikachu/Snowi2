@@ -188,7 +188,8 @@
       "useCase": "À propos de vous",
       "meeting": "Réunions",
       "finish": "Terminer",
-      "voiceAgent": "Agent vocal"
+      "voiceAgent": "Agent vocal",
+      "textSize": "Confort"
     },
     "rail": {
       "ariaLabel": "Étapes de configuration",
@@ -348,6 +349,14 @@
       "downloadStillRunning": "Votre modèle vocal ({{model}}) est encore en téléchargement — {{percent}} % terminé. Snowy le finira en arrière-plan.",
       "launchAtLogin": "Lancer Snowy à l'ouverture de session",
       "launchAtLoginDescription": "La barre Snowy vous attendra en haut de l'écran — un clic pour enregistrer."
+    },
+    "textSize": {
+      "title": "Quelle taille de texte préférez-vous ?",
+      "description": "Toute l'application suit ce choix — appliqué immédiatement : ce que vous voyez est ce que vous aurez.",
+      "previewLabel": "Aperçu",
+      "previewHeading": "Point hebdo — compte rendu",
+      "previewBody": "Sarah enverra le budget révisé d'ici vendredi. Le lancement est reporté à la première semaine d'octobre.",
+      "changeLater": "Modifiable à tout moment dans Réglages → Préférences."
     }
   },
   "streaming": {
@@ -2220,13 +2229,13 @@
         "actions": "Actions",
         "providers": "Clés API"
       },
-      "providers": {
-        "title": "Clés API",
-        "description": "Les modèles se choisissent là où vous les utilisez : dans le chat, sur le panneau de réunion et par action. Une clé ici débloque ce fournisseur partout."
-      },
       "advancedSetup": "Configuration avancée",
       "advanced": {
         "description": "Modèles locaux, points d'accès LAN, API personnalisées et routage entreprise pour le chat et les actions."
+      },
+      "engine": {
+        "title": "Moteur",
+        "description": "Où s'exécutent le chat et les comptes rendus de réunion. Un seul choix alimente les deux — le modèle se choisit là où vous l'utilisez."
       }
     },
     "transcription": {
@@ -2352,8 +2361,6 @@
     "actions": {
       "autoGenerateTitle": "Générer automatiquement les titres des notes",
       "autoGenerateTitleDescription": "Utiliser l'IA pour générer un titre court pour les notes après la transcription ou l'amélioration",
-      "actionsTitle": "Actions",
-      "actionsDescription": "Tout ce que Snowy rédige pour vous. Générer des notes s'exécute sur chaque réunion conservée ; le reste à la demande.",
       "actionsRowDescription": "Créez, modifiez et réordonnez les actions exécutables sur une note.",
       "manageActions": "Gérer"
     }
@@ -3478,8 +3485,7 @@
       "setup": {
         "microphone": "L'accès au micro est encore requis",
         "speech": "La transcription nécessite une clé API",
-        "actions": "Les comptes rendus de réunion nécessitent un modèle d'IA",
-        "chatIntelligence": "Les réponses pendant la réunion nécessitent un modèle d'IA"
+        "intelligence": "Les comptes rendus et le chat ont besoin d'un modèle d'IA"
       },
       "appWindow": "Afficher ou masquer la fenêtre Snowy",
       "startMeeting": "Démarrer la réunion",
@@ -3915,15 +3921,10 @@
           "title": "Enregistrement et transcription",
           "ready": "Les réunions sont captées et transformées en texte sur cette machine."
         },
-        "chatIntelligence": {
-          "title": "Des réponses pendant la réunion",
-          "ready": "Le panneau suggère quoi dire et répond à partir de vos notes.",
-          "missing": "Le panneau de réunion peut suggérer quoi dire et répondre à vos questions à partir de vos notes passées, sans quitter l'appel."
-        },
-        "actions": {
-          "title": "Actions",
-          "ready": "Générer des notes s'exécute sur chaque réunion conservée : un résumé, les décisions et qui doit quoi. Vos propres actions utilisent le même modèle.",
-          "missing": "Rien n'est rédigé. Générer des notes et toutes les autres actions ont besoin d'un modèle de langage, donc les réunions restent de simples transcriptions."
+        "intelligence": {
+          "title": "Modèle d'IA",
+          "ready": "Les comptes rendus, le chat et les réponses en réunion tournent sur un même modèle. Generate Notes s'exécute pour chaque réunion conservée.",
+          "missing": "Rien n'est rédigé et l'assistant ne peut pas répondre. Une clé — ou un modèle local — alimente les comptes rendus, le chat et les réponses en réunion."
         }
       },
       "descriptionAllSet": "Tout est configuré. Voici ce que chaque partie utilise.",

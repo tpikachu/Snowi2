@@ -507,8 +507,20 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   }, [recordingFolderId, recordingNoteId]);
 
   const handleExitMeetingMode = useCallback(() => {
-    window.electronAPI?.restoreFromMeetingMode?.();
-  }, []);
+    // Two ways into the side-panel layout, two ways back. A live meeting
+    // snapped the window's geometry, so leaving restores it. But a narrow —
+    // or text-size-zoomed, since the breakpoint reads CSS pixels — window
+    // viewing a note entered this layout with no geometry change at all, and
+    // "Back to notes" must then NAVIGATE: clearing the active note is what
+    // brings the list and the rail back. The old geometry-only restore was a
+    // dead button there: at 1.25x zoom the restored window still measured
+    // under the narrow breakpoint, so nothing on screen changed.
+    if (isMeetingMode) {
+      window.electronAPI?.restoreFromMeetingMode?.();
+      return;
+    }
+    setActiveNoteId(null);
+  }, [isMeetingMode]);
 
   const copyToClipboard = useCallback(
     async (text: string) => {

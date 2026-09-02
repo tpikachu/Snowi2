@@ -188,7 +188,8 @@
       "useCase": "Su di te",
       "meeting": "Riunioni",
       "finish": "Fine",
-      "voiceAgent": "Agente vocale"
+      "voiceAgent": "Agente vocale",
+      "textSize": "Comfort"
     },
     "rail": {
       "ariaLabel": "Passaggi di configurazione",
@@ -348,6 +349,14 @@
       "downloadStillRunning": "Il tuo modello vocale ({{model}}) è ancora in download — {{percent}}% completato. Snowy lo finirà in background.",
       "launchAtLogin": "Avvia Snowy all'accesso",
       "launchAtLoginDescription": "La barra di Snowy ti aspetterà nella parte superiore dello schermo: un clic per registrare."
+    },
+    "textSize": {
+      "title": "Quanto deve essere grande il testo?",
+      "description": "Tutta l'app segue questa scelta, applicata subito: ciò che vedi è ciò che avrai.",
+      "previewLabel": "Anteprima",
+      "previewHeading": "Sync settimanale — riepilogo",
+      "previewBody": "Sarah invierà il budget rivisto entro venerdì. Il lancio slitta alla prima settimana di ottobre.",
+      "changeLater": "Puoi cambiarlo in qualsiasi momento in Impostazioni → Preferenze."
     }
   },
   "streaming": {
@@ -1937,13 +1946,13 @@
         "actions": "Azioni",
         "providers": "Chiavi API"
       },
-      "providers": {
-        "title": "Chiavi API",
-        "description": "I modelli si scelgono dove li usi: nella chat, nel pannello riunione e per azione. Una chiave qui sblocca quel provider ovunque."
-      },
       "advancedSetup": "Configurazione avanzata",
       "advanced": {
         "description": "Modelli locali, endpoint LAN, API personalizzate e routing aziendale per chat e azioni."
+      },
+      "engine": {
+        "title": "Motore",
+        "description": "Dove vengono eseguiti la chat e i riepiloghi delle riunioni. Una sola scelta alimenta entrambi: il modello si sceglie dove lo usi."
       }
     },
     "transcription": {
@@ -2264,8 +2273,6 @@
     "actions": {
       "autoGenerateTitle": "Genera automaticamente i titoli delle note",
       "autoGenerateTitleDescription": "Usa l'IA per generare un titolo breve per le note dopo la trascrizione o il miglioramento",
-      "actionsTitle": "Azioni",
-      "actionsDescription": "Tutto ciò che Snowy scrive per te. Genera note parte a ogni riunione che tieni; il resto quando lo chiedi.",
       "actionsRowDescription": "Crea, modifica e riordina le azioni eseguibili su una nota.",
       "manageActions": "Gestisci"
     }
@@ -3313,8 +3320,7 @@
       "setup": {
         "microphone": "Manca ancora l'accesso al microfono",
         "speech": "La trascrizione richiede una chiave API",
-        "actions": "I resoconti delle riunioni richiedono un modello di IA",
-        "chatIntelligence": "Le risposte durante la riunione richiedono un modello di IA"
+        "intelligence": "I riepiloghi e la chat richiedono un modello IA"
       },
       "appWindow": "Mostra o nascondi la finestra di Snowy",
       "startMeeting": "Avvia riunione",
@@ -3915,15 +3921,10 @@
           "title": "Registrazione e trascrizione",
           "ready": "Le riunioni vengono catturate e trasformate in testo su questo computer."
         },
-        "chatIntelligence": {
-          "title": "Risposte durante la riunione",
-          "ready": "Il pannello suggerisce cosa dire e risponde partendo dai tuoi appunti.",
-          "missing": "Il pannello della riunione può suggerire cosa dire e rispondere alle tue domande partendo dagli appunti passati, senza uscire dalla chiamata."
-        },
-        "actions": {
-          "title": "Azioni",
-          "ready": "Genera note parte a ogni riunione che tieni: un riassunto, le decisioni e chi deve fare cosa. Le tue azioni usano lo stesso modello.",
-          "missing": "Non viene scritto niente. Genera note e tutte le altre azioni hanno bisogno di un modello linguistico, quindi le riunioni restano trascrizioni grezze."
+        "intelligence": {
+          "title": "Modello IA",
+          "ready": "Riepiloghi, chat e risposte in riunione girano su un unico modello. Generate Notes viene eseguito per ogni riunione conservata.",
+          "missing": "Niente viene riepilogato e l'assistente non può rispondere. Una chiave — o un modello locale — alimenta riepiloghi, chat e risposte in riunione."
         }
       },
       "descriptionAllSet": "È tutto configurato. Ecco cosa usa ogni parte.",

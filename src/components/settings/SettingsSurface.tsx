@@ -61,8 +61,6 @@ export default function SettingsSurface({
   const [contentNode, setContentNode] = useState<HTMLDivElement | null>(null);
   const [contentWidth, setContentWidth] = useState(0);
   const [query, setQuery] = useState("");
-  const [presentAnchors, setPresentAnchors] = useState<string[]>([]);
-  const [activeAnchor, setActiveAnchor] = useState<string | null>(null);
 
   const isCompact = contentWidth > 0 && contentWidth < SETTINGS_COMPACT_PX;
   const isWide = contentWidth >= SETTINGS_WIDE_PX;
@@ -86,81 +84,16 @@ export default function SettingsSurface({
   }, [contentNode]);
 
   const section = SECTION_BY_ID[activeSection];
-  const definedAnchors = section?.anchors;
 
-  // Which anchors actually rendered. Platform-conditional groups (Wayland
-  // paste, say) must never leave a link pointing at nothing.
-  useEffect(() => {
-    const node = contentNode;
-    if (!node || !definedAnchors) {
-      setPresentAnchors([]);
-      return;
-    }
-
-    let frame = 0;
-    const read = () => {
-      frame = 0;
-      const found = new Set<string>();
-      node.querySelectorAll<HTMLElement>("[data-settings-group]").forEach((el) => {
-        // offsetParent is null for the keep-alive panels parked behind `hidden`.
-        if (el.offsetParent === null) return;
-        const id = el.dataset.settingsGroup;
-        if (id) found.add(id);
-      });
-      setPresentAnchors(definedAnchors.filter((anchor) => found.has(anchor.id)).map((a) => a.id));
-    };
-
-    read();
-    const observer = new MutationObserver(() => {
-      if (frame) return;
-      frame = requestAnimationFrame(read);
-    });
-    observer.observe(node, { childList: true, subtree: true });
-    return () => {
-      observer.disconnect();
-      if (frame) cancelAnimationFrame(frame);
-    };
-  }, [contentNode, definedAnchors, activeSection, activePanel]);
-
-  // Highlight the group the reader is actually looking at.
-  useEffect(() => {
-    const node = contentNode;
-    if (!node || presentAnchors.length === 0) {
-      setActiveAnchor(null);
-      return;
-    }
-
-    const targets = presentAnchors
-      .map((id) => node.querySelector<HTMLElement>(`[data-settings-group="${id}"]`))
-      .filter((el): el is HTMLElement => !!el);
-    if (targets.length === 0) return;
-
-    const visible = new Map<string, number>();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          const id = (entry.target as HTMLElement).dataset.settingsGroup;
-          if (!id) continue;
-          if (entry.isIntersecting) visible.set(id, entry.boundingClientRect.top);
-          else visible.delete(id);
-        }
-        const first = presentAnchors.find((id) => visible.has(id));
-        if (first) setActiveAnchor(first);
-      },
-      { root: node, rootMargin: "0px 0px -65% 0px", threshold: 0 }
-    );
-
-    targets.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [contentNode, presentAnchors]);
-
+  // Anchors no longer render in the nav (the tree is flat now); they survive
+  // purely as scroll targets, resolved from the DOM at click time so search
+  // never promises a group that isn't rendered.
   const scrollToAnchor = useCallback((anchorId: string) => {
     const node = scrollRef.current;
     if (!node) return;
     const target = node.querySelector<HTMLElement>(`[data-settings-group="${anchorId}"]`);
     if (!target) return;
     target.scrollIntoView({ behavior: "smooth", block: "start" });
-    setActiveAnchor(anchorId);
   }, []);
 
   const results: SettingsSearchEntry[] = useMemo(() => {
@@ -214,7 +147,10 @@ export default function SettingsSurface({
   );
 
   const activePanelLabel = useMemo(() => {
-    const panel = section?.panels?.find((p) => p.id === activePanel);
+    // A lone panel IS its section; naming it again in the breadcrumb would
+    // just restate the header with a different word.
+    if (!section?.panels || section.panels.length <= 1) return null;
+    const panel = section.panels.find((p) => p.id === activePanel);
     return panel ? t(panel.labelKey) : null;
   }, [section, activePanel, t]);
 
@@ -376,7 +312,11 @@ export default function SettingsSurface({
                           </span>
                         </button>
 
-                        {isActive && def.panels && (
+                        {/* Sub-items only when there is a genuine choice: a
+                            lone panel (or a page's own scroll anchors) as nav
+                            children just made the tree look deeper than the
+                            settings are (client direction, 2026-09). */}
+                        {isActive && def.panels && def.panels.length > 1 && (
                           <ul className="mb-1 ml-[1.4rem] mt-px space-y-px border-l border-border-subtle pl-1.5">
                             {def.panels.map((panel) => {
                               const PanelIcon = panel.icon;
@@ -406,35 +346,9 @@ export default function SettingsSurface({
                           </ul>
                         )}
 
-                        {isActive && presentAnchors.length > 1 && (
-                          <ul className="mb-1 ml-[1.4rem] mt-px space-y-px border-l border-border-subtle pl-1.5">
-                            {presentAnchors.map((anchorId) => {
-                              const anchor = def.anchors?.find((a) => a.id === anchorId);
-                              if (!anchor) return null;
-                              const isAnchorActive = activeAnchor === anchorId;
-                              return (
-                                <li key={anchorId}>
-                                  <button
-                                    type="button"
-                                    onClick={() => scrollToAnchor(anchorId)}
-                                    aria-current={isAnchorActive ? "true" : undefined}
-                                    className={cn(
-                                      navItemClass,
-                                      "py-1",
-                                      isAnchorActive
-                                        ? "text-primary"
-                                        : "text-muted-foreground hover:bg-surface-2 hover:text-foreground"
-                                    )}
-                                  >
-                                    <span className="min-w-0 flex-1 truncate text-xs">
-                                      {t(anchor.labelKey)}
-                                    </span>
-                                  </button>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                        )}
+                        {/* The anchor sub-list is gone with the same stroke —
+                            the anchors themselves survive as scroll targets
+                            for settings search. */}
                       </li>
                     );
                   })}

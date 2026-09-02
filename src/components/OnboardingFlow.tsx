@@ -10,6 +10,7 @@ import {
   Shield,
   Command,
   Sparkles,
+  Type,
   Users,
 } from "lucide-react";
 import TitleBar from "./TitleBar";
@@ -48,6 +49,7 @@ import {
   useOnboardingTranscriptionSetup,
 } from "../hooks/useOnboardingTranscriptionSetup";
 import PermissionsStep from "./onboarding/PermissionsStep";
+import TextSizeStep from "./onboarding/TextSizeStep";
 import ActivationStep from "./onboarding/ActivationStep";
 import VoiceAgentStep from "./onboarding/VoiceAgentStep";
 import MeetingSetupStep from "./onboarding/MeetingSetupStep";
@@ -279,6 +281,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       { id: "usecase", title: t("onboarding.steps.useCase"), icon: Sparkles },
       { id: "setup", title: t("onboarding.steps.setup"), icon: Settings },
       { id: "permissions", title: t("onboarding.steps.permissions"), icon: Shield },
+      // Comfort before content: the choice zooms this very window, so the
+      // preview is the app itself and every later step is already readable.
+      { id: "textSize", title: t("onboarding.steps.textSize"), icon: Type },
     ];
     // Activation and voice agent both configure dictation hotkeys, which are
     // not registered while dictation is hidden — asking the user to choose one
@@ -608,6 +613,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
           />
         );
 
+      case "textSize":
+        return <TextSizeStep eyebrow={stepTitle} />;
+
       case "activation":
         return (
           <ActivationStep
@@ -716,6 +724,8 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       }
       case "permissions":
         return areRequiredPermissionsMet(permissionsHook.micPermissionGranted);
+      case "textSize":
+        return true; // Default is already a valid answer
       case "activation":
         return hotkey.trim() !== "";
       case "voiceAgent":

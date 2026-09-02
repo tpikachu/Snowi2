@@ -8,11 +8,7 @@ async function load() {
 test("a link naming a panel lands on that panel", async () => {
   const { resolveDeepLink } = await load();
 
-  assert.deepEqual(resolveDeepLink("llms", "actions"), { section: "llms", llmTab: "actions" });
-  assert.deepEqual(resolveDeepLink("llms", "chatIntelligence"), {
-    section: "llms",
-    llmTab: "chatIntelligence",
-  });
+  assert.deepEqual(resolveDeepLink("llms", "providers"), { section: "llms", llmTab: "providers" });
   assert.deepEqual(resolveDeepLink("speechToText", "noteRecording"), {
     section: "speechToText",
     speechTab: "noteRecording",
@@ -22,8 +18,9 @@ test("a link naming a panel lands on that panel", async () => {
 test("a legacy section id resolves to its section and its sub-tab", async () => {
   const { resolveDeepLink } = await load();
 
-  // Old "meetings" links predate the Actions rename and carry no panel.
-  assert.deepEqual(resolveDeepLink("meetings"), { section: "llms", llmTab: "actions" });
+  // Old "meetings" links predate two renames; they land on the one Language
+  // Models page, where the shared LLM is configured.
+  assert.deepEqual(resolveDeepLink("meetings"), { section: "llms", llmTab: "providers" });
 });
 
 test("a link into a hidden feature keeps the section and drops the panel", async () => {
@@ -44,9 +41,9 @@ test("a link into a hidden feature keeps the section and drops the panel", async
 test("an explicit panel beats the legacy sub-tab for the same section", async () => {
   const { resolveDeepLink } = await load();
 
-  assert.deepEqual(resolveDeepLink("meetings", "chatIntelligence"), {
+  assert.deepEqual(resolveDeepLink("meetings", "providers"), {
     section: "llms",
-    llmTab: "chatIntelligence",
+    llmTab: "providers",
   });
 });
 
@@ -57,6 +54,9 @@ test("a panel the section does not have is dropped, not guessed", async () => {
   // would be worse than returning none: it would look like a successful nav.
   assert.deepEqual(resolveDeepLink("llms", "noteRecording"), { section: "llms" });
   assert.deepEqual(resolveDeepLink("llms", "noteFormatting"), { section: "llms" });
+  // The retired chat/actions tabs resolve like any other gone panel.
+  assert.deepEqual(resolveDeepLink("llms", "actions"), { section: "llms" });
+  assert.deepEqual(resolveDeepLink("llms", "chatIntelligence"), { section: "llms" });
   assert.deepEqual(resolveDeepLink("privacyData", "actions"), { section: "privacyData" });
 });
 

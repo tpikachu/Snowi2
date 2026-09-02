@@ -695,7 +695,13 @@ export default function AgentOverlay() {
               stretch the bar while the window grows. */}
           <div
             className={cn(cardChrome, "flex h-[104px] shrink-0 flex-col gap-1 p-2.5")}
-            style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+            // While the palette is open the bar stops being a drag region: a
+            // drag region's clicks are consumed by the OS, so a click on the
+            // strip's empty space would neither blur the field nor close the
+            // menu. With drag suspended, that click reaches the DOM, focus
+            // falls to the body, and the input's blur folds the palette — the
+            // way any menu closes. Dragging returns the moment it folds.
+            style={{ WebkitAppRegion: paletteOpen ? "no-drag" : "drag" } as React.CSSProperties}
           >
             {!setupComplete ? (
               /* Pre-setup: the same two-row shell, with the hint where the

@@ -25,13 +25,11 @@ import {
   UPLOAD_SETTINGS_IDS,
 } from "../../config/features";
 import {
-  ListChecks,
   Brain,
   FileAudio,
   Keyboard,
   KeyRound,
   Languages,
-  MessageSquare,
   Mic,
   Shield,
   Sliders,
@@ -51,13 +49,7 @@ export function settingsGroupDomId(id: string): string {
 
 export type SpeechTab = "dictation" | "noteRecording" | "upload";
 
-export type LlmTab =
-  | "providers"
-  | "dictationCleanup"
-  | "dictationAgent"
-  | "dictationTranslation"
-  | "actions"
-  | "chatIntelligence";
+export type LlmTab = "providers" | "dictationCleanup" | "dictationAgent" | "dictationTranslation";
 
 const ALL_SPEECH_TABS: readonly SpeechTab[] = ["dictation", "noteRecording", "upload"] as const;
 
@@ -72,11 +64,13 @@ export const isVisibleEntry = (id: string) =>
 
 export const SPEECH_TABS: readonly SpeechTab[] = ALL_SPEECH_TABS.filter(isVisibleEntry);
 
-// Same order as the panel list below, and for the same reason.
+// Same order as the panel list below, and for the same reason. The former
+// `actions` and `chatIntelligence` tabs are gone (client direction, 2026-09):
+// chat and actions share one LLM, configured once on the `providers` page —
+// engine choice, keys, and the advanced escape hatch — and their models are
+// changed at point of use (chat bar, cue card, action editor), never here.
 const ALL_LLM_TABS: readonly LlmTab[] = [
   "providers",
-  "actions",
-  "chatIntelligence",
   "dictationCleanup",
   "dictationAgent",
   "dictationTranslation",
@@ -114,10 +108,10 @@ export const SECTION_ALIASES: Record<string, SettingsSectionType> = {
 export const LEGACY_SUB_TAB: Record<string, string> = {
   transcription: "dictation",
   uploadTranscription: "upload",
-  meetings: "actions",
+  meetings: "providers",
   intelligence: "dictationCleanup",
-  agentMode: "chatIntelligence",
-  agentConfig: "chatIntelligence",
+  agentMode: "providers",
+  agentConfig: "providers",
   aiModels: "dictationCleanup",
   prompts: "dictationCleanup",
 };
@@ -255,16 +249,11 @@ const ALL_SETTINGS_SECTIONS: SettingsSectionDef[] = [
     // that escapes it fails the LLM_TABS membership check in SettingsModal and
     // lands on the first tab.
     //
-    // `providers` leads: keys are the only model setup Settings still owns —
-    // models themselves are picked at point of use (chat, cue card, actions).
+    // `providers` is the whole page now: engine (cloud or local), keys, and
+    // the advanced escape hatch. Chat and actions share that one LLM setup;
+    // their models are changed at point of use, never in Settings.
     panels: [
       { id: "providers", labelKey: "settingsPage.llms.tabs.providers", icon: KeyRound },
-      { id: "actions", labelKey: "settingsPage.llms.tabs.actions", icon: ListChecks },
-      {
-        id: "chatIntelligence",
-        labelKey: "settingsPage.llms.tabs.chatIntelligence",
-        icon: MessageSquare,
-      },
       {
         id: "dictationCleanup",
         labelKey: "settingsPage.llms.tabs.dictationCleanup",
@@ -531,28 +520,27 @@ const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
     anchor: "translationModel",
     labelKey: "dictationTranslation.enabled",
   },
+  // The former actions/chat panels' controls live behind the providers page's
+  // Advanced disclosure now — a collapsed target search cannot promise to
+  // reach, so the entries land on the page instead of a hidden anchor.
   {
     section: "llms",
-    panel: "actions",
-    anchor: "actionsOptions",
+    panel: "providers",
     labelKey: "settingsPage.actions.autoGenerateTitle",
   },
   {
     section: "llms",
-    panel: "actions",
-    anchor: "actionsList",
+    panel: "providers",
     labelKey: "notes.actions.manageTitle",
   },
   {
     section: "llms",
-    panel: "chatIntelligence",
-    anchor: "chatFastLane",
+    panel: "providers",
     labelKey: "agentMode.fastLane.title",
   },
   {
     section: "llms",
-    panel: "chatIntelligence",
-    anchor: "chatAgentPrompt",
+    panel: "providers",
     labelKey: "agentMode.settings.systemPrompt",
   },
 

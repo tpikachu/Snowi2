@@ -1,15 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
-import {
-  Check,
-  ChevronDown,
-  ChevronUp,
-  Mic,
-  MessageSquareText,
-  Sparkles,
-  type LucideIcon,
-} from "lucide-react";
+import { Check, ChevronDown, ChevronUp, Mic, Sparkles, type LucideIcon } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "../lib/utils";
 import { useLocalStorage } from "../../hooks/useLocalStorage";
@@ -27,7 +19,7 @@ import {
 
 const COLLAPSED_KEY = "homeCapabilitiesCollapsed";
 
-type CapabilityId = "transcription" | "actions" | "chatIntelligence";
+type CapabilityId = "transcription" | "intelligence";
 
 interface Capability {
   id: CapabilityId;
@@ -36,18 +28,17 @@ interface Capability {
 }
 
 /**
- * In the order they come alive. Transcription first because it is the one that
- * already works, and a list that opens with what is broken reads as a fault
- * report rather than a description of the app.
+ * Two rows, matching the two things a user configures: transcription and the
+ * one LLM everything intelligent runs on. Write-ups, chat and in-meeting
+ * answers used to be listed separately, but they share one model now — three
+ * rows meant three Configure buttons all leading to the same page (client
+ * direction, 2026-09). Transcription first because it is the one that already
+ * works, and a list that opens with what is broken reads as a fault report
+ * rather than a description of the app.
  */
 const CAPABILITIES: Capability[] = [
   { id: "transcription", icon: Mic, remedy: "configureMeetingTranscription" },
-  // Named "Actions", not "written-up meetings". The write-up is not a separate
-  // feature: it is the built-in Generate Notes action, run automatically when a
-  // meeting is kept. Calling it anything else here means the button leads to a
-  // Settings panel with a different name on it.
-  { id: "actions", icon: Sparkles, remedy: "configureActions" },
-  { id: "chatIntelligence", icon: MessageSquareText, remedy: "configureChatIntelligence" },
+  { id: "intelligence", icon: Sparkles, remedy: "configureChatIntelligence" },
 ];
 
 interface CapabilityRow extends Capability {
@@ -160,14 +151,11 @@ export default function CapabilitiesCard() {
 
     const byId: Record<CapabilityId, Pick<CapabilityRow, "ready" | "model" | "where">> = {
       transcription,
-      actions: describe(
-        resolved.actionsReady,
-        resolved.actionsModel,
-        resolved.actionsProvider,
-        resolved.actionsMode
-      ),
-      chatIntelligence: describe(
-        resolved.chatReady,
+      // One shared LLM. Ready means BOTH consumers could serve (a per-action
+      // override on a dead key would otherwise hide behind a working chat),
+      // and the named model is the chat scope's — the canonical copy.
+      intelligence: describe(
+        resolved.actionsReady && resolved.chatReady,
         resolved.chatModel,
         resolved.chatProvider,
         resolved.chatMode

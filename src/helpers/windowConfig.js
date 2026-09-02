@@ -74,6 +74,11 @@ const MAIN_WINDOW_CONFIG = {
 const CONTROL_PANEL_CONFIG = {
   width: 1200,
   height: 800,
+  // A floor, because the renderer's narrow-layout breakpoint reads CSS
+  // pixels: without one the window can be dragged (or zoomed, via the
+  // text-size preference) into a state where the icon rail is gone for good.
+  minWidth: 720,
+  minHeight: 480,
   backgroundColor: "#1c1c2e",
   webPreferences: {
     preload: path.join(__dirname, "..", "..", "preload.js"),

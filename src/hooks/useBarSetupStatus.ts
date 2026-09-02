@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-export type BarSetupItemId = "microphone" | "speech" | "actions" | "chatIntelligence";
+export type BarSetupItemId = "microphone" | "speech" | "intelligence";
 
 export interface BarDownloadStatus {
   /** Human model name from the registry, for the tooltip. */
@@ -106,12 +106,13 @@ export function useBarSetupStatus(): BarSetupStatus {
     };
   }, []);
 
-  // Same order as the Home card's capability rows, mic first.
+  // Same order as the Home card's capability rows, mic first. Actions and
+  // chat share one LLM now, so their two wire booleans collapse into a
+  // single "intelligence" warning — one gap, one line, one fix.
   const missing: BarSetupItemId[] = [];
   if (!micOk) missing.push("microphone");
   if (!remote.speechOk) missing.push("speech");
-  if (!remote.actionsOk) missing.push("actions");
-  if (!remote.chatOk) missing.push("chatIntelligence");
+  if (!remote.actionsOk || !remote.chatOk) missing.push("intelligence");
   return {
     missing,
     download: remote.download,

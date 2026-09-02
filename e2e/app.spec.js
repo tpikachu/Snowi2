@@ -52,15 +52,18 @@ test("the capabilities card deep-links into Settings, where upload stays retired
   const page = await controlPanelPage(app);
   await skipOnboarding(page);
 
-  // "Set up" on the first missing capability (Actions on a fresh install)
-  // opens Settings on Language Models — the same requestSettings path the
-  // meeting panel's configure button uses.
+  // "Set up" on the missing AI-model capability opens Settings on Language
+  // Models — one page now: the engine choice, keys, and the advanced hatch.
   await page.getByRole("button", { name: "Set up" }).first().click();
   await expect(page.getByText("Language Models").first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("Cloud Providers").first()).toBeVisible();
 
-  // Over in Speech-to-Text, only the surfaces a user can reach have tabs:
-  // Note Recording is there, the upload tab is retired behind UPLOAD_ENABLED.
+  // Over in Speech-to-Text the note-recording engine page loads directly —
+  // a lone panel spawns no nav sub-items — and the upload surface stays
+  // retired behind UPLOAD_ENABLED.
   await page.getByText("Speech-to-Text").first().click();
-  await expect(page.getByText("Note Recording").first()).toBeVisible();
+  // Role-based on purpose: the keep-alive panels park hidden copies of the
+  // same copy in the DOM, and roles only match what is actually on screen.
+  await expect(page.getByRole("region", { name: "Engine" })).toBeVisible();
   await expect(page.getByText("Audio Upload", { exact: true })).toHaveCount(0);
 });
