@@ -2840,13 +2840,6 @@
       "deselectAll": "Deseleziona tutto",
       "confirmed": "Confermato",
       "nameAssigned": "Nome assegnato",
-      "state": {
-        "provisional": "Provvisorio",
-        "confirmed": "Confermato",
-        "suggested": "Suggerito",
-        "locked": "Bloccato",
-        "interim": "Provvisorio"
-      },
       "createNewPrefix": "Crea",
       "emailPlaceholder": "nome@esempio.com",
       "nameOrEmailPlaceholder": "Inserisci nome o email",
@@ -2965,6 +2958,10 @@
         "whatToSay": "Cosa dovrei dire?",
         "recap": "Riepilogo finora",
         "stillOpen": "Cosa resta aperto?"
+      },
+      "answer": {
+        "fromMeeting": "Da questa riunione",
+        "checkedNotes": "Note consultate"
       }
     },
     "transcript": {
@@ -3314,13 +3311,6 @@
       "overrideOn": "Le risposte rapide usano il modello scelto qui sotto.",
       "overrideAuto": "Snowy sceglie {{model}} automaticamente — il modello veloce del tuo provider di chat.",
       "overrideSame": "Le risposte rapide usano attualmente il tuo modello di chat. Attiva questa opzione per sceglierne uno più veloce."
-    },
-    "lane": {
-      "label": "Velocità di risposta",
-      "fast": "Veloce",
-      "thinking": "Riflessione",
-      "fastHint": "Veloce — risposte immediate con un modello rapido; cerca comunque nelle tue note e riunioni",
-      "thinkingHint": "Riflessione — più lenta, ragiona più a fondo con il tuo modello principale"
     }
   },
   "integrations": {

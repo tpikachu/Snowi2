@@ -2840,13 +2840,6 @@
       "deselectAll": "取消全选",
       "confirmed": "已确认",
       "nameAssigned": "姓名已分配",
-      "state": {
-        "provisional": "临时",
-        "confirmed": "已确认",
-        "suggested": "建议",
-        "locked": "锁定",
-        "interim": "临时"
-      },
       "createNewPrefix": "创建",
       "emailPlaceholder": "name@example.com",
       "nameOrEmailPlaceholder": "输入姓名或邮箱",
@@ -2965,6 +2958,10 @@
         "whatToSay": "我该说什么？",
         "recap": "到目前为止的回顾",
         "stillOpen": "还有什么未解决？"
+      },
+      "answer": {
+        "fromMeeting": "来自本次会议",
+        "checkedNotes": "已查阅你的笔记"
       }
     },
     "transcript": {
@@ -3314,13 +3311,6 @@
       "overrideOn": "快速回答使用下方选择的模型。",
       "overrideAuto": "Snowy 当前自动选择 {{model}} — 你的聊天服务商的轻量模型。",
       "overrideSame": "快速回答当前使用你的聊天模型。开启后可选择更快的模型。"
-    },
-    "lane": {
-      "label": "回答速度",
-      "fast": "快速",
-      "thinking": "思考",
-      "fastHint": "快速 — 用轻量模型立即回答，仍可搜索你的笔记和会议",
-      "thinkingHint": "思考 — 较慢，用你的主模型更深入地推理"
     }
   },
   "integrations": {

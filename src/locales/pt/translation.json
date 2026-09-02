@@ -2840,13 +2840,6 @@
       "deselectAll": "Desmarcar tudo",
       "confirmed": "Confirmado",
       "nameAssigned": "Nome atribuído",
-      "state": {
-        "provisional": "Provisório",
-        "confirmed": "Confirmado",
-        "suggested": "Sugerido",
-        "locked": "Bloqueado",
-        "interim": "Provisório"
-      },
       "createNewPrefix": "Criar",
       "emailPlaceholder": "nome@exemplo.com",
       "nameOrEmailPlaceholder": "Digite um nome ou e-mail",
@@ -2965,6 +2958,10 @@
         "whatToSay": "O que devo dizer?",
         "recap": "Resumo até agora",
         "stillOpen": "O que ainda está pendente?"
+      },
+      "answer": {
+        "fromMeeting": "Desta reunião",
+        "checkedNotes": "Consultou suas notas"
       }
     },
     "transcript": {
@@ -3314,13 +3311,6 @@
       "overrideOn": "As respostas rápidas usam o modelo escolhido abaixo.",
       "overrideAuto": "O Snowy escolhe {{model}} automaticamente — o modelo veloz do seu provedor de chat.",
       "overrideSame": "As respostas rápidas usam atualmente o seu modelo de chat. Ative isto para escolher um mais veloz."
-    },
-    "lane": {
-      "label": "Velocidade de resposta",
-      "fast": "Rápido",
-      "thinking": "Pensar",
-      "fastHint": "Rápido — respostas imediatas com um modelo veloz; também pesquisa nas suas notas e reuniões",
-      "thinkingHint": "Pensar — mais lento, raciocina mais a fundo com o seu modelo principal"
     }
   },
   "integrations": {

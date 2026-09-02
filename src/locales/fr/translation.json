@@ -3053,13 +3053,6 @@
       "deselectAll": "Tout désélectionner",
       "confirmed": "Confirmé",
       "nameAssigned": "Nom attribué",
-      "state": {
-        "provisional": "Provisoire",
-        "confirmed": "Confirmé",
-        "suggested": "Suggéré",
-        "locked": "Verrouillé",
-        "interim": "Provisoire"
-      },
       "pill": {
         "identifying": "Identification des intervenants",
         "notLabeled": "Intervenants non étiquetés",
@@ -3172,6 +3165,10 @@
         "whatToSay": "Que devrais-je dire ?",
         "recap": "Résumé jusqu'ici",
         "stillOpen": "Qu'est-ce qui reste ouvert ?"
+      },
+      "answer": {
+        "fromMeeting": "De cette réunion",
+        "checkedNotes": "Notes consultées"
       }
     },
     "transcript": {
@@ -3479,13 +3476,6 @@
       "overrideOn": "Les réponses rapides utilisent le modèle choisi ci-dessous.",
       "overrideAuto": "Snowy choisit {{model}} automatiquement — le modèle véloce de votre fournisseur de chat.",
       "overrideSame": "Les réponses rapides utilisent actuellement votre modèle de chat. Activez ceci pour en choisir un plus véloce."
-    },
-    "lane": {
-      "label": "Vitesse de réponse",
-      "fast": "Rapide",
-      "thinking": "Réflexion",
-      "fastHint": "Rapide — réponses immédiates avec un modèle véloce ; cherche aussi dans vos notes et réunions",
-      "thinkingHint": "Réflexion — plus lent, raisonne plus en profondeur avec votre modèle principal"
     }
   },
   "integrations": {

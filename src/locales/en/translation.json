@@ -3053,13 +3053,6 @@
       "deselectAll": "Deselect all",
       "confirmed": "Confirmed",
       "nameAssigned": "Name assigned",
-      "state": {
-        "provisional": "Provisional",
-        "confirmed": "Confirmed",
-        "suggested": "Suggested",
-        "locked": "Locked",
-        "interim": "Interim"
-      },
       "pill": {
         "identifying": "Identifying speakers",
         "notLabeled": "Speakers not labeled",
@@ -3172,6 +3165,10 @@
         "whatToSay": "What should I say?",
         "recap": "Recap so far",
         "stillOpen": "What's still open?"
+      },
+      "answer": {
+        "fromMeeting": "From this meeting",
+        "checkedNotes": "Checked your notes"
       }
     },
     "transcript": {
@@ -3479,13 +3476,6 @@
       "overrideOn": "Fast answers use the model chosen below.",
       "overrideAuto": "Snowy currently picks {{model}} automatically — your chat provider's quick model.",
       "overrideSame": "Fast answers currently run on your chat model. Turn this on to pick a quicker one."
-    },
-    "lane": {
-      "label": "Answer speed",
-      "fast": "Fast",
-      "thinking": "Thinking",
-      "fastHint": "Fast — instant answers on a quick model; can still search your notes and meetings",
-      "thinkingHint": "Thinking — slower, reasons more deeply on your main model"
     }
   },
   "integrations": {

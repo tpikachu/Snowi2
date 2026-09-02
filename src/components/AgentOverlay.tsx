@@ -11,9 +11,7 @@ import AudioManager from "../helpers/audioManager";
 import { useChatPersistence } from "./chat/useChatPersistence";
 import { useChatStreaming } from "./chat/useChatStreaming";
 import { useChatMessageSender } from "./chat/useChatMessageSender";
-import { LaneToggle } from "./chat/LaneToggle";
 import { useSettingsStore } from "../stores/settingsStore";
-import type { ChatLane } from "../utils/assistFastLane";
 import type { ScreenContextImage } from "../types/electron";
 
 const MIN_HEIGHT = 200;
@@ -42,11 +40,6 @@ export default function AgentOverlay() {
   const audioManagerRef = useRef<InstanceType<typeof AudioManager> | null>(null);
   const agentStateRef = useRef<string>("idle");
   const barInputRef = useRef<HTMLInputElement | null>(null);
-
-  // The bar defaults to Fast: it is the glance-and-go surface, and its promise
-  // is the answer now. Not persisted — the default is the promise. The app
-  // chat makes the opposite call (see ChatView).
-  const [chatLane, setChatLane] = useState<ChatLane>("fast");
 
   const agentScreenContext = useSettingsStore((s) => s.agentScreenContext);
   const agentScreenContextPrompted = useSettingsStore((s) => s.agentScreenContextPrompted);
@@ -126,9 +119,12 @@ export default function AgentOverlay() {
           screenContext = undefined;
         }
       }
-      await sendMessage(text, { lane: chatLane, ...(screenContext ? { screenContext } : {}) });
+      // No lane option: the bar is global chat over every meeting and note,
+      // so it always gets the full chat model — a mode chooser here only
+      // offered a way to get a worse answer.
+      await sendMessage(text, screenContext ? { screenContext } : undefined);
     },
-    [sendMessage, chatLane]
+    [sendMessage]
   );
 
   const handleTranscriptionComplete = useCallback(
@@ -456,7 +452,6 @@ export default function AgentOverlay() {
               partialTranscript={partialTranscript}
               onTextSubmit={handleSend}
               onCancel={streaming.cancelStream}
-              accessory={<LaneToggle lane={chatLane} onChange={setChatLane} />}
             />
           </>
         ) : (
@@ -563,16 +558,14 @@ export default function AgentOverlay() {
                 </div>
 
                 {/* Row 2 — the control strip. Everything the field displaced:
-                    warnings, the lane chip, download progress on the left;
-                    the meeting and window verbs on the right. */}
+                    warnings and download progress on the left; the meeting
+                    and window verbs on the right. No lane chip here — the bar
+                    is global chat and always sends the full chat model. */}
                 <div className="flex h-7 shrink-0 items-center gap-1.5">
                   {setupWarning}
                   {/* The dictation mic was deliberately dropped from the bar —
                       typing and Listen are its two verbs; the hotkey still
                       reaches voice input for those who use it. */}
-                  <span style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}>
-                    <LaneToggle lane={chatLane} onChange={setChatLane} />
-                  </span>
                   {/* A download that doesn't block recording still shows: the
                       user asked the app for a model, and the bar is the one
                       surface always on screen to answer "is it done yet". */}

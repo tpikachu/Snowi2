@@ -2768,13 +2768,6 @@
       "deselectAll": "すべて選択解除",
       "confirmed": "確認済み",
       "nameAssigned": "名前を割り当てました",
-      "state": {
-        "provisional": "仮",
-        "confirmed": "確認済み",
-        "suggested": "候補",
-        "locked": "固定",
-        "interim": "暫定"
-      },
       "pill": {
         "identifying": "話者を識別中",
         "notLabeled": "話者ラベルなし",
@@ -2893,6 +2886,10 @@
         "whatToSay": "何と言えばいい？",
         "recap": "ここまでの要約",
         "stillOpen": "まだ残っていることは？"
+      },
+      "answer": {
+        "fromMeeting": "この会議から",
+        "checkedNotes": "ノートを確認済み"
       }
     },
     "transcript": {
@@ -3314,13 +3311,6 @@
       "overrideOn": "高速回答は下で選んだモデルを使用します。",
       "overrideAuto": "現在 Snowy は {{model}} を自動選択しています — チャットプロバイダーの軽量モデルです。",
       "overrideSame": "高速回答は現在チャットモデルで実行されています。より速いモデルを選ぶにはオンにしてください。"
-    },
-    "lane": {
-      "label": "回答速度",
-      "fast": "高速",
-      "thinking": "思考",
-      "fastHint": "高速 — 軽量モデルで即座に回答。ノートや会議の検索も可能",
-      "thinkingHint": "思考 — 時間はかかるが、メインのモデルでより深く考える"
     }
   },
   "integrations": {

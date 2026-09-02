@@ -3053,13 +3053,6 @@
       "deselectAll": "Alle abwählen",
       "confirmed": "Bestätigt",
       "nameAssigned": "Name zugewiesen",
-      "state": {
-        "provisional": "Vorläufig",
-        "confirmed": "Bestätigt",
-        "suggested": "Vorgeschlagen",
-        "locked": "Fixiert",
-        "interim": "Vorläufig"
-      },
       "pill": {
         "identifying": "Sprecher werden identifiziert",
         "notLabeled": "Sprecher nicht beschriftet",
@@ -3172,6 +3165,10 @@
         "whatToSay": "Was soll ich sagen?",
         "recap": "Zusammenfassung bisher",
         "stillOpen": "Was ist noch offen?"
+      },
+      "answer": {
+        "fromMeeting": "Aus diesem Meeting",
+        "checkedNotes": "Mit deinen Notizen abgeglichen"
       }
     },
     "transcript": {
@@ -3479,13 +3476,6 @@
       "overrideOn": "Schnelle Antworten nutzen das unten gewählte Modell.",
       "overrideAuto": "Snowy wählt derzeit automatisch {{model}} — das flinke Modell deines Chat-Anbieters.",
       "overrideSame": "Schnelle Antworten laufen derzeit auf deinem Chat-Modell. Schalte dies ein, um ein flinkeres zu wählen."
-    },
-    "lane": {
-      "label": "Antwortgeschwindigkeit",
-      "fast": "Schnell",
-      "thinking": "Denken",
-      "fastHint": "Schnell — sofortige Antworten mit einem flinken Modell; durchsucht weiterhin deine Notizen und Meetings",
-      "thinkingHint": "Denken — langsamer, denkt gründlicher mit deinem Hauptmodell nach"
     }
   },
   "integrations": {

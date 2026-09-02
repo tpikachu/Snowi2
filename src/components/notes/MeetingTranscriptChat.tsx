@@ -25,12 +25,16 @@ import {
   type TranscriptSpeakerStatus,
 } from "../../utils/transcriptSpeakerState";
 
-/* A flat script, not a chat: every turn is a colored speaker name (plus a
- * meeting-relative time) over plain unboxed text, in one left-aligned column.
- * The old bubble layout — alignment games, rails, borders per line — was the
- * client's least favorite surface in the app; the name's color alone carries
- * who is talking. Interim text keeps the same geometry with muted type and a
- * caret, so a provisional line can never be mistaken for a committed one. */
+/* A flat script, not a chat: every utterance is a colored speaker name plus
+ * the meeting clock over plain unboxed text, in one left-aligned column. Each
+ * utterance gets its own header — consecutive lines from the same speaker are
+ * NOT merged into runs, because the per-line timestamp is what lets a reader
+ * quote or scrub the recording, and it is how the reference product's
+ * transcript reads. The old bubble layout — alignment games, rails, borders
+ * per line — was the client's least favorite surface in the app; the name's
+ * color alone carries who is talking. Interim text keeps the same geometry
+ * with muted type and a caret, so a provisional line can never be mistaken
+ * for a committed one. */
 const INTERIM_CURSOR = {
   mic: "bg-primary/70",
   system: "bg-muted-foreground/70",
@@ -72,62 +76,34 @@ const getEffectiveSpeakerKey = (
   return `src:${segment.source}`;
 };
 
-const getSpeakerNumber = (speakerId: string) => {
-  const match = speakerId.match(/speaker_(\d+)/);
-  return match ? Number(match[1]) + 1 : 1;
-};
-
-const getSpeakerStateLabel = (state: TranscriptSpeakerStatus, t: (key: string) => string) => {
-  switch (state) {
-    case "locked":
-      return t("notes.speaker.state.locked");
-    case "provisional":
-      return t("notes.speaker.state.provisional");
-    case "suggested":
-      return t("notes.speaker.state.suggested");
-    case "confirmed":
-    default:
-      return t("notes.speaker.state.confirmed");
-  }
-};
-
 function PartialBubble({
   text,
   source,
   speakerLabel,
   speakerState,
-  t,
 }: {
   text: string;
   source: "mic" | "system";
   speakerLabel?: string;
   speakerState?: TranscriptSpeakerStatus;
-  t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
   return (
     <div className="flex flex-col" style={{ animation: "agent-message-in 150ms ease-out both" }}>
-      <div className="flex items-baseline gap-2">
-        {speakerLabel && (
-          <span
-            className={cn(
-              "text-[12px] font-semibold",
-              source === "mic" ? "text-primary" : "text-speaker-1"
-            )}
-          >
-            {speakerLabel}
-          </span>
-        )}
-        <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-muted-foreground/70">
-          {speakerState === "provisional" ? (
-            <>
-              <Sparkles size={10} />
-              {getSpeakerStateLabel("provisional", t)}
-            </>
-          ) : (
-            t("notes.speaker.state.interim")
+      {/* Same header geometry as a settled utterance — name only, no state
+          chip: the muted type and blinking caret below already say "still
+          being transcribed", and a label repeating it per line was noise. A
+          provisional speaker keeps the italic it has everywhere else. */}
+      {speakerLabel && (
+        <span
+          className={cn(
+            "text-[12px] font-semibold",
+            source === "mic" ? "text-primary" : "text-speaker-1",
+            speakerState === "provisional" && "italic"
           )}
+        >
+          {speakerLabel}
         </span>
-      </div>
+      )}
       <div className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
         {text}
         <span
@@ -450,12 +426,13 @@ function SpeakerLabel({
     );
   }
 
+  // Never "Speaker 2": an unnamed voice is just "Them" — the ramp color keeps
+  // two unnamed voices apart, and the dashed underline invites the real name.
+  // Robot labels were the client's exact complaint about the live view.
   const displayLabel =
     resolvedName ||
     segment.speakerName ||
-    (isOriginallyYou
-      ? t("notes.speaker.you")
-      : t("notes.speaker.label", { n: getSpeakerNumber(speakerId) }));
+    (isOriginallyYou ? t("notes.speaker.you") : t("transcript.speaker.others"));
   const isUnmapped = !resolvedName && !segment.speakerName;
 
   return (
@@ -815,7 +792,7 @@ export function MeetingTranscriptChat({
       )}
       <div
         ref={scrollRef}
-        className="h-full overflow-y-auto px-4 pt-3 pb-24 flex flex-col gap-1.5 agent-chat-scroll"
+        className="h-full overflow-y-auto px-4 pt-3 pb-24 flex flex-col gap-3 agent-chat-scroll"
       >
         {hiddenCount > 0 && (
           <button
@@ -827,17 +804,8 @@ export function MeetingTranscriptChat({
           </button>
         )}
 
-        {visibleSegments.map((segment, windowIndex) => {
-          // Indexed against the full list, so the first rendered row still knows
-          // whether the segment above it — hidden or not — was the same speaker.
-          const i = firstVisibleIndex + windowIndex;
+        {visibleSegments.map((segment) => {
           const selfSide = isSelfSide(segment);
-          const prevSegment = i > 0 ? segments[i - 1] : null;
-          const sameSpeaker = prevSegment
-            ? getEffectiveSpeakerKey(prevSegment, speakerMappings) ===
-              getEffectiveSpeakerKey(segment, speakerMappings)
-            : false;
-
           const hasSpeaker = !!segment.speaker;
           const isOriginallyYou = segment.speaker === "you";
           const isSystemSpeaker = hasSpeaker && !selfSide;
@@ -891,41 +859,34 @@ export function MeetingTranscriptChat({
           return (
             <div
               key={segment.id}
-              className={cn(
-                "group relative flex flex-col",
-                !sameSpeaker && i > 0 && "mt-3",
-                selectable && "pl-6"
-              )}
+              className={cn("group relative flex flex-col", selectable && "pl-6")}
               style={{ animation: "agent-message-in 200ms ease-out both" }}
             >
-              {/* Every new turn opens with its speaker and the meeting clock.
-                  Unlabelled runs get the track caption — "You" in the accent,
+              {/* Every utterance opens with its speaker and the meeting clock.
+                  Unlabelled lines get the track caption — "You" in the accent,
                   "Them" in the first ramp color — so who is talking never
                   relies on layout. Same keys the export path resolves to, so
                   the pane and the exported file agree. */}
-              {!sameSpeaker && (
-                <div className="flex items-baseline gap-2">
-                  {labelElement || (
-                    <span
-                      className={cn(
-                        "text-[12px] font-semibold",
-                        selfSide ? "text-primary" : "text-speaker-1"
-                      )}
-                    >
-                      {t(selfSide ? "transcript.speaker.you" : "transcript.speaker.others")}
-                    </span>
-                  )}
-                  {relTime && (
-                    <span data-numeric className="text-[11px] text-muted-foreground/70">
-                      {relTime}
-                    </span>
-                  )}
-                </div>
-              )}
+              <div className="flex items-baseline gap-2">
+                {labelElement || (
+                  <span
+                    className={cn(
+                      "text-[12px] font-semibold",
+                      selfSide ? "text-primary" : "text-speaker-1"
+                    )}
+                  >
+                    {t(selfSide ? "transcript.speaker.you" : "transcript.speaker.others")}
+                  </span>
+                )}
+                {relTime && (
+                  <span data-numeric className="text-[11px] text-muted-foreground/70">
+                    {relTime}
+                  </span>
+                )}
+              </div>
               <div
                 className={cn(
                   "mt-0.5 max-w-[72ch] rounded-md text-[13px] leading-relaxed text-foreground",
-                  sameSpeaker && "mt-1",
                   isSelected && "-mx-1 bg-primary/10 px-1 ring-1 ring-primary/50"
                 )}
               >
@@ -946,16 +907,12 @@ export function MeetingTranscriptChat({
             source, so two people talking at once each keep their own line
             instead of overwriting one another. */}
         {live.map((utterance) => {
-          // Falls back to the track name rather than to nothing: with speaker
-          // identification off there is no speakerId to number, and an
-          // unlabelled bubble makes the live pane read as less certain than
-          // the settled transcript above it, which says "Others".
+          // An unnamed live voice is "Them", never "Speaker 2" — same rule as
+          // the settled transcript above, so a line keeps its name as it
+          // commits instead of being re-badged.
           const speakerLabel =
             utterance.source === "system"
-              ? (utterance.speakerName ??
-                (utterance.speakerId
-                  ? t("notes.speaker.label", { n: getSpeakerNumber(utterance.speakerId) })
-                  : t("transcript.speaker.others")))
+              ? (utterance.speakerName ?? t("transcript.speaker.others"))
               : t("transcript.speaker.you");
           return (
             <PartialBubble
@@ -970,7 +927,6 @@ export function MeetingTranscriptChat({
                     : "provisional"
                   : undefined
               }
-              t={t}
             />
           );
         })}

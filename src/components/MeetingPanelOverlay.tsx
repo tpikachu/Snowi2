@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import Markdown, { type Components } from "react-markdown";
 import {
   Brain,
+  Check,
+  Copy,
   ExternalLink,
   History,
   Lightbulb,
@@ -45,11 +47,11 @@ import { cn } from "./lib/utils";
  * The visual language is one dark surface, tonal rather than drawn: the
  * window edge carries the only border, and everything inside is a fill —
  * chips, wells, and buttons are lighter washes on the surface, never boxes.
- * Three type sizes only: 13px for anything meant to be read (suggestion,
- * answer), 12px for everything operated (buttons, input, transcript), 11px
- * for the few uppercase labels. Muted text never drops below the hud-muted
- * token itself — stacking opacity on top of it is what made the old labels
- * fail WCAG contrast on this dark surface.
+ * Three type registers only: 14px for anything read or typed (suggestion,
+ * answer, the ask input), 12px for buttons and chips, 11px for the few
+ * uppercase labels. Muted text never drops below the hud-muted token itself
+ * — stacking opacity on top of it is what made the old labels fail WCAG
+ * contrast on this dark surface.
  *
  * Still a view, not a controller. The capture graph lives in the control
  * panel's renderer; this window renders published state and sends commands
@@ -88,10 +90,12 @@ const MAX_VISIBLE_SOURCES = 3;
  * one should degrade to text, not to a broken register.
  */
 const ANSWER_MARKDOWN_COMPONENTS: Components = {
-  p: ({ children }) => <p className="mb-1.5 last:mb-0">{children}</p>,
-  ul: ({ children }) => <ul className="mb-1.5 list-disc space-y-1 pl-4 last:mb-0">{children}</ul>,
+  // The air between blocks is the format: a direct sentence, a labeled list,
+  // a takeaway — each reads as its own glanceable unit, not a wall.
+  p: ({ children }) => <p className="mb-2.5 last:mb-0">{children}</p>,
+  ul: ({ children }) => <ul className="mb-2.5 list-disc space-y-1.5 pl-4 last:mb-0">{children}</ul>,
   ol: ({ children }) => (
-    <ol className="mb-1.5 list-decimal space-y-1 pl-4 last:mb-0">{children}</ol>
+    <ol className="mb-2.5 list-decimal space-y-1.5 pl-4 last:mb-0">{children}</ol>
   ),
   li: ({ children }) => <li className="pl-0.5">{children}</li>,
   strong: ({ children }) => (
@@ -99,20 +103,20 @@ const ANSWER_MARKDOWN_COMPONENTS: Components = {
   ),
   em: ({ children }) => <em className="italic">{children}</em>,
   code: ({ children }) => (
-    <code className="rounded-md bg-white/[0.09] px-1.5 py-0.5 font-mono text-[12px] leading-relaxed text-hud-foreground">
+    <code className="rounded-md bg-white/[0.09] px-1.5 py-0.5 font-mono text-[13px] leading-relaxed text-hud-foreground">
       {children}
     </code>
   ),
   pre: ({ children }) => (
-    <pre className="mb-1.5 overflow-x-auto rounded-lg bg-white/[0.09] p-2 font-mono text-[12px] last:mb-0">
+    <pre className="mb-2.5 overflow-x-auto rounded-lg bg-white/[0.09] p-2 font-mono text-[13px] last:mb-0">
       {children}
     </pre>
   ),
-  h1: ({ children }) => <p className="mb-1.5 font-semibold last:mb-0">{children}</p>,
-  h2: ({ children }) => <p className="mb-1.5 font-semibold last:mb-0">{children}</p>,
-  h3: ({ children }) => <p className="mb-1.5 font-semibold last:mb-0">{children}</p>,
+  h1: ({ children }) => <p className="mb-2.5 font-semibold last:mb-0">{children}</p>,
+  h2: ({ children }) => <p className="mb-2.5 font-semibold last:mb-0">{children}</p>,
+  h3: ({ children }) => <p className="mb-2.5 font-semibold last:mb-0">{children}</p>,
   a: ({ children }) => <>{children}</>,
-  blockquote: ({ children }) => <div className="mb-1.5 last:mb-0">{children}</div>,
+  blockquote: ({ children }) => <div className="mb-2.5 last:mb-0">{children}</div>,
 };
 
 /** The small round icon buttons in the header. */
@@ -331,8 +335,24 @@ export default function MeetingPanelOverlay() {
   // once and forgets to switch back.
   const [mode, setMode] = useState<AssistMode>("fast");
   const [isCompact, setIsCompact] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const answerRef = useRef<HTMLDivElement | null>(null);
+
+  // The copied check belongs to one answer; a new one gets a fresh Copy.
+  useEffect(() => {
+    setCopied(false);
+  }, [assist?.answer?.text]);
+
+  const copyAnswer = useCallback((text: string) => {
+    void navigator.clipboard
+      ?.writeText(text)
+      .then(() => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1500);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     // The window loads after the meeting has already started, so the state it
@@ -588,7 +608,7 @@ export default function MeetingPanelOverlay() {
                       is waiting for you to speak. */}
                   <p
                     className={cn(
-                      "mt-1 text-[13px] leading-relaxed",
+                      "mt-1 text-[14px] leading-relaxed",
                       suggestion.stale ? "text-hud-foreground/60" : "text-hud-foreground"
                     )}
                   >
@@ -597,7 +617,7 @@ export default function MeetingPanelOverlay() {
                   <SourceLine sources={suggestion.sources} />
                 </>
               ) : (
-                <p className="mt-1 text-[13px] leading-relaxed text-hud-muted">
+                <p className="mt-1 text-[14px] leading-relaxed text-hud-muted">
                   {assistNeedsModel
                     ? t("notes.meetingPanel.suggestion.needsModel")
                     : !assistReady
@@ -614,15 +634,21 @@ export default function MeetingPanelOverlay() {
                 answered now, and the room to read the answer. */}
             {answer ? (
               <div ref={answerRef} className="min-h-0 flex-1 overflow-y-auto">
-                <p className="flex items-baseline gap-1.5 text-[12px] font-medium leading-snug text-hud-muted">
-                  <span className="min-w-0">{answer.question}</span>
-                  {/* Which speed produced this — so a transcript-only answer
-                      is never mistaken for one that checked the notes. */}
-                  <span className="shrink-0 text-[11px] font-normal uppercase tracking-[0.06em] text-hud-muted/80">
-                    {answer.mode === "thinking"
-                      ? t("notes.meetingPanel.mode.thinking")
-                      : t("notes.meetingPanel.mode.fast")}
-                  </span>
+                {/* The question, as the asker's pill — right-aligned and solid
+                    accent, the one place the surface reads as a chat, so the
+                    answer below never needs a label saying what it answers. */}
+                <div className="flex justify-end">
+                  <p className="max-w-[85%] rounded-2xl bg-hud-accent px-3 py-1.5 text-[12px] font-medium leading-snug text-hud-surface">
+                    {answer.question}
+                  </p>
+                </div>
+                {/* Provenance, not a mode name: which world the answer drew
+                    on — so a transcript-only answer is never mistaken for one
+                    that checked the notes. */}
+                <p className="mt-2 text-[11px] text-hud-muted">
+                  {answer.mode === "thinking"
+                    ? t("notes.meetingPanel.answer.checkedNotes")
+                    : t("notes.meetingPanel.answer.fromMeeting")}
                 </p>
                 {answer.errorKey ? (
                   <>
@@ -655,7 +681,7 @@ export default function MeetingPanelOverlay() {
                     {t("notes.meetingPanel.ask.searchingNotes")}
                   </p>
                 ) : (
-                  <div className="mt-1 text-[13px] leading-relaxed text-hud-foreground">
+                  <div className="mt-1.5 text-[14px] leading-relaxed text-hud-foreground/90">
                     <Markdown components={ANSWER_MARKDOWN_COMPONENTS}>{answer.text}</Markdown>
                     {/* The caret is the only "it is working" signal an
                         answer needs: the text itself is the progress bar. */}
@@ -665,27 +691,48 @@ export default function MeetingPanelOverlay() {
                   </div>
                 )}
                 {!answer.streaming && <SourceLine sources={answer.sources} />}
-                {/* The escalation. Only on a settled fast answer: it is the
-                    "that was not in this meeting" next step, and offering to
-                    re-check the notes under an answer that already checked
-                    them would be a button that does nothing. */}
-                {!answer.streaming && !answer.errorKey && answer.mode === "fast" && (
-                  <button
-                    type="button"
-                    onClick={() => askAgainWithNotes(answer.question)}
-                    disabled={!assistReady}
-                    title={t("notes.meetingPanel.ask.thinkDeeperHint")}
-                    className={cn(
-                      "mt-2 flex h-7 items-center gap-1.5 rounded-full bg-white/[0.08] px-2.5",
-                      "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
-                      "hover:bg-white/[0.14] hover:text-hud-foreground",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-                      "disabled:cursor-not-allowed disabled:opacity-40"
+                {!answer.streaming && !answer.errorKey && (
+                  <div className="mt-2 flex items-center gap-1.5">
+                    {/* The escalation. Only on a settled fast answer: it is
+                        the "that was not in this meeting" next step, and
+                        offering to re-check the notes under an answer that
+                        already checked them would be a button that does
+                        nothing. */}
+                    {answer.mode === "fast" && (
+                      <button
+                        type="button"
+                        onClick={() => askAgainWithNotes(answer.question)}
+                        disabled={!assistReady}
+                        title={t("notes.meetingPanel.ask.thinkDeeperHint")}
+                        className={cn(
+                          "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.08] px-2.5",
+                          "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
+                          "hover:bg-white/[0.14] hover:text-hud-foreground",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+                          "disabled:cursor-not-allowed disabled:opacity-40"
+                        )}
+                      >
+                        <Brain size={11} />
+                        {t("notes.meetingPanel.ask.thinkDeeper")}
+                      </button>
                     )}
-                  >
-                    <Brain size={11} />
-                    {t("notes.meetingPanel.ask.thinkDeeper")}
-                  </button>
+                    {/* Copy, because the answer is often destined for the
+                        chat box of the very meeting it was asked in. */}
+                    <button
+                      type="button"
+                      onClick={() => copyAnswer(answer.text)}
+                      aria-label={copied ? t("common.copied") : t("common.copy")}
+                      title={copied ? t("common.copied") : t("common.copy")}
+                      className={cn(
+                        "flex size-7 items-center justify-center rounded-full bg-white/[0.08]",
+                        "transition-colors duration-150 hover:bg-white/[0.14]",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+                        copied ? "text-hud-accent" : "text-hud-muted hover:text-hud-foreground"
+                      )}
+                    >
+                      {copied ? <Check size={12} /> : <Copy size={12} />}
+                    </button>
+                  </div>
                 )}
               </div>
             ) : (
@@ -765,7 +812,7 @@ export default function MeetingPanelOverlay() {
                   // input-inline opts out of the app's boxed input chrome —
                   // without it the global stylesheet draws its own border and
                   // focus ring inside this well.
-                  "input-inline min-w-0 flex-1 bg-transparent p-0 text-[13px] text-hud-foreground outline-none",
+                  "input-inline min-w-0 flex-1 bg-transparent p-0 text-[14px] text-hud-foreground outline-none",
                   "placeholder:text-hud-muted disabled:cursor-not-allowed"
                 )}
               />
