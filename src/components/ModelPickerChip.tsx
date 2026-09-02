@@ -55,6 +55,12 @@ interface ModelPickerChipProps {
    * onSelect(null).
    */
   defaultLabel?: string;
+  /**
+   * The scope the default resolves from. When given, the default row and the
+   * unset chip name the model it currently means — "App default (GPT-5 Nano)"
+   * — because a default nobody can see is a mystery, not a default.
+   */
+  defaultScope?: InferenceScope;
   /** "hud" renders on the always-dark cue card; "app" follows the theme. */
   variant?: "app" | "hud";
   className?: string;
@@ -82,6 +88,11 @@ const shortModelLabel = (modelId: string): string => {
     const hit = provider.models.find((m) => m.value === modelId);
     if (hit) return hit.label;
   }
+  // Local GGUF models live in the other half of the registry.
+  for (const provider of modelRegistry.getAllProviders()) {
+    const hit = provider.models.find((m) => m.id === modelId);
+    if (hit) return hit.name;
+  }
   return modelId;
 };
 
@@ -90,6 +101,7 @@ export default function ModelPickerChip({
   value,
   onSelect,
   defaultLabel,
+  defaultScope,
   variant = "app",
   className,
 }: ModelPickerChipProps) {
@@ -193,9 +205,20 @@ export default function ModelPickerChip({
     });
   }, []);
 
+  const defaultScopeModel = useSettingsStore((s) =>
+    defaultScope ? selectResolvedLLMConfig(s, defaultScope).model : ""
+  );
+  const resolvedDefaultLabel =
+    defaultLabel && defaultScopeModel
+      ? t("agentMode.modelPicker.defaultWithModel", {
+          label: defaultLabel,
+          model: shortModelLabel(defaultScopeModel),
+        })
+      : defaultLabel;
+
   const chipLabel = current?.model
     ? shortModelLabel(current.model)
-    : (defaultLabel ?? t("agentMode.modelPicker.choose"));
+    : (resolvedDefaultLabel ?? t("agentMode.modelPicker.choose"));
 
   const rowClass = cn(
     "flex min-h-8 w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[12px] transition-colors duration-100",
@@ -243,7 +266,7 @@ export default function ModelPickerChip({
             className
           )}
         >
-          <span className="min-w-0 max-w-[120px] truncate">{chipLabel}</span>
+          <span className="min-w-0 max-w-[180px] truncate">{chipLabel}</span>
           <ChevronDown size={10} className="shrink-0 opacity-70" />
         </button>
       </PopoverTrigger>
@@ -264,7 +287,7 @@ export default function ModelPickerChip({
             }}
             className={rowClass}
           >
-            <span className="min-w-0 flex-1 truncate">{defaultLabel}</span>
+            <span className="min-w-0 flex-1 truncate">{resolvedDefaultLabel}</span>
             {!current?.model && (
               <Check
                 size={12}

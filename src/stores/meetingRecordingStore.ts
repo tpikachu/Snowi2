@@ -91,6 +91,12 @@ export interface PendingStopDecision {
    * tears the session down and a discard clears it.
    */
   segments: TranscriptSegment[];
+  /**
+   * Non-zero when this session resumed an existing note: the first N entries
+   * of `segments` are the meeting the note already held. Discard must then
+   * drop only what follows them, never the note.
+   */
+  seedSegmentCount: number;
 }
 
 interface MeetingRecordingState {
@@ -636,6 +642,11 @@ let systemPartialSpeakerIdValue: string | null = null;
 let recentSystemSpeaker: RecentSystemSpeaker | null = null;
 let speakerLocks: Map<string, string> = new Map();
 let pushConfigTimeout: ReturnType<typeof setTimeout> | null = null;
+// How many segments the current session was seeded with — a resumed meeting
+// starts with the note's existing transcript in `segments`, and everything
+// that judges "what did THIS session produce" (hasContent, the discard path,
+// the recording_started_at write) must count from here, not from zero.
+let seedSegmentCountValue = 0;
 
 export const useMeetingRecordingStore = create<MeetingRecordingState>()(() => ({
   isRecording: false,
@@ -1004,6 +1015,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
   }
 
   segmentsRefValue = seed;
+  seedSegmentCountValue = seed.length;
   speakerIdentifications = [];
   nextPlaceholderSpeakerIndex = maxSpeakerIndex + 1;
   recentSystemSpeaker = null;
@@ -1729,14 +1741,22 @@ export async function resumeRecording(): Promise<boolean> {
 }
 
 /**
- * Whether the meeting produced anything worth keeping. Drives the save/discard
- * prompt: a meeting that captured nothing should not leave an empty note behind.
+ * Whether THIS session produced anything worth keeping. Drives the
+ * save/discard prompt: a meeting that captured nothing should not leave an
+ * empty note behind — and a resumed session that captured nothing should not
+ * arm the auto-save countdown or re-run the write-up over an unchanged
+ * transcript, so the seed it started with does not count.
  */
 export function meetingHasContent(): boolean {
   const { segments, transcript } = useMeetingRecordingStore.getState();
   // Segments first: they are the live source of truth, and `transcript` is only
-  // populated once Stop returns main's authoritative text.
-  return segments.some((seg) => seg.text.trim().length > 0) || transcript.trim().length > 0;
+  // populated once Stop returns main's authoritative text. New finals insert
+  // timestamp-sorted, and a resume's timestamps postdate its seed's, so the
+  // session's own output is everything past the seed.
+  if (segments.slice(seedSegmentCountValue).some((seg) => seg.text.trim().length > 0)) return true;
+  // A resumed session's seed is already reflected in `transcript`, so the
+  // fallback proves nothing there.
+  return seedSegmentCountValue === 0 && transcript.trim().length > 0;
 }
 
 /**
@@ -1761,6 +1781,7 @@ export async function requestStopRecording(): Promise<StopRecordingResult> {
       noteTitle: recordingNoteTitle,
       hasContent,
       segments,
+      seedSegmentCount: seedSegmentCountValue,
     },
   });
 
@@ -1769,8 +1790,10 @@ export async function requestStopRecording(): Promise<StopRecordingResult> {
 
 /**
  * Applies the user's answer. Discard deletes the note the meeting was writing
- * into; keeping is simply letting go of the decision, since everything has
- * already been persisted as it arrived.
+ * into — unless the session resumed an existing note, in which case discard
+ * means "drop what this session added" and the note is restored to its seed.
+ * Keeping is simply letting go of the decision, since everything has already
+ * been persisted as it arrived.
  */
 export async function resolvePendingStop(keep: boolean): Promise<void> {
   const pending = useMeetingRecordingStore.getState().pendingStop;
@@ -1781,8 +1804,30 @@ export async function resolvePendingStop(keep: boolean): Promise<void> {
   // starting while the prompt is up. Kept as a backstop for the paths that can
   // still have queued work against this note — a manual Generate notes fired
   // before Stop, or a retry — because the result would otherwise land on a note
-  // that is about to be deleted.
+  // that is about to be deleted or rolled back.
   cancelAction(pending.noteId);
+
+  if (pending.seedSegmentCount > 0) {
+    // A resumed session: write the seed back over whatever the periodic
+    // autosave merged in. The seed entries lead `segments` because a resume's
+    // new finals all postdate them.
+    try {
+      await window.electronAPI?.updateNote?.(pending.noteId, {
+        transcript: serializeTranscriptSegments(
+          pending.segments.slice(0, pending.seedSegmentCount)
+        ),
+      });
+      logger.info("Discarded resumed meeting session", { noteId: pending.noteId }, "meeting");
+    } catch (err) {
+      logger.error(
+        "Failed to discard the resumed session",
+        { noteId: pending.noteId, error: (err as Error).message },
+        "meeting"
+      );
+      reportMeetingError("Could not discard the session. Its transcript is still on the note.");
+    }
+    return;
+  }
 
   try {
     await window.electronAPI?.deleteNote?.(pending.noteId);
@@ -1829,7 +1874,11 @@ export async function stopRecording(): Promise<StopRecordingResult> {
   if (recordingNoteId != null && recordingStartedAt != null) {
     try {
       await window.electronAPI?.updateNote?.(recordingNoteId, {
-        recording_started_at: new Date(recordingStartedAt).toISOString(),
+        // A resumed session extends the meeting, so the first session keeps
+        // ownership of when it began; only the end moves.
+        ...(seedSegmentCountValue === 0
+          ? { recording_started_at: new Date(recordingStartedAt).toISOString() }
+          : {}),
         recording_ended_at: new Date().toISOString(),
       });
     } catch (error) {

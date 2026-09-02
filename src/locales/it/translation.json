@@ -150,7 +150,6 @@
     "active": "Attivo",
     "managedByOrg": "Gestito dalla tua organizzazione",
     "freeAccountRequired": "Account gratuito richiesto",
-    "comingSoon": "Prossimamente",
     "cloud": "Cloud",
     "local": "Locale",
     "apiKey": "Chiave API",
@@ -1711,13 +1710,6 @@
         "autoStart": "Avvia la registrazione automaticamente",
         "autoStartDescription": "Se una riunione rilevata resta senza risposta per qualche secondo, la registrazione parte da sola. Puoi sempre scartarla dopo."
       },
-      "clipboard": {
-        "title": "Appunti",
-        "autoPaste": "Incollaggio automatico",
-        "autoPasteDescription": "Incolla automaticamente il testo trascritto nell'app attiva al termine della dettatura",
-        "keepInClipboard": "Mantieni la trascrizione negli appunti",
-        "keepInClipboardDescription": "Mantieni il testo dettato negli appunti per poterlo incollare manualmente se necessario"
-      },
       "startup": {
         "launchAtLogin": "Avvia all'accesso",
         "launchAtLoginDescription": "Avvia Snowy in background all'accesso",
@@ -1864,6 +1856,9 @@
       "translationHotkey": {
         "title": "Hotkey Traduzione",
         "description": "Detta in qualsiasi lingua: il testo incollato esce tradotto"
+      },
+      "notes": {
+        "title": "Note"
       }
     },
     "permissions": {
@@ -1941,14 +1936,8 @@
       "tabs": {
         "dictationCleanup": "Pulizia della dettatura",
         "dictationAgent": "Voice Agent",
-        "chatIntelligence": "Chat",
         "dictationTranslation": "Traduzione",
-        "actions": "Azioni",
         "providers": "Chiavi API"
-      },
-      "advancedSetup": "Configurazione avanzata",
-      "advanced": {
-        "description": "Modelli locali, endpoint LAN, API personalizzate e routing aziendale per chat e azioni."
       },
       "engine": {
         "title": "Motore",
@@ -2272,9 +2261,7 @@
     },
     "actions": {
       "autoGenerateTitle": "Genera automaticamente i titoli delle note",
-      "autoGenerateTitleDescription": "Usa l'IA per generare un titolo breve per le note dopo la trascrizione o il miglioramento",
-      "actionsRowDescription": "Crea, modifica e riordina le azioni eseguibili su una nota.",
-      "manageActions": "Gestisci"
+      "autoGenerateTitleDescription": "Usa l'IA per generare un titolo breve per le note dopo la trascrizione o il miglioramento"
     }
   },
   "models": {
@@ -2660,7 +2647,9 @@
       "linkedEvent": "Evento collegato",
       "noFolder": "Nessuna cartella",
       "participants": "Partecipanti",
-      "viewMode": "Modalità di visualizzazione"
+      "viewMode": "Modalità di visualizzazione",
+      "resumeMeeting": "Riprendi riunione",
+      "resumeMeetingHint": "Registra un'altra sessione in questa nota"
     },
     "participants": {
       "attendee": "partecipante",
@@ -2768,7 +2757,8 @@
         "titleEmpty": "Non è stato registrato nulla",
         "untitled": "Questa riunione",
         "saveCountdown": "Salva ({{seconds}} s)",
-        "autoSaveHint": "Salvataggio automatico tra {{seconds}} secondi se non scegli."
+        "autoSaveHint": "Salvataggio automatico tra {{seconds}} secondi se non scegli.",
+        "discardSession": "Scarta questa sessione"
       }
     },
     "meetingPill": {
@@ -2991,7 +2981,8 @@
       "showEarlier_one": "Mostra {{count}} messaggio precedente",
       "showEarlier_other": "Mostra {{count}} messaggi precedenti",
       "jumpToLive": "Vai al live",
-      "jumpToLatest": "Vai al più recente"
+      "jumpToLatest": "Vai al più recente",
+      "resumedSession": "Ripresa {{date}}"
     },
     "recap": {
       "copy": "Copia riepilogo",
@@ -3231,9 +3222,6 @@
       "hotkeyDescription": "Apre e chiude l'overlay dell'agente chat",
       "model": "Modello Agente",
       "modelDescription": "Modello IA utilizzato per le conversazioni agente",
-      "systemPrompt": "Prompt di Sistema",
-      "systemPromptDescription": "Istruzioni personalizzate per l'agente",
-      "systemPromptPlaceholder": "Inserisci un prompt di sistema personalizzato...",
       "modes": {
         "openwhispr": "Snowy Cloud",
         "providers": "Provider Cloud",
@@ -3333,21 +3321,14 @@
       "allow": "Consenti",
       "deny": "Non ora"
     },
-    "fastLane": {
-      "title": "Risposte rapide",
-      "description": "Durante una riunione, le risposte rapide usano un modello veloce perché le prime parole appaiano subito. Le risposte ponderate mantengono il modello sopra.",
-      "override": "Scegliere da me il modello rapido",
-      "overrideOn": "Le risposte rapide usano il modello scelto qui sotto.",
-      "overrideAuto": "Snowy sceglie {{model}} automaticamente — il modello veloce del tuo provider di chat.",
-      "overrideSame": "Le risposte rapide usano attualmente il tuo modello di chat. Attiva questa opzione per sceglierne uno più veloce."
-    },
     "palette": {
       "askHint": "Premi Invio per chiedere a Snowy"
     },
     "modelPicker": {
       "addKey": "Aggiungi chiave",
       "localGroup": "Su questo computer",
-      "choose": "Scegli modello"
+      "choose": "Scegli modello",
+      "defaultWithModel": "{{label}} ({{model}})"
     }
   },
   "integrations": {

@@ -152,7 +152,13 @@ function MeetingStopDialog() {
           ? t("notes.meeting.stopDialog.saveCountdown", { seconds: autoSaveLeft })
           : t("notes.meeting.stopDialog.save")
       }
-      cancelText={t("notes.meeting.stopDialog.discard")}
+      cancelText={
+        // A resumed session's discard drops only what this session added; the
+        // meeting the note already held is not on the table.
+        pendingStop.seedSegmentCount > 0
+          ? t("notes.meeting.stopDialog.discardSession")
+          : t("notes.meeting.stopDialog.discard")
+      }
       onConfirm={keepMeeting}
       onCancel={() => void resolvePendingStop(false)}
     >

@@ -150,7 +150,6 @@
     "active": "有効",
     "managedByOrg": "組織によって管理されています",
     "freeAccountRequired": "無料アカウントが必要です",
-    "comingSoon": "近日公開",
     "cloud": "クラウド",
     "local": "ローカル",
     "apiKey": "API キー",
@@ -1711,13 +1710,6 @@
         "autoStart": "録音を自動的に開始",
         "autoStartDescription": "検出された会議に数秒間応答がない場合、録音が自動的に始まります。後からいつでも破棄できます。"
       },
-      "clipboard": {
-        "title": "クリップボード",
-        "autoPaste": "自動貼り付け",
-        "autoPasteDescription": "ディクテーション完了後、文字起こしテキストをアクティブなアプリに自動的に貼り付けます",
-        "keepInClipboard": "文字起こしをクリップボードに保持",
-        "keepInClipboardDescription": "必要に応じて手動で貼り付けできるよう、音声入力テキストをクリップボードに保持します"
-      },
       "startup": {
         "launchAtLogin": "ログイン時に起動",
         "launchAtLoginDescription": "ログイン時に Snowy をバックグラウンドで起動します",
@@ -1864,6 +1856,9 @@
       "translationHotkey": {
         "title": "翻訳ホットキー",
         "description": "どの言語で話しても、貼り付けられるテキストは翻訳済みになります"
+      },
+      "notes": {
+        "title": "ノート"
       }
     },
     "permissions": {
@@ -1941,14 +1936,8 @@
       "tabs": {
         "dictationCleanup": "ディクテーションのクリーンアップ",
         "dictationAgent": "Voice Agent",
-        "chatIntelligence": "チャット",
         "dictationTranslation": "翻訳",
-        "actions": "アクション",
         "providers": "APIキー"
-      },
-      "advancedSetup": "詳細設定",
-      "advanced": {
-        "description": "ローカルモデル、LAN エンドポイント、カスタム API、チャットとアクションのエンタープライズルーティング。"
       },
       "engine": {
         "title": "エンジン",
@@ -2272,9 +2261,7 @@
     },
     "actions": {
       "autoGenerateTitle": "ノートのタイトルを自動生成",
-      "autoGenerateTitleDescription": "文字起こしや改善後にAIを使用してノートの短いタイトルを生成します",
-      "actionsRowDescription": "ノートに対して実行できるアクションの作成・編集・並べ替え。",
-      "manageActions": "管理"
+      "autoGenerateTitleDescription": "文字起こしや改善後にAIを使用してノートの短いタイトルを生成します"
     }
   },
   "models": {
@@ -2565,7 +2552,9 @@
       "enhanced": "要約",
       "saving": "保存中",
       "startWriting": "書き始める...",
-      "viewMode": "表示モード"
+      "viewMode": "表示モード",
+      "resumeMeeting": "会議を再開",
+      "resumeMeetingHint": "このノートに新しいセッションを録音します"
     },
     "participants": {
       "attendee": "名の参加者",
@@ -2752,7 +2741,8 @@
         "titleEmpty": "記録された内容はありません",
         "untitled": "この会議",
         "saveCountdown": "保存（{{seconds}}秒）",
-        "autoSaveHint": "選択しない場合、{{seconds}}秒後に自動的に保存されます。"
+        "autoSaveHint": "選択しない場合、{{seconds}}秒後に自動的に保存されます。",
+        "discardSession": "今回のセッションを破棄"
       }
     },
     "meetingPill": {
@@ -2919,7 +2909,8 @@
       "showEarlier_one": "以前のメッセージを{{count}}件表示",
       "showEarlier_other": "以前のメッセージを{{count}}件表示",
       "jumpToLive": "ライブに移動",
-      "jumpToLatest": "最新に移動"
+      "jumpToLatest": "最新に移動",
+      "resumedSession": "{{date}} に再開"
     },
     "recap": {
       "copy": "要約をコピー",
@@ -3231,9 +3222,6 @@
       "hotkeyDescription": "チャットエージェントのオーバーレイを開閉します",
       "model": "エージェントモデル",
       "modelDescription": "エージェント会話に使用するAIモデル",
-      "systemPrompt": "システムプロンプト",
-      "systemPromptDescription": "エージェントへのカスタム指示",
-      "systemPromptPlaceholder": "カスタムシステムプロンプトを入力...",
       "modes": {
         "openwhispr": "Snowy Cloud",
         "providers": "クラウドプロバイダー",
@@ -3333,21 +3321,14 @@
       "allow": "許可",
       "deny": "今はしない"
     },
-    "fastLane": {
-      "title": "高速回答",
-      "description": "会議中の高速回答は軽量モデルで実行され、最初の言葉がすぐに表示されます。じっくり回答は上のモデルを使います。",
-      "override": "高速モデルを自分で選ぶ",
-      "overrideOn": "高速回答は下で選んだモデルを使用します。",
-      "overrideAuto": "現在 Snowy は {{model}} を自動選択しています — チャットプロバイダーの軽量モデルです。",
-      "overrideSame": "高速回答は現在チャットモデルで実行されています。より速いモデルを選ぶにはオンにしてください。"
-    },
     "palette": {
       "askHint": "Enterキーで Snowy に質問"
     },
     "modelPicker": {
       "addKey": "キーを追加",
       "localGroup": "このコンピューター上",
-      "choose": "モデルを選択"
+      "choose": "モデルを選択",
+      "defaultWithModel": "{{label}}（{{model}}）"
     }
   },
   "integrations": {

@@ -156,6 +156,7 @@ export default function FollowUpEmailDialog({
                 void generate();
               }}
               defaultLabel={t("notes.actions.defaultModel")}
+              defaultScope="actions"
             />
             <Button variant="ghost" size="sm" onClick={() => void generate()} disabled={isDrafting}>
               <RefreshCw size={12} />

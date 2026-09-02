@@ -150,7 +150,6 @@
     "active": "Active",
     "managedByOrg": "Managed by your organization",
     "freeAccountRequired": "Free account required",
-    "comingSoon": "Coming Soon",
     "cloud": "Cloud",
     "local": "Local",
     "apiKey": "API Key",
@@ -1994,13 +1993,6 @@
         "autoStart": "Start recording automatically",
         "autoStartDescription": "If a detected meeting goes unanswered for a few seconds, recording starts on its own. You can always discard it afterward."
       },
-      "clipboard": {
-        "title": "Clipboard",
-        "autoPaste": "Automatic pasting",
-        "autoPasteDescription": "Automatically paste transcribed text into the active app when dictation finishes",
-        "keepInClipboard": "Keep transcription in clipboard",
-        "keepInClipboardDescription": "Keep dictated text in your clipboard so you can paste it manually if needed"
-      },
       "startup": {
         "launchAtLogin": "Launch at login",
         "launchAtLoginDescription": "Start Snowy in the background when you log in",
@@ -2147,6 +2139,9 @@
       "translationHotkey": {
         "title": "Translation Hotkey",
         "description": "Dictate in any language — the pasted text comes out translated"
+      },
+      "notes": {
+        "title": "Notes"
       }
     },
     "permissions": {
@@ -2224,14 +2219,8 @@
       "tabs": {
         "dictationCleanup": "Dictation Cleanup",
         "dictationAgent": "Voice Agent",
-        "chatIntelligence": "Chat",
         "dictationTranslation": "Translation",
-        "actions": "Actions",
         "providers": "API keys"
-      },
-      "advancedSetup": "Advanced setup",
-      "advanced": {
-        "description": "Local models, LAN endpoints, custom APIs, and enterprise routing for chat and actions."
       },
       "engine": {
         "title": "Engine",
@@ -2360,9 +2349,7 @@
     },
     "actions": {
       "autoGenerateTitle": "Auto-generate note titles",
-      "autoGenerateTitleDescription": "Use AI to generate a short title for notes after transcription or enhancement",
-      "actionsRowDescription": "Create, edit and reorder the actions you can run on a note.",
-      "manageActions": "Manage"
+      "autoGenerateTitleDescription": "Use AI to generate a short title for notes after transcription or enhancement"
     }
   },
   "models": {
@@ -2867,7 +2854,9 @@
       "linkedEvent": "Linked event",
       "noFolder": "No folder",
       "participants": "Participants",
-      "viewMode": "View mode"
+      "viewMode": "View mode",
+      "resumeMeeting": "Resume meeting",
+      "resumeMeetingHint": "Record another session into this note"
     },
     "participants": {
       "attendee": "attendee",
@@ -2975,7 +2964,8 @@
         "titleEmpty": "Nothing was recorded",
         "untitled": "This meeting",
         "saveCountdown": "Save ({{seconds}}s)",
-        "autoSaveHint": "Saves automatically in {{seconds}} seconds if you don't choose."
+        "autoSaveHint": "Saves automatically in {{seconds}} seconds if you don't choose.",
+        "discardSession": "Discard this session"
       }
     },
     "meetingPill": {
@@ -3198,7 +3188,8 @@
       "showEarlier_one": "Show {{count}} earlier message",
       "showEarlier_other": "Show {{count}} earlier messages",
       "jumpToLive": "Jump to live",
-      "jumpToLatest": "Jump to latest"
+      "jumpToLatest": "Jump to latest",
+      "resumedSession": "Resumed {{date}}"
     },
     "recap": {
       "copy": "Copy summary",
@@ -3396,9 +3387,6 @@
       "hotkeyDescription": "Open and close the chat agent overlay",
       "model": "Agent Model",
       "modelDescription": "AI model used for agent conversations",
-      "systemPrompt": "System Prompt",
-      "systemPromptDescription": "Custom instructions for the agent",
-      "systemPromptPlaceholder": "Enter custom system prompt...",
       "modes": {
         "openwhispr": "Snowy Cloud",
         "providers": "Cloud Providers",
@@ -3498,21 +3486,14 @@
       "allow": "Allow",
       "deny": "Not now"
     },
-    "fastLane": {
-      "title": "Fast answers",
-      "description": "During a meeting, Fast answers run on a quick model so the first words appear immediately. Thinking answers keep the model above.",
-      "override": "Pick the fast model myself",
-      "overrideOn": "Fast answers use the model chosen below.",
-      "overrideAuto": "Snowy currently picks {{model}} automatically — your chat provider's quick model.",
-      "overrideSame": "Fast answers currently run on your chat model. Turn this on to pick a quicker one."
-    },
     "palette": {
       "askHint": "Press Enter to ask Snowy"
     },
     "modelPicker": {
       "addKey": "Add key",
       "localGroup": "On this computer",
-      "choose": "Choose model"
+      "choose": "Choose model",
+      "defaultWithModel": "{{label}} ({{model}})"
     }
   },
   "integrations": {

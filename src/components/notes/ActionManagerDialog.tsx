@@ -317,6 +317,7 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
                       value={modelOverride}
                       onSelect={setModelOverride}
                       defaultLabel={t("notes.actions.defaultModel")}
+                      defaultScope="actions"
                     />
                   </div>
 

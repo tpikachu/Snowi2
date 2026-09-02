@@ -150,7 +150,6 @@
     "active": "Aktiv",
     "managedByOrg": "Von Ihrer Organisation verwaltet",
     "freeAccountRequired": "Kostenloses Konto erforderlich",
-    "comingSoon": "Demnächst verfügbar",
     "cloud": "Cloud",
     "local": "Lokal",
     "apiKey": "API-Schlüssel",
@@ -1994,13 +1993,6 @@
         "autoStart": "Aufnahme automatisch starten",
         "autoStartDescription": "Bleibt ein erkanntes Meeting einige Sekunden unbeantwortet, startet die Aufnahme von selbst. Sie können sie danach jederzeit verwerfen."
       },
-      "clipboard": {
-        "title": "Zwischenablage",
-        "autoPaste": "Automatisches Einfügen",
-        "autoPasteDescription": "Transkribierten Text nach dem Diktieren automatisch in die aktive App einfügen",
-        "keepInClipboard": "Transkription in der Zwischenablage behalten",
-        "keepInClipboardDescription": "Diktierten Text in der Zwischenablage behalten, damit Sie ihn bei Bedarf manuell einfügen können"
-      },
       "startup": {
         "launchAtLogin": "Beim Anmelden starten",
         "launchAtLoginDescription": "Snowy bei der Anmeldung im Hintergrund starten",
@@ -2147,6 +2139,9 @@
       "translationHotkey": {
         "title": "Übersetzungs-Hotkey",
         "description": "Diktiere in beliebiger Sprache — der eingefügte Text kommt übersetzt heraus"
+      },
+      "notes": {
+        "title": "Notizen"
       }
     },
     "permissions": {
@@ -2224,14 +2219,8 @@
       "tabs": {
         "dictationCleanup": "Diktat-Bereinigung",
         "dictationAgent": "Voice Agent",
-        "chatIntelligence": "Chat",
         "dictationTranslation": "Übersetzung",
-        "actions": "Aktionen",
         "providers": "API-Schlüssel"
-      },
-      "advancedSetup": "Erweiterte Einrichtung",
-      "advanced": {
-        "description": "Lokale Modelle, LAN-Endpunkte, eigene APIs und Enterprise-Routing für Chat und Aktionen."
       },
       "engine": {
         "title": "Engine",
@@ -2360,9 +2349,7 @@
     },
     "actions": {
       "autoGenerateTitle": "Notiztitel automatisch generieren",
-      "autoGenerateTitleDescription": "KI verwenden, um nach der Transkription oder Verbesserung einen kurzen Titel für Notizen zu generieren",
-      "actionsRowDescription": "Aktionen für Notizen anlegen, bearbeiten und sortieren.",
-      "manageActions": "Verwalten"
+      "autoGenerateTitleDescription": "KI verwenden, um nach der Transkription oder Verbesserung einen kurzen Titel für Notizen zu generieren"
     }
   },
   "models": {
@@ -2867,7 +2854,9 @@
       "linkedEvent": "Verknüpftes Ereignis",
       "noFolder": "Kein Ordner",
       "participants": "Teilnehmer",
-      "viewMode": "Ansicht"
+      "viewMode": "Ansicht",
+      "resumeMeeting": "Meeting fortsetzen",
+      "resumeMeetingHint": "Eine weitere Sitzung in dieser Notiz aufnehmen"
     },
     "participants": {
       "attendee": "Teilnehmer",
@@ -2975,7 +2964,8 @@
         "titleEmpty": "Es wurde nichts aufgezeichnet",
         "untitled": "Dieses Meeting",
         "saveCountdown": "Speichern ({{seconds}} s)",
-        "autoSaveHint": "Wird in {{seconds}} Sekunden automatisch gespeichert, wenn Sie nichts wählen."
+        "autoSaveHint": "Wird in {{seconds}} Sekunden automatisch gespeichert, wenn Sie nichts wählen.",
+        "discardSession": "Diese Sitzung verwerfen"
       }
     },
     "meetingPill": {
@@ -3198,7 +3188,8 @@
       "showEarlier_one": "{{count}} frühere Nachricht anzeigen",
       "showEarlier_other": "{{count}} frühere Nachrichten anzeigen",
       "jumpToLive": "Zum Live-Verlauf",
-      "jumpToLatest": "Zum Neuesten"
+      "jumpToLatest": "Zum Neuesten",
+      "resumedSession": "Fortgesetzt am {{date}}"
     },
     "recap": {
       "copy": "Zusammenfassung kopieren",
@@ -3396,9 +3387,6 @@
       "hotkeyDescription": "Öffnet und schließt das Chat-Agent-Overlay",
       "model": "Agent-Modell",
       "modelDescription": "KI-Modell für Agent-Unterhaltungen",
-      "systemPrompt": "System-Prompt",
-      "systemPromptDescription": "Benutzerdefinierte Anweisungen für den Agenten",
-      "systemPromptPlaceholder": "Benutzerdefinierten System-Prompt eingeben...",
       "modes": {
         "openwhispr": "Snowy Cloud",
         "providers": "Cloud-Anbieter",
@@ -3498,21 +3486,14 @@
       "allow": "Erlauben",
       "deny": "Jetzt nicht"
     },
-    "fastLane": {
-      "title": "Schnelle Antworten",
-      "description": "Während eines Meetings laufen schnelle Antworten auf einem flinken Modell, damit die ersten Worte sofort erscheinen. Durchdachte Antworten behalten das Modell oben.",
-      "override": "Schnelles Modell selbst wählen",
-      "overrideOn": "Schnelle Antworten nutzen das unten gewählte Modell.",
-      "overrideAuto": "Snowy wählt derzeit automatisch {{model}} — das flinke Modell deines Chat-Anbieters.",
-      "overrideSame": "Schnelle Antworten laufen derzeit auf deinem Chat-Modell. Schalte dies ein, um ein flinkeres zu wählen."
-    },
     "palette": {
       "askHint": "Enter drücken, um Snowy zu fragen"
     },
     "modelPicker": {
       "addKey": "Schlüssel hinzufügen",
       "localGroup": "Auf diesem Computer",
-      "choose": "Modell wählen"
+      "choose": "Modell wählen",
+      "defaultWithModel": "{{label}} ({{model}})"
     }
   },
   "integrations": {

@@ -150,7 +150,6 @@
     "active": "Actif",
     "managedByOrg": "Géré par votre organisation",
     "freeAccountRequired": "Compte gratuit requis",
-    "comingSoon": "Bientôt disponible",
     "cloud": "Cloud",
     "local": "Local",
     "apiKey": "Clé API",
@@ -1994,13 +1993,6 @@
         "autoStart": "Démarrer l'enregistrement automatiquement",
         "autoStartDescription": "Si une réunion détectée reste sans réponse quelques secondes, l'enregistrement démarre tout seul. Vous pouvez toujours le supprimer ensuite."
       },
-      "clipboard": {
-        "title": "Presse-papiers",
-        "autoPaste": "Collage automatique",
-        "autoPasteDescription": "Coller automatiquement le texte transcrit dans l'application active à la fin de la dictée",
-        "keepInClipboard": "Garder la transcription dans le presse-papiers",
-        "keepInClipboardDescription": "Conserver le texte dicté dans le presse-papiers pour pouvoir le coller manuellement si nécessaire"
-      },
       "startup": {
         "launchAtLogin": "Lancer au démarrage",
         "launchAtLoginDescription": "Lancer Snowy en arrière-plan à l'ouverture de session",
@@ -2147,6 +2139,9 @@
       "translationHotkey": {
         "title": "Raccourci de Traduction",
         "description": "Dictez dans n'importe quelle langue : le texte collé ressort traduit"
+      },
+      "notes": {
+        "title": "Notes"
       }
     },
     "permissions": {
@@ -2224,14 +2219,8 @@
       "tabs": {
         "dictationCleanup": "Nettoyage de la dictée",
         "dictationAgent": "Voice Agent",
-        "chatIntelligence": "Chat",
         "dictationTranslation": "Traduction",
-        "actions": "Actions",
         "providers": "Clés API"
-      },
-      "advancedSetup": "Configuration avancée",
-      "advanced": {
-        "description": "Modèles locaux, points d'accès LAN, API personnalisées et routage entreprise pour le chat et les actions."
       },
       "engine": {
         "title": "Moteur",
@@ -2360,9 +2349,7 @@
     },
     "actions": {
       "autoGenerateTitle": "Générer automatiquement les titres des notes",
-      "autoGenerateTitleDescription": "Utiliser l'IA pour générer un titre court pour les notes après la transcription ou l'amélioration",
-      "actionsRowDescription": "Créez, modifiez et réordonnez les actions exécutables sur une note.",
-      "manageActions": "Gérer"
+      "autoGenerateTitleDescription": "Utiliser l'IA pour générer un titre court pour les notes après la transcription ou l'amélioration"
     }
   },
   "models": {
@@ -2867,7 +2854,9 @@
       "linkedEvent": "Événement lié",
       "noFolder": "Aucun dossier",
       "participants": "Participants",
-      "viewMode": "Mode d'affichage"
+      "viewMode": "Mode d'affichage",
+      "resumeMeeting": "Reprendre la réunion",
+      "resumeMeetingHint": "Enregistrer une autre session dans cette note"
     },
     "participants": {
       "attendee": "participant",
@@ -2975,7 +2964,8 @@
         "titleEmpty": "Rien n'a été enregistré",
         "untitled": "Cette réunion",
         "saveCountdown": "Enregistrer ({{seconds}} s)",
-        "autoSaveHint": "Enregistrement automatique dans {{seconds}} secondes si vous ne choisissez pas."
+        "autoSaveHint": "Enregistrement automatique dans {{seconds}} secondes si vous ne choisissez pas.",
+        "discardSession": "Ignorer cette session"
       }
     },
     "meetingPill": {
@@ -3198,7 +3188,8 @@
       "showEarlier_one": "Afficher {{count}} message précédent",
       "showEarlier_other": "Afficher {{count}} messages précédents",
       "jumpToLive": "Aller au direct",
-      "jumpToLatest": "Aller au plus récent"
+      "jumpToLatest": "Aller au plus récent",
+      "resumedSession": "Repris le {{date}}"
     },
     "recap": {
       "copy": "Copier le résumé",
@@ -3396,9 +3387,6 @@
       "hotkeyDescription": "Affiche ou masque la fenêtre de l'agent de chat",
       "model": "Modèle Agent",
       "modelDescription": "Modèle IA utilisé pour les conversations agent",
-      "systemPrompt": "Prompt système",
-      "systemPromptDescription": "Instructions personnalisées pour l'agent",
-      "systemPromptPlaceholder": "Entrez un prompt système personnalisé...",
       "modes": {
         "openwhispr": "Snowy Cloud",
         "providers": "Fournisseurs Cloud",
@@ -3498,21 +3486,14 @@
       "allow": "Autoriser",
       "deny": "Pas maintenant"
     },
-    "fastLane": {
-      "title": "Réponses rapides",
-      "description": "Pendant une réunion, les réponses rapides utilisent un modèle véloce pour que les premiers mots apparaissent immédiatement. Les réponses approfondies gardent le modèle ci-dessus.",
-      "override": "Choisir moi-même le modèle rapide",
-      "overrideOn": "Les réponses rapides utilisent le modèle choisi ci-dessous.",
-      "overrideAuto": "Snowy choisit {{model}} automatiquement — le modèle véloce de votre fournisseur de chat.",
-      "overrideSame": "Les réponses rapides utilisent actuellement votre modèle de chat. Activez ceci pour en choisir un plus véloce."
-    },
     "palette": {
       "askHint": "Appuyez sur Entrée pour demander à Snowy"
     },
     "modelPicker": {
       "addKey": "Ajouter une clé",
       "localGroup": "Sur cet ordinateur",
-      "choose": "Choisir le modèle"
+      "choose": "Choisir le modèle",
+      "defaultWithModel": "{{label}} ({{model}})"
     }
   },
   "integrations": {

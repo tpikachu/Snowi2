@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Key, Cpu, Network } from "lucide-react";
+import { Key, Cpu } from "lucide-react";
 import { useSettingsStore } from "../../stores/settingsStore";
 import {
   InferenceModeSelector,
@@ -71,17 +71,10 @@ export function MeetingTranscriptionPanel() {
       description: t("settingsPage.transcription.modes.localDesc"),
       icon: <Cpu className="w-4 h-4" />,
     },
-    {
-      id: "self-hosted",
-      label: t("settingsPage.transcription.modes.selfHosted"),
-      description: t("settingsPage.transcription.modes.selfHostedDesc"),
-      icon: <Network className="w-4 h-4" />,
-      disabled: true,
-      badge: t("common.comingSoon"),
-    },
+    // No Self-Hosted card: hidden on client direction (2026-09) until the
+    // streaming self-host path actually ships.
   ];
   const handleTranscriptionModeSelect = (mode: InferenceMode) => {
-    if (mode === "self-hosted") return;
     if (mode === meetingTranscriptionMode) return;
     setMeetingTranscriptionMode(mode);
     setMeetingUseLocalWhisper(mode === "local");

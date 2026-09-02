@@ -150,7 +150,6 @@
     "active": "已激活",
     "managedByOrg": "由您的组织管理",
     "freeAccountRequired": "需要免费账户",
-    "comingSoon": "即将推出",
     "cloud": "云端",
     "local": "本地",
     "apiKey": "API Key",
@@ -1711,13 +1710,6 @@
         "autoStart": "自动开始录制",
         "autoStartDescription": "检测到会议后若几秒内无响应，将自动开始录制。之后随时可以丢弃。"
       },
-      "clipboard": {
-        "title": "剪贴板",
-        "autoPaste": "自动粘贴",
-        "autoPasteDescription": "听写结束后自动将转录文本粘贴到当前活动的应用中",
-        "keepInClipboard": "将转录内容保留在剪贴板",
-        "keepInClipboardDescription": "将听写文本保留在剪贴板中，以便在需要时手动粘贴"
-      },
       "startup": {
         "launchAtLogin": "登录时启动",
         "launchAtLoginDescription": "登录时在后台启动 Snowy",
@@ -1864,6 +1856,9 @@
       "translationHotkey": {
         "title": "翻译快捷键",
         "description": "用任何语言听写——粘贴的文本会自动翻译"
+      },
+      "notes": {
+        "title": "笔记"
       }
     },
     "permissions": {
@@ -1941,14 +1936,8 @@
       "tabs": {
         "dictationCleanup": "听写清理",
         "dictationAgent": "语音助手",
-        "chatIntelligence": "聊天",
         "dictationTranslation": "翻译",
-        "actions": "操作",
         "providers": "API 密钥"
-      },
-      "advancedSetup": "高级设置",
-      "advanced": {
-        "description": "本地模型、局域网端点、自定义 API，以及聊天和操作的企业路由。"
       },
       "engine": {
         "title": "引擎",
@@ -2272,9 +2261,7 @@
     },
     "actions": {
       "autoGenerateTitle": "自动生成笔记标题",
-      "autoGenerateTitleDescription": "使用 AI 在转录或增强后为笔记生成简短标题",
-      "actionsRowDescription": "创建、编辑和排序可在笔记上运行的操作。",
-      "manageActions": "管理"
+      "autoGenerateTitleDescription": "使用 AI 在转录或增强后为笔记生成简短标题"
     }
   },
   "models": {
@@ -2660,7 +2647,9 @@
       "linkedEvent": "关联日程",
       "noFolder": "无文件夹",
       "participants": "参与者",
-      "viewMode": "视图模式"
+      "viewMode": "视图模式",
+      "resumeMeeting": "继续会议",
+      "resumeMeetingHint": "在此笔记中继续录制"
     },
     "participants": {
       "attendee": "位参会者",
@@ -2768,7 +2757,8 @@
         "titleEmpty": "没有录到任何内容",
         "untitled": "这次会议",
         "saveCountdown": "保存（{{seconds}} 秒）",
-        "autoSaveHint": "若不选择，将在 {{seconds}} 秒后自动保存。"
+        "autoSaveHint": "若不选择，将在 {{seconds}} 秒后自动保存。",
+        "discardSession": "放弃本次录音"
       }
     },
     "meetingPill": {
@@ -2991,7 +2981,8 @@
       "showEarlier_one": "显示 {{count}} 条更早的消息",
       "showEarlier_other": "显示 {{count}} 条更早的消息",
       "jumpToLive": "跳到实时",
-      "jumpToLatest": "跳到最新"
+      "jumpToLatest": "跳到最新",
+      "resumedSession": "{{date}} 继续"
     },
     "recap": {
       "copy": "复制摘要",
@@ -3231,9 +3222,6 @@
       "hotkeyDescription": "打开或关闭聊天助手窗口",
       "model": "助手模型",
       "modelDescription": "用于助手对话的AI模型",
-      "systemPrompt": "系统提示词",
-      "systemPromptDescription": "助手的自定义指令",
-      "systemPromptPlaceholder": "输入自定义系统提示词...",
       "modes": {
         "openwhispr": "Snowy Cloud",
         "providers": "云服务商",
@@ -3333,21 +3321,14 @@
       "allow": "允许",
       "deny": "暂不"
     },
-    "fastLane": {
-      "title": "快速回答",
-      "description": "会议中的快速回答使用轻量模型，让第一句话立即出现。深入回答继续使用上面的模型。",
-      "override": "自己选择快速模型",
-      "overrideOn": "快速回答使用下方选择的模型。",
-      "overrideAuto": "Snowy 当前自动选择 {{model}} — 你的聊天服务商的轻量模型。",
-      "overrideSame": "快速回答当前使用你的聊天模型。开启后可选择更快的模型。"
-    },
     "palette": {
       "askHint": "按 Enter 向 Snowy 提问"
     },
     "modelPicker": {
       "addKey": "添加密钥",
       "localGroup": "本机模型",
-      "choose": "选择模型"
+      "choose": "选择模型",
+      "defaultWithModel": "{{label}}（{{model}}）"
     }
   },
   "integrations": {

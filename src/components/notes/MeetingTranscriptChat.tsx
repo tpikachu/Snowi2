@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ArrowDown,
@@ -17,6 +17,7 @@ import { MAX_SPEAKER_COUNT } from "../../constants/speakerDetection.json";
 import type { TranscriptSegment } from "../../stores/meetingRecordingStore";
 import type { LiveUtterance } from "../../utils/liveUtterances";
 import { windowTranscript } from "../../utils/transcriptWindow";
+import { buildSessionClock } from "../../utils/transcriptSessions";
 import { formatMmSs } from "../../utils/formatDuration";
 import { SPEAKER_IDENTIFICATION_ENABLED } from "../../helpers/speakerIdentificationPolicy";
 import {
@@ -685,11 +686,10 @@ export function MeetingTranscriptChat({
   }, [segments, speakerMappings]);
 
   // The meeting's own clock: turn headers show mm:ss from the first
-  // timestamped segment, the way a call recording is quoted.
-  const baseTimestamp = useMemo(
-    () => segments.find((segment) => segment.timestamp != null)?.timestamp ?? null,
-    [segments]
-  );
+  // timestamped segment of the current session, the way a call recording is
+  // quoted. A resumed meeting restarts the clock at 00:00 and gets a divider
+  // (see transcriptSessions.ts).
+  const sessionClock = useMemo(() => buildSessionClock(segments), [segments]);
 
   if (!hasContent) {
     return (
@@ -851,55 +851,75 @@ export function MeetingTranscriptChat({
             </div>
           );
 
+          const sessionBase =
+            segment.timestamp != null ? sessionClock.baseById.get(segment.id) : undefined;
           const relTime =
-            baseTimestamp != null && segment.timestamp != null
-              ? formatMmSs(Math.max(0, Math.floor((segment.timestamp - baseTimestamp) / 1000)))
+            sessionBase != null && segment.timestamp != null
+              ? formatMmSs(Math.max(0, Math.floor((segment.timestamp - sessionBase) / 1000)))
               : null;
+          const isResumeStart = sessionClock.resumeStartIds.has(segment.id);
 
           return (
-            <div
-              key={segment.id}
-              className={cn("group relative flex flex-col", selectable && "pl-6")}
-              style={{ animation: "agent-message-in 200ms ease-out both" }}
-            >
-              {/* Every utterance opens with its speaker and the meeting clock.
+            <Fragment key={segment.id}>
+              {isResumeStart && segment.timestamp != null && (
+                <div className="my-1 flex select-none items-center gap-2">
+                  <span className="h-px flex-1 bg-border-subtle" />
+                  <span className="text-[10.5px] uppercase tracking-[0.06em] text-muted-foreground/70">
+                    {t("notes.transcript.resumedSession", {
+                      date: new Date(segment.timestamp).toLocaleString(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      }),
+                    })}
+                  </span>
+                  <span className="h-px flex-1 bg-border-subtle" />
+                </div>
+              )}
+              <div
+                className={cn("group relative flex flex-col", selectable && "pl-6")}
+                style={{ animation: "agent-message-in 200ms ease-out both" }}
+              >
+                {/* Every utterance opens with its speaker and the meeting clock.
                   Unlabelled lines get the track caption — "You" in the accent,
                   "Them" in the first ramp color — so who is talking never
                   relies on layout. Same keys the export path resolves to, so
                   the pane and the exported file agree. */}
-              <div className="flex items-baseline gap-2">
-                {labelElement || (
-                  <span
-                    className={cn(
-                      "text-[12px] font-semibold",
-                      selfSide ? "text-primary" : "text-speaker-1"
-                    )}
-                  >
-                    {t(selfSide ? "transcript.speaker.you" : "transcript.speaker.others")}
-                  </span>
-                )}
-                {relTime && (
-                  <span data-numeric className="text-[11px] text-muted-foreground/70">
-                    {relTime}
-                  </span>
+                <div className="flex items-baseline gap-2">
+                  {labelElement || (
+                    <span
+                      className={cn(
+                        "text-[12px] font-semibold",
+                        selfSide ? "text-primary" : "text-speaker-1"
+                      )}
+                    >
+                      {t(selfSide ? "transcript.speaker.you" : "transcript.speaker.others")}
+                    </span>
+                  )}
+                  {relTime && (
+                    <span data-numeric className="text-[11px] text-muted-foreground/70">
+                      {relTime}
+                    </span>
+                  )}
+                </div>
+                <div
+                  className={cn(
+                    "mt-0.5 max-w-[72ch] rounded-md text-[13px] leading-relaxed text-foreground",
+                    isSelected && "-mx-1 bg-primary/10 px-1 ring-1 ring-primary/50"
+                  )}
+                >
+                  {segment.text}
+                </div>
+                {selectable && (
+                  <SelectCheckbox
+                    isSelected={isSelected}
+                    onToggle={() => onToggleSelect?.(segment.id)}
+                    className="absolute left-0 top-1"
+                  />
                 )}
               </div>
-              <div
-                className={cn(
-                  "mt-0.5 max-w-[72ch] rounded-md text-[13px] leading-relaxed text-foreground",
-                  isSelected && "-mx-1 bg-primary/10 px-1 ring-1 ring-primary/50"
-                )}
-              >
-                {segment.text}
-              </div>
-              {selectable && (
-                <SelectCheckbox
-                  isSelected={isSelected}
-                  onToggle={() => onToggleSelect?.(segment.id)}
-                  className="absolute left-0 top-1"
-                />
-              )}
-            </div>
+            </Fragment>
           );
         })}
 

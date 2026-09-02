@@ -193,7 +193,7 @@ const ALL_SETTINGS_SECTIONS: SettingsSectionDef[] = [
       { id: "language", labelKey: "settings.language.sectionTitle" },
       { id: "sound", labelKey: "settingsPage.general.soundEffects.title" },
       { id: "notifications", labelKey: "settingsPage.general.notifications.title" },
-      { id: "clipboard", labelKey: "settingsPage.general.clipboard.title" },
+      { id: "notes", labelKey: "settingsPage.general.notes.title" },
       { id: "noteFiles", labelKey: "settings.noteFiles.title" },
       { id: "floatingIcon", labelKey: "settingsPage.general.floatingIcon.title" },
       { id: "startup", labelKey: "settingsPage.general.startup.title" },
@@ -364,11 +364,10 @@ const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
     anchor: "notifications",
     labelKey: "settingsPage.general.notifications.updates",
   },
-  { section: "general", anchor: "clipboard", labelKey: "settingsPage.general.clipboard.autoPaste" },
   {
     section: "general",
-    anchor: "clipboard",
-    labelKey: "settingsPage.general.clipboard.keepInClipboard",
+    anchor: "notes",
+    labelKey: "settingsPage.actions.autoGenerateTitle",
   },
   { section: "general", anchor: "noteFiles", labelKey: "settings.noteFiles.title" },
   { section: "general", anchor: "noteFiles", labelKey: "settings.noteFiles.path" },
@@ -520,29 +519,9 @@ const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
     anchor: "translationModel",
     labelKey: "dictationTranslation.enabled",
   },
-  // The former actions/chat panels' controls live behind the providers page's
-  // Advanced disclosure now — a collapsed target search cannot promise to
-  // reach, so the entries land on the page instead of a hidden anchor.
-  {
-    section: "llms",
-    panel: "providers",
-    labelKey: "settingsPage.actions.autoGenerateTitle",
-  },
-  {
-    section: "llms",
-    panel: "providers",
-    labelKey: "notes.actions.manageTitle",
-  },
-  {
-    section: "llms",
-    panel: "providers",
-    labelKey: "agentMode.fastLane.title",
-  },
-  {
-    section: "llms",
-    panel: "providers",
-    labelKey: "agentMode.settings.systemPrompt",
-  },
+  // No entries for chat/actions model config: it left Settings entirely
+  // (client direction, 2026-09) — models are picked at point of use, and
+  // actions are managed from the notes sidebar.
 
   // ---- Privacy & data -----------------------------------------------------
   {

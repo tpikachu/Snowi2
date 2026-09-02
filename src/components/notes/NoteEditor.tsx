@@ -8,6 +8,7 @@ import {
   Mail,
   Sparkles,
   MessageSquareText,
+  Mic,
   Calendar,
   LinkIcon,
   FolderOpen,
@@ -873,6 +874,27 @@ export default function NoteEditor({
                   </div>
                 </div>
               )}
+              {/* A meeting can pick back up — several sessions under one
+                  topic land in one note. Resume seeds the recorder with the
+                  transcript on screen (PersonalNotesView.startRecording), so
+                  it is only offered when that transcript actually parses:
+                  a legacy plain-text transcript would seed nothing and be
+                  overwritten by the first autosave. */}
+              {!isRecording &&
+                !isProcessing &&
+                hasMeetingTranscript &&
+                displaySegments.length > 0 &&
+                onStartRecording && (
+                  <button
+                    type="button"
+                    onClick={onStartRecording}
+                    title={t("notes.editor.resumeMeetingHint")}
+                    className="shrink-0 h-7 flex items-center gap-1.5 rounded-lg border border-border-subtle bg-input px-2.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted hover:border-border transition-colors duration-150 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <Mic size={11} />
+                    {t("notes.editor.resumeMeeting")}
+                  </button>
+                )}
               {/* The two things people actually do with a finished write-up,
                   as visible verbs rather than dropdown archaeology. */}
               {canCopyRecap && (
@@ -1058,7 +1080,10 @@ export default function NoteEditor({
             onStopRecording={onStopRecording}
             onAskSubmit={handleAskSubmit}
             onInputFocus={handleChatInputFocus}
-            canRecord
+            // No idle mic in the composer (client direction, 2026-09):
+            // recordings start from Start meeting or the header's Resume.
+            // While one runs, the bar still carries the elapsed/stop control.
+            canRecord={isRecording}
             actionPicker={isRecording ? undefined : actionPicker}
             hideInput={chatMode !== "hidden"}
           />

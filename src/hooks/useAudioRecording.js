@@ -270,7 +270,14 @@ export const useAudioRecording = (toast, options = {}) => {
           }
 
           const isStreaming = result.source?.includes("streaming");
-          const { autoPasteEnabled, keepTranscriptionInClipboard } = getSettings();
+          // Clipboard delivery is off in this build (client direction,
+          // 2026-09): dictation text lands in history and the preview only —
+          // never pasted into other apps, never left on the clipboard. The
+          // stored settings stay untouched so the feature can return by
+          // restoring this read: const { autoPasteEnabled,
+          // keepTranscriptionInClipboard } = getSettings();
+          const autoPasteEnabled = false;
+          const keepTranscriptionInClipboard = false;
 
           if (autoPasteEnabled) {
             const pasteStart = performance.now();

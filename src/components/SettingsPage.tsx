@@ -580,10 +580,6 @@ export default function SettingsPage({
     setPauseMediaOnDictation,
     showTranscriptionPreview,
     setShowTranscriptionPreview,
-    autoPasteEnabled,
-    setAutoPasteEnabled,
-    keepTranscriptionInClipboard,
-    setKeepTranscriptionInClipboard,
     floatingIconAutoHide,
     setFloatingIconAutoHide,
     startMinimized,
@@ -637,6 +633,8 @@ export default function SettingsPage({
   const { t } = useTranslation();
   const uiTextScale = useSettingsStore((s) => s.uiTextScale);
   const setUiTextScale = useSettingsStore((s) => s.setUiTextScale);
+  const autoGenerateNoteTitle = useSettingsStore((s) => s.autoGenerateNoteTitle);
+  const setAutoGenerateNoteTitle = useSettingsStore((s) => s.setAutoGenerateNoteTitle);
   const { toast } = useToast();
 
   const [currentVersion, setCurrentVersion] = useState<string>("");
@@ -1486,26 +1484,16 @@ export default function SettingsPage({
               </SettingsPanel>
             </SettingsGroup>
 
-            {/* Clipboard */}
-            <SettingsGroup id="clipboard" title={t("settingsPage.general.clipboard.title")}>
+            {/* Notes. Home of the app-behaviour toggles the deleted LLM
+                Advanced page used to hold — a preference, not model config. */}
+            <SettingsGroup id="notes" title={t("settingsPage.general.notes.title")}>
               <SettingsPanel>
                 <SettingsPanelRow>
                   <SettingsRow
-                    label={t("settingsPage.general.clipboard.autoPaste")}
-                    description={t("settingsPage.general.clipboard.autoPasteDescription")}
+                    label={t("settingsPage.actions.autoGenerateTitle")}
+                    description={t("settingsPage.actions.autoGenerateTitleDescription")}
                   >
-                    <Toggle checked={autoPasteEnabled} onChange={setAutoPasteEnabled} />
-                  </SettingsRow>
-                </SettingsPanelRow>
-                <SettingsPanelRow>
-                  <SettingsRow
-                    label={t("settingsPage.general.clipboard.keepInClipboard")}
-                    description={t("settingsPage.general.clipboard.keepInClipboardDescription")}
-                  >
-                    <Toggle
-                      checked={keepTranscriptionInClipboard}
-                      onChange={setKeepTranscriptionInClipboard}
-                    />
+                    <Toggle checked={autoGenerateNoteTitle} onChange={setAutoGenerateNoteTitle} />
                   </SettingsRow>
                 </SettingsPanelRow>
               </SettingsPanel>
