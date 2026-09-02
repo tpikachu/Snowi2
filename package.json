@@ -211,7 +211,7 @@
     "@tiptap/extension-underline": "3.31.0",
     "@tiptap/extensions": "3.31.0",
     "@tiptap/pm": "3.31.0",
-    "@xmldom/xmldom": "0.8.13",
+    "@xmldom/xmldom": "0.8.15",
     "fast-xml-builder": "1.2.0",
     "fast-xml-parser": "5.7.2",
     "ip-address": "10.2.0",
