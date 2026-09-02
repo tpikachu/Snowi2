@@ -1913,8 +1913,16 @@
         "dictationAgent": "Voice Agent",
         "chatIntelligence": "Chat",
         "dictationTranslation": "Tradução",
-        "actions": "Ações"
-      }
+        "actions": "Ações",
+        "providers": "Chaves de API"
+      },
+      "providers": {
+        "title": "Chaves de API",
+        "description": "Os modelos são escolhidos onde você os usa: no chat, no painel da reunião e por ação. Uma chave aqui desbloqueia esse provedor em todo lugar."
+      },
+      "currentModel": "Modelo",
+      "currentModelHint": "Escolha aqui ou onde você o usa — a escolha é compartilhada e salva.",
+      "advancedSetup": "Configuração avançada"
     },
     "transcription": {
       "customSetup": "Configuração personalizada",
@@ -2798,7 +2806,8 @@
         "actionFailed": "A ação falhou",
         "noEndpoint": "Não há URL de servidor próprio definida para as ações.",
         "configure": "Configurar"
-      }
+      },
+      "defaultModel": "Padrão"
     },
     "empty": {
       "title": "Ainda não há notas aqui",
@@ -3321,6 +3330,11 @@
     },
     "palette": {
       "askHint": "Pressione Enter para perguntar ao Snowy"
+    },
+    "modelPicker": {
+      "addKey": "Adicionar chave",
+      "localGroup": "Neste computador",
+      "choose": "Escolher modelo"
     }
   },
   "integrations": {

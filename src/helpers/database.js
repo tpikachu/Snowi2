@@ -399,6 +399,17 @@ class DatabaseManager {
         if (!err.message.includes("duplicate column")) throw err;
       }
 
+      // Per-action model override (all three NULL = run on the default
+      // actions model). Picked in the action editor, resolved at run time by
+      // readActionModelOverride — never a credential, only mode/provider/id.
+      for (const column of ["model_mode", "model_provider", "model_id"]) {
+        try {
+          this.db.exec(`ALTER TABLE actions ADD COLUMN ${column} TEXT`);
+        } catch (err) {
+          if (!err.message.includes("duplicate column")) throw err;
+        }
+      }
+
       this.db.exec(`
         CREATE TABLE IF NOT EXISTS agent_conversations (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -3720,7 +3731,17 @@ class DatabaseManager {
   updateAction(id, updates) {
     try {
       if (!this.db) throw new Error("Database not initialized");
-      const allowedFields = ["name", "description", "prompt", "icon", "sort_order"];
+      const allowedFields = [
+        "name",
+        "description",
+        "prompt",
+        "icon",
+        "sort_order",
+        // The per-action model override; null clears it back to the default.
+        "model_mode",
+        "model_provider",
+        "model_id",
+      ];
       const fields = [];
       const values = [];
       for (const [key, value] of Object.entries(updates)) {

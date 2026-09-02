@@ -2217,8 +2217,16 @@
         "dictationAgent": "Voice Agent",
         "chatIntelligence": "Chat",
         "dictationTranslation": "Translation",
-        "actions": "Actions"
-      }
+        "actions": "Actions",
+        "providers": "API keys"
+      },
+      "providers": {
+        "title": "API keys",
+        "description": "Models are picked right where you use them — in the chat, on the meeting panel, and per action. A key here unlocks that provider everywhere."
+      },
+      "currentModel": "Model",
+      "currentModelHint": "Pick it here or right where you use it — the choice is shared and saved.",
+      "advancedSetup": "Advanced setup"
     },
     "transcription": {
       "customSetup": "Custom Setup",
@@ -3020,7 +3028,8 @@
         "actionFailed": "Action failed",
         "noEndpoint": "No self-hosted server URL is set for actions.",
         "configure": "Configure"
-      }
+      },
+      "defaultModel": "App default"
     },
     "realtimeBanner": {
       "message": "Real-time transcription available on Pro",
@@ -3486,6 +3495,11 @@
     },
     "palette": {
       "askHint": "Press Enter to ask Snowy"
+    },
+    "modelPicker": {
+      "addKey": "Add key",
+      "localGroup": "On this computer",
+      "choose": "Choose model"
     }
   },
   "integrations": {

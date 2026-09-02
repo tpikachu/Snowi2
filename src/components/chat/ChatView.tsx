@@ -5,6 +5,7 @@ import { useChatStreaming } from "./useChatStreaming";
 import { useChatMessageSender } from "./useChatMessageSender";
 import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
+import ModelPickerChip from "../ModelPickerChip";
 import { ChatEmptyIllustration } from "./ChatEmptyIllustration";
 import ConversationList from "./ConversationList";
 import EmptyChatState from "./EmptyChatState";
@@ -178,6 +179,10 @@ export default function ChatView() {
                 onTextSubmit={handleTextSubmit}
                 onCancel={streaming.cancelStream}
                 autoFocus={isNewChat}
+                // The model lives where it is used: this chip writes the
+                // chatIntelligence scope, so the bar and the meeting
+                // assistant follow the same pick.
+                accessory={<ModelPickerChip scope="chatIntelligence" />}
               />
             </>
           ) : (

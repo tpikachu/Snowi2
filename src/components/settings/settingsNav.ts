@@ -29,6 +29,7 @@ import {
   Brain,
   FileAudio,
   Keyboard,
+  KeyRound,
   Languages,
   MessageSquare,
   Mic,
@@ -51,7 +52,12 @@ export function settingsGroupDomId(id: string): string {
 export type SpeechTab = "dictation" | "noteRecording" | "upload";
 
 export type LlmTab =
-  "dictationCleanup" | "dictationAgent" | "dictationTranslation" | "actions" | "chatIntelligence";
+  | "providers"
+  | "dictationCleanup"
+  | "dictationAgent"
+  | "dictationTranslation"
+  | "actions"
+  | "chatIntelligence";
 
 const ALL_SPEECH_TABS: readonly SpeechTab[] = ["dictation", "noteRecording", "upload"] as const;
 
@@ -68,6 +74,7 @@ export const SPEECH_TABS: readonly SpeechTab[] = ALL_SPEECH_TABS.filter(isVisibl
 
 // Same order as the panel list below, and for the same reason.
 const ALL_LLM_TABS: readonly LlmTab[] = [
+  "providers",
   "actions",
   "chatIntelligence",
   "dictationCleanup",
@@ -246,8 +253,12 @@ const ALL_SETTINGS_SECTIONS: SettingsSectionDef[] = [
     // writing up a meeting *is* the built-in Generate Notes action. A stored
     // `noteFormatting` tab id is rewritten by migrateActionsScopeKeys, and any
     // that escapes it fails the LLM_TABS membership check in SettingsModal and
-    // lands on the first tab — which is this one.
+    // lands on the first tab.
+    //
+    // `providers` leads: keys are the only model setup Settings still owns —
+    // models themselves are picked at point of use (chat, cue card, actions).
     panels: [
+      { id: "providers", labelKey: "settingsPage.llms.tabs.providers", icon: KeyRound },
       { id: "actions", labelKey: "settingsPage.llms.tabs.actions", icon: ListChecks },
       {
         id: "chatIntelligence",
@@ -478,6 +489,12 @@ const ALL_SETTINGS_SEARCH_INDEX: SettingsSearchEntry[] = [
   },
 
   // ---- Language models ----------------------------------------------------
+  {
+    section: "llms",
+    panel: "providers",
+    anchor: "providerKeys",
+    labelKey: "settingsPage.llms.tabs.providers",
+  },
   {
     section: "llms",
     panel: "dictationCleanup",

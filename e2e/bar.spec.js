@@ -140,22 +140,29 @@ test("the palette folds on Escape, on its dismiss button, and on focus loss", as
   const askField = bar.getByPlaceholder("Ask or search anything");
   const paletteRow = bar.getByRole("button", { name: "Preferences" });
 
+  // The palette folds on ANY focus loss — which means a stray OS focus
+  // change on the machine running this suite folds it too. Each open
+  // retries, so the test asserts the behavior without demanding a desktop
+  // where nothing else ever takes focus.
+  const openPalette = () =>
+    expect(async () => {
+      await askField.click();
+      await expect(paletteRow).toBeVisible({ timeout: 2_000 });
+    }).toPass({ timeout: 20_000 });
+
   // One Escape peels the palette only — the bar is still on screen.
-  await askField.click();
-  await expect(paletteRow).toBeVisible();
+  await openPalette();
   await bar.keyboard.press("Escape");
   await expect(paletteRow).toHaveCount(0);
   await expect(bar.getByRole("button", { name: "Start meeting" })).toBeVisible();
 
   // The dropdown carries its own dismiss button.
-  await askField.click();
-  await expect(paletteRow).toBeVisible();
+  await openPalette();
   await bar.getByRole("button", { name: "Dismiss" }).click();
   await expect(paletteRow).toHaveCount(0);
 
   // Losing focus collapses it automatically.
-  await askField.click();
-  await expect(paletteRow).toBeVisible();
+  await openPalette();
   await askField.blur();
   await expect(paletteRow).toHaveCount(0);
 });

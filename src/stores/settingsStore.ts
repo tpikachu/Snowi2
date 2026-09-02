@@ -824,6 +824,12 @@ export interface SettingsState
   chatFastCloudMode: string;
   chatFastDisableThinking: boolean;
 
+  /** Follow-up email's model override; all three empty = the actions model.
+   *  Picked in the follow-up dialog itself, like a per-action override. */
+  followUpModelMode: string;
+  followUpModelProvider: string;
+  followUpModelId: string;
+
   customPrompts: Record<PromptKind, string>;
   setCustomPrompt: (kind: PromptKind, value: string) => void;
 
@@ -941,6 +947,9 @@ export interface SettingsState
   applySnippetsFromExternal: (snippets: Snippet[]) => void;
   setAssemblyAiStreaming: (value: boolean) => void;
   setAutoGenerateNoteTitle: (value: boolean) => void;
+  setFollowUpModelOverride: (
+    override: { mode: string; provider: string; model: string } | null
+  ) => void;
   setUseCleanupModel: (value: boolean) => void;
   setUseDictationAgent: (value: boolean) => void;
   setCleanupModel: (value: string) => void;
@@ -1346,6 +1355,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   assemblyAiStreaming: readBoolean("assemblyAiStreaming", true),
 
   autoGenerateNoteTitle: readBoolean("autoGenerateNoteTitle", true),
+  followUpModelMode: readString("followUpModelMode", ""),
+  followUpModelProvider: readString("followUpModelProvider", ""),
+  followUpModelId: readString("followUpModelId", ""),
   useCleanupModel: readBoolean("useCleanupModel", true),
   useDictationAgent: readBoolean("useDictationAgent", true),
   cleanupModel: readString("cleanupModel", ""),
@@ -1853,6 +1865,19 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setCleanupCloudBaseUrl: createStringSetter("cleanupCloudBaseUrl"),
   setAssemblyAiStreaming: createBooleanSetter("assemblyAiStreaming"),
   setAutoGenerateNoteTitle: createBooleanSetter("autoGenerateNoteTitle"),
+  // Written as a unit so a half-cleared override can never survive a crash
+  // between three separate setter calls.
+  setFollowUpModelOverride: (override) => {
+    const values = {
+      followUpModelMode: override?.mode ?? "",
+      followUpModelProvider: override?.provider ?? "",
+      followUpModelId: override?.model ?? "",
+    };
+    if (isBrowser) {
+      for (const [key, value] of Object.entries(values)) localStorage.setItem(key, value);
+    }
+    set(values);
+  },
   setUseCleanupModel: createBooleanSetter("useCleanupModel"),
   setUseDictationAgent: createBooleanSetter("useDictationAgent"),
   setCleanupProvider: createStringSetter("cleanupProvider"),

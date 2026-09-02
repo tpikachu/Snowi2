@@ -1934,8 +1934,16 @@
         "dictationAgent": "语音助手",
         "chatIntelligence": "聊天",
         "dictationTranslation": "翻译",
-        "actions": "操作"
-      }
+        "actions": "操作",
+        "providers": "API 密钥"
+      },
+      "providers": {
+        "title": "API 密钥",
+        "description": "模型在使用处选择——聊天、会议面板和每个操作中。在这里填入密钥即可在所有位置解锁该提供商。"
+      },
+      "currentModel": "模型",
+      "currentModelHint": "可以在这里选,也可以在使用处选——选择会共享并保存。",
+      "advancedSetup": "高级设置"
     },
     "transcription": {
       "customSetup": "自定义设置",
@@ -2798,7 +2806,8 @@
         "actionFailed": "操作失败",
         "noEndpoint": "没有为操作设置自托管服务器地址。",
         "configure": "去设置"
-      }
+      },
+      "defaultModel": "默认"
     },
     "empty": {
       "title": "这里还没有笔记",
@@ -3321,6 +3330,11 @@
     },
     "palette": {
       "askHint": "按 Enter 向 Snowy 提问"
+    },
+    "modelPicker": {
+      "addKey": "添加密钥",
+      "localGroup": "本机模型",
+      "choose": "选择模型"
     }
   },
   "integrations": {

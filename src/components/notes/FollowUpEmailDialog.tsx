@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useShallow } from "zustand/react/shallow";
 import { useTranslation } from "react-i18next";
 import { ClipboardCopy, Loader2, Mail, RefreshCw, TriangleAlert } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/useToast";
+import ModelPickerChip from "../ModelPickerChip";
+import { useSettingsStore } from "../../stores/settingsStore";
+import { readActionModelOverride } from "../../utils/actionModelOverride";
 import {
   buildMailtoUrl,
   draftFollowUpEmail,
@@ -40,6 +44,19 @@ export default function FollowUpEmailDialog({
   const [errorKey, setErrorKey] = useState<string | null>(null);
   // A run belongs to one open dialog; closing mid-draft discards the result.
   const runRef = useRef(0);
+
+  // The email's own model, remembered like a per-action override; empty
+  // follows the actions default. Reads through readActionModelOverride so a
+  // half-cleared value never renders as a pick.
+  const followUpFields = useSettingsStore(
+    useShallow((s) => ({
+      model_mode: s.followUpModelMode,
+      model_provider: s.followUpModelProvider,
+      model_id: s.followUpModelId,
+    }))
+  );
+  const followUpOverride = readActionModelOverride(followUpFields);
+  const setFollowUpModelOverride = useSettingsStore((s) => s.setFollowUpModelOverride);
 
   const generate = useCallback(async () => {
     const run = ++runRef.current;
@@ -128,16 +145,23 @@ export default function FollowUpEmailDialog({
         )}
 
         <DialogFooter>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => void generate()}
-            disabled={isDrafting}
-            className="sm:mr-auto"
-          >
-            <RefreshCw size={12} />
-            {t("notes.followUpEmail.regenerate")}
-          </Button>
+          <div className="flex items-center gap-1.5 sm:mr-auto">
+            {/* This email's model, remembered for next time. Changing it
+                re-drafts immediately — a pick with no visible effect would
+                read as a pick that did nothing. */}
+            <ModelPickerChip
+              value={followUpOverride}
+              onSelect={(selection) => {
+                setFollowUpModelOverride(selection);
+                void generate();
+              }}
+              defaultLabel={t("notes.actions.defaultModel")}
+            />
+            <Button variant="ghost" size="sm" onClick={() => void generate()} disabled={isDrafting}>
+              <RefreshCw size={12} />
+              {t("notes.followUpEmail.regenerate")}
+            </Button>
+          </div>
           <Button
             variant="outline-flat"
             size="sm"

@@ -11,6 +11,8 @@ interface ChatInputProps {
   onCancel?: () => void;
   autoFocus?: boolean;
   placeholder?: string;
+  /** Rendered at the input row's left edge — the model chip, where a surface offers one. */
+  accessory?: React.ReactNode;
 }
 
 function RecordingIndicator() {
@@ -48,6 +50,7 @@ export function ChatInput({
   onCancel,
   autoFocus = false,
   placeholder,
+  accessory,
 }: ChatInputProps) {
   const { t } = useTranslation();
   const [inputText, setInputText] = useState("");
@@ -113,6 +116,7 @@ export function ChatInput({
 
         {(isIdle || isBusy) && (
           <div className="flex items-center gap-2 w-full">
+            {accessory}
             <input
               ref={inputRef}
               type="text"

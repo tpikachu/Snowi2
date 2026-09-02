@@ -16,6 +16,7 @@ import {
   Square,
   Zap,
 } from "lucide-react";
+import ModelPickerChip from "./ModelPickerChip";
 import { capturedMsAt, type MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
 import type {
   AssistLastTime,
@@ -819,6 +820,13 @@ export default function MeetingPanelOverlay() {
                   "placeholder:text-hud-muted disabled:cursor-not-allowed"
                 )}
               />
+              {/* The assistant's model, changeable mid-meeting. Writes the
+                  same chatIntelligence scope the app chat's chip writes — one
+                  brain, pickable from either surface; the control panel's
+                  assistant reads it fresh on the next ask via the store's
+                  cross-window sync. Also the fix when no model is set: the
+                  chip is enabled even while the panel says "needs model". */}
+              <ModelPickerChip scope="chatIntelligence" variant="hud" />
               <button
                 type="submit"
                 disabled={!assistReady || !question.trim()}

@@ -25,6 +25,7 @@ import { getRemoteProviderIcon } from "../utils/providerIcons";
 import { GetApiKeyLink } from "./ui/GetApiKeyLink";
 import { getCachedPlatform } from "../utils/platform";
 import { useSettingsStore } from "../stores/settingsStore";
+import { CLOUD_PROVIDER_KEY_LINKS } from "../config/providerKeyLinks";
 
 type CloudModelOption = {
   value: string;
@@ -50,20 +51,7 @@ const CLOUD_PROVIDER_IDS = [
   "custom",
 ];
 
-/**
- * Where each provider hands out API keys, plus any qualifier worth showing
- * before the user commits to one. Every provider that takes a plain API key is
- * described here rather than hand-written as its own block, so the key field
- * below is one component instead of six near-identical copies.
- */
-const CLOUD_PROVIDER_KEY_LINKS: Record<string, { url: string; noteKey?: string }> = {
-  openai: { url: "https://platform.openai.com/api-keys" },
-  anthropic: { url: "https://console.anthropic.com/settings/keys" },
-  gemini: { url: "https://aistudio.google.com/app/api-keys" },
-  groq: { url: "https://console.groq.com/keys" },
-  tinfoil: { url: "https://tinfoil.sh/inference" },
-  corti: { url: "https://www.corti.ai/", noteKey: "reasoning.corti.euOnly" },
-};
+// Moved to src/config/providerKeyLinks.ts so the Settings key panel shares it.
 
 interface ReasoningModelSelectorProps {
   reasoningModel: string;

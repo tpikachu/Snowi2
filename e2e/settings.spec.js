@@ -42,6 +42,32 @@ test("the keybinds page reads as caps, and opens an editor on click", async () =
   await page.screenshot({ path: test.info().outputPath("keybinds-open.png") });
 });
 
+test("models are picked at point of use; Settings leads with API keys", async () => {
+  ({ app } = await launchApp(test.info()));
+  const page = await controlPanelPage(app);
+  await skipOnboarding(page);
+
+  // The chat composer carries the model chip — the pick lives where it's used.
+  await page.locator('[data-tour="nav-chat"]').click();
+  await expect(page.getByPlaceholder("Type a message...")).toBeVisible({ timeout: 15_000 });
+  const chip = page.getByRole("button", { name: "Model" });
+  await expect(chip).toBeVisible();
+
+  // On a fresh profile no provider has a key, so the popover offers only
+  // "add a key" rows — never a model that would 401.
+  await chip.click();
+  await expect(page.getByText("Add key").first()).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("model-chip-popover.png") });
+  await page.keyboard.press("Escape");
+
+  // Settings → Language Models now lands on the API keys panel first.
+  await page.getByRole("button", { name: "Settings" }).first().click();
+  await page.getByRole("button", { name: "Language Models" }).first().click();
+  await expect(page.getByText("API keys").first()).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByText("OpenAI").first()).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("provider-keys-panel.png") });
+});
+
 test("the text-size preference zooms the control panel window", async () => {
   ({ app } = await launchApp(test.info()));
   const page = await controlPanelPage(app);

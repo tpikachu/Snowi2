@@ -572,6 +572,10 @@ export interface ActionItem {
   is_builtin: number;
   sort_order: number;
   translation_key: string | null;
+  /** Per-action model override; all three null = the default actions model. */
+  model_mode?: string | null;
+  model_provider?: string | null;
+  model_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -1299,6 +1303,9 @@ declare global {
           prompt?: string;
           icon?: string;
           sort_order?: number;
+          model_mode?: string | null;
+          model_provider?: string | null;
+          model_id?: string | null;
         }
       ) => Promise<{ success: boolean; action?: ActionItem; error?: string }>;
       deleteAction: (id: number) => Promise<{ success: boolean; id?: number; error?: string }>;

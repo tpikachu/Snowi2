@@ -78,6 +78,8 @@ import ChatAgentSettings from "./settings/ChatAgentSettings";
 import DictationAgentSettings from "./settings/DictationAgentSettings";
 import DictationTranslationSettings from "./settings/DictationTranslationSettings";
 import InferenceConfigEditor from "./settings/InferenceConfigEditor";
+import ScopeModelSummary from "./settings/ScopeModelSummary";
+import ProviderKeysPanel from "./settings/ProviderKeysPanel";
 import { MeetingTranscriptionPanel } from "./settings/MeetingSettings";
 import { UploadTranscriptionPanel } from "./settings/UploadSettings";
 import LanguageSelector from "./ui/LanguageSelector";
@@ -387,7 +389,11 @@ function ActionsSettings() {
         title={t("common.model")}
         description={t("settingsPage.actions.modelDescription")}
       >
-        <InferenceConfigEditor scope="actions" />
+        {/* Default model for every action; individual actions can override it
+            in their editor. Full editor behind Advanced, as in ChatAgent. */}
+        <ScopeModelSummary scope="actions">
+          <InferenceConfigEditor scope="actions" />
+        </ScopeModelSummary>
       </SettingsGroup>
 
       <SettingsGroup id="actionsOptions" title={t("settingsModal.groupTitles.options")}>
@@ -3163,6 +3169,10 @@ EOF`,
 
       {hasMountedLlms && (
         <TabPanel active={activeSection === "llms"}>
+          <TabPanel active={llmTab === "providers"}>
+            <ProviderKeysPanel />
+          </TabPanel>
+
           <TabPanel active={llmTab === "dictationCleanup"}>
             <SettingsPanelBody>
               <AiModelsSection

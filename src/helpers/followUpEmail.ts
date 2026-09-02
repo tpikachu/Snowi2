@@ -1,6 +1,7 @@
 import reasoningService from "../services/ReasoningService";
-import { getSettings, selectResolvedActions } from "../stores/settingsStore";
+import { getSettings, selectResolvedActions, selectLLMConfigReady } from "../stores/settingsStore";
 import { buildActionsOverrides } from "./actionsOverrides";
+import { readActionModelOverride, applyActionModelOverride } from "../utils/actionModelOverride";
 import { buildMeetingRecap } from "../utils/meetingRecap";
 
 /**
@@ -60,7 +61,18 @@ export async function draftFollowUpEmail(source: FollowUpEmailSource): Promise<s
   if (!recap) throw new FollowUpEmailError("noWriteUp");
 
   const settings = getSettings();
-  const actions = selectResolvedActions(settings);
+  let actions = selectResolvedActions(settings);
+  // The dialog's own model pick, stored like a per-action override; a stale
+  // one (deleted key, removed local model) degrades to the actions default.
+  const override = readActionModelOverride({
+    model_mode: settings.followUpModelMode,
+    model_provider: settings.followUpModelProvider,
+    model_id: settings.followUpModelId,
+  });
+  if (override) {
+    const overridden = applyActionModelOverride(actions, override);
+    if (selectLLMConfigReady(settings, overridden)) actions = overridden;
+  }
   if (!actions.model) throw new FollowUpEmailError("noModel");
   if (actions.mode === "self-hosted" && !actions.remoteUrl) {
     throw new FollowUpEmailError("noEndpoint");

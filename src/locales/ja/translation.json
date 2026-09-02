@@ -1934,8 +1934,16 @@
         "dictationAgent": "Voice Agent",
         "chatIntelligence": "チャット",
         "dictationTranslation": "翻訳",
-        "actions": "アクション"
-      }
+        "actions": "アクション",
+        "providers": "APIキー"
+      },
+      "providers": {
+        "title": "APIキー",
+        "description": "モデルは使う場所で選べます — チャット、会議パネル、各アクション。ここでキーを設定すると、そのプロバイダーがどこでも使えます。"
+      },
+      "currentModel": "モデル",
+      "currentModelHint": "ここでも、使う場所でも選べます。選択は共有され保存されます。",
+      "advancedSetup": "詳細設定"
     },
     "transcription": {
       "customSetup": "カスタム設定",
@@ -2598,7 +2606,8 @@
         "actionFailed": "アクションに失敗しました",
         "noEndpoint": "アクション用のセルフホストサーバー URL が設定されていません。",
         "configure": "設定する"
-      }
+      },
+      "defaultModel": "デフォルト"
     },
     "empty": {
       "title": "まだノートがありません",
@@ -3321,6 +3330,11 @@
     },
     "palette": {
       "askHint": "Enterキーで Snowy に質問"
+    },
+    "modelPicker": {
+      "addKey": "キーを追加",
+      "localGroup": "このコンピューター上",
+      "choose": "モデルを選択"
     }
   },
   "integrations": {

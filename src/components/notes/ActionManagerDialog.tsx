@@ -6,6 +6,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { cn } from "../lib/utils";
 import { useActions, initializeActions, getActionName } from "../../stores/actionStore";
+import ModelPickerChip, { type ModelSelection } from "../ModelPickerChip";
+import { readActionModelOverride } from "../../utils/actionModelOverride";
 import type { ActionItem } from "../../types/electron";
 
 interface ActionManagerDialogProps {
@@ -19,6 +21,8 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [prompt, setPrompt] = useState("");
+  // Per-action model override; null = the default actions model.
+  const [modelOverride, setModelOverride] = useState<ModelSelection | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -29,6 +33,7 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
     setName("");
     setDescription("");
     setPrompt("");
+    setModelOverride(null);
     setEditingId(null);
   };
 
@@ -51,6 +56,7 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
       setName(first.name);
       setDescription(first.description);
       setPrompt(first.prompt);
+      setModelOverride(readActionModelOverride(first));
     }
   }, [open, actions, selectedId, isCreating]);
 
@@ -60,6 +66,7 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
     setName(action.name);
     setDescription(action.description);
     setPrompt(action.prompt);
+    setModelOverride(readActionModelOverride(action));
     setIsCreating(false);
   };
 
@@ -83,15 +90,30 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
   const handleSave = async () => {
     if (!name.trim() || !prompt.trim()) return;
     setIsSaving(true);
+    const overrideFields = {
+      model_mode: modelOverride?.mode ?? null,
+      model_provider: modelOverride?.provider ?? null,
+      model_id: modelOverride?.model ?? null,
+    };
     try {
       if (editingId !== null) {
         await window.electronAPI.updateAction(editingId, {
           name: name.trim(),
           description: description.trim(),
           prompt: prompt.trim(),
+          ...overrideFields,
         });
       } else {
-        await window.electronAPI.createAction(name.trim(), description.trim(), prompt.trim());
+        const created = await window.electronAPI.createAction(
+          name.trim(),
+          description.trim(),
+          prompt.trim()
+        );
+        // createAction takes only the core fields; the override rides a
+        // follow-up update on the fresh row.
+        if (modelOverride && created?.action?.id) {
+          await window.electronAPI.updateAction(created.action.id, overrideFields);
+        }
         setIsCreating(false);
       }
     } finally {
@@ -101,12 +123,15 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
 
   const showEditor = isCreating || selectedId !== null;
   const selectedAction = actions.find((a) => a.id === selectedId);
+  const overrideKey = (o: { mode: string; provider: string; model: string } | null) =>
+    o ? `${o.mode}:${o.provider}:${o.model}` : "";
   const hasUnsavedChanges = isCreating
-    ? name.trim() !== "" || prompt.trim() !== ""
+    ? name.trim() !== "" || prompt.trim() !== "" || modelOverride !== null
     : selectedAction
       ? name !== selectedAction.name ||
         description !== selectedAction.description ||
-        prompt !== selectedAction.prompt
+        prompt !== selectedAction.prompt ||
+        overrideKey(modelOverride) !== overrideKey(readActionModelOverride(selectedAction))
       : false;
 
   return (
@@ -280,6 +305,20 @@ export default function ActionManagerDialog({ open, onOpenChange }: ActionManage
                     disabled={isSaving}
                     className="h-9"
                   />
+
+                  {/* This action's own model — point-of-use, like the chat
+                      and cue-card chips. "App default" follows whatever the
+                      actions default resolves to. */}
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-medium text-foreground/50">
+                      {t("common.model")}
+                    </span>
+                    <ModelPickerChip
+                      value={modelOverride}
+                      onSelect={setModelOverride}
+                      defaultLabel={t("notes.actions.defaultModel")}
+                    />
+                  </div>
 
                   {/* Prompt — the star of the show */}
                   <div className="flex flex-col flex-1 space-y-1.5 min-h-0">

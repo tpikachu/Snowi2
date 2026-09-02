@@ -2217,8 +2217,16 @@
         "dictationAgent": "Voice Agent",
         "chatIntelligence": "Chat",
         "dictationTranslation": "Traduction",
-        "actions": "Actions"
-      }
+        "actions": "Actions",
+        "providers": "Clés API"
+      },
+      "providers": {
+        "title": "Clés API",
+        "description": "Les modèles se choisissent là où vous les utilisez : dans le chat, sur le panneau de réunion et par action. Une clé ici débloque ce fournisseur partout."
+      },
+      "currentModel": "Modèle",
+      "currentModelHint": "Choisissez-le ici ou là où vous l'utilisez — le choix est partagé et conservé.",
+      "advancedSetup": "Configuration avancée"
     },
     "transcription": {
       "customSetup": "Configuration personnalisée",
@@ -3020,7 +3028,8 @@
         "actionFailed": "L'action a échoué",
         "noEndpoint": "Aucune URL de serveur auto-hébergé n'est définie pour les actions.",
         "configure": "Configurer"
-      }
+      },
+      "defaultModel": "Par défaut"
     },
     "realtimeBanner": {
       "message": "Transcription en temps réel disponible avec Pro",
@@ -3486,6 +3495,11 @@
     },
     "palette": {
       "askHint": "Appuyez sur Entrée pour demander à Snowy"
+    },
+    "modelPicker": {
+      "addKey": "Ajouter une clé",
+      "localGroup": "Sur cet ordinateur",
+      "choose": "Choisir le modèle"
     }
   },
   "integrations": {
