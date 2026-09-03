@@ -685,6 +685,8 @@ A meeting note can be recorded in several sessions — "Resume meeting" in the n
 
 Dictation's clipboard delivery (auto-paste + keep-in-clipboard) is hard-disabled in `useAudioRecording.js` and its Settings group removed (store keys remain, dormant). The meeting Speech-to-Text engine page no longer shows the disabled Self-Hosted card.
 
+**Dictation-slot hotkeys are gated at EVERY entry point while `DICTATION_ENABLED` is false** — `isSlotEnabled()` in `hotkeyManager.js` is the shared predicate, and it must hold at: `registerSlot`, `initializeHotkey`, **`updateHotkey`** (the renderer-facing `update-hotkey` IPC route — it was the one unguarded door, and `OnboardingFlow.saveSettings → ensureHotkeyRegistered` walked every finished onboarding through it, arming a dictation global accelerator for the whole session that could sit on and eat the assistant bar's seeded `Ctrl+Shift+K`), `getNativeListenerKeys` (the constructor seeds the dictation slot's default key regardless of the flag, and a natively watched key routes to dictation FIRST in main's `dispatchNativeKeyDown`), `getMacNativeListenerConfig` (Globe suppression / mouse buttons), and the per-slot dispatch guards in `main.js` (Windows/Linux native key events, macOS globe + mouse buttons). `updateHotkey` refuses with `{ success: false, disabled: true }`; callers treat `disabled` as success, never as a user-fixable error. Gate tests: `test/helpers/nativeListenerKeys.test.js` (mechanics tests run with all slots force-enabled via `makeManager`; the feature-gate tests opt back into the real predicate).
+
 ## Development Guidelines
 
 ### Internationalization (i18n) — REQUIRED

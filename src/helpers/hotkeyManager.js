@@ -410,6 +410,10 @@ class HotkeyManager extends EventEmitter {
   getNativeListenerKeys(activationMode) {
     const keys = [];
     for (const [slotName, slot] of this.slots) {
+      // A disabled slot's keys must not be watched: the constructor seeds the
+      // dictation slot's list even while the feature flag hides it, and a
+      // watched key routes to the slot in main's native dispatch.
+      if (!this.isSlotEnabled(slotName)) continue;
       for (const hotkey of slot.hotkeys ?? []) {
         if (!hotkey || isGlobeLikeHotkey(hotkey) || isMouseButtonHotkey(hotkey)) continue;
         const pushToTalk = slotName === "dictation" && activationMode === "push";
@@ -429,6 +433,10 @@ class HotkeyManager extends EventEmitter {
     let suppressGlobeAction = false;
 
     for (const slotName of slotNames) {
+      // Disabled slots configure nothing: suppressing macOS's Globe action
+      // for a feature-flagged dictation slot would eat the key system-wide
+      // while the feature it summons stays hidden.
+      if (!this.isSlotEnabled(slotName)) continue;
       for (const hotkey of this.getSlotHotkeys(slotName)) {
         if (isMouseButtonHotkey(hotkey)) {
           mouseButtons.add(hotkey);
@@ -1183,6 +1191,16 @@ class HotkeyManager extends EventEmitter {
   async updateHotkey(hotkeyInput, callback) {
     if (!callback) {
       throw new Error("Callback function is required for hotkey update");
+    }
+
+    // This is the dictation slot's renderer-facing route (update-hotkey IPC,
+    // onboarding's finish path) and it must refuse like registerSlot and
+    // initializeHotkey do — it was the one unguarded door, and onboarding's
+    // saveSettings walked every user through it, arming a global accelerator
+    // for a feature the whole app hides.
+    if (!this.isSlotEnabled("dictation")) {
+      debugLogger.log("[HotkeyManager] Dictation is disabled — hotkey update refused");
+      return { success: false, disabled: true };
     }
 
     try {

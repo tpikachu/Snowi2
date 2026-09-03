@@ -408,13 +408,21 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   }, [currentStep, hotkey, registerHotkey, activationStepIndex, setDictationKey]);
 
   const ensureHotkeyRegistered = useCallback(async () => {
+    // While dictation is hidden there is nothing to register — and this runs
+    // from saveSettings for EVERY finished onboarding, so without the gate it
+    // armed a dictation accelerator no visible surface admitted to owning.
+    if (!DICTATION_ENABLED) {
+      return true;
+    }
     if (!window.electronAPI?.updateHotkey) {
       return true;
     }
 
     try {
       const result = await window.electronAPI.updateHotkey(withExtraDictationHotkeys(hotkey));
-      if (result && !result.success) {
+      // `disabled` is the manager refusing a feature-flagged slot, not a
+      // failure the user can fix — never block finishing onboarding on it.
+      if (result && !result.success && !(result as { disabled?: boolean }).disabled) {
         showAlertDialog({
           title: t("onboarding.hotkey.couldNotRegisterTitle"),
           description: result.message || t("onboarding.hotkey.couldNotRegisterDescription"),
@@ -437,7 +445,12 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
     if (!hotkeyRegistered) {
       return false;
     }
-    setDictationKey(withExtraDictationHotkeys(hotkey));
+    // Leave the stored dictation key alone while the feature is hidden —
+    // finishing onboarding must not rewrite state for a surface that
+    // cannot display or correct it.
+    if (DICTATION_ENABLED) {
+      setDictationKey(withExtraDictationHotkeys(hotkey));
+    }
     saveAgentName(agentName);
 
     localStorage.setItem("onboardingCompleted", "true");

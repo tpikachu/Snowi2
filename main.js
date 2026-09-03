@@ -1078,7 +1078,9 @@ async function startApp() {
       }
 
       // Handle dictation if Globe/Fn is one of the dictation hotkeys
-      const dictationUsesGlobe = hotkeyManager.getSlotHotkeys("dictation").some(isGlobeLikeHotkey);
+      const dictationUsesGlobe =
+        hotkeyManager.isSlotEnabled("dictation") &&
+        hotkeyManager.getSlotHotkeys("dictation").some(isGlobeLikeHotkey);
       if (dictationUsesGlobe) {
         if (mainWindowLive) {
           // Capture target app PID BEFORE showing the overlay
@@ -1112,12 +1114,12 @@ async function startApp() {
 
       // Check agent and voice agent slots for Globe/Fn key
       const agentUsesGlobe = hotkeyManager.getSlotHotkeys("agent").some(isGlobeLikeHotkey);
-      const voiceAgentUsesGlobe = hotkeyManager
-        .getSlotHotkeys("voiceAgent")
-        .some(isGlobeLikeHotkey);
-      const translationUsesGlobe = hotkeyManager
-        .getSlotHotkeys("translation")
-        .some(isGlobeLikeHotkey);
+      const voiceAgentUsesGlobe =
+        hotkeyManager.isSlotEnabled("voiceAgent") &&
+        hotkeyManager.getSlotHotkeys("voiceAgent").some(isGlobeLikeHotkey);
+      const translationUsesGlobe =
+        hotkeyManager.isSlotEnabled("translation") &&
+        hotkeyManager.getSlotHotkeys("translation").some(isGlobeLikeHotkey);
       if (agentUsesGlobe) {
         windowManager.toggleAgentOverlay();
       }
@@ -1283,13 +1285,20 @@ async function startApp() {
       if (hotkeyManager.slotHasHotkey("agent", button)) {
         windowManager.toggleAgentOverlay();
       }
-      if (hotkeyManager.slotHasHotkey("voiceAgent", button)) {
+      if (
+        hotkeyManager.isSlotEnabled("voiceAgent") &&
+        hotkeyManager.slotHasHotkey("voiceAgent", button)
+      ) {
         windowManager.sendToggleVoiceAgent();
       }
-      if (hotkeyManager.slotHasHotkey("translation", button)) {
+      if (
+        hotkeyManager.isSlotEnabled("translation") &&
+        hotkeyManager.slotHasHotkey("translation", button)
+      ) {
         windowManager.sendToggleTranslation();
       }
 
+      if (!hotkeyManager.isSlotEnabled("dictation")) return;
       if (!hotkeyManager.slotHasHotkey("dictation", button)) return;
       if (!isLiveWindow(windowManager.mainWindow)) return;
 
@@ -1321,6 +1330,7 @@ async function startApp() {
       if (hotkeyManager.isInListeningMode && hotkeyManager.isInListeningMode()) return;
       if (!isMouseButtonHotkey(button)) return;
 
+      if (!hotkeyManager.isSlotEnabled("dictation")) return;
       if (!hotkeyManager.slotHasHotkey("dictation", button)) return;
       if (!isLiveWindow(windowManager.mainWindow)) return;
 
@@ -1407,7 +1417,13 @@ async function startApp() {
     // Dictation supports push-to-talk and needs the overlay window; agent/meeting
     // drive other windows (matching their globalShortcut callbacks and macOS).
     const dispatchNativeKeyDown = (key) => {
-      if (hotkeyManager.slotHasHotkey("dictation", key)) {
+      // Disabled slots don't claim keys here even if their slot state still
+      // holds one (the constructor seeds dictation's default): a key watched
+      // for an enabled slot must never route to a hidden feature first.
+      if (
+        hotkeyManager.isSlotEnabled("dictation") &&
+        hotkeyManager.slotHasHotkey("dictation", key)
+      ) {
         if (!isLiveWindow(windowManager.mainWindow)) return;
         if (windowManager.getActivationMode() === "push") {
           windowManager.startWindowsPushToTalk(key);
@@ -1416,9 +1432,15 @@ async function startApp() {
         }
         return;
       }
-      if (hotkeyManager.slotHasHotkey("voiceAgent", key)) {
+      if (
+        hotkeyManager.isSlotEnabled("voiceAgent") &&
+        hotkeyManager.slotHasHotkey("voiceAgent", key)
+      ) {
         windowManager.sendToggleVoiceAgent();
-      } else if (hotkeyManager.slotHasHotkey("translation", key)) {
+      } else if (
+        hotkeyManager.isSlotEnabled("translation") &&
+        hotkeyManager.slotHasHotkey("translation", key)
+      ) {
         windowManager.sendToggleTranslation();
       } else if (hotkeyManager.slotHasHotkey("agent", key)) {
         if (!hotkeyManager.isInListeningMode()) windowManager.toggleAgentOverlay();
@@ -1429,6 +1451,7 @@ async function startApp() {
 
     // Only dictation drives push-to-talk, so only its key-up matters.
     const dispatchNativeKeyUp = (key) => {
+      if (!hotkeyManager.isSlotEnabled("dictation")) return;
       if (!hotkeyManager.slotHasHotkey("dictation", key)) return;
       if (windowManager.winPushState?.active) {
         windowManager.handleWindowsPushKeyUp(key);

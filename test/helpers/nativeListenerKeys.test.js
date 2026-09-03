@@ -6,9 +6,14 @@ const HotkeyManager = require("../../src/helpers/hotkeyManager.js");
 // Build a manager with an explicit set of slot hotkeys, independent of the
 // platform default so the assertions are deterministic everywhere. A slot value
 // may be a single hotkey string or an array (multi-hotkey, issue #936).
-const makeManager = (slots) => {
+//
+// The mechanics tests below run with every slot enabled, so they stay valid
+// regardless of which features are currently flagged off; the feature-gate
+// tests at the bottom opt back into the real isSlotEnabled.
+const makeManager = (slots, { gateByFeatureFlag = false } = {}) => {
   const mgr = new HotkeyManager();
   mgr.slots.clear();
+  if (!gateByFeatureFlag) mgr.isSlotEnabled = () => true;
   for (const [name, value] of Object.entries(slots)) {
     const hotkeys = Array.isArray(value) ? value : value ? [value] : [];
     mgr.slots.set(name, { hotkeys, callback: null, accelerators: [] });
@@ -127,6 +132,36 @@ test("no native macOS hotkeys means nothing to configure", () => {
     mouseButtons: [],
     suppressGlobeAction: false,
   });
+});
+
+// The dictation feature ships behind DICTATION_ENABLED = false, and its slot
+// is seeded by the constructor regardless — so the native watch list is where
+// the flag has to hold the line. A watched key routes to dictation FIRST in
+// main's dispatch, which is how a hidden feature once ate the assistant bar's
+// summon hotkey.
+test("feature-flagged slots are never watched by the native listener", () => {
+  const mgr = makeManager(
+    {
+      dictation: ["Control+Super", "Control+Shift+K"],
+      voiceAgent: "Control+Alt",
+      translation: "Alt+Super",
+      agent: "Control+Super+Shift",
+    },
+    { gateByFeatureFlag: true }
+  );
+  // Push mode would watch every dictation key; the gate must win anyway.
+  assert.deepEqual(mgr.getNativeListenerKeys("push"), ["Control+Super+Shift"]);
+  assert.deepEqual(mgr.getNativeListenerKeys("tap"), ["Control+Super+Shift"]);
+});
+
+test("feature-flagged slots configure nothing on the macOS native listener", () => {
+  const mgr = makeManager(
+    { dictation: ["GLOBE", "MouseButton4"], agent: "MouseButton5" },
+    { gateByFeatureFlag: true }
+  );
+  const config = mgr.getMacNativeListenerConfig(MAC_SLOTS);
+  assert.deepEqual(config.mouseButtons, ["MouseButton5"]);
+  assert.equal(config.suppressGlobeAction, false);
 });
 
 test("_findSlotConflict detects a hotkey already bound to another slot's list", () => {
