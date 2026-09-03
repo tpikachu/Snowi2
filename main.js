@@ -779,8 +779,29 @@ async function startApp() {
   };
   windowManager._agentHotkeyCallback = agentHotkeyCallback;
 
+  // The bar's summon shortcut works on first launch, like the meeting key:
+  // seeded once and recorded, so clearing it deliberately is not undone on
+  // the next launch. Same key the Settings keymap suggests for this slot.
   const savedAgentKey = environmentManager.getAgentKey?.() || "";
-  if (savedAgentKey) {
+  if (!savedAgentKey && environmentManager.agentKeyNeedsDefault?.()) {
+    const { DEFAULT_AGENT_HOTKEY } = require("./src/helpers/hotkeyManager");
+    const seeded = await hotkeyManager.registerSlot(
+      "agent",
+      DEFAULT_AGENT_HOTKEY,
+      agentHotkeyCallback
+    );
+    // Only persisted when the OS actually gave us the accelerator; recording
+    // a hotkey that never registered would show the user a binding that does
+    // nothing, and would suppress the default forever.
+    if (seeded.success) {
+      environmentManager.saveAgentKey(DEFAULT_AGENT_HOTKEY);
+    }
+    debugLogger.info(
+      "Agent hotkey default seeded",
+      { hotkey: DEFAULT_AGENT_HOTKEY, ...seeded },
+      "hotkey"
+    );
+  } else if (savedAgentKey) {
     const result = await hotkeyManager.registerSlot("agent", savedAgentKey, agentHotkeyCallback);
     if (!result.success) {
       debugLogger.warn("Failed to restore agent hotkey", { hotkey: savedAgentKey }, "hotkey");

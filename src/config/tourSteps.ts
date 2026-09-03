@@ -19,8 +19,19 @@ import type { Placement } from "../utils/tourPlacement";
 
 export interface TourStep {
   id: string;
-  /** Matches `[data-tour="..."]`. */
-  anchor: string;
+  /** Matches `[data-tour="..."]`. Absent only on centered steps. */
+  anchor?: string;
+  /**
+   * A step about something outside this window (the assistant bar is its own
+   * floating window): no anchor, no spotlight hole — the popover sits in the
+   * middle of the panel instead of pointing at anything.
+   */
+  center?: boolean;
+  /**
+   * Renders the slot's current binding as keycaps under the body — the tour
+   * teaches the real keys on this machine, not a hardcoded example.
+   */
+  hotkeySlot?: "chatAgent";
   /** The view to switch to before this step, when it lives on one. */
   view?: "home" | "chat" | "personal-notes" | "dictionary";
   placement: Placement;
@@ -40,6 +51,18 @@ export interface TourStep {
 }
 
 export const TOUR_STEPS: readonly TourStep[] = [
+  {
+    // First, because the bar is the product's daily face — and because it
+    // lives in its own floating window the tour cannot spotlight, the one
+    // thing a user cannot discover by clicking around this panel is how to
+    // summon it back.
+    id: "bar",
+    center: true,
+    hotkeySlot: "chatAgent",
+    placement: "bottom",
+    titleKey: "tour.steps.bar.title",
+    bodyKey: "tour.steps.bar.body",
+  },
   {
     id: "capture",
     anchor: "capture",
@@ -106,7 +129,9 @@ export const TOUR_STEPS: readonly TourStep[] = [
 /**
  * Bumped when the steps change enough that a finished tour should run again.
  * 2: added the model-setup and search steps, and reordered around setup.
+ * 3: added the assistant-bar step with its summon hotkey, and rewrote the
+ *    copy in a friendlier voice.
  */
-export const TOUR_VERSION = 2;
+export const TOUR_VERSION = 3;
 
 export const TOUR_STORAGE_KEY = "tourCompletedVersion";

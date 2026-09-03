@@ -33,6 +33,11 @@ const DEFAULT_HOTKEY = "Control+Shift+Space";
 const DEFAULT_MEETING_HOTKEY =
   process.platform === "darwin" ? "Command+Shift+M" : "Control+Shift+M";
 
+// Must stay in step with getSuggestedHotkey("chatAgent") in src/utils/hotkeys.ts:
+// the seeded default and the Settings suggestion are the same binding, so the
+// keymap the user reads matches the key that already works.
+const DEFAULT_AGENT_HOTKEY = process.platform === "darwin" ? "Command+Shift+K" : "Control+Shift+K";
+
 // Slots routed through GNOME native gsettings (not globalShortcut).
 // Temporary slots like "cancel" stay on globalShortcut.
 const GNOME_NATIVE_SLOTS = new Set(["agent", "meeting", "voiceAgent", "translation"]);
@@ -1389,5 +1394,6 @@ module.exports = HotkeyManager;
 module.exports.isGlobeLikeHotkey = isGlobeLikeHotkey;
 module.exports.isModifierOnlyHotkey = isModifierOnlyHotkey;
 module.exports.DEFAULT_MEETING_HOTKEY = DEFAULT_MEETING_HOTKEY;
+module.exports.DEFAULT_AGENT_HOTKEY = DEFAULT_AGENT_HOTKEY;
 module.exports.isRightSideModifier = isRightSideModifier;
 module.exports.isMouseButtonHotkey = isMouseButtonHotkey;

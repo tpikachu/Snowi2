@@ -3942,34 +3942,39 @@
     "skip": "Skip tour",
     "steps": {
       "capture": {
-        "body": "Start here. Snowy captures your microphone and the other side of the call as separate tracks, and no bot joins the meeting.",
+        "body": "Start here when a call begins. Snowy records your mic and the other side as separate tracks — and no bot ever joins your meeting.",
         "title": "Record a meeting"
       },
       "chat": {
-        "body": "Chat searches every note and every commitment you have recorded, and links back to the meetings its answers came from.",
+        "body": "Ask across everything you've recorded. Answers link back to the exact meetings they came from.",
         "title": "Ask anything"
       },
       "home": {
-        "body": "Your recent meetings, what is coming up, and how much you have been recording over the last month.",
+        "body": "Your day at a glance: recent meetings, what's coming up, and anything still waiting for a write-up.",
         "title": "Home"
       },
       "models": {
         "title": "Pick a model",
-        "body": "Transcription runs on this machine. Writing up a meeting and answering in chat need a language model, and none is chosen yet — until one is, notes stay raw transcripts.",
-        "bodyReady": "Note write-ups and chat are pointed at a model. Change provider, or set up transcription, from here.",
+        "body": "Transcription happens right on this machine. Write-ups and chat answers need a language model, and none is chosen yet — until you pick one, notes stay raw transcripts.",
+        "bodyReady": "Write-ups and chat are pointed at a model. You can switch providers, or tune transcription, from here anytime.",
         "action": "Choose a model"
       },
       "notes": {
-        "body": "Every recording becomes a note with a transcript, a summary, and the decisions and action items it produced.",
+        "body": "Every recording becomes a note: the transcript, a clean summary, and the decisions and action items that came out of it.",
         "title": "Notes"
       },
       "search": {
         "title": "Find anything",
-        "body": "Search every note, meeting and conversation by name — or by what was said in it."
+        "body": "Jump to any note, meeting, or conversation by name — or by something that was said in it."
       },
       "settings": {
-        "body": "Connect a calendar, choose where transcription runs, and set your hotkeys. You can replay this tour from here.",
+        "body": "Connect a calendar, choose where transcription runs, and change any hotkey. You can replay this tour from here whenever you like.",
         "title": "Settings"
+      },
+      "bar": {
+        "title": "Meet your assistant bar",
+        "body": "The little floating bar is Snowy's front door: ask anything about your meetings, start recording one, or jump straight into any setting. Esc tucks it away.",
+        "hotkeyHint": "Shows or hides the bar from anywhere. The tray icon brings it back too — and you can change the keys under Settings → Hotkeys."
       }
     }
   },

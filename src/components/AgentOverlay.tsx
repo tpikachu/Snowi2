@@ -48,17 +48,60 @@ function saveMeetingCardSize(width: number, height: number): void {
   }
 }
 
+/** The hand-set bar width, remembered across app runs. One value for every
+ *  non-meeting shape — the bar, palette, and chat column share the window's
+ *  width, so whichever one the hand widened is the width they all keep. */
+const BAR_WIDTH_KEY = "agentBarWidth";
+
+function readBarWidth(): number | null {
+  try {
+    const width = Number(localStorage.getItem(BAR_WIDTH_KEY));
+    return Number.isFinite(width) && width >= MIN_WIDTH ? width : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveBarWidth(width: number): void {
+  try {
+    localStorage.setItem(BAR_WIDTH_KEY, String(width));
+  } catch {
+    /* a width that cannot persist is still applied for this run */
+  }
+}
+
 /**
- * The window-edge resize grips, shared by the chat column and the cue card.
- * no-drag explicitly: the cue card's whole surface is a drag region, and a
- * grip that drags the window instead of resizing it is a grip that lies.
+ * The window-edge resize grips, shared by the bar, the chat column, and the
+ * cue card. no-drag explicitly: the cue card's whole surface is a drag
+ * region, and a grip that drags the window instead of resizing it is a grip
+ * that lies. `widthOnly` is the collapsed bar's variant: its two rows are a
+ * fixed height, so only the side edges resize — offering a corner that
+ * silently pins one axis would be another lying grip.
  */
 function ResizeHandles({
   onResizeStart,
+  widthOnly = false,
 }: {
   onResizeStart: (e: React.MouseEvent, direction: string) => void;
+  widthOnly?: boolean;
 }) {
   const noDrag = { WebkitAppRegion: "no-drag" } as React.CSSProperties;
+  if (widthOnly) {
+    return (
+      <>
+        <div
+          className="absolute left-0 top-2 bottom-2 w-[5px] cursor-w-resize"
+          style={noDrag}
+          onMouseDown={(e) => onResizeStart(e, "w")}
+        />
+        <div
+          className="absolute right-0 top-2 bottom-2 w-[5px] cursor-e-resize"
+          style={noDrag}
+          onMouseDown={(e) => onResizeStart(e, "e")}
+        />
+      </>
+    );
+  }
   return (
     <>
       {/* Edges */}
@@ -349,12 +392,21 @@ export default function AgentOverlay() {
   // closes with an instant window resize — a menu pops, it does not stretch —
   // while the other transitions are morphs and keep the animated path.
   const lastModeRef = useRef<"bar" | "palette" | "expanded" | "meeting">("bar");
+  // A hand-widened bar comes back at its width on the next launch. Applied on
+  // the effect's first pass only: within a run the window's own bounds are
+  // the truth, and re-applying a stale saved width would fight a live drag.
+  const savedWidthAppliedRef = useRef(false);
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const bounds = await window.electronAPI?.getAgentWindowBounds?.();
       if (cancelled) return;
-      const width = bounds?.width ?? 560;
+      let width = bounds?.width ?? 560;
+      if (!savedWidthAppliedRef.current) {
+        savedWidthAppliedRef.current = true;
+        const saved = readBarWidth();
+        if (saved && !meetingActive) width = saved;
+      }
       const from = lastModeRef.current;
       if (meetingActive) {
         lastModeRef.current = "meeting";
@@ -424,12 +476,13 @@ export default function AgentOverlay() {
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
         // The size a hand gives the cue card is the size the next meeting
-        // morph should honor.
-        if (meetingActiveRef.current) {
-          void window.electronAPI?.getAgentWindowBounds?.().then((b) => {
-            if (b) saveMeetingCardSize(b.width, b.height);
-          });
-        }
+        // morph should honor; a hand-set bar or chat width is likewise the
+        // width every non-meeting shape keeps, this run and the next.
+        void window.electronAPI?.getAgentWindowBounds?.().then((b) => {
+          if (!b) return;
+          if (meetingActiveRef.current) saveMeetingCardSize(b.width, b.height);
+          else saveBarWidth(b.width);
+        });
       };
 
       document.addEventListener("mousemove", handleMouseMove);
@@ -476,6 +529,26 @@ export default function AgentOverlay() {
       unsubToggle?.();
     };
   }, [startVoice, stopVoice]);
+
+  // A summon (hotkey or tray) lands with the ask field ready for typing —
+  // but without the palette: the user asked for the bar, not the menu, and
+  // a summon that popped a 440px card would read as the wrong window. The
+  // ref suppresses the focus handler's palette-open for this one focus.
+  const suppressPaletteOpenRef = useRef(false);
+  useEffect(() => {
+    const unsub = window.electronAPI?.onAgentFocusInput?.(() => {
+      if (meetingActiveRef.current) return;
+      suppressPaletteOpenRef.current = true;
+      barInputRef.current?.focus();
+      // A timer, not the blur event: focus() can be a no-op when the field
+      // already holds focus, and a flag nothing clears would eat the next
+      // real click's palette-open.
+      window.setTimeout(() => {
+        suppressPaletteOpenRef.current = false;
+      }, 200);
+    });
+    return () => unsub?.();
+  }, []);
 
   const handleNewChat = useCallback(() => {
     persistenceNewChat();
@@ -644,7 +717,11 @@ export default function AgentOverlay() {
   // chat column; the grips sit over the card's own drag surface.
   if (meetingActive) {
     return (
-      <div className="agent-overlay-window h-screen w-screen bg-transparent relative">
+      // `dark` here too: the cue card mixes hud-* tokens with shared app
+      // tokens, and without the same pin the bar carries, a light app theme
+      // would leach light-theme text onto the dark glass — the two shapes of
+      // the one surface must never disagree on their palette.
+      <div className="agent-overlay-window dark h-screen w-screen bg-transparent relative">
         <MeetingPanelOverlay />
         <ResizeHandles onResizeStart={handleResizeStart} />
       </div>
@@ -759,7 +836,9 @@ export default function AgentOverlay() {
                     type="text"
                     value={barText}
                     onChange={(e) => setBarText(e.target.value)}
-                    onFocus={() => setPaletteOpen(true)}
+                    onFocus={() => {
+                      if (!suppressPaletteOpenRef.current) setPaletteOpen(true);
+                    }}
                     onClick={() => setPaletteOpen(true)}
                     onBlur={() => setPaletteOpen(false)}
                     onKeyDown={(e) => {
@@ -969,7 +1048,15 @@ export default function AgentOverlay() {
         </div>
       )}
 
-      {expanded && <ResizeHandles onResizeStart={handleResizeStart} />}
+      {/* The chat column resizes on every edge; the collapsed bar only on
+          its sides (fixed two-row height). No grips while the palette is
+          open: a grip's mousedown would blur the field, fold the palette,
+          and shrink the window out from under the drag. */}
+      {expanded ? (
+        <ResizeHandles onResizeStart={handleResizeStart} />
+      ) : (
+        !paletteOpen && <ResizeHandles widthOnly onResizeStart={handleResizeStart} />
+      )}
     </div>
   );
 }

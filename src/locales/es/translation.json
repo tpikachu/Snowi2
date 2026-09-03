@@ -3942,34 +3942,39 @@
     "skip": "Omitir tour",
     "steps": {
       "capture": {
-        "body": "Empieza aqui. Snowy captura tu microfono y el otro lado de la llamada en pistas separadas, y ningun bot se une a la reunion.",
+        "body": "Empieza aquí cuando comience una llamada. Snowy graba tu micrófono y al otro lado como pistas separadas — y ningún bot se une a tu reunión.",
         "title": "Graba una reunion"
       },
       "chat": {
-        "body": "El chat busca en todas tus notas y compromisos, y enlaza con las reuniones de las que salieron las respuestas.",
+        "body": "Pregunta sobre todo lo que has grabado. Las respuestas enlazan con las reuniones exactas de las que salieron.",
         "title": "Pregunta lo que sea"
       },
       "home": {
-        "body": "Tus reuniones recientes, lo que viene y cuanto has grabado durante el ultimo mes.",
+        "body": "Tu día de un vistazo: reuniones recientes, lo que viene y lo que aún espera un resumen.",
         "title": "Inicio"
       },
       "models": {
         "title": "Elige un modelo",
-        "body": "La transcripción se ejecuta en este equipo. Redactar una reunión y responder en el chat necesitan un modelo de lenguaje, y aún no has elegido ninguno: hasta entonces, las notas seguirán siendo transcripciones sin procesar.",
-        "bodyReady": "Las redacciones de notas y el chat ya apuntan a un modelo. Cambia de proveedor, o configura la transcripción, desde aquí.",
+        "body": "La transcripción se hace en este equipo. Los resúmenes y las respuestas del chat necesitan un modelo de lenguaje, y aún no hay ninguno elegido — hasta que elijas uno, las notas se quedan en transcripciones sin más.",
+        "bodyReady": "Los resúmenes y el chat ya apuntan a un modelo. Desde aquí puedes cambiar de proveedor o ajustar la transcripción cuando quieras.",
         "action": "Elegir un modelo"
       },
       "notes": {
-        "body": "Cada grabacion se convierte en una nota con transcripcion, resumen y las decisiones y tareas que produjo.",
+        "body": "Cada grabación se convierte en una nota: la transcripción, un resumen claro y las decisiones y tareas que salieron de ella.",
         "title": "Notas"
       },
       "search": {
         "title": "Encuentra lo que sea",
-        "body": "Busca en todas las notas, reuniones y conversaciones por su nombre, o por lo que se dijo en ellas."
+        "body": "Salta a cualquier nota, reunión o conversación por su nombre — o por algo que se dijo en ella."
       },
       "settings": {
-        "body": "Conecta un calendario, elige dónde se ejecuta la transcripción y configura tus atajos. Puedes repetir esta guía desde aquí.",
+        "body": "Conecta un calendario, elige dónde se transcribe y cambia cualquier atajo. Puedes repetir este recorrido desde aquí cuando quieras.",
         "title": "Ajustes"
+      },
+      "bar": {
+        "title": "Conoce tu barra de asistente",
+        "body": "La pequeña barra flotante es la puerta de entrada de Snowy: pregunta lo que quieras sobre tus reuniones, empieza a grabar una o entra directamente en cualquier ajuste. Esc la oculta.",
+        "hotkeyHint": "Muestra u oculta la barra desde cualquier lugar. El icono de la bandeja del sistema también la trae de vuelta — y puedes cambiar las teclas en Ajustes → Atajos."
       }
     }
   },

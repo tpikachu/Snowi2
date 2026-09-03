@@ -876,8 +876,12 @@ class WindowManager {
   toggleAgentOverlay() {
     if (!this.agentWindow || this.agentWindow.isDestroyed()) return;
 
+    // A visibility toggle, nothing cleverer: press to summon, press to
+    // dismiss. (It used to start voice capture when the bar was already on
+    // screen — which made the second press of a summon shortcut silently
+    // hot-mic the user. Voice commands live on the voiceAgent slot.)
     if (this.agentWindow.isVisible()) {
-      this.agentWindow.webContents.send("agent-toggle-recording");
+      this.hideAgentOverlay();
     } else {
       this.showAgentOverlay();
     }
@@ -903,8 +907,13 @@ class WindowManager {
       const display = screen.getDisplayNearestPoint(cursorPos);
       const workArea = display.workArea || display.bounds;
 
-      const width = AGENT_OVERLAY_CONFIG.width;
-      const height = AGENT_OVERLAY_CONFIG.height;
+      // Current bounds, not the config: a virgin window still holds the
+      // config size, but the renderer may have already applied a remembered
+      // bar width (localStorage agentBarWidth) — first summon must not
+      // shrink it back.
+      const current = this.agentWindow.getBounds();
+      const width = current.width || AGENT_OVERLAY_CONFIG.width;
+      const height = current.height || AGENT_OVERLAY_CONFIG.height;
       const x = Math.round(workArea.x + (workArea.width - width) / 2);
       const y = Math.round(workArea.y + workArea.height * 0.2);
 
@@ -937,8 +946,13 @@ class WindowManager {
     // bar actually in view.
     this.agentWindow.moveTop();
     // showInactive keeps the window server happy on macOS, then focus moves
-    // deliberately — and only when the user summoned the bar to use it.
-    if (focus) this.agentWindow.focus();
+    // deliberately — and only when the user summoned the bar to use it. A
+    // focused summon also lands in the ask field: the bar exists to be typed
+    // into, and a summon that still needs a click is only half a summon.
+    if (focus) {
+      this.agentWindow.focus();
+      this.agentWindow.webContents.send("agent-focus-input");
+    }
   }
 
   hideAgentOverlay() {

@@ -877,6 +877,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     "agent-toggle-recording",
     (callback) => () => callback()
   ),
+  onAgentFocusInput: registerListener("agent-focus-input", (callback) => () => callback()),
   toggleAgentOverlay: () => ipcRenderer.invoke("toggle-agent-overlay"),
   hideAgentOverlay: () => ipcRenderer.invoke("hide-agent-overlay"),
   startManualMeeting: () => ipcRenderer.invoke("start-manual-meeting"),

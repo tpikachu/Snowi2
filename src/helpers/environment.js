@@ -44,6 +44,8 @@ const PERSISTED_KEYS = [
   // a user who deliberately cleared the hotkey would have it handed back on
   // every launch — an empty MEETING_KEY cannot say which of the two it means.
   "MEETING_KEY_DEFAULTED",
+  // Same story for the assistant-bar hotkey.
+  "CHAT_AGENT_KEY_DEFAULTED",
   "ACTIVATION_MODE",
   "FLOATING_ICON_AUTO_HIDE",
   "PANEL_START_POSITION",
@@ -444,8 +446,16 @@ class EnvironmentManager {
   saveAgentKey(key) {
     delete process.env.AGENT_KEY;
     const result = this._saveKey("CHAT_AGENT_KEY", key);
+    // Any explicit save — including clearing it — settles the question, so the
+    // default is never seeded over the top of the user's own choice.
+    this._saveKey("CHAT_AGENT_KEY_DEFAULTED", "1");
     this.saveAllKeysToEnvFile().catch(() => {});
     return result;
+  }
+
+  /** True until the assistant-bar hotkey has been set or cleared by anyone. */
+  agentKeyNeedsDefault() {
+    return !this.getAgentKey() && !this._getKey("CHAT_AGENT_KEY_DEFAULTED");
   }
 
   getVoiceAgentKey() {

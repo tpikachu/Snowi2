@@ -3942,34 +3942,39 @@
     "skip": "Tour ueberspringen",
     "steps": {
       "capture": {
-        "body": "Hier geht es los. Snowy nimmt Ihr Mikrofon und die Gegenseite als getrennte Spuren auf, und kein Bot tritt dem Meeting bei.",
+        "body": "Starte hier, wenn ein Anruf beginnt. Snowy nimmt dein Mikrofon und die Gegenseite als getrennte Spuren auf — und kein Bot betritt dein Meeting.",
         "title": "Meeting aufzeichnen"
       },
       "chat": {
-        "body": "Der Chat durchsucht alle Notizen und Zusagen und verlinkt auf die Meetings, aus denen die Antworten stammen.",
+        "body": "Frag über alles, was du aufgenommen hast. Antworten verlinken auf genau die Meetings, aus denen sie stammen.",
         "title": "Fragen Sie alles"
       },
       "home": {
-        "body": "Ihre letzten Meetings, was ansteht und wie viel Sie im letzten Monat aufgezeichnet haben.",
+        "body": "Dein Tag auf einen Blick: aktuelle Meetings, was ansteht und was noch auf eine Zusammenfassung wartet.",
         "title": "Start"
       },
       "models": {
         "title": "Modell auswählen",
-        "body": "Die Transkription läuft auf diesem Gerät. Für die Ausarbeitung eines Meetings und für Antworten im Chat wird ein Sprachmodell benötigt, und bisher ist keines ausgewählt – bis dahin bleiben Notizen reine Transkripte.",
-        "bodyReady": "Notizausarbeitung und Chat verweisen auf ein Modell. Anbieter wechseln oder Transkription einrichten – hier.",
+        "body": "Die Transkription läuft direkt auf diesem Rechner. Zusammenfassungen und Chat-Antworten brauchen ein Sprachmodell, und noch ist keines gewählt — bis dahin bleiben Notizen rohe Transkripte.",
+        "bodyReady": "Zusammenfassungen und Chat sind mit einem Modell verbunden. Anbieter wechseln oder die Transkription anpassen kannst du hier jederzeit.",
         "action": "Modell auswählen"
       },
       "notes": {
-        "body": "Jede Aufnahme wird zu einer Notiz mit Transkript, Zusammenfassung sowie den Entscheidungen und Aufgaben daraus.",
+        "body": "Jede Aufnahme wird zu einer Notiz: das Transkript, eine klare Zusammenfassung und die Entscheidungen und Aufgaben daraus.",
         "title": "Notizen"
       },
       "search": {
         "title": "Alles finden",
-        "body": "Durchsuche alle Notizen, Meetings und Unterhaltungen nach Namen – oder nach dem, was darin gesagt wurde."
+        "body": "Spring zu jeder Notiz, jedem Meeting oder Gespräch — über den Namen oder über etwas, das darin gesagt wurde."
       },
       "settings": {
-        "body": "Kalender verbinden, festlegen wo die Transkription läuft, und Tastenkürzel einrichten. Diese Tour lässt sich von hier aus erneut starten.",
+        "body": "Verbinde einen Kalender, wähle, wo transkribiert wird, und ändere jedes Tastenkürzel. Diese Tour kannst du hier jederzeit wiederholen.",
         "title": "Einstellungen"
+      },
+      "bar": {
+        "title": "Deine Assistenten-Leiste",
+        "body": "Die kleine schwebende Leiste ist Snowys Haustür: Frag alles zu deinen Meetings, starte eine Aufnahme oder spring direkt in jede Einstellung. Esc blendet sie aus.",
+        "hotkeyHint": "Zeigt oder versteckt die Leiste von überall. Auch das Tray-Symbol holt sie zurück — die Tasten änderst du unter Einstellungen → Tastenkürzel."
       }
     }
   },

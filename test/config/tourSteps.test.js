@@ -38,6 +38,13 @@ test("every step points at an anchor something actually renders", async () => {
   const { TOUR_STEPS } = await loadSteps();
 
   for (const step of TOUR_STEPS) {
+    // A centered step describes something outside this window (the assistant
+    // bar is its own floating window) and deliberately has no anchor.
+    if (step.center) {
+      assert.equal(step.anchor, undefined, `${step.id} is centered but also names an anchor`);
+      continue;
+    }
+    assert.equal(typeof step.anchor, "string", `${step.id} has neither an anchor nor center`);
     // The anchor is set either directly (data-tour="x") or through the rail's
     // tourAnchor prop, as a JSX attribute or an entry in its navItems array.
     const declared = new RegExp(
@@ -45,6 +52,16 @@ test("every step points at an anchor something actually renders", async () => {
     );
     assert.match(allSource, declared, `${step.id} points at a missing anchor: ${step.anchor}`);
   }
+});
+
+test("the tour opens on the assistant bar and teaches its summon shortcut", async () => {
+  const { TOUR_STEPS } = await loadSteps();
+  const bar = TOUR_STEPS.find((step) => step.id === "bar");
+
+  assert.ok(bar, "the bar step is the one thing this panel cannot show by being clicked around");
+  assert.equal(bar.center, true, "the bar lives in another window; nothing here anchors it");
+  assert.equal(bar.hotkeySlot, "chatAgent", "the step teaches the real binding, not an example");
+  assert.equal(TOUR_STEPS[0].id, "bar", "the product's front door comes first");
 });
 
 test("every step's copy exists in every language", async () => {

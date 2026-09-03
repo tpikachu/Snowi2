@@ -2073,6 +2073,7 @@ declare global {
       onAgentStartRecording?: (callback: () => void) => () => void;
       onAgentStopRecording?: (callback: () => void) => () => void;
       onAgentToggleRecording?: (callback: () => void) => () => void;
+      onAgentFocusInput?: (callback: () => void) => () => void;
 
       // Agent note navigation
       agentOpenNote?: (noteId: number) => Promise<{ success: boolean; error?: string }>;

@@ -6,6 +6,8 @@ import { useTourStore, nextStep, previousStep, endTour, goToStep } from "../../s
 import { placePopover, highlightRect, isAnchorVisible, type Rect } from "../../utils/tourPlacement";
 import { isModelSetupComplete, showsTourAction, tourStepBodyKey } from "../../utils/tourSetup";
 import { useSettingsStore, selectResolvedLLMConfig } from "../../stores/settingsStore";
+import { Keycaps } from "../settings/HotkeyMap";
+import { getSuggestedHotkey } from "../../utils/hotkeys";
 
 /**
  * The spotlight tour.
@@ -60,8 +62,21 @@ export default function TourOverlay({
     onNavigate?.(step.view);
   }, [isActive, step?.view, step?.id, onNavigate]);
 
+  // The assistant-bar step shows the summon shortcut as it is actually bound
+  // on this machine; if seeding failed and the slot is empty, the suggested
+  // binding is what Settings will offer, so it is still the truth to teach.
+  const chatAgentKey = useSettingsStore((s) => s.chatAgentKey);
+  const hotkeyForStep =
+    step?.hotkeySlot === "chatAgent" ? chatAgentKey || getSuggestedHotkey("chatAgent") : null;
+
   const measure = useCallback(() => {
     if (!step) return;
+    // A centered step describes something outside this window — there is
+    // nothing to measure, and the null rect is what centers the popover.
+    if (step.center || !step.anchor) {
+      setAnchorRect(null);
+      return;
+    }
     const element = document.querySelector(`[data-tour="${step.anchor}"]`);
     if (!element) {
       setAnchorRect(null);
@@ -95,9 +110,10 @@ export default function TourOverlay({
     if (popoverRef.current) setPopoverHeight(popoverRef.current.offsetHeight);
   }, [stepIndex, isActive, anchorRect]);
 
-  // A step pointing at something that is not there is skipped rather than shown.
+  // A step pointing at something that is not there is skipped rather than
+  // shown. Centered steps have nothing to point at by design and never skip.
   useEffect(() => {
-    if (!isActive || !step) return;
+    if (!isActive || !step || step.center || !step.anchor) return;
     if (anchorRect !== null) return;
     const timer = setTimeout(() => {
       const stillMissing = !document.querySelector(`[data-tour="${step.anchor}"]`);
@@ -194,6 +210,15 @@ export default function TourOverlay({
         <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
           {t(tourStepBodyKey(step, setupComplete))}
         </p>
+
+        {hotkeyForStep && (
+          <div className="mt-3 flex flex-col gap-1.5 rounded-lg bg-surface-2/60 p-2.5">
+            <Keycaps hotkey={hotkeyForStep} />
+            <p className="text-[11px] leading-relaxed text-muted-foreground">
+              {t("tour.steps.bar.hotkeyHint")}
+            </p>
+          </div>
+        )}
 
         {step.action && showsTourAction(step, setupComplete) && (
           // Ends the tour rather than leaving it running behind the settings

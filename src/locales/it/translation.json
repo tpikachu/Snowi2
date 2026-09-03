@@ -3942,34 +3942,39 @@
     "skip": "Salta il tour",
     "steps": {
       "capture": {
-        "body": "Si parte da qui. Snowy registra il tuo microfono e l'altro lato della chiamata su tracce separate, e nessun bot entra nella riunione.",
+        "body": "Parti da qui quando inizia una chiamata. Snowy registra il tuo microfono e l'altro lato su tracce separate — e nessun bot entra nella tua riunione.",
         "title": "Registra una riunione"
       },
       "chat": {
-        "body": "La chat cerca in tutte le note e negli impegni presi, e rimanda alle riunioni da cui provengono le risposte.",
+        "body": "Chiedi su tutto ciò che hai registrato. Le risposte rimandano alle riunioni esatte da cui provengono.",
         "title": "Chiedi qualsiasi cosa"
       },
       "home": {
-        "body": "Le riunioni recenti, cosa arriva e quanto hai registrato nell'ultimo mese.",
+        "body": "La tua giornata a colpo d'occhio: riunioni recenti, cosa arriva e cosa aspetta ancora un riepilogo.",
         "title": "Home"
       },
       "models": {
         "title": "Scegli un modello",
-        "body": "La trascrizione viene eseguita su questo computer. Per redigere una riunione e rispondere in chat serve un modello linguistico, e non ne è ancora stato scelto uno: fino ad allora le note resteranno trascrizioni grezze.",
-        "bodyReady": "La stesura delle note e la chat puntano a un modello. Cambia provider, o configura la trascrizione, da qui.",
+        "body": "La trascrizione avviene su questo computer. Riepiloghi e risposte in chat richiedono un modello linguistico, e non ne è ancora stato scelto uno — finché non lo scegli, le note restano semplici trascrizioni.",
+        "bodyReady": "Riepiloghi e chat puntano già a un modello. Da qui puoi cambiare fornitore o regolare la trascrizione quando vuoi.",
         "action": "Scegli un modello"
       },
       "notes": {
-        "body": "Ogni registrazione diventa una nota con trascrizione, riepilogo, decisioni e attivita da svolgere.",
+        "body": "Ogni registrazione diventa una nota: la trascrizione, un riepilogo chiaro e le decisioni e le attività emerse.",
         "title": "Note"
       },
       "search": {
         "title": "Trova qualsiasi cosa",
-        "body": "Cerca tra tutte le note, le riunioni e le conversazioni per nome — o per ciò che vi è stato detto."
+        "body": "Vai a qualsiasi nota, riunione o conversazione per nome — o per qualcosa che vi è stato detto."
       },
       "settings": {
-        "body": "Collega un calendario, scegli dove viene eseguita la trascrizione e imposta le scorciatoie. Puoi rivedere questo tour da qui.",
+        "body": "Collega un calendario, scegli dove avviene la trascrizione e cambia qualsiasi scorciatoia. Puoi ripetere questo tour da qui quando vuoi.",
         "title": "Impostazioni"
+      },
+      "bar": {
+        "title": "Ecco la tua barra assistente",
+        "body": "La piccola barra flottante è la porta d'ingresso di Snowy: chiedi qualsiasi cosa sulle tue riunioni, avvia una registrazione o apri direttamente qualsiasi impostazione. Esc la nasconde.",
+        "hotkeyHint": "Mostra o nasconde la barra da qualsiasi punto. Anche l'icona nella barra di sistema la fa tornare — e puoi cambiare i tasti in Impostazioni → Scorciatoie."
       }
     }
   },
