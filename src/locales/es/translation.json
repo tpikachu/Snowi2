@@ -2806,7 +2806,8 @@
         "saveCountdown": "Guardar ({{seconds}} s)",
         "autoSaveHint": "Se guardará automáticamente en {{seconds}} segundos si no eliges.",
         "discardSession": "Descartar esta sesión"
-      }
+      },
+      "defaultTitle": "Reunión — {{date}}"
     },
     "meetingPill": {
       "returnToNote": "Volver a la grabación",
@@ -3911,9 +3912,6 @@
       "collapsedSummaryAllSet": "Todo está configurado.",
       "change": "Cambiar",
       "onThisMachine": "En este equipo"
-    },
-    "hero": {
-      "start": "Iniciar reunión"
     },
     "activeSession": {
       "ongoing": "En curso"

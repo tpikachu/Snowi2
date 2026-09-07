@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { AlertTriangle, AudioLines, CalendarClock } from "lucide-react";
+import { AlertTriangle, CalendarClock } from "lucide-react";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import UpcomingMeetings from "../UpcomingMeetings";
@@ -24,8 +24,6 @@ interface HomeViewProps {
   isStartingMeeting: boolean;
   onOpenRecordingNote: () => void;
   onBrowseAll: () => void;
-  /** The transcription model is still downloading — starting would fail. */
-  startBlockedByDownload?: boolean;
 }
 
 /**
@@ -34,10 +32,10 @@ interface HomeViewProps {
  * This used to be a dashboard — activity chart, commitments, capability
  * cards, a status panel — and every card was one more thing between the user
  * and the two acts that matter: starting a meeting and getting back to one.
- * Now the page is those two acts: Start at the top (search lives in the
- * window header, reachable from every screen), the meeting history under it,
- * upcoming meetings beside it. Anything that only *describes* the app rather
- * than doing the work lives elsewhere.
+ * Starting lives in the window header and on the assistant bar, both always
+ * on screen, so this page is the getting-back: the meeting history, upcoming
+ * meetings beside it. Anything that only *describes* the app rather than
+ * doing the work lives elsewhere.
  */
 export default function HomeView({
   onOpenNote,
@@ -45,7 +43,6 @@ export default function HomeView({
   isStartingMeeting,
   onOpenRecordingNote,
   onBrowseAll,
-  startBlockedByDownload = false,
 }: HomeViewProps) {
   const { t } = useTranslation();
   const { events, isLoading: eventsLoading, isConnected } = useUpcomingEvents();
@@ -85,20 +82,11 @@ export default function HomeView({
   return (
     <div className="px-6 pb-10 pt-5">
       <div className="mx-auto w-full max-w-5xl">
-        {/* The one act this page owns: start. Search sits in the window
-            header, shared by every screen. */}
-        <div className="flex items-center">
-          <Button
-            onClick={() => onStartMeeting(null)}
-            disabled={isStartingMeeting || isRecording || startBlockedByDownload}
-            title={startBlockedByDownload ? t("shell.modelDownload.startBlocked") : undefined}
-            className="h-10 rounded-full px-5 text-[13px] font-semibold shadow-[0_4px_24px_-8px_var(--color-primary)]"
-          >
-            <AudioLines size={15} strokeWidth={2} />
-            {t("home.hero.start")}
-          </Button>
-        </div>
-
+        {/* No hero start button: starting a meeting lives in the window
+            header's capture control and on the assistant bar, both always on
+            screen — a third copy here was one more thing to scan past. The
+            empty state below keeps its own start CTA, where it is the answer
+            to "now what". */}
         {CALENDAR_ENABLED && !isConnected && <CalendarNudge />}
 
         {/* What the app can do right now, and what it still needs. Back on

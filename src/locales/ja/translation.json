@@ -2742,7 +2742,8 @@
         "saveCountdown": "保存（{{seconds}}秒）",
         "autoSaveHint": "選択しない場合、{{seconds}}秒後に自動的に保存されます。",
         "discardSession": "今回のセッションを破棄"
-      }
+      },
+      "defaultTitle": "会議 — {{date}}"
     },
     "meetingPill": {
       "returnToNote": "録音に戻る",
@@ -3911,9 +3912,6 @@
       "collapsedSummaryAllSet": "すべて設定済みです。",
       "change": "変更",
       "onThisMachine": "この端末で実行"
-    },
-    "hero": {
-      "start": "会議を開始"
     },
     "activeSession": {
       "ongoing": "進行中"

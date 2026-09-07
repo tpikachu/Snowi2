@@ -1187,7 +1187,6 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                   isStartingMeeting={isStartingMeetingCapture}
                   onOpenRecordingNote={returnToMeetingNote}
                   onBrowseAll={() => setActiveView("personal-notes")}
-                  startBlockedByDownload={speechModelDownload.blocksMeetingStart}
                 />
               )}
               {activeView === "chat" && (

@@ -2758,7 +2758,8 @@
         "saveCountdown": "保存（{{seconds}} 秒）",
         "autoSaveHint": "若不选择，将在 {{seconds}} 秒后自动保存。",
         "discardSession": "放弃本次录音"
-      }
+      },
+      "defaultTitle": "会议 — {{date}}"
     },
     "meetingPill": {
       "returnToNote": "返回到录音",
@@ -3911,9 +3912,6 @@
       "collapsedSummaryAllSet": "都已配置完成。",
       "change": "更改",
       "onThisMachine": "在本机运行"
-    },
-    "hero": {
-      "start": "开始会议"
     },
     "activeSession": {
       "ongoing": "进行中"

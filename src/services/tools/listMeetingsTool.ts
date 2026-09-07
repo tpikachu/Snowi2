@@ -69,7 +69,10 @@ export function createListMeetingsTool(options: ListMeetingsOptions): ToolDefini
     : {
         space: {
           type: "string",
-          description: "Space name to list within. Omit to cover every accessible space.",
+          description:
+            "Exact space name to list within. Only pass a name the user actually said — " +
+            'space names are user-defined and there is no built-in "private" or "personal" ' +
+            "space. Omit to cover every accessible space.",
         },
       };
 
@@ -81,7 +84,10 @@ export function createListMeetingsTool(options: ListMeetingsOptions): ToolDefini
       "which meetings happened in a period, or to enumerate meetings. " +
       "Returns each meeting's note id, title, date, duration and participants, plus the " +
       "total number that matched, which may be larger than the number listed. " +
-      "Use search_notes instead when the question is about what was said or decided.",
+      'For "how many" or overview questions, answer with the total and mention at most ' +
+      "the 5 most recent as examples — enumerate the list only when the user explicitly " +
+      "asks for one. Use search_notes instead when the question is about what was said " +
+      "or decided.",
     parameters: {
       type: "object",
       properties: {
@@ -109,12 +115,16 @@ export function createListMeetingsTool(options: ListMeetingsOptions): ToolDefini
 
       const spaces = (await window.electronAPI.getSpaces?.()) ?? [];
       let space: SpaceItem | undefined;
+      // A guessed space name that matches nothing ("private", "personal")
+      // degrades to an unscoped listing instead of failing: the read is safe
+      // either way, and failing here only costs the model a retry roundtrip.
+      let spaceMiss: string | null = null;
       if (fixedScope) {
         space = spaces.find((s) => s.id === fixedScope.spaceId);
       } else if (spaceName) {
         const resolved = resolveSpace(spaces, spaceName);
-        if (resolved.error) return { success: false, data: null, displayText: resolved.error };
-        space = resolved.space;
+        if (resolved.error) spaceMiss = resolved.error;
+        else space = resolved.space;
       }
 
       const from = normalizeDate(args.from);
@@ -147,17 +157,28 @@ export function createListMeetingsTool(options: ListMeetingsOptions): ToolDefini
         hasTranscript: !!row.has_transcript,
       }));
 
+      // Spelled out rather than left for the model to infer from two numbers:
+      // "you had 20 meetings" is the failure being designed out — and so is
+      // answering a count by reciting the whole page into the chat.
+      const noteParts: string[] = [];
+      if (spaceMiss) {
+        noteParts.push(`${spaceMiss} Listed every accessible space instead.`);
+      }
+      noteParts.push(
+        meetings.length < result.total
+          ? `Showing the ${meetings.length} most recent of ${result.total} matching meetings. State the total, not the number shown.`
+          : "This is every matching meeting."
+      );
+      noteParts.push(
+        "Unless the user explicitly asked for a full list, mention at most the 5 most recent as examples."
+      );
+
       return {
         success: true,
         data: {
           total: result.total,
           listed: meetings.length,
-          // Spelled out rather than left for the model to infer from two
-          // numbers: "you had 20 meetings" is the failure being designed out.
-          note:
-            meetings.length < result.total
-              ? `Showing the ${meetings.length} most recent of ${result.total} matching meetings. State the total, not the number shown.`
-              : "This is every matching meeting.",
+          note: noteParts.join(" "),
           meetings,
         },
         // What lets the model's [[note:ID]] markers survive citation filtering,

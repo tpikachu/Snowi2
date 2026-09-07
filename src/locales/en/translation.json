@@ -2965,7 +2965,8 @@
         "saveCountdown": "Save ({{seconds}}s)",
         "autoSaveHint": "Saves automatically in {{seconds}} seconds if you don't choose.",
         "discardSession": "Discard this session"
-      }
+      },
+      "defaultTitle": "Meeting — {{date}}"
     },
     "meetingPill": {
       "returnToNote": "Return to recording",
@@ -3911,9 +3912,6 @@
       "collapsedSummaryAllSet": "Everything is set up.",
       "change": "Change",
       "onThisMachine": "On this machine"
-    },
-    "hero": {
-      "start": "Start meeting"
     },
     "activeSession": {
       "ongoing": "Ongoing"

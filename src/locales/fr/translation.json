@@ -2965,7 +2965,8 @@
         "saveCountdown": "Enregistrer ({{seconds}} s)",
         "autoSaveHint": "Enregistrement automatique dans {{seconds}} secondes si vous ne choisissez pas.",
         "discardSession": "Ignorer cette session"
-      }
+      },
+      "defaultTitle": "Réunion — {{date}}"
     },
     "meetingPill": {
       "returnToNote": "Revenir à l'enregistrement",
@@ -3911,9 +3912,6 @@
       "collapsedSummaryAllSet": "Tout est configuré.",
       "change": "Modifier",
       "onThisMachine": "Sur cet appareil"
-    },
-    "hero": {
-      "start": "Démarrer une réunion"
     },
     "activeSession": {
       "ongoing": "En cours"

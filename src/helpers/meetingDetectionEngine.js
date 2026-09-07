@@ -2,17 +2,45 @@ const { shell } = require("electron");
 const debugLogger = require("./debugLogger");
 const { getMeetingJoinUrl } = require("./meetingJoinUrl");
 const { broadcastToWindows } = require("./windowBroadcast");
+const { i18nMain } = require("./i18nMain");
 
 const IMMINENT_THRESHOLD_MS = 5 * 60 * 1000;
 
 const PLACEHOLDER_PREFIX = { __detected__: "detected", __manual__: "manual" };
+
+/**
+ * The title a meeting note is born with when nothing better is known — no
+ * calendar event, or one without a summary. Carries the date and time so that
+ * when the AI write-up never runs (no model configured, or it failed), the
+ * note is still findable among its siblings instead of being one more
+ * indistinguishable "New note".
+ */
+function defaultMeetingTitle(now = new Date()) {
+  let date;
+  try {
+    date = now.toLocaleString(i18nMain.language, {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    date = now.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  }
+  return i18nMain.t("notes.meeting.defaultTitle", { date });
+}
 
 function placeholderEvent(calendarId) {
   const now = Date.now();
   return {
     id: `${PLACEHOLDER_PREFIX[calendarId]}-${now}`,
     calendar_id: calendarId,
-    summary: "New note",
+    summary: defaultMeetingTitle(new Date(now)),
     start_time: new Date(now).toISOString(),
     end_time: new Date(now + 3600000).toISOString(),
     is_all_day: 0,
@@ -196,7 +224,7 @@ class MeetingDetectionEngine {
           }
         }
 
-        const eventSummary = detection.event?.summary || "New note";
+        const eventSummary = detection.event?.summary || defaultMeetingTitle();
 
         const noteResult = this.databaseManager.saveNote(eventSummary, "", "meeting");
         const meetingsFolder = this.databaseManager.getMeetingsFolder();
@@ -309,7 +337,11 @@ class MeetingDetectionEngine {
       return;
     }
 
-    const noteResult = this.databaseManager.saveNote(calEvent.summary || "New note", "", "meeting");
+    const noteResult = this.databaseManager.saveNote(
+      calEvent.summary || defaultMeetingTitle(),
+      "",
+      "meeting"
+    );
     const meetingsFolder = this.databaseManager.getMeetingsFolder();
 
     if (!noteResult?.note?.id || !meetingsFolder?.id) {

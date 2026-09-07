@@ -2965,7 +2965,8 @@
         "saveCountdown": "Speichern ({{seconds}} s)",
         "autoSaveHint": "Wird in {{seconds}} Sekunden automatisch gespeichert, wenn Sie nichts wählen.",
         "discardSession": "Diese Sitzung verwerfen"
-      }
+      },
+      "defaultTitle": "Meeting — {{date}}"
     },
     "meetingPill": {
       "returnToNote": "Zurück zur Aufnahme",
@@ -3911,9 +3912,6 @@
       "collapsedSummaryAllSet": "Alles ist eingerichtet.",
       "change": "Ändern",
       "onThisMachine": "Auf diesem Rechner"
-    },
-    "hero": {
-      "start": "Meeting starten"
     },
     "activeSession": {
       "ongoing": "Läuft"

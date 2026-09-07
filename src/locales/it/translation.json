@@ -2758,7 +2758,8 @@
         "saveCountdown": "Salva ({{seconds}} s)",
         "autoSaveHint": "Salvataggio automatico tra {{seconds}} secondi se non scegli.",
         "discardSession": "Scarta questa sessione"
-      }
+      },
+      "defaultTitle": "Riunione — {{date}}"
     },
     "meetingPill": {
       "returnToNote": "Torna alla registrazione",
@@ -3911,9 +3912,6 @@
       "collapsedSummaryAllSet": "È tutto configurato.",
       "change": "Cambia",
       "onThisMachine": "Su questo computer"
-    },
-    "hero": {
-      "start": "Avvia riunione"
     },
     "activeSession": {
       "ongoing": "In corso"

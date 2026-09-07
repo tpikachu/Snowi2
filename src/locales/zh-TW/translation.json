@@ -2758,7 +2758,8 @@
         "saveCountdown": "儲存（{{seconds}} 秒）",
         "autoSaveHint": "若不選擇，將在 {{seconds}} 秒後自動儲存。",
         "discardSession": "放棄本次錄音"
-      }
+      },
+      "defaultTitle": "會議 — {{date}}"
     },
     "meetingPill": {
       "returnToNote": "返回到錄音",
@@ -3911,9 +3912,6 @@
       "collapsedSummaryAllSet": "都已設定完成。",
       "change": "變更",
       "onThisMachine": "在本機執行"
-    },
-    "hero": {
-      "start": "開始會議"
     },
     "activeSession": {
       "ongoing": "進行中"
