@@ -29,12 +29,24 @@ export interface ModelFamilyConstraints {
 const FAMILIES: Array<ModelFamilyConstraints & { match: RegExp }> = [
   {
     family: "gpt-5",
+    // The 5.6 generation dropped "minimal" and gained a true off switch:
+    // reasoning_effort accepts none|low|medium|high|xhigh — a live 400 from
+    // gpt-5.6-sol names exactly that enum ("'reasoning_effort' does not
+    // support 'minimal' with this model"). Matched for the whole 5.6–5.9
+    // range on the bet that later 5.x generations keep the post-minimal
+    // enum; listed before the generic gpt-5 entry because first match wins.
+    match: /^gpt-5\.[6-9]/,
+    reasoningEffort: { suppressValue: "none" },
+  },
+  {
+    family: "gpt-5",
     // Anchored: "gpt-oss" and "gpt-4.1" must not match, and gpt-oss ids
     // arrive prefixed ("openai/gpt-oss-120b"), never bare.
     match: /^gpt-5/,
-    // Every GPT-5-generation model reasons by default and has no hard off
-    // switch; "minimal" is the floor the whole family accepts, and it is what
-    // turns an eight-second time-to-first-token into under two.
+    // The 5.0–5.5 generations reason by default and have no hard off switch;
+    // "minimal" is the floor they all accept, and it is what turns an
+    // eight-second time-to-first-token into under two. (5.6+ rejects it —
+    // see the entry above.)
     reasoningEffort: { suppressValue: "minimal" },
   },
   {
