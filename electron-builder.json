@@ -12,7 +12,7 @@
   "publish": {
     "provider": "github",
     "releaseType": "prerelease",
-    "publishAutoUpdate": false
+    "publishAutoUpdate": true
   },
   "npmRebuild": true,
   "buildDependenciesFromSource": false,

@@ -39,7 +39,6 @@ import {
   type AssistNote,
 } from "../utils/meetingAssistPrompt";
 import { formatNoteClaims, formatOpenCommitments } from "../utils/memoryPrompt";
-import { appendScreenContextSuffix } from "../config/prompts";
 import { resolveFastLaneLLMConfig } from "../utils/assistFastLane";
 import { filterGrounding } from "../utils/chatRetrieval";
 import type { AssistLastTime, AssistMode, AssistNoteRef } from "../utils/meetingAssistState";
@@ -536,6 +535,9 @@ export function useMeetingAssist(): MeetingAssist {
       const screenContext = await screenPromise;
       if (!isCurrent()) return;
 
+      // screenAttached folds the screen-source block into the base prompt —
+      // a co-equal source the model is told to read every time, not a suffix
+      // it may ignore. That is the "answers should consider the screen" ask.
       const built = buildAnswerMessages({
         meetingTitle: state.recordingNoteTitle,
         segments,
@@ -544,13 +546,10 @@ export function useMeetingAssist(): MeetingAssist {
         question: trimmed,
         mode,
         draft,
+        screenAttached: !!screenContext,
       });
-      const systemPrompt = screenContext
-        ? appendScreenContextSuffix(built.systemPrompt, getSettings().uiLanguage)
-        : built.systemPrompt;
-      const messages = screenContext
-        ? built.messages.map((m) => (m.role === "system" ? { ...m, content: systemPrompt } : m))
-        : built.messages;
+      const systemPrompt = built.systemPrompt;
+      const messages = built.messages;
 
       const resolved = resolveAssistModel(systemPrompt, { lane: mode });
       if (!resolved) {
@@ -564,7 +563,7 @@ export function useMeetingAssist(): MeetingAssist {
         resolved.config.screenContext = screenContext;
         // For the text-only pass (route drop or rejected-image retry): the
         // promise of a screenshot must leave the prompt with the image.
-        resolved.config.textOnlySystemPrompt = built.systemPrompt;
+        resolved.config.textOnlySystemPrompt = built.textOnlySystemPrompt;
       }
 
       // A question that hangs is worthless — the moment it was asked for has

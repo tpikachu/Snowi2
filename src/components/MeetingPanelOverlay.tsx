@@ -856,14 +856,17 @@ export default function MeetingPanelOverlay() {
               onAsk={(text, askMode) => void window.electronAPI?.meetingPanelAsk?.(text, askMode)}
             />
 
-            {/* The ask well: one input surface, mode on the left, send on the
-                right. The filled send button is the panel's single strong
-                affordance — everything else stays quiet. */}
+            {/* The ask well, the reference product's way: the input row
+                carries only the eye, the field, and send — the panel's single
+                strong affordance — and everything configurational (mode,
+                model) drops to a quiet row underneath. Pulled out of the bar
+                on client direction: five controls in one row read as chrome,
+                not as a place to type. */}
             <form
               className={cn(
                 // A tonal well, no stroke — focus brightens the fill instead
                 // of drawing a ring (matches the assistant bar's field).
-                "flex shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.1] p-1.5 pl-2",
+                "flex shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.1] p-1.5 pl-1.5",
                 "transition-colors duration-150 focus-within:bg-white/[0.14]"
               )}
               onSubmit={(event) => {
@@ -871,41 +874,12 @@ export default function MeetingPanelOverlay() {
                 submitQuestion();
               }}
             >
-              <ModeToggle mode={mode} onChange={setMode} disabled={!assistReady} />
-              <input
-                value={question}
-                onChange={(event) => setQuestion(event.target.value)}
-                disabled={!assistReady}
-                placeholder={
-                  assistReady
-                    ? mode === "thinking"
-                      ? t("notes.meetingPanel.ask.placeholderThinking")
-                      : t("notes.meetingPanel.ask.placeholder")
-                    : assistNeedsModel
-                      ? t("notes.meetingPanel.ask.needsModelPlaceholder")
-                      : t("notes.meetingPanel.ask.connectingPlaceholder")
-                }
-                aria-label={t("notes.meetingPanel.ask.label")}
-                className={cn(
-                  // input-inline opts out of the app's boxed input chrome —
-                  // without it the global stylesheet draws its own border and
-                  // focus ring inside this well.
-                  "input-inline min-w-0 flex-1 bg-transparent p-0 text-[14px] text-hud-foreground outline-none",
-                  "placeholder:text-hud-muted disabled:cursor-not-allowed"
-                )}
-              />
-              {/* The assistant's model, changeable mid-meeting. Writes the
-                  same chatIntelligence scope the app chat's chip writes — one
-                  brain, pickable from either surface; the control panel's
-                  assistant reads it fresh on the next ask via the store's
-                  cross-window sync. Also the fix when no model is set: the
-                  chip is enabled even while the panel says "needs model". */}
-              <ModelPickerChip scope="chatIntelligence" variant="hud" />
-              {/* Observe my screen: opt-in, and each ask then carries a
-                  screenshot of the display under the cursor, parsed by the
-                  same chat model. A setting, not meeting state — it stays
-                  the way the user left it. Enabled even before the assistant
-                  connects, because it is configuration, not an ask. */}
+              {/* Observe my screen: opt-in, and every answer then carries a
+                  screenshot of the display under the cursor, read by the same
+                  chat model as a co-equal source. A setting, not meeting
+                  state — it stays the way the user left it. Enabled even
+                  before the assistant connects, because it is configuration,
+                  not an ask. */}
               <button
                 type="button"
                 onClick={() => setMeetingScreenObserve(!meetingScreenObserve)}
@@ -931,6 +905,28 @@ export default function MeetingPanelOverlay() {
               >
                 {meetingScreenObserve ? <Eye size={13} /> : <EyeOff size={13} />}
               </button>
+              <input
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                disabled={!assistReady}
+                placeholder={
+                  assistReady
+                    ? mode === "thinking"
+                      ? t("notes.meetingPanel.ask.placeholderThinking")
+                      : t("notes.meetingPanel.ask.placeholder")
+                    : assistNeedsModel
+                      ? t("notes.meetingPanel.ask.needsModelPlaceholder")
+                      : t("notes.meetingPanel.ask.connectingPlaceholder")
+                }
+                aria-label={t("notes.meetingPanel.ask.label")}
+                className={cn(
+                  // input-inline opts out of the app's boxed input chrome —
+                  // without it the global stylesheet draws its own border and
+                  // focus ring inside this well.
+                  "input-inline min-w-0 flex-1 bg-transparent p-0 text-[14px] text-hud-foreground outline-none",
+                  "placeholder:text-hud-muted disabled:cursor-not-allowed"
+                )}
+              />
               <button
                 type="submit"
                 disabled={!assistReady || !question.trim()}
@@ -945,6 +941,16 @@ export default function MeetingPanelOverlay() {
                 <SendHorizontal size={13} />
               </button>
             </form>
+
+            {/* The configuration row, under the well: answer speed on the
+                left, the model on the right. The chip writes the same
+                chatIntelligence scope the app chat's chip writes — one brain,
+                pickable from either surface — and stays enabled while the
+                panel says "needs model", because picking one is the fix. */}
+            <div className="flex shrink-0 items-center justify-between gap-2 px-0.5">
+              <ModeToggle mode={mode} onChange={setMode} disabled={!assistReady} />
+              <ModelPickerChip scope="chatIntelligence" variant="hud" />
+            </div>
           </div>
         )}
       </div>

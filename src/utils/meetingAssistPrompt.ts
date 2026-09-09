@@ -250,7 +250,30 @@ export interface AssistMessagesInput {
 export interface AssistMessages {
   systemPrompt: string;
   messages: Array<{ role: string; content: string }>;
+  /**
+   * The prompt without the screen-source block — what a text-only pass
+   * (image dropped on a local/LAN route, or a rejected-image retry) must
+   * swap in, so the prompt never promises a screenshot the request lacks.
+   * Equals `systemPrompt` when no screenshot was attached.
+   */
+  textOnlySystemPrompt: string;
 }
+
+/**
+ * Appended while "observe my screen" is on and a capture succeeded. It has to
+ * out-argue the base prompt's "answer only from the transcript" — the screen
+ * is a co-equal live source, not an attachment to mention. English like the
+ * rest of the system prompt (AI prompts are not localized).
+ */
+const SCREEN_SOURCE_BLOCK = [
+  "A screenshot of the user's current screen is attached. It is a live source",
+  "with the same standing as the transcript — read it before answering, every",
+  "time. Whatever is visible — a document, a slide, code, a dashboard, an",
+  'error, a message thread — is context you HAVE, and "answer only from the',
+  'transcript" extends to it: what is on screen counts as what happened.',
+  "Questions about what is on the screen are answered from the screenshot",
+  "directly; when both sources speak to the question, combine them.",
+].join("\n");
 
 function buildContext(input: AssistMessagesInput): string {
   const transcript = formatAssistTranscript(input.segments, input.labels);
@@ -297,6 +320,7 @@ export function buildSuggestionMessages(input: AssistMessagesInput): AssistMessa
   const systemPrompt = SUGGESTION_SYSTEM_PROMPT;
   return {
     systemPrompt,
+    textOnlySystemPrompt: systemPrompt,
     messages: [
       { role: "system", content: systemPrompt },
       {
@@ -308,10 +332,19 @@ export function buildSuggestionMessages(input: AssistMessagesInput): AssistMessa
 }
 
 export function buildAnswerMessages(
-  input: AssistMessagesInput & { question: string; mode: AssistMode; draft?: string }
+  input: AssistMessagesInput & {
+    question: string;
+    mode: AssistMode;
+    draft?: string;
+    /** A screenshot rides with this ask; the prompt must direct the model to it. */
+    screenAttached?: boolean;
+  }
 ): AssistMessages {
-  const systemPrompt =
+  const textOnlySystemPrompt =
     input.mode === "fast" ? FAST_ANSWER_SYSTEM_PROMPT : THINKING_ANSWER_SYSTEM_PROMPT;
+  const systemPrompt = input.screenAttached
+    ? `${textOnlySystemPrompt}\n\n${SCREEN_SOURCE_BLOCK}`
+    : textOnlySystemPrompt;
   // Draft-then-refine: when a fast answer is escalated, its text rides along
   // so the thinking model verifies and extends an answer the user has already
   // read, instead of starting blind and possibly contradicting it for no
@@ -332,6 +365,7 @@ export function buildAnswerMessages(
     : "";
   return {
     systemPrompt,
+    textOnlySystemPrompt,
     messages: [
       { role: "system", content: systemPrompt },
       {
