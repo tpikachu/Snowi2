@@ -543,7 +543,13 @@ a:focus-visible {
    outer hairline is light and the shadow is deep, so the object survives a
    white document and a black editor alike. */
 .hud-surface {
-  background: oklch(from var(--color-hud-surface) l c h / 0.86);
+  /* 0.70, down from 0.86 on client direction: the overlay should read as a
+     translucent facade over the desktop, the way the reference product's
+     card does. The floor is legibility — with no real behind-window blur
+     (see the note above), the deep shadow and the hairline are what keep
+     hud text clearing contrast over a white document; below ~0.65 they
+     stop being enough. */
+  background: oklch(from var(--color-hud-surface) l c h / 0.7);
   backdrop-filter: blur(24px) saturate(1.15);
   border: 1px solid var(--color-hud-border);
   box-shadow:
