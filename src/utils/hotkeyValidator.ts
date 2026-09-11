@@ -14,7 +14,8 @@ export type ValidationErrorCode =
   | "LEFT_MODIFIER_ONLY"
   | "DUPLICATE"
   | "RESERVED"
-  | "INVALID_GLOBE";
+  | "INVALID_GLOBE"
+  | "FN_NEEDS_FUNCTION_KEY";
 
 export interface ValidationResult {
   valid: boolean;
@@ -106,6 +107,16 @@ const SPECIAL_KEYS = new Set(
     "NumLock",
   ].concat(Array.from({ length: 24 }, (_, i) => `F${i + 1}`))
 );
+
+/**
+ * Fn on a Mac is not a modifier an app can hook: it changes which key the
+ * keyboard sends (Fn+F5 is F5 where bare F5 is brightness; Fn+Left is Home)
+ * and leaves a flag global shortcuts cannot see. The main process registers
+ * "Fn+X" as plain "X" — the point for a function key, which only arrives
+ * with Fn held, and a system-wide grab of every X keystroke for anything
+ * else. So Fn only combines with a function key.
+ */
+const FUNCTION_KEY = /^F\d{1,2}$/;
 
 const MAC_RESERVED_SHORTCUTS = [
   "Command+C",
@@ -650,6 +661,20 @@ export function validateHotkey(
       valid: false,
       error: "Do not mix left and right versions of the same modifier in one shortcut.",
       errorCode: "LEFT_RIGHT_MIX",
+    };
+  }
+
+  if (
+    parts.some((part) => normalizeModifier(part, platform) === "Fn") &&
+    !parts.some((part) => FUNCTION_KEY.test(normalizeKeyToken(part)))
+  ) {
+    const withoutFn = parts.filter((part) => normalizeModifier(part, platform) !== "Fn").join("+");
+    return {
+      valid: false,
+      error:
+        `Fn only combines with a function key (F1 to F12). The Mac sends Fn+${withoutFn} as plain ${withoutFn}, ` +
+        `so this shortcut would fire on every ${withoutFn} — with or without Fn.`,
+      errorCode: "FN_NEEDS_FUNCTION_KEY",
     };
   }
 

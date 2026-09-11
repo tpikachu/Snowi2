@@ -82,6 +82,17 @@ function isGlobeLikeHotkey(hotkey) {
   return hotkey === "GLOBE" || hotkey === "Fn";
 }
 
+// "Fn+X" registers as plain "X" (normalizeToAccelerator strips the prefix):
+// macOS never exposes Fn as a modifier an app can hook — it only changes
+// which key the keyboard sends. For a function key that is the whole point
+// (on a Mac keyboard bare F5 is brightness; F5 itself only arrives with Fn
+// held). For anything else it is a system-wide grab of every X keystroke,
+// Fn or not — bound to the bar, "Fn+K" ate every K the user typed.
+function isRegistrableFnCombo(hotkey) {
+  if (!/^Fn\+/i.test(hotkey || "")) return true;
+  return hotkey.split("+").some((part) => /^F\d{1,2}$/i.test(part.trim()));
+}
+
 function isMouseButtonHotkey(hotkey) {
   return /^MouseButton[45]$/i.test(hotkey || "");
 }
@@ -484,6 +495,20 @@ class HotkeyManager extends EventEmitter {
           `[HotkeyManager] Modifier-only "${hotkey}" set - using Windows native listener`
         );
         return { success: true, hotkey, accelerator: null };
+      }
+
+      if (!isRegistrableFnCombo(hotkey)) {
+        debugLogger.log(
+          `[HotkeyManager] "${hotkey}" rejected - Fn only combines with a function key`
+        );
+        return {
+          success: false,
+          hotkey,
+          error: i18nMain.t("hotkey.errors.fnNeedsFunctionKey", {
+            hotkey,
+            accelerator: normalizeToAccelerator(hotkey),
+          }),
+        };
       }
 
       const accelerator = normalizeToAccelerator(hotkey);
@@ -1410,6 +1435,7 @@ class HotkeyManager extends EventEmitter {
 
 module.exports = HotkeyManager;
 module.exports.isGlobeLikeHotkey = isGlobeLikeHotkey;
+module.exports.isRegistrableFnCombo = isRegistrableFnCombo;
 module.exports.isModifierOnlyHotkey = isModifierOnlyHotkey;
 module.exports.DEFAULT_MEETING_HOTKEY = DEFAULT_MEETING_HOTKEY;
 module.exports.DEFAULT_AGENT_HOTKEY = DEFAULT_AGENT_HOTKEY;

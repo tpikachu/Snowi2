@@ -1063,6 +1063,20 @@ async function startApp() {
     const MIN_HOLD_DURATION_MS = 150;
     const POST_STOP_COOLDOWN_MS = 300;
 
+    // The bar-summon slots act on Fn RELEASE, and only for a tap: Fn is also
+    // the Mac's modifier, and on the press nobody can tell the two apart.
+    const { createGlobeTapTracker } = require("./src/helpers/globeTapTracker");
+    const globeTap = createGlobeTapTracker();
+    const globeSummonSlots = () => ({
+      agent: hotkeyManager.getSlotHotkeys("agent").some(isGlobeLikeHotkey),
+      voiceAgent:
+        hotkeyManager.isSlotEnabled("voiceAgent") &&
+        hotkeyManager.getSlotHotkeys("voiceAgent").some(isGlobeLikeHotkey),
+      translation:
+        hotkeyManager.isSlotEnabled("translation") &&
+        hotkeyManager.getSlotHotkeys("translation").some(isGlobeLikeHotkey),
+    });
+
     globeKeyManager.on("globe-down", async () => {
       const currentHotkey = hotkeyManager.getCurrentHotkey && hotkeyManager.getCurrentHotkey();
       const mainWindowLive = isLiveWindow(windowManager.mainWindow);
@@ -1112,24 +1126,17 @@ async function startApp() {
         }
       }
 
-      // Check agent and voice agent slots for Globe/Fn key
-      const agentUsesGlobe = hotkeyManager.getSlotHotkeys("agent").some(isGlobeLikeHotkey);
-      const voiceAgentUsesGlobe =
-        hotkeyManager.isSlotEnabled("voiceAgent") &&
-        hotkeyManager.getSlotHotkeys("voiceAgent").some(isGlobeLikeHotkey);
-      const translationUsesGlobe =
-        hotkeyManager.isSlotEnabled("translation") &&
-        hotkeyManager.getSlotHotkeys("translation").some(isGlobeLikeHotkey);
-      if (agentUsesGlobe) {
-        windowManager.toggleAgentOverlay();
-      }
-      if (voiceAgentUsesGlobe) {
-        windowManager.sendToggleVoiceAgent();
-      }
-      if (translationUsesGlobe) {
-        windowManager.sendToggleTranslation();
-      }
-      if (!agentUsesGlobe && !voiceAgentUsesGlobe && !translationUsesGlobe && !dictationUsesGlobe) {
+      // The bar, voice-agent and translation slots do nothing on the press.
+      // Fn+Left is Home, Fn+F5 is F5, Fn+C is Control Center — and at this
+      // instant the listener cannot tell a tap from the start of a combo.
+      // Toggling the bar here (and focusing it) put the bar under every Fn
+      // combo on the Mac, so the second key landed in the bar instead of
+      // the user's app. The toggle fires on release, and only when nothing
+      // else was pressed meanwhile (globe-interrupted).
+      const summon = globeSummonSlots();
+      if (summon.agent || summon.voiceAgent || summon.translation) {
+        globeTap.down();
+      } else if (!dictationUsesGlobe) {
         debugLogger?.debug("[Globe] Ignored — hotkey is not GLOBE", { currentHotkey });
       }
     });
@@ -1158,6 +1165,25 @@ async function startApp() {
         }
       }
 
+      // A tap of a Globe-bound summon key — see the tracker for why the
+      // press itself did nothing. A recorder waiting for a key is left
+      // alone: the tap it just saw is the binding being chosen.
+      if (
+        globeTap.up() &&
+        !(hotkeyManager.isInListeningMode && hotkeyManager.isInListeningMode())
+      ) {
+        const summon = globeSummonSlots();
+        if (summon.agent) {
+          windowManager.toggleAgentOverlay();
+        }
+        if (summon.voiceAgent) {
+          windowManager.sendToggleVoiceAgent();
+        }
+        if (summon.translation) {
+          windowManager.sendToggleTranslation();
+        }
+      }
+
       // Fn release also stops compound push-to-talk for Fn+F-key hotkeys
       windowManager.handleMacPushModifierUp("fn");
     });
@@ -1168,6 +1194,9 @@ async function startApp() {
     // Only the bare-Fn path uses globeKeyDownTime/globeKeyIsRecording, so compound
     // Fn-hotkey push-to-talk and tap mode are untouched.
     globeKeyManager.on("globe-interrupted", () => {
+      // Whatever else it means, a key under a held Fn makes this a combo:
+      // the release must not summon the bar.
+      globeTap.interrupt();
       if (globeKeyDownTime === 0 && !globeKeyIsRecording) {
         return;
       }
@@ -1392,6 +1421,7 @@ async function startApp() {
 
     // Reset native key state when hotkey changes
     ipcMain.on("hotkey-changed", (_event, _newHotkey) => {
+      globeTap.reset();
       globeKeyDownTime = 0;
       globeKeyIsRecording = false;
       globeLastStopTime = 0;

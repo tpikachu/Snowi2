@@ -48,6 +48,21 @@ test("a bare letter needs a modifier — otherwise typing that letter anywhere w
   assert.equal(result.errorCode, "NO_MODIFIER_OR_SPECIAL");
 });
 
+test("Fn only combines with a function key — the Mac sends Fn+K as plain K, so anything else would grab that key system-wide", async () => {
+  const { validateHotkey } = await load();
+
+  assert.equal(validateHotkey("Fn+F5", "darwin").valid, true);
+  assert.equal(validateHotkey("Fn+Shift+F5", "darwin").valid, true);
+
+  for (const hotkey of ["Fn+K", "Fn+Left", "Fn+Space", "Fn+Command+K"]) {
+    const result = validateHotkey(hotkey, "darwin");
+    assert.equal(result.valid, false, hotkey);
+    assert.equal(result.errorCode, "FN_NEEDS_FUNCTION_KEY", hotkey);
+  }
+  // The message names the key that would actually be grabbed.
+  assert.match(validateHotkey("Fn+K", "darwin").error, /plain K/);
+});
+
 test("standalone special keys are allowed without a modifier", async () => {
   const { validateHotkey } = await load();
 
