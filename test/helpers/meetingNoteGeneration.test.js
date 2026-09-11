@@ -102,3 +102,18 @@ test("the hash separates the note from the transcript", async () => {
   // Without a separator "ab" + "c" and "a" + "bc" would be the same string.
   assert.notEqual(noteEnhancementSource("ab", "c"), noteEnhancementSource("a", "bc"));
 });
+
+test("meetingTitlePlaceholders hands the predicate the labels and the dated template", async () => {
+  const { meetingTitlePlaceholders } = await load();
+  const t = (key, options) =>
+    key === "notes.meeting.defaultTitle" ? `Meeting — ${options.date}` : `<${key}>`;
+
+  const placeholders = meetingTitlePlaceholders(t);
+
+  assert.deepEqual(placeholders, [
+    "<notes.list.untitledNote>",
+    "<notes.list.newNote>",
+    "<notes.sidebar.newNote>",
+    "Meeting — {{date}}",
+  ]);
+});

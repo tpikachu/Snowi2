@@ -9,7 +9,7 @@ import { buildWriteUpRequest } from "../../helpers/noteWriteUp";
 import { runBackgroundAction } from "../../stores/actionProcessingStore";
 import { getSettings, selectResolvedActions } from "../../stores/settingsStore";
 import { isRegenerableNoteTitle } from "../../helpers/regenerableNoteTitle";
-import { MEETING_TITLE_PLACEHOLDERS } from "../../utils/meetingNoteInput";
+import { meetingTitlePlaceholders } from "../../utils/meetingNoteInput";
 import { formatMeetingWindow } from "../../utils/meetingWindow";
 import type { MeetingNeedingWriteUp } from "../../types/electron";
 
@@ -63,7 +63,7 @@ export default function NeedsWriteUpCard({
             isMeetingNote: request.isMeetingNote,
             allowTitleGeneration: isRegenerableNoteTitle(
               note.title ?? "",
-              MEETING_TITLE_PLACEHOLDERS.map((key) => t(key)),
+              meetingTitlePlaceholders(t),
               null
             ),
           },

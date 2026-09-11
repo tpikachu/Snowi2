@@ -14,7 +14,7 @@ import { useMeetingPanelBridge } from "../hooks/useMeetingPanelBridge";
 import { useMeetingAssist } from "../hooks/useMeetingAssist";
 import { autoGenerateMeetingNotes } from "../helpers/meetingNoteGeneration";
 import { generateMeetingMemory } from "../helpers/memoryGeneration";
-import { MEETING_TITLE_PLACEHOLDERS } from "../utils/meetingNoteInput";
+import { meetingTitlePlaceholders } from "../utils/meetingNoteInput";
 import { configureToastProps } from "./ui/configureToastProps";
 import { transcriptionRemedy } from "../config/settingsRemedies";
 
@@ -89,7 +89,7 @@ function MeetingStopDialog() {
       noteTitle: pending.noteTitle ?? null,
       segments: pending.segments ?? [],
       speakerLabels,
-      titlePlaceholders: MEETING_TITLE_PLACEHOLDERS.map((key) => t(key)),
+      titlePlaceholders: meetingTitlePlaceholders(t),
       labels: {
         noModel: t("notes.actions.errors.noModel"),
         noEndpoint: t("notes.actions.errors.noEndpoint"),

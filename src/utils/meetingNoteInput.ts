@@ -6,6 +6,8 @@
  * settings store or an Electron bridge behind it.
  */
 
+import type { TFunction } from "i18next";
+
 export interface MeetingSpeakerLabels {
   you: string;
   them: string;
@@ -27,6 +29,27 @@ export const MEETING_TITLE_PLACEHOLDERS = [
   "notes.list.newNote",
   "notes.sidebar.newNote",
 ] as const;
+
+/** The dated default main stamps on a meeting with no calendar summary. */
+export const MEETING_DATED_TITLE_KEY = "notes.meeting.defaultTitle";
+
+/** Stands in for the date while the template is read back out of i18n. */
+const DATE_STAND_IN = "[[date]]";
+
+/**
+ * Every title a meeting note can be born with, in the form
+ * `isRegenerableNoteTitle` wants: the localized labels, and the dated default
+ * as its template ("Meeting — {{date}}") — the date it was stamped with is not
+ * known here, so the predicate matches around the slot. The template is read
+ * through `t` with a stand-in for the date, then the slot is put back: asking
+ * i18next to interpolate a literal "{{date}}" would loop on its own output.
+ */
+export function meetingTitlePlaceholders(t: TFunction): string[] {
+  return [
+    ...MEETING_TITLE_PLACEHOLDERS.map((key) => t(key)),
+    t(MEETING_DATED_TITLE_KEY, { date: DATE_STAND_IN }).split(DATE_STAND_IN).join("{{date}}"),
+  ];
+}
 
 /** One line per segment, attributed to a resolved speaker where there is one. */
 export function formatMeetingTranscript(

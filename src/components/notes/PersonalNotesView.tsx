@@ -59,7 +59,7 @@ import {
 } from "../../lib/noteEditorPendingSave";
 import { makeNoteContentHash, noteEnhancementSource } from "../../utils/noteContentHash";
 import { buildWriteUpRequest } from "../../helpers/noteWriteUp";
-import { MEETING_TITLE_PLACEHOLDERS } from "../../utils/meetingNoteInput";
+import { meetingTitlePlaceholders } from "../../utils/meetingNoteInput";
 
 function draftFromNote(note: NoteItem): NoteEditorDraft {
   return {
@@ -640,7 +640,7 @@ export default function PersonalNotesView({
                       isMeetingNote: request.isMeetingNote,
                       allowTitleGeneration: isRegenerableNoteTitle(
                         editorNote.title,
-                        MEETING_TITLE_PLACEHOLDERS.map((key) => t(key)),
+                        meetingTitlePlaceholders(t),
                         calendarEventName
                       ),
                     });
