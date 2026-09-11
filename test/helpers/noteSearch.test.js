@@ -12,7 +12,10 @@ Module._load = function patchedLoad(request, parent, isMain) {
 };
 const DatabaseManager = require("../../src/helpers/database.js");
 Module._load = originalLoad;
-const { buildNoteSearchQuery } = require("../../src/helpers/noteSearch.js");
+const {
+  buildNoteSearchQuery,
+  buildNoteSearchAnyQuery,
+} = require("../../src/helpers/noteSearch.js");
 
 test("buildNoteSearchQuery builds quoted prefix queries", () => {
   for (const [input, expected] of [
@@ -74,6 +77,8 @@ function createSearchDatabase() {
     ["hello world", "ordinary ASCII note"],
     ["東京駅", "旅行計画"],
     ["OR operation", "literal operator note"],
+    ["Acme kickoff", "Pricing needs sign-off from Dana. You: send the proposal to Dana today."],
+    ["world tour", "travel notes"],
   ]) {
     const { lastInsertRowid } = insertNote.run(title, content);
     insertFts.run(lastInsertRowid, title, content);
@@ -116,4 +121,44 @@ test("DatabaseManager.searchNotes treats FTS5 operators and punctuation as text"
   assert.equal(manager.searchNotes("hello -world", 10)[0]?.title, "hello world");
   assert.deepEqual(manager.searchNotes("title:", 10), []);
   assert.deepEqual(manager.searchNotes('foo"bar', 10), []);
+});
+
+test("buildNoteSearchAnyQuery ORs the words and drops one-letter tokens", () => {
+  assert.equal(
+    buildNoteSearchAnyQuery("what did I promise to send Dana?"),
+    '"what"* OR "did"* OR "promise"* OR "to"* OR "send"* OR "Dana"*'
+  );
+  // One word: the strict query already is the any query.
+  assert.equal(buildNoteSearchAnyQuery("Dana"), "");
+  assert.equal(buildNoteSearchAnyQuery("a I"), "");
+  assert.equal(buildNoteSearchAnyQuery(""), "");
+});
+
+test("DatabaseManager.searchNotes rescues a question no note contains word for word", (t) => {
+  // The regression this guards: the chat's search_notes fell back to keyword
+  // search and got nothing for a question, and the assistant told the user
+  // it could not find a note that plainly existed.
+  const { manager, sqlite } = createSearchDatabase();
+  t.after(() => sqlite.close());
+
+  const results = manager.searchNotes("what did I promise to send Dana?", 10);
+  assert.equal(results[0]?.title, "Acme kickoff");
+});
+
+test("DatabaseManager.searchNotes keeps strict matches ahead of rescued ones", (t) => {
+  const { manager, sqlite } = createSearchDatabase();
+  t.after(() => sqlite.close());
+
+  const titles = manager.searchNotes("hello world", 10).map((note) => note.title);
+  assert.equal(titles[0], "hello world");
+  assert.ok(titles.includes("world tour"), "the any-word pass fills the remaining room");
+  assert.equal(new Set(titles).size, titles.length, "no note is listed twice");
+});
+
+test("DatabaseManager.searchNotes does not rescue once the limit is full", (t) => {
+  const { manager, sqlite } = createSearchDatabase();
+  t.after(() => sqlite.close());
+
+  const titles = manager.searchNotes("hello world", 1).map((note) => note.title);
+  assert.deepEqual(titles, ["hello world"]);
 });

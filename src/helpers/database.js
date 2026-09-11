@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const { randomUUID } = require("crypto");
 const debugLogger = require("./debugLogger");
-const { buildNoteSearchQuery } = require("./noteSearch");
+const { buildNoteSearchQuery, buildNoteSearchAnyQuery } = require("./noteSearch");
 const { normalizeStoredSpeakerCount } = require("./speakerCount");
 const { parseTranscriptSegments } = require("./meetingSegments");
 const { VALID_STATUSES: VALID_MEMORY_STATUSES } = require("./memoryObjects");
@@ -4260,25 +4260,32 @@ class DatabaseManager {
     }
   }
 
+  /**
+   * Keyword search, in two passes. The strict query (every word) first, so a
+   * search box keeps its precise matches on top; then, while there is room
+   * under the limit, the any-word query ranked by bm25 — which is what finds
+   * the note about Dana for "what did I promise to send Dana?", a question no
+   * note contains word for word. The chat's search_notes runs through here
+   * whenever the vector index is unavailable, and a question-shaped query
+   * that returned nothing was the assistant answering "I couldn't find that".
+   */
   searchNotes(query, limit = 50, spaceId = null, folderId = null) {
     try {
       if (!this.db) throw new Error("Database not initialized");
       const ftsQuery = buildNoteSearchQuery(query);
       if (!ftsQuery) return [];
-      const params = [ftsQuery];
+      const scope = [];
       let scopeFilter = "";
       if (spaceId != null) {
         scopeFilter += " AND n.space_id = ?";
-        params.push(spaceId);
+        scope.push(spaceId);
       }
       if (folderId != null) {
         scopeFilter += " AND n.folder_id = ?";
-        params.push(folderId);
+        scope.push(folderId);
       }
-      params.push(limit);
-      return this.db
-        .prepare(
-          `
+      const statement = this.db.prepare(
+        `
         SELECT n.*
         FROM notes n
         JOIN notes_fts ON notes_fts.rowid = n.id
@@ -4286,8 +4293,18 @@ class DatabaseManager {
         ORDER BY notes_fts.rank
         LIMIT ?
       `
-        )
-        .all(...params);
+      );
+      const strict = statement.all(ftsQuery, ...scope, limit);
+      if (strict.length >= limit) return strict;
+
+      const anyQuery = buildNoteSearchAnyQuery(query);
+      if (!anyQuery) return strict;
+      const seen = new Set(strict.map((note) => note.id));
+      const rescue = statement
+        .all(anyQuery, ...scope, limit + strict.length)
+        .filter((note) => !seen.has(note.id))
+        .slice(0, limit - strict.length);
+      return [...strict, ...rescue];
     } catch (error) {
       debugLogger.error("Error searching notes", { error: error.message }, "database");
       throw error;

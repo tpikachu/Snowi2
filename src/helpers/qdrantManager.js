@@ -18,12 +18,21 @@ const STARTUP_POLL_INTERVAL_MS = 100;
 const HEALTH_CHECK_INTERVAL_MS = 5000;
 const HEALTH_CHECK_TIMEOUT_MS = 2000;
 
-const STORAGE_DIR = path.join(
-  os.homedir(),
-  ".cache",
-  "snowy",
-  process.env.NODE_ENV === "development" ? "qdrant-data-dev" : "qdrant-data"
-);
+// A harness run (the e2e specs, the demo recorder) points SNOWY_USER_DATA_DIR
+// at a throwaway directory so it never touches the developer's own data — and
+// the vector store has to follow: Qdrant locks its storage directory, so a
+// second app on the shared dev directory (the developer's own `npm run dev`,
+// still running) never gets an index, and semantic search silently degrades
+// to keywords for the whole run. Development only, like the override itself.
+const STORAGE_DIR =
+  process.env.NODE_ENV === "development" && process.env.SNOWY_USER_DATA_DIR
+    ? path.join(process.env.SNOWY_USER_DATA_DIR, "qdrant-data")
+    : path.join(
+        os.homedir(),
+        ".cache",
+        "snowy",
+        process.env.NODE_ENV === "development" ? "qdrant-data-dev" : "qdrant-data"
+      );
 
 class QdrantManager {
   constructor() {
