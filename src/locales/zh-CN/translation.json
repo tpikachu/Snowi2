@@ -95,6 +95,7 @@
       "callbackRequired": "设置快捷键需要回调函数",
       "globeOnlyMac": "Globe 键仅在 macOS 上可用。",
       "mouseButtonOnlyMac": "鼠标按键快捷键目前仅在 macOS 上受支持。",
+      "fnNeedsFunctionKey": "Fn 只能与功能键（F1 到 F12）组合：“{{hotkey}}”会被注册为“{{accelerator}}”，每次按下 {{accelerator}} 都会触发。",
       "alreadyRegistered": "\"{{hotkey}}\" 已被其他应用注册。",
       "osReserved": "\"{{hotkey}}\" 可能被系统保留。",
       "registrationFailed": "无法注册 \"{{hotkey}}\"，该快捷键可能已被其他应用占用。",
@@ -2919,7 +2920,8 @@
         "working": "思考中…",
         "empty": "对方说完后这里会出现建议。",
         "needsModel": "配置 AI 模型后即可获得实时建议。",
-        "connecting": "正在连接助手…"
+        "connecting": "正在连接助手…",
+        "sayNext": "接下来可以说的话"
       },
       "transcript": {
         "label": "转写",
@@ -2934,12 +2936,14 @@
         "fast": "快速",
         "thinking": "思考",
         "fastHint": "快速 — 仅根据本次会议即时回答",
-        "thinkingHint": "思考 — 较慢，还会搜索你过去的笔记"
+        "thinkingHint": "思考 — 较慢，还会搜索你过去的笔记",
+        "thinkingOn": "深度思考已开启：回答还会搜索你过去的笔记。点击切换为即时回答。",
+        "thinkingOff": "基于本次会议的即时回答。点击以同时搜索你过去的笔记。"
       },
       "ask": {
         "label": "询问这场会议",
         "send": "发送",
-        "empty": "提问后，答案会显示在这里。",
+        "empty": "关于这场会议，随便问。",
         "modesHint": "快速根据本次会议即时回答。思考还会搜索你过去的笔记。",
         "placeholder": "问问这场会议…",
         "placeholderThinking": "询问本次会议和你的笔记…",
@@ -2967,14 +2971,23 @@
       },
       "answer": {
         "fromMeeting": "来自本次会议",
-        "checkedNotes": "已查阅你的笔记"
+        "checkedNotes": "已查阅你的笔记",
+        "sayLine": "可以这样说",
+        "copyLine": "复制这句话"
       },
       "thread": {
         "clear": "清除"
       },
       "observe": {
         "enable": "观察我的屏幕——回答可以利用屏幕内容",
-        "disable": "正在观察屏幕——点击停止"
+        "disable": "正在观察屏幕——点击停止",
+        "needsAccess": "需要屏幕访问权限 — 点击以允许",
+        "needsRelaunch": "请重启应用以完成屏幕访问授权",
+        "unsupported": "此系统不支持屏幕捕获",
+        "allScreens": "所有屏幕",
+        "screen": "屏幕 {{n}}",
+        "primary": "主屏幕",
+        "chooseScreen": "观察哪个屏幕"
       }
     },
     "transcript": {

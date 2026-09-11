@@ -95,6 +95,7 @@
       "callbackRequired": "ホットキー設定にはコールバック関数が必要です",
       "globeOnlyMac": "Globe キーは macOS でのみ利用できます。",
       "mouseButtonOnlyMac": "マウスボタンのホットキーは現在 macOS でのみサポートされています。",
+      "fnNeedsFunctionKey": "Fn はファンクションキー（F1〜F12）としか組み合わせられません。「{{hotkey}}」は「{{accelerator}}」として登録され、{{accelerator}} を押すたびに発動してしまいます。",
       "alreadyRegistered": "\"{{hotkey}}\" は別のアプリケーションで既に登録されています。",
       "osReserved": "\"{{hotkey}}\" はデスクトップ環境で予約されている可能性があります。",
       "registrationFailed": "\"{{hotkey}}\" を登録できませんでした。別のアプリケーションで使用されている可能性があります。",
@@ -2847,7 +2848,8 @@
         "working": "考えています…",
         "empty": "相手が話し終えると提案が表示されます。",
         "needsModel": "ライブ提案を受け取るには AI モデルを設定してください。",
-        "connecting": "アシスタントに接続しています…"
+        "connecting": "アシスタントに接続しています…",
+        "sayNext": "次に言えそうなこと"
       },
       "transcript": {
         "label": "文字起こし",
@@ -2862,12 +2864,14 @@
         "fast": "高速",
         "thinking": "思考",
         "fastHint": "高速 — この会議の内容だけから即座に回答",
-        "thinkingHint": "思考 — 時間はかかるが、過去のノートも検索"
+        "thinkingHint": "思考 — 時間はかかるが、過去のノートも検索",
+        "thinkingOn": "じっくり考えるモードがオン：回答は過去のノートも検索します。クリックで即答モードに切り替え。",
+        "thinkingOff": "この会議からの即答。クリックで過去のノートも検索します。"
       },
       "ask": {
         "label": "この会議について質問する",
         "send": "送信",
-        "empty": "質問すると、ここに答えが表示されます。",
+        "empty": "この会議について何でも聞いてください。",
         "modesHint": "高速はこの会議から即座に回答します。思考は過去のノートも検索します。",
         "placeholder": "この会議について質問…",
         "placeholderThinking": "この会議とノートについて質問…",
@@ -2895,14 +2899,23 @@
       },
       "answer": {
         "fromMeeting": "この会議から",
-        "checkedNotes": "ノートを確認済み"
+        "checkedNotes": "ノートを確認済み",
+        "sayLine": "言うセリフ",
+        "copyLine": "このセリフをコピー"
       },
       "thread": {
         "clear": "クリア"
       },
       "observe": {
         "enable": "画面を見せる — 回答が画面の内容を利用できます",
-        "disable": "画面を見ています — クリックで停止"
+        "disable": "画面を見ています — クリックで停止",
+        "needsAccess": "画面へのアクセスが必要です — クリックして許可",
+        "needsRelaunch": "画面アクセスの許可を完了するにはアプリを再起動してください",
+        "unsupported": "このシステムでは画面キャプチャを利用できません",
+        "allScreens": "すべての画面",
+        "screen": "画面 {{n}}",
+        "primary": "メイン",
+        "chooseScreen": "どの画面を見るか"
       }
     },
     "transcript": {

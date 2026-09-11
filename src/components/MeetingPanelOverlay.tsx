@@ -1,25 +1,30 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Markdown, { type Components } from "react-markdown";
 import {
   Brain,
   Check,
+  ChevronDown,
   Copy,
+  CornerDownLeft,
   Eraser,
-  ExternalLink,
   Eye,
   EyeOff,
   History,
+  LayoutDashboard,
   Lightbulb,
-  MessageSquareText,
+  Monitor,
   Pause,
   Play,
+  Quote,
   SendHorizontal,
   Settings2,
+  Sparkles,
   Square,
-  Zap,
+  TriangleAlert,
 } from "lucide-react";
 import ModelPickerChip from "./ModelPickerChip";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { useSettingsStore } from "../stores/settingsStore";
 import { capturedMsAt, type MeetingPanelSnapshot } from "../utils/meetingPanelSnapshot";
 import type {
@@ -29,54 +34,55 @@ import type {
   AssistNoteRef,
   MeetingAssistState,
 } from "../utils/meetingAssistState";
-import type { MeetingPanelCommand } from "../types/electron";
+import { parseAssistAnswer } from "../utils/assistAnswerFormat";
+import type {
+  DisplayInfo,
+  MeetingPanelCommand,
+  ScreenRecordingAccessResult,
+} from "../types/electron";
 import { formatMmSs } from "../utils/formatDuration";
 import { cn } from "./lib/utils";
 
 /**
- * The meeting panel: where the meeting happens.
+ * The meeting cue card: where the meeting happens.
  *
- * It used to be a status bar, back when the meeting itself lived in the main
- * window. Now the main window minimises when a meeting starts and this is the
- * surface — a suggestion the assistant has already prepared and a question
- * box.
+ * Three zones, top to bottom, and nothing else — the shape the reference
+ * product taught users to expect, then made better where it counts:
  *
- * The sections are sized by how much attention each deserves, which is not
- * how much space they would naturally want. The suggestion is at the top,
- * carrying the accent, because it is the thing worth glancing at mid
- * sentence. There is deliberately no transcript here: reading words scroll by
- * mid-call means no longer listening to the call, the level meter already
- * proves capture, and the full transcript lives in the meeting's note. Every
- * remaining pixel goes to the assistant, which is the reason to keep the
- * panel open.
- *
- * The visual language is one dark glass surface (see .hud-surface — a deep
- * tint with a sliver of desktop showing through), tonal rather than drawn:
- * the window edge carries the only border, and everything inside is a fill —
- * chips, wells, and buttons are lighter washes on the glass, never boxes.
- * Fills sit a notch brighter than they would on paint, because a wash on a
- * translucent ground loses a step of contrast to whatever is behind it.
- * Three type registers only: 14px for anything read or typed (suggestion,
- * answer, the ask input), 12px for buttons and chips, 11px for the few
- * uppercase labels. Muted text never drops below the hud-muted token itself
- * — stacking opacity on top of it is what made the old labels fail WCAG
- * contrast on this dark surface.
+ *  1. The ask bar. One field across the top, the card's single strong
+ *     affordance, with the two questions every meeting asks as ghost chips
+ *     right under it. Nothing to configure here.
+ *  2. The thread. Newest first, directly under the field that produced it:
+ *     the live answer, then earlier answers dimmed below a hairline. An
+ *     answer is a direct line, a few bullets, and — lifted into its own
+ *     accent-edged block with a copy button — the exact words to say. The
+ *     assistant's unprompted "you could say next" line uses the same block,
+ *     so everything sayable looks the same. No uppercase labels, no
+ *     provenance lines, no chrome between the reader and the words.
+ *  3. The toolbar. Capture status on the left (level, clock, pause, stop),
+ *     configuration on the right (observe my screen, thinking, model), and
+ *     Show transcript — the card's one way out, to the dashboard's note.
+ *     Everything that used to be a labeled row is an icon here, and the
+ *     toolbar is the card's drag handle.
  *
  * Still a view, not a controller. The capture graph lives in the control
  * panel's renderer; this window renders published state and sends commands
  * back, so pause, resume and stop have one implementation.
  *
  * Always-dark on purpose, like the dictation HUD: it floats over someone
- * else's window, not inside ours.
+ * else's window, not inside ours. One glass surface (.hud-surface), tonal
+ * rather than drawn — the window edge is the only border; wells and chips
+ * are washes on the glass. Three type registers: 14px for anything read or
+ * typed, 12px for chips, 11px for the rare small label.
  */
 
 const BAR_COUNT = 5;
 const BAR_WEIGHTS = [0.58, 0.84, 1, 0.84, 0.58];
 const BAR_FLOOR = 0.2;
-const METER_HEIGHT_PX = 14;
+const METER_HEIGHT_PX = 12;
 const CLOCK_INTERVAL_MS = 250;
 
-/** Below this the window is a bar again, and the panes are not worth drawing. */
+/** Below this the window is a bar again: ask field over toolbar, no thread. */
 const COMPACT_HEIGHT_PX = 140;
 
 const computeBarHeight = (level: number, index: number) => {
@@ -84,144 +90,149 @@ const computeBarHeight = (level: number, index: number) => {
   return `${(METER_HEIGHT_PX * Math.max(BAR_FLOOR, Math.min(1, scaled))).toFixed(2)}px`;
 };
 
-const truncateTitle = (title: string) =>
-  title.length > 28 ? `${title.slice(0, 27).trimEnd()}…` : title;
-
-/** How many past notes are named under a suggestion or an answer. */
+/** How many past notes are named under an answer. */
 const MAX_VISIBLE_SOURCES = 3;
 
 /**
- * Answers render as markdown, restyled for the HUD's dark surface: bold for
- * the decisive fact, dash lists for genuine lists, and a backticked line —
- * the "say this" line the prompts ask for — set in monospace on its own soft
- * well, the way a quotable line reads in the reference product. Headings and
- * links are flattened rather than styled: the prompt bans them, and a stray
- * one should degrade to text, not to a broken register.
+ * Answers render as markdown, restyled for the dark glass: bold for the
+ * decisive fact, dash lists for the facts. The say-line has already been
+ * lifted out (parseAssistAnswer), so inline code here is a stray, kept small.
+ * Headings and links are flattened rather than styled: the prompt bans them,
+ * and a stray one should degrade to text, not to a broken register.
  */
 const ANSWER_MARKDOWN_COMPONENTS: Components = {
-  // The air between blocks is the format: a direct sentence, a labeled list,
-  // a takeaway — each reads as its own glanceable unit, not a wall.
-  p: ({ children }) => <p className="mb-2.5 last:mb-0">{children}</p>,
-  ul: ({ children }) => <ul className="mb-2.5 list-disc space-y-1.5 pl-4 last:mb-0">{children}</ul>,
-  ol: ({ children }) => (
-    <ol className="mb-2.5 list-decimal space-y-1.5 pl-4 last:mb-0">{children}</ol>
-  ),
-  li: ({ children }) => <li className="pl-0.5">{children}</li>,
+  p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+  ul: ({ children }) => <ul className="mb-2 list-disc space-y-1 pl-4 last:mb-0">{children}</ul>,
+  ol: ({ children }) => <ol className="mb-2 list-decimal space-y-1 pl-4 last:mb-0">{children}</ol>,
+  li: ({ children }) => <li className="pl-0.5 marker:text-hud-muted">{children}</li>,
   strong: ({ children }) => (
     <strong className="font-semibold text-hud-foreground">{children}</strong>
   ),
   em: ({ children }) => <em className="italic">{children}</em>,
   code: ({ children }) => (
-    <code className="rounded-md bg-white/[0.1] px-1.5 py-0.5 font-mono text-[13px] leading-relaxed text-hud-foreground">
+    <code className="rounded bg-white/[0.1] px-1 py-0.5 font-mono text-[12px] text-hud-foreground">
       {children}
     </code>
   ),
   pre: ({ children }) => (
-    <pre className="mb-2.5 overflow-x-auto rounded-lg bg-white/[0.1] p-2 font-mono text-[13px] last:mb-0">
+    <pre className="mb-2 overflow-x-auto rounded-lg bg-white/[0.1] p-2 font-mono text-[12px] last:mb-0">
       {children}
     </pre>
   ),
-  h1: ({ children }) => <p className="mb-2.5 font-semibold last:mb-0">{children}</p>,
-  h2: ({ children }) => <p className="mb-2.5 font-semibold last:mb-0">{children}</p>,
-  h3: ({ children }) => <p className="mb-2.5 font-semibold last:mb-0">{children}</p>,
+  h1: ({ children }) => <p className="mb-2 font-semibold last:mb-0">{children}</p>,
+  h2: ({ children }) => <p className="mb-2 font-semibold last:mb-0">{children}</p>,
+  h3: ({ children }) => <p className="mb-2 font-semibold last:mb-0">{children}</p>,
   a: ({ children }) => <>{children}</>,
-  blockquote: ({ children }) => <div className="mb-2.5 last:mb-0">{children}</div>,
+  blockquote: ({ children }) => <div className="mb-2 last:mb-0">{children}</div>,
 };
 
-/** The small round icon buttons in the header. */
-const headerIconButtonClass = cn(
-  "flex size-7 items-center justify-center rounded-lg",
+/** The round icon buttons of the toolbar and the thread footer. */
+const iconButtonClass = cn(
+  "flex size-7 shrink-0 items-center justify-center rounded-lg",
   "text-hud-muted transition-colors duration-150",
   "hover:bg-white/10 hover:text-hud-foreground",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-  "disabled:cursor-not-allowed disabled:opacity-50"
+  "disabled:cursor-not-allowed disabled:opacity-40"
 );
 
+/** Quiet text buttons — the quick actions and the thread's verbs. */
+const ghostButtonClass = cn(
+  "flex h-6 shrink-0 items-center gap-1 rounded-full px-2 text-[12px] font-medium",
+  "text-hud-muted transition-colors duration-150",
+  "hover:bg-white/[0.08] hover:text-hud-foreground",
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+  "disabled:cursor-not-allowed disabled:opacity-40"
+);
+
+/** The dark popover the model chip already uses on the card. */
+const hudPopoverClass =
+  "border-white/10 bg-[oklch(0.21_0.008_230)] text-hud-foreground shadow-[0_8px_24px_-8px_rgb(0_0_0/0.7)]";
+
+const noDrag = { WebkitAppRegion: "no-drag" } as React.CSSProperties;
+const drag = { WebkitAppRegion: "drag" } as React.CSSProperties;
+
+function useCopy(): [boolean, (text: string) => void] {
+  const [copied, setCopied] = useState(false);
+  const copy = useCallback((text: string) => {
+    void navigator.clipboard
+      ?.writeText(text)
+      .then(() => {
+        setCopied(true);
+        window.setTimeout(() => setCopied(false), 1500);
+      })
+      .catch(() => {});
+  }, []);
+  return [copied, copy];
+}
+
 /**
- * The two speeds of an answer, a compact segment inside the ask well.
- *
- * Fast is the default and re-defaults every meeting: mid-call the person on
- * the other end is already waiting, so the instant mode has to be the one a
- * hurried click gets. Thinking is the deliberate choice — the label and the
- * tooltip say what the extra seconds buy, because a mode switch nobody can
- * explain is a mode switch nobody uses.
+ * Words to say, as a block: an accent edge, the line in reading type, and a
+ * copy button — because the line is often destined for the chat box of the
+ * very meeting it was asked in. Used for the answer's say-line and for the
+ * assistant's unprompted suggestion alike, so everything sayable on the card
+ * looks the same.
  */
-function ModeToggle({
-  mode,
-  onChange,
-  disabled,
+function SayLine({
+  text,
+  icon: Icon = Quote,
+  dim = false,
+  label,
+  title,
 }: {
-  mode: AssistMode;
-  onChange: (mode: AssistMode) => void;
-  disabled: boolean;
+  text: string;
+  icon?: typeof Quote;
+  dim?: boolean;
+  label: string;
+  title?: string;
 }) {
   const { t } = useTranslation();
-  const options: Array<{ id: AssistMode; icon: typeof Zap; label: string; hint: string }> = [
-    {
-      id: "fast",
-      icon: Zap,
-      label: t("notes.meetingPanel.mode.fast"),
-      hint: t("notes.meetingPanel.mode.fastHint"),
-    },
-    {
-      id: "thinking",
-      icon: Brain,
-      label: t("notes.meetingPanel.mode.thinking"),
-      hint: t("notes.meetingPanel.mode.thinkingHint"),
-    },
-  ];
-
+  const [copied, copy] = useCopy();
   return (
     <div
-      role="radiogroup"
-      aria-label={t("notes.meetingPanel.mode.label")}
-      className="flex shrink-0 items-center gap-px rounded-full bg-white/[0.08] p-0.5"
+      role="group"
+      aria-label={label}
+      title={title}
+      className={cn(
+        "flex items-start gap-2 rounded-lg border-l-2 border-hud-accent bg-hud-accent/[0.08] py-2 pl-2.5 pr-1",
+        "transition-opacity duration-300",
+        dim && "opacity-55"
+      )}
     >
-      {options.map(({ id, icon: Icon, label, hint }) => (
-        <button
-          key={id}
-          type="button"
-          role="radio"
-          aria-checked={mode === id}
-          disabled={disabled}
-          onClick={() => onChange(id)}
-          title={hint}
-          className={cn(
-            "flex h-6 items-center gap-1 rounded-full px-2.5 text-[11px] font-medium",
-            "transition-colors duration-150",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-            "disabled:cursor-not-allowed disabled:opacity-40",
-            mode === id
-              ? "bg-hud-accent/20 text-hud-accent"
-              : "text-hud-muted hover:text-hud-foreground"
-          )}
-        >
-          <Icon size={10} />
-          {label}
-        </button>
-      ))}
+      <Icon size={13} className="mt-[4px] shrink-0 text-hud-accent" />
+      <p className="min-w-0 flex-1 text-[14px] leading-relaxed text-hud-foreground">{text}</p>
+      <button
+        type="button"
+        onClick={() => copy(text)}
+        aria-label={copied ? t("common.copied") : t("notes.meetingPanel.answer.copyLine")}
+        title={copied ? t("common.copied") : t("notes.meetingPanel.answer.copyLine")}
+        className={cn(iconButtonClass, "size-6", copied && "text-hud-accent")}
+      >
+        {copied ? <Check size={12} /> : <Copy size={12} />}
+      </button>
     </div>
   );
 }
 
+/** Which past notes an answer drew on — one muted line, truncated. */
+function sourceNames(sources: readonly AssistNoteRef[]): string {
+  const shown = sources.slice(0, MAX_VISIBLE_SOURCES);
+  const extra = sources.length - shown.length;
+  return shown.map((source) => source.title).join(" · ") + (extra > 0 ? ` +${extra}` : "");
+}
+
 /**
- * "This meeting has met before" — the pre-meeting brief's visible edge.
- *
- * One quiet line of context, not a card and not a control: the action it used
- * to carry ("What's still open?") lives with the other quick actions, so this
- * only has to say what the assistant already knows.
+ * "This meeting has met before" — the pre-meeting brief's visible edge. One
+ * quiet line in the empty state, before anything has been said.
  */
 function LastTimeLine({ lastTime }: { lastTime: AssistLastTime }) {
   const { t, i18n } = useTranslation();
-
   const parsed = new Date(lastTime.date);
   const date = Number.isNaN(parsed.getTime())
     ? lastTime.date.slice(0, 10)
     : parsed.toLocaleDateString(i18n.language, { month: "short", day: "numeric" });
-
   return (
-    <p className="flex min-w-0 shrink-0 items-center gap-1.5 text-[11px] text-hud-muted">
-      <History size={11} className="shrink-0 text-hud-muted/80" />
+    <p className="flex min-w-0 items-center justify-center gap-1.5 text-[11px] text-hud-muted">
+      <History size={11} className="shrink-0" />
       <span className="min-w-0 truncate">
         {t("notes.meetingPanel.lastTime.summary", { date })}
         {lastTime.openClaims > 0 && (
@@ -236,118 +247,299 @@ function LastTimeLine({ lastTime }: { lastTime: AssistLastTime }) {
 }
 
 /**
- * The three questions every meeting eventually asks, as one-tap buttons.
- *
- * Each label IS the question sent, so what the user pressed and what the
- * assistant was asked can never disagree. Real pill buttons, not a row of
- * verbs: mid-call, an action has to look pressable at a glance. "What's still
- * open?" appears only for a recognized recurring meeting, because without a
- * previous occurrence it is a question about nothing.
+ * One answer in the thread. Live: the newest, with its verbs. Settled: an
+ * earlier one, dimmed below a hairline, for re-reading only.
  */
-function QuickActions({
+function AnswerBlock({
+  answer,
+  live,
   ready,
-  hasSeries,
-  onAsk,
+  needsModel,
+  onThinkDeeper,
+  onClear,
+  onConfigure,
 }: {
+  answer: AssistAnswer;
+  live: boolean;
   ready: boolean;
-  hasSeries: boolean;
-  onAsk: (question: string, mode: AssistMode) => void;
+  needsModel: boolean;
+  onThinkDeeper: (question: string) => void;
+  onClear: () => void;
+  onConfigure: () => void;
 }) {
   const { t } = useTranslation();
-  const actions: Array<{ label: string; mode: AssistMode; icon: typeof Zap }> = [
-    { label: t("notes.meetingPanel.quickActions.whatToSay"), mode: "fast", icon: Zap },
-    { label: t("notes.meetingPanel.quickActions.recap"), mode: "thinking", icon: Brain },
-    ...(hasSeries
-      ? [
-          {
-            label: t("notes.meetingPanel.quickActions.stillOpen"),
-            mode: "thinking" as AssistMode,
-            icon: History,
-          },
-        ]
-      : []),
-  ];
+  const [copied, copy] = useCopy();
+  const { body, sayLine } = useMemo(() => parseAssistAnswer(answer.text), [answer.text]);
+
+  const provenance =
+    answer.sources.length > 0
+      ? `${t("notes.meetingPanel.sourcesLabel")} ${sourceNames(answer.sources)}`
+      : answer.mode === "thinking"
+        ? t("notes.meetingPanel.answer.checkedNotes")
+        : "";
 
   return (
-    <div className="flex shrink-0 flex-wrap items-center gap-1.5">
-      {actions.map(({ label, mode, icon: Icon }) => (
-        <button
-          key={label}
-          type="button"
-          onClick={() => onAsk(label, mode)}
-          disabled={!ready}
-          className={cn(
-            "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.1] px-3",
-            "text-[12px] font-medium text-hud-foreground transition-colors duration-150",
-            "hover:bg-white/[0.16]",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-            "disabled:cursor-not-allowed disabled:opacity-40"
-          )}
-        >
-          <Icon size={11} className="text-hud-accent/80" />
-          {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-/**
- * A settled answer from earlier in the meeting, scrolled back to.
- *
- * Same anatomy as the live answer — the asker's pill, provenance, the text —
- * with none of its verbs: history is for re-reading, and the buttons that act
- * (Think deeper, Copy, Clear) belong to the thread's live end.
- */
-function HistoryAnswer({ answer }: { answer: AssistAnswer }) {
-  const { t } = useTranslation();
-  return (
-    <div className="mb-4">
-      <div className="flex justify-end">
-        <p className="max-w-[85%] rounded-2xl bg-hud-accent/75 px-3 py-1.5 text-[12px] font-medium leading-snug text-hud-surface">
-          {answer.question}
-        </p>
-      </div>
-      <p className="mt-2 text-[11px] text-hud-muted">
-        {answer.mode === "thinking"
-          ? t("notes.meetingPanel.answer.checkedNotes")
-          : t("notes.meetingPanel.answer.fromMeeting")}
+    <article className={cn(!live && "mt-3 border-t border-hud-border pt-3 opacity-70")}>
+      {/* The question, as one muted line: the answer under it never needs a
+          label saying what it answers. */}
+      <p className="truncate text-[12px] font-medium text-hud-muted" title={answer.question}>
+        {answer.question}
       </p>
-      <div className="mt-1.5 text-[14px] leading-relaxed text-hud-foreground/90">
-        <Markdown components={ANSWER_MARKDOWN_COMPONENTS}>{answer.text}</Markdown>
-      </div>
-      <SourceLine sources={answer.sources} />
-    </div>
+
+      {answer.errorKey ? (
+        <>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-hud-warning">
+            {t(answer.errorKey)}
+          </p>
+          {/* A missing model is not retryable — the fix lives in Settings. */}
+          {needsModel && (
+            <button type="button" onClick={onConfigure} className={cn(ghostButtonClass, "mt-1.5")}>
+              <Settings2 size={11} />
+              {t("notes.meetingPanel.ask.configureModels")}
+            </button>
+          )}
+        </>
+      ) : answer.streaming && !answer.text ? (
+        /* Thinking pays its latency up front, in retrieval, before a single
+           token exists; fast is simply waiting for the first one. */
+        <p className="mt-1.5 animate-pulse text-[13px] leading-relaxed text-hud-muted">
+          {answer.mode === "thinking" ? t("notes.meetingPanel.ask.searchingNotes") : "…"}
+        </p>
+      ) : (
+        <>
+          {body && (
+            <div className="mt-1.5 text-[14px] leading-relaxed text-hud-foreground/90">
+              <Markdown components={ANSWER_MARKDOWN_COMPONENTS}>{body}</Markdown>
+              {/* The caret is the only "it is working" signal an answer
+                  needs: the text itself is the progress bar. */}
+              {answer.streaming && !sayLine && (
+                <span className="ml-0.5 inline-block h-3 w-[2px] translate-y-[2px] animate-pulse bg-hud-accent" />
+              )}
+            </div>
+          )}
+          {sayLine && (
+            <div className={cn(body ? "mt-2" : "mt-1.5")}>
+              <SayLine text={sayLine} label={t("notes.meetingPanel.answer.sayLine")} />
+            </div>
+          )}
+        </>
+      )}
+
+      {/* The live end's footer: where the answer came from, and its verbs.
+          Quiet text, no fills — present but never louder than the answer.
+          Hidden while streaming: the one action that matters then is reading. */}
+      {live && !answer.streaming && (
+        <div className="mt-2 flex items-center gap-0.5">
+          {provenance && (
+            <p
+              className="min-w-0 flex-1 truncate pr-2 text-[11px] text-hud-muted"
+              title={answer.sources.map((source) => source.title).join(", ")}
+            >
+              {provenance}
+            </p>
+          )}
+          {!provenance && <span className="flex-1" />}
+          {/* The escalation, only on a settled fast answer: the "that was not
+              in this meeting" next step. Re-asks the same question over the
+              notes with this draft attached. */}
+          {!answer.errorKey && answer.mode === "fast" && (
+            <button
+              type="button"
+              onClick={() => onThinkDeeper(answer.question)}
+              disabled={!ready}
+              title={t("notes.meetingPanel.ask.thinkDeeperHint")}
+              className={ghostButtonClass}
+            >
+              <Brain size={11} />
+              {t("notes.meetingPanel.ask.thinkDeeper")}
+            </button>
+          )}
+          {!answer.errorKey && (
+            <button
+              type="button"
+              onClick={() => copy(answer.text)}
+              aria-label={copied ? t("common.copied") : t("common.copy")}
+              title={copied ? t("common.copied") : t("common.copy")}
+              className={cn(iconButtonClass, "size-6", copied && "text-hud-accent")}
+            >
+              {copied ? <Check size={12} /> : <Copy size={12} />}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onClear}
+            aria-label={t("notes.meetingPanel.thread.clear")}
+            title={t("notes.meetingPanel.thread.clear")}
+            className={cn(iconButtonClass, "size-6")}
+          >
+            <Eraser size={12} />
+          </button>
+        </div>
+      )}
+    </article>
   );
 }
 
 /**
- * Which past notes this was built from.
+ * "Observe my screen", in the toolbar: the eye, and — only when there is
+ * more than one display — which screen(s) it watches.
  *
- * One muted line, not a chip per note: mid-call there is no time to follow a
- * citation, but seeing "Acme kickoff" under a claim is enough to know whether
- * to trust it — and enough to catch the assistant answering about the wrong
- * meeting, which is the failure mode retrieval actually has.
+ * On, every answer carries a screenshot of every display (the meeting is on
+ * whichever screen this card is not, and the model is what can tell which).
+ * The eye turns warning-colored when the OS has not granted screen access,
+ * because an eye that is on while nothing is captured is the single most
+ * confusing state this feature has; clicking it then re-requests access.
  */
-function SourceLine({ sources }: { sources: readonly AssistNoteRef[] }) {
+function ObserveControls() {
   const { t } = useTranslation();
-  if (sources.length === 0) return null;
+  const observe = useSettingsStore((s) => s.meetingScreenObserve);
+  const setObserve = useSettingsStore((s) => s.setMeetingScreenObserve);
+  const target = useSettingsStore((s) => s.meetingScreenObserveTarget);
+  const setTarget = useSettingsStore((s) => s.setMeetingScreenObserveTarget);
+  const [access, setAccess] = useState<ScreenRecordingAccessResult | null>(null);
+  const [displays, setDisplays] = useState<DisplayInfo[]>([]);
+  const [open, setOpen] = useState(false);
 
-  const shown = sources.slice(0, MAX_VISIBLE_SOURCES);
-  const extra = sources.length - shown.length;
-  const names = shown.map((source) => source.title).join(" · ");
+  const refresh = useCallback(async () => {
+    const api = window.electronAPI;
+    const [nextAccess, nextDisplays] = await Promise.all([
+      api?.checkScreenRecordingAccess?.().catch(() => null) ?? null,
+      api?.listDisplays?.().catch(() => []) ?? [],
+    ]);
+    if (nextAccess) setAccess(nextAccess);
+    setDisplays(Array.isArray(nextDisplays) ? nextDisplays : []);
+  }, []);
+
+  useEffect(() => {
+    if (observe) void refresh();
+  }, [observe, refresh]);
+
+  const blocked = observe && !!access && (!access.granted || !access.supported);
+  const relaunch = observe && !!access?.granted && !!access.needsRelaunch;
+
+  const toggle = useCallback(async () => {
+    if (observe && !blocked) {
+      setObserve(false);
+      return;
+    }
+    // Turning on (or clicking a blocked eye) is the moment to ask the OS:
+    // on macOS this registers the app under Screen Recording and opens the
+    // pane; elsewhere it resolves granted at once.
+    setObserve(true);
+    const result = await window.electronAPI?.requestScreenRecordingAccess?.().catch(() => null);
+    if (result) setAccess(result);
+    void refresh();
+  }, [observe, blocked, setObserve, refresh]);
+
+  const hint = !observe
+    ? t("notes.meetingPanel.observe.enable")
+    : access && !access.supported
+      ? t("notes.meetingPanel.observe.unsupported")
+      : blocked
+        ? t("notes.meetingPanel.observe.needsAccess")
+        : relaunch
+          ? t("notes.meetingPanel.observe.needsRelaunch")
+          : t("notes.meetingPanel.observe.disable");
+
+  const chosen = displays.find((display) => `display:${display.id}` === target);
+  const targetLabel = chosen
+    ? t("notes.meetingPanel.observe.screen", { n: chosen.index + 1 })
+    : t("notes.meetingPanel.observe.allScreens");
+
+  const rowClass = cn(
+    "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[12px]",
+    "text-hud-foreground/90 transition-colors duration-100 hover:bg-white/10",
+    "focus-visible:outline-none focus-visible:bg-white/10"
+  );
 
   return (
-    <p
-      title={sources.map((source) => source.title).join(", ")}
-      className="mt-1.5 truncate text-[11px] text-hud-muted"
-    >
-      <span className="uppercase tracking-[0.06em] text-hud-muted/80">
-        {t("notes.meetingPanel.sourcesLabel")}
-      </span>{" "}
-      {names}
-      {extra > 0 && ` +${extra}`}
-    </p>
+    <>
+      <button
+        type="button"
+        onClick={() => void toggle()}
+        aria-pressed={observe}
+        aria-label={hint}
+        title={hint}
+        className={cn(
+          iconButtonClass,
+          observe && !blocked && "bg-hud-accent/20 text-hud-accent hover:bg-hud-accent/30",
+          blocked && "bg-hud-warning/15 text-hud-warning hover:bg-hud-warning/25",
+          relaunch && "text-hud-warning"
+        )}
+      >
+        {observe ? <Eye size={13} /> : <EyeOff size={13} />}
+      </button>
+
+      {observe && !blocked && displays.length > 1 && (
+        <Popover
+          open={open}
+          onOpenChange={(next) => {
+            setOpen(next);
+            // A display plugged in mid-meeting shows up the next time the
+            // picker opens, without a toggle of the eye.
+            if (next) void refresh();
+          }}
+        >
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              title={t("notes.meetingPanel.observe.chooseScreen")}
+              aria-label={t("notes.meetingPanel.observe.chooseScreen")}
+              className={cn(ghostButtonClass, "h-7 text-[11px]")}
+            >
+              <Monitor size={11} />
+              <span className="max-w-[88px] truncate">{targetLabel}</span>
+              <ChevronDown size={10} className="opacity-70" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="end" className={cn("w-56 p-1.5", hudPopoverClass)}>
+            <p className="px-2 pb-1 pt-0.5 text-[11px] uppercase tracking-[0.06em] text-hud-muted">
+              {t("notes.meetingPanel.observe.chooseScreen")}
+            </p>
+            <button
+              type="button"
+              className={rowClass}
+              onClick={() => {
+                setTarget("all");
+                setOpen(false);
+              }}
+            >
+              <span className="min-w-0 flex-1 truncate">
+                {t("notes.meetingPanel.observe.allScreens")}
+              </span>
+              {!chosen && <Check size={12} className="shrink-0 text-hud-accent" />}
+            </button>
+            {displays.map((display) => (
+              <button
+                key={display.id}
+                type="button"
+                className={rowClass}
+                onClick={() => {
+                  setTarget(`display:${display.id}`);
+                  setOpen(false);
+                }}
+              >
+                <span className="min-w-0 flex-1 truncate">
+                  {t("notes.meetingPanel.observe.screen", { n: display.index + 1 })}
+                  {display.primary && (
+                    <span className="text-hud-muted">
+                      {" · "}
+                      {t("notes.meetingPanel.observe.primary")}
+                    </span>
+                  )}
+                </span>
+                <span data-numeric className="shrink-0 text-[11px] text-hud-muted">
+                  {display.width}×{display.height}
+                </span>
+                {chosen?.id === display.id && (
+                  <Check size={12} className="shrink-0 text-hud-accent" />
+                )}
+              </button>
+            ))}
+          </PopoverContent>
+        </Popover>
+      )}
+    </>
   );
 }
 
@@ -355,59 +547,34 @@ export default function MeetingPanelOverlay() {
   const { t } = useTranslation();
   const [snapshot, setSnapshot] = useState<MeetingPanelSnapshot | null>(null);
   /**
-   * Null until the control panel has actually said something.
-   *
-   * Defaulting to an idle state instead made "no model is configured" and "I
-   * have not heard from the assistant yet" the same value, and the panel
-   * rendered the harsher of the two — telling people to go set up a model they
-   * had already set up. The two are now distinct, and an unheard-from
-   * assistant says so.
+   * Null until the control panel has actually said something, so "no model
+   * is configured" and "not heard from yet" stay distinct states — only the
+   * first may tell the user to go set something up.
    */
   const [assist, setAssist] = useState<MeetingAssistState | null>(null);
   const [level, setLevel] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
   const [isBusy, setIsBusy] = useState(false);
   const [question, setQuestion] = useState("");
-  // Per-meeting, not persisted: fast has to be what the next meeting opens on,
-  // or the "instant by default" promise only holds until someone tries thinking
-  // once and forgets to switch back.
+  // Per-meeting, not persisted: fast has to be what the next meeting opens
+  // on, or "instant by default" only holds until someone tries thinking once.
   const [mode, setMode] = useState<AssistMode>("fast");
   const [isCompact, setIsCompact] = useState(false);
-  const [copied, setCopied] = useState(false);
 
-  // The screen-observe opt-in lives in settings, written from this window and
-  // read (via the store's cross-window localStorage sync) by the control-panel
-  // renderer that actually captures and asks. Off by default — a screenshot of
-  // whatever is on screen only ever rides an ask the user opted into.
-  const meetingScreenObserve = useSettingsStore((s) => s.meetingScreenObserve);
-  const setMeetingScreenObserve = useSettingsStore((s) => s.setMeetingScreenObserve);
-
-  const answerRef = useRef<HTMLDivElement | null>(null);
-
-  // The copied check belongs to one answer; a new one gets a fresh Copy.
-  useEffect(() => {
-    setCopied(false);
-  }, [assist?.answer?.text]);
-
-  const copyAnswer = useCallback((text: string) => {
-    void navigator.clipboard
-      ?.writeText(text)
-      .then(() => {
-        setCopied(true);
-        window.setTimeout(() => setCopied(false), 1500);
-      })
-      .catch(() => {});
-  }, []);
+  const threadRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     // The window loads after the meeting has already started, so the state it
-    // missed is fetched once rather than waited for.
-    void window.electronAPI?.meetingPanelGetState?.().then((initial) => {
-      if (initial) setSnapshot(initial);
-    });
-    // Caught rather than left dangling: on a dev run where the main process
-    // predates this channel the invoke rejects, and an unhandled rejection is
-    // a worse way to learn that than an honest "connecting" pane.
+    // missed is fetched once rather than waited for. Both are caught: on a
+    // dev run where main predates a channel the invoke rejects, and an
+    // unhandled rejection is a worse way to learn that than a quiet card.
+    void window.electronAPI
+      ?.meetingPanelGetState?.()
+      .then((initial) => {
+        if (initial) setSnapshot(initial);
+      })
+      .catch(() => {});
     void window.electronAPI
       ?.meetingPanelGetAssist?.()
       .then((initial) => {
@@ -425,8 +592,8 @@ export default function MeetingPanelOverlay() {
     };
   }, []);
 
-  // The panel is resizable down to a bar. Rather than two components, the panes
-  // drop out below a height where they would be unreadable anyway.
+  // The card is resizable down to a bar. Rather than two components, the
+  // thread drops out below a height where it would be unreadable anyway.
   useEffect(() => {
     const measure = () => setIsCompact(window.innerHeight < COMPACT_HEIGHT_PX);
     measure();
@@ -445,13 +612,11 @@ export default function MeetingPanelOverlay() {
     return () => clearInterval(intervalId);
   }, [snapshot]);
 
-  // An answer streams in from the bottom, so the newest sentence stays visible
-  // without the user reaching for a scrollbar mid-call. History filing counts
-  // as new content too: the thread grows above and the live end must stay put.
+  // Newest first: a new question puts its answer at the top, right under the
+  // field it was typed in, so the thread scrolls back to the top for it.
   useEffect(() => {
-    const element = answerRef.current;
-    if (element) element.scrollTop = element.scrollHeight;
-  }, [assist?.answer?.text, assist?.answerHistory?.length]);
+    threadRef.current?.scrollTo({ top: 0 });
+  }, [assist?.answer?.question]);
 
   const send = useCallback(async (command: MeetingPanelCommand) => {
     setIsBusy(true);
@@ -462,25 +627,18 @@ export default function MeetingPanelOverlay() {
     }
   }, []);
 
+  const ask = useCallback((text: string, askMode: AssistMode) => {
+    void window.electronAPI?.meetingPanelAsk?.(text, askMode);
+  }, []);
+
   const submitQuestion = useCallback(() => {
     const trimmed = question.trim();
     if (!trimmed) return;
-    // Cleared optimistically. The answer replaces it on screen, and leaving the
-    // question in the box invites a second identical send while the first
-    // streams.
+    // Cleared optimistically: leaving the question in the box invites a
+    // second identical send while the first streams.
     setQuestion("");
-    void window.electronAPI?.meetingPanelAsk?.(trimmed, mode);
-  }, [question, mode]);
-
-  // The escalation: the same question again, this time over past notes — and
-  // because the question is identical, the assist hook sends the fast draft
-  // along for the thinking model to verify and extend rather than restart.
-  // One click, because the moment someone wants it is the moment a fast
-  // answer just said "that is not in this meeting". Deliberately does not
-  // move the toggle — it escalates this question, not the default.
-  const askAgainWithNotes = useCallback((text: string) => {
-    void window.electronAPI?.meetingPanelAsk?.(text, "thinking");
-  }, []);
+    ask(trimmed, mode);
+  }, [question, mode, ask]);
 
   if (!snapshot?.isRecording) return null;
 
@@ -488,19 +646,17 @@ export default function MeetingPanelOverlay() {
   const isWaitingForMic =
     !isPaused && (snapshot.micStatus === "reconnecting" || snapshot.micStatus === "unavailable");
 
-  const title = truncateTitle(snapshot.title ?? t("notes.meeting.stopDialog.untitled"));
+  const title = snapshot.title ?? t("notes.meeting.stopDialog.untitled");
   const pauseLabel = isPaused ? t("notes.meeting.resume") : t("notes.meeting.pause");
   const stopLabel = t("notes.editor.stop");
-  const openLabel = t("notes.meetingPanel.openNote");
+  const transcriptLabel = t("notes.meetingPanel.transcript.show");
 
-  // Says what is actually being captured. A meeting running on system audio
-  // alone after the microphone dropped should not still claim a microphone.
+  // Says what is actually being captured — the clock's tooltip. A meeting
+  // running on system audio alone after the mic dropped must not claim a mic.
   const sourceLabel = isPaused
     ? t("notes.meetingPanel.sources.paused")
     : isWaitingForMic
-      ? snapshot.systemAudio
-        ? t("notes.meetingPanel.sources.systemOnly")
-        : t("notes.meetingPanel.sources.noMic")
+      ? t("notes.meetingPill.waitingForMicrophone")
       : snapshot.systemAudio
         ? t("notes.meetingPanel.sources.both")
         : t("notes.meetingPanel.sources.micOnly");
@@ -510,15 +666,28 @@ export default function MeetingPanelOverlay() {
   // Guarded: an assist payload from a main process that predates history
   // (dev live-reload) simply renders a thread of one.
   const history = assist?.answerHistory ?? [];
-  // Three states, not two: configured, known to need a model, and not yet
-  // heard from. Only the middle one may accuse the user of skipping setup.
   const assistReady = assist?.configured === true;
   const assistNeedsModel = assist?.configured === false;
+  const hasThread = !!answer || history.length > 0;
+
+  const quickActions: Array<{ label: string; mode: AssistMode; icon: typeof Sparkles }> = [
+    { label: t("notes.meetingPanel.quickActions.whatToSay"), mode: "fast", icon: Sparkles },
+    { label: t("notes.meetingPanel.quickActions.recap"), mode: "thinking", icon: History },
+    ...(assist?.lastTime
+      ? [
+          {
+            label: t("notes.meetingPanel.quickActions.stillOpen"),
+            mode: "thinking" as AssistMode,
+            icon: History,
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div
       className="meeting-panel-window flex h-full w-full flex-col bg-transparent p-1"
-      style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+      style={drag}
     >
       <div
         className={cn(
@@ -526,75 +695,227 @@ export default function MeetingPanelOverlay() {
           isWaitingForMic ? "hud-surface-warn" : !isPaused && "hud-surface-live"
         )}
       >
-        {/* Header — capture status left, capture controls right. */}
+        {/* ---- 1. The ask bar ------------------------------------------ */}
+        <form
+          style={noDrag}
+          className={cn(
+            "mx-2 mt-2 flex shrink-0 items-center gap-2 rounded-xl bg-white/[0.08] py-1.5 pl-3 pr-1.5",
+            "transition-colors duration-150 focus-within:bg-white/[0.12]"
+          )}
+          onSubmit={(event) => {
+            event.preventDefault();
+            submitQuestion();
+          }}
+        >
+          <input
+            ref={inputRef}
+            value={question}
+            onChange={(event) => setQuestion(event.target.value)}
+            disabled={!assistReady}
+            placeholder={
+              assistReady
+                ? mode === "thinking"
+                  ? t("notes.meetingPanel.ask.placeholderThinking")
+                  : t("notes.meetingPanel.ask.placeholder")
+                : assistNeedsModel
+                  ? t("notes.meetingPanel.ask.needsModelPlaceholder")
+                  : t("notes.meetingPanel.ask.connectingPlaceholder")
+            }
+            aria-label={t("notes.meetingPanel.ask.label")}
+            className={cn(
+              // input-inline opts out of the app's boxed input chrome —
+              // without it the global stylesheet draws its own border and
+              // focus ring inside this well.
+              "input-inline h-7 min-w-0 flex-1 bg-transparent p-0 text-[14px] text-hud-foreground outline-none",
+              "placeholder:text-hud-muted disabled:cursor-not-allowed"
+            )}
+          />
+          {/* A return keycap until there is something to send, then the
+              accent send button: the affordance says what Enter does. */}
+          {question.trim() ? (
+            <button
+              type="submit"
+              disabled={!assistReady}
+              aria-label={t("notes.meetingPanel.ask.send")}
+              className={cn(
+                "flex size-7 shrink-0 items-center justify-center rounded-lg",
+                "bg-hud-accent text-hud-surface transition-colors duration-150 hover:bg-hud-accent/85",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
+                "disabled:bg-white/10 disabled:text-hud-muted"
+              )}
+            >
+              <SendHorizontal size={13} />
+            </button>
+          ) : (
+            <span
+              aria-hidden="true"
+              className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-white/[0.06] text-hud-muted"
+            >
+              <CornerDownLeft size={12} />
+            </span>
+          )}
+        </form>
+
+        {/* The named verbs, as ghost chips right under the field they feed.
+            Each label IS the question sent. */}
+        {!isCompact && (
+          <div style={noDrag} className="flex shrink-0 flex-wrap items-center gap-0.5 px-2 pt-1.5">
+            {quickActions.map(({ label, mode: askMode, icon: Icon }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => ask(label, askMode)}
+                disabled={!assistReady}
+                className={ghostButtonClass}
+              >
+                <Icon size={11} className="text-hud-accent/90" />
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* ---- 2. The thread ------------------------------------------- */}
+        {!isCompact && (
+          <div
+            ref={threadRef}
+            style={noDrag}
+            className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 pb-2 pt-2"
+          >
+            {/* The assistant's unprompted line: what you could say next,
+                already computed by the time it appears (see useMeetingAssist).
+                Dimmed rather than hidden once the conversation moves on —
+                slightly old advice beats a blank when someone is waiting for
+                you to speak. */}
+            {suggestion && (
+              <div className={cn("shrink-0", hasThread && "mb-3")}>
+                <SayLine
+                  text={suggestion.text}
+                  icon={Lightbulb}
+                  dim={suggestion.stale}
+                  label={t("notes.meetingPanel.suggestion.sayNext")}
+                  title={
+                    suggestion.sources.length > 0
+                      ? `${t("notes.meetingPanel.sourcesLabel")} ${suggestion.sources
+                          .map((source) => source.title)
+                          .join(", ")}`
+                      : t("notes.meetingPanel.suggestion.sayNext")
+                  }
+                />
+              </div>
+            )}
+
+            {hasThread ? (
+              <>
+                {answer && (
+                  <AnswerBlock
+                    answer={answer}
+                    live
+                    ready={assistReady}
+                    needsModel={assistNeedsModel}
+                    onThinkDeeper={(text) => ask(text, "thinking")}
+                    onClear={() => void send("clearAsks")}
+                    onConfigure={() => void send("configureModels")}
+                  />
+                )}
+                {/* Earlier answers, newest first below the live one, so
+                    advice from ten minutes ago is one scroll away. */}
+                {[...history].reverse().map((past, index) => (
+                  <AnswerBlock
+                    key={`${history.length - index}:${past.question}`}
+                    answer={past}
+                    live={false}
+                    ready={assistReady}
+                    needsModel={assistNeedsModel}
+                    onThinkDeeper={(text) => ask(text, "thinking")}
+                    onClear={() => void send("clearAsks")}
+                    onConfigure={() => void send("configureModels")}
+                  />
+                ))}
+              </>
+            ) : (
+              !suggestion && (
+                <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
+                  <p className="text-[12px] leading-relaxed text-hud-muted">
+                    {assistNeedsModel
+                      ? t("notes.meetingPanel.ask.needsModel")
+                      : !assistReady
+                        ? t("notes.meetingPanel.ask.connecting")
+                        : assist?.suggestionPending
+                          ? t("notes.meetingPanel.suggestion.working")
+                          : t("notes.meetingPanel.ask.empty")}
+                  </p>
+                  {assistNeedsModel && (
+                    <button
+                      type="button"
+                      onClick={() => void send("configureModels")}
+                      className={cn(ghostButtonClass, "bg-white/[0.08] text-hud-foreground/90")}
+                    >
+                      <Settings2 size={11} />
+                      {t("notes.meetingPanel.ask.configureModels")}
+                    </button>
+                  )}
+                  {assist?.lastTime && <LastTimeLine lastTime={assist.lastTime} />}
+                </div>
+              )
+            )}
+          </div>
+        )}
+
+        {/* ---- 3. The toolbar ------------------------------------------ */}
         <div
           className={cn(
-            "flex shrink-0 items-center gap-2 py-1.5 pl-3 pr-1.5",
-            !isCompact && "border-b border-hud-border"
+            "flex shrink-0 items-center gap-0.5 px-1.5 py-1.5",
+            !isCompact && "border-t border-hud-border"
           )}
         >
+          {/* Capture status: the level meter and the clock, the title and
+              the audio sources as their tooltip. */}
           <span
-            className="flex shrink-0 items-end gap-[2px]"
-            style={{ height: METER_HEIGHT_PX }}
-            aria-hidden="true"
+            title={`${title} · ${sourceLabel}`}
+            className="flex h-7 shrink-0 items-center gap-2 rounded-lg px-1.5"
           >
-            {Array.from({ length: BAR_COUNT }, (_, i) => (
+            {isWaitingForMic ? (
+              <TriangleAlert size={12} className="shrink-0 text-hud-warning" />
+            ) : (
               <span
-                key={i}
-                className={cn(
-                  "w-[2px] rounded-full transition-[height] duration-75",
-                  isPaused ? "bg-hud-muted" : isWaitingForMic ? "bg-hud-warning" : "bg-hud-accent"
-                )}
-                style={{ height: computeBarHeight(isPaused || isWaitingForMic ? 0 : level, i) }}
-              />
-            ))}
-          </span>
-
-          <span className="flex min-w-0 flex-1 flex-col justify-center gap-px">
-            <span className="truncate text-xs font-semibold leading-tight text-hud-foreground">
-              {isPaused ? t("notes.meeting.pausedWithTitle", { title }) : title}
-            </span>
+                className="flex shrink-0 items-end gap-[2px]"
+                style={{ height: METER_HEIGHT_PX }}
+                aria-hidden="true"
+              >
+                {Array.from({ length: BAR_COUNT }, (_, i) => (
+                  <span
+                    key={i}
+                    className={cn(
+                      "w-[2px] rounded-full transition-[height] duration-75",
+                      isPaused ? "bg-hud-muted" : "bg-hud-accent"
+                    )}
+                    style={{ height: computeBarHeight(isPaused ? 0 : level, i) }}
+                  />
+                ))}
+              </span>
+            )}
             <span
+              data-numeric
               className={cn(
-                "truncate text-[11px] leading-tight",
+                "text-[12px] font-semibold leading-none tracking-[0.01em]",
                 isWaitingForMic ? "text-hud-warning" : "text-hud-muted"
               )}
             >
-              {isWaitingForMic ? t("notes.meetingPill.waitingForMicrophone") : sourceLabel}
+              {isPaused
+                ? t("notes.meetingPanel.sources.paused")
+                : formatMmSs(Math.floor(elapsedMs / 1000))}
             </span>
           </span>
 
-          <span
-            data-numeric
-            className={cn(
-              "shrink-0 text-[11px] font-semibold leading-none tracking-[0.01em]",
-              isWaitingForMic ? "text-hud-warning" : "text-hud-muted"
-            )}
-          >
-            {formatMmSs(Math.floor(elapsedMs / 1000))}
-          </span>
-
-          <span
-            className="flex shrink-0 items-center gap-0.5"
-            style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-          >
-            <button
-              type="button"
-              onClick={() => void send("open")}
-              aria-label={openLabel}
-              title={openLabel}
-              className={headerIconButtonClass}
-            >
-              <ExternalLink size={12} />
-            </button>
-
+          <span style={noDrag} className="flex shrink-0 items-center gap-0.5">
             <button
               type="button"
               onClick={() => void send(isPaused ? "resume" : "pause")}
               disabled={isBusy}
               aria-label={pauseLabel}
               title={pauseLabel}
-              className={headerIconButtonClass}
+              className={iconButtonClass}
             >
               {isPaused ? (
                 <Play size={12} fill="currentColor" />
@@ -602,7 +923,6 @@ export default function MeetingPanelOverlay() {
                 <Pause size={12} fill="currentColor" />
               )}
             </button>
-
             <button
               type="button"
               onClick={() => void send("stop")}
@@ -610,7 +930,7 @@ export default function MeetingPanelOverlay() {
               aria-label={stopLabel}
               title={stopLabel}
               className={cn(
-                "ml-0.5 flex h-7 items-center justify-center gap-1.5 rounded-lg px-2.5",
+                "flex h-7 items-center justify-center gap-1.5 rounded-lg px-2.5",
                 "text-[12px] font-medium transition-colors duration-150",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
                 "bg-hud-danger/20 text-hud-danger hover:bg-hud-danger/30",
@@ -621,338 +941,55 @@ export default function MeetingPanelOverlay() {
               {stopLabel}
             </button>
           </span>
-        </div>
 
-        {!isCompact && (
-          <div
-            className="flex min-h-0 flex-1 flex-col gap-2.5 px-3 pb-2.5 pt-2"
-            style={{ WebkitAppRegion: "no-drag" } as React.CSSProperties}
-          >
-            {/* Last time this meeting met — present only for a recognized
-                recurring meeting, on screen from the first second, before
-                anything has been said. */}
-            {assist?.lastTime && <LastTimeLine lastTime={assist.lastTime} />}
+          {/* The gap between the clusters is the drag handle. */}
+          <span className="min-w-2 flex-1" />
 
-            {/* Suggestion. The hero of this window: the one thing worth
-                reading mid sentence, so it carries the accent and the largest
-                type — and no box, because the words are the emphasis. Already
-                computed by the time it appears; see useMeetingAssist for why. */}
-            <section className="shrink-0">
-              <div className="flex items-center gap-1.5">
-                <Lightbulb size={12} className="text-hud-accent" />
-                <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-hud-accent">
-                  {t("notes.meetingPanel.suggestion.label")}
-                </span>
-                {suggestion?.stale && (
-                  <span className="ml-auto shrink-0 text-[11px] text-hud-muted">
-                    {t("notes.meetingPanel.suggestion.stale")}
-                  </span>
-                )}
-              </div>
-
-              {suggestion ? (
-                <>
-                  {/* Dimmed rather than hidden once the conversation moves on:
-                      slightly old advice still beats a blank box when someone
-                      is waiting for you to speak. */}
-                  <p
-                    className={cn(
-                      "mt-1 text-[14px] leading-relaxed",
-                      suggestion.stale ? "text-hud-foreground/60" : "text-hud-foreground"
-                    )}
-                  >
-                    {suggestion.text}
-                  </p>
-                  <SourceLine sources={suggestion.sources} />
-                </>
-              ) : (
-                <p className="mt-1 text-[14px] leading-relaxed text-hud-muted">
-                  {assistNeedsModel
-                    ? t("notes.meetingPanel.suggestion.needsModel")
-                    : !assistReady
-                      ? t("notes.meetingPanel.suggestion.connecting")
-                      : assist?.suggestionPending
-                        ? t("notes.meetingPanel.suggestion.working")
-                        : t("notes.meetingPanel.suggestion.empty")}
-                </p>
-              )}
-            </section>
-
-            {/* The assistant. This is what the leftover height goes to, because
-                it is the reason to keep the panel open — a question you need
-                answered now, and the room to read the answer. */}
-            {answer || history.length > 0 ? (
-              <div ref={answerRef} className="min-h-0 flex-1 overflow-y-auto">
-                {/* Settled answers stay: the thread scrolls, the live answer
-                    at the bottom end, so advice from ten minutes ago is one
-                    scroll away instead of erased by the next question. */}
-                {history.map((past, index) => (
-                  <HistoryAnswer key={`${index}:${past.question}`} answer={past} />
-                ))}
-                {answer && (
-                  <>
-                    {/* The question, as the asker's pill — right-aligned and solid
-                    accent, the one place the surface reads as a chat, so the
-                    answer below never needs a label saying what it answers. */}
-                    <div className="flex justify-end">
-                      <p className="max-w-[85%] rounded-2xl bg-hud-accent px-3 py-1.5 text-[12px] font-medium leading-snug text-hud-surface">
-                        {answer.question}
-                      </p>
-                    </div>
-                    {/* Provenance, not a mode name: which world the answer drew
-                    on — so a transcript-only answer is never mistaken for one
-                    that checked the notes. */}
-                    <p className="mt-2 text-[11px] text-hud-muted">
-                      {answer.mode === "thinking"
-                        ? t("notes.meetingPanel.answer.checkedNotes")
-                        : t("notes.meetingPanel.answer.fromMeeting")}
-                    </p>
-                    {answer.errorKey ? (
-                      <>
-                        <p className="mt-1 text-[12px] leading-relaxed text-hud-warning">
-                          {t(answer.errorKey)}
-                        </p>
-                        {/* A missing model is not retryable — the fix lives in
-                        Settings, so the error carries the trip there. */}
-                        {assistNeedsModel && (
-                          <button
-                            type="button"
-                            onClick={() => void send("configureModels")}
-                            className={cn(
-                              "mt-2 flex h-7 items-center gap-1.5 rounded-full bg-white/[0.1] px-2.5",
-                              "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
-                              "hover:bg-white/[0.16] hover:text-hud-foreground",
-                              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
-                            )}
-                          >
-                            <Settings2 size={11} />
-                            {t("notes.meetingPanel.ask.configureModels")}
-                          </button>
-                        )}
-                      </>
-                    ) : answer.streaming && !answer.text && answer.mode === "thinking" ? (
-                      /* Thinking pays its latency up front, in retrieval, before
-                     a single token exists to stream. Saying what the wait is
-                     makes it deliberate instead of broken. */
-                      <p className="mt-1 animate-pulse text-[12px] leading-relaxed text-hud-muted">
-                        {t("notes.meetingPanel.ask.searchingNotes")}
-                      </p>
-                    ) : (
-                      <div className="mt-1.5 text-[14px] leading-relaxed text-hud-foreground/90">
-                        <Markdown components={ANSWER_MARKDOWN_COMPONENTS}>{answer.text}</Markdown>
-                        {/* The caret is the only "it is working" signal an
-                        answer needs: the text itself is the progress bar. */}
-                        {answer.streaming && (
-                          <span className="ml-0.5 inline-block h-3 w-[2px] translate-y-[2px] animate-pulse bg-hud-accent" />
-                        )}
-                      </div>
-                    )}
-                    {!answer.streaming && <SourceLine sources={answer.sources} />}
-                  </>
-                )}
-                {/* The thread's footer — the verbs of the live end, plus
-                    Clear, which acts on the whole thread and so sits apart
-                    on the right. Hidden while an answer streams: the one
-                    action that matters then is reading. */}
-                {(!answer || !answer.streaming) && (
-                  <div className="mt-2 flex items-center gap-1.5">
-                    {/* The escalation. Only on a settled fast answer: it is
-                        the "that was not in this meeting" next step, and
-                        offering to re-check the notes under an answer that
-                        already checked them would be a button that does
-                        nothing. */}
-                    {answer && !answer.errorKey && answer.mode === "fast" && (
-                      <button
-                        type="button"
-                        onClick={() => askAgainWithNotes(answer.question)}
-                        disabled={!assistReady}
-                        title={t("notes.meetingPanel.ask.thinkDeeperHint")}
-                        className={cn(
-                          "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.1] px-2.5",
-                          "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
-                          "hover:bg-white/[0.16] hover:text-hud-foreground",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-                          "disabled:cursor-not-allowed disabled:opacity-40"
-                        )}
-                      >
-                        <Brain size={11} />
-                        {t("notes.meetingPanel.ask.thinkDeeper")}
-                      </button>
-                    )}
-                    {/* Copy, because the answer is often destined for the
-                        chat box of the very meeting it was asked in. */}
-                    {answer && !answer.errorKey && (
-                      <button
-                        type="button"
-                        onClick={() => copyAnswer(answer.text)}
-                        aria-label={copied ? t("common.copied") : t("common.copy")}
-                        title={copied ? t("common.copied") : t("common.copy")}
-                        className={cn(
-                          "flex size-7 items-center justify-center rounded-full bg-white/[0.1]",
-                          "transition-colors duration-150 hover:bg-white/[0.16]",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-                          copied ? "text-hud-accent" : "text-hud-muted hover:text-hud-foreground"
-                        )}
-                      >
-                        {copied ? <Check size={12} /> : <Copy size={12} />}
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => void send("clearAsks")}
-                      className={cn(
-                        "ml-auto flex h-7 items-center gap-1.5 rounded-full px-2.5",
-                        "text-[11px] font-medium text-hud-muted transition-colors duration-150",
-                        "hover:bg-white/[0.1] hover:text-hud-foreground",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
-                      )}
-                    >
-                      <Eraser size={11} />
-                      {t("notes.meetingPanel.thread.clear")}
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 px-3 text-center">
-                <MessageSquareText size={16} className="text-hud-muted/70" />
-                <p className="text-[12px] leading-relaxed text-hud-muted">
-                  {assistNeedsModel
-                    ? t("notes.meetingPanel.ask.needsModel")
-                    : !assistReady
-                      ? t("notes.meetingPanel.ask.connecting")
-                      : t("notes.meetingPanel.ask.empty")}
-                </p>
-                {assistNeedsModel && (
-                  <button
-                    type="button"
-                    onClick={() => void send("configureModels")}
-                    className={cn(
-                      "flex h-7 items-center gap-1.5 rounded-full bg-white/[0.1] px-2.5",
-                      "text-[11px] font-medium text-hud-foreground/90 transition-colors duration-150",
-                      "hover:bg-white/[0.16] hover:text-hud-foreground",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70"
-                    )}
-                  >
-                    <Settings2 size={11} />
-                    {t("notes.meetingPanel.ask.configureModels")}
-                  </button>
-                )}
-                {/* The one place the two modes are explained in a sentence,
-                    shown before the first question — the moment the choice
-                    first exists. */}
-                {assistReady && (
-                  <p className="text-[11px] leading-relaxed text-hud-muted/80">
-                    {t("notes.meetingPanel.ask.modesHint")}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* The named verbs, directly above the box they feed. */}
-            <QuickActions
-              ready={assistReady}
-              hasSeries={!!assist?.lastTime}
-              onAsk={(text, askMode) => void window.electronAPI?.meetingPanelAsk?.(text, askMode)}
-            />
-
-            {/* The ask well, the reference product's way: the input row
-                carries only the eye, the field, and send — the panel's single
-                strong affordance — and everything configurational (mode,
-                model) drops to a quiet row underneath. Pulled out of the bar
-                on client direction: five controls in one row read as chrome,
-                not as a place to type. */}
-            <form
+          <span style={noDrag} className="flex min-w-0 shrink items-center gap-0.5">
+            <ObserveControls />
+            {/* Thinking: answers also search the past notes. An icon toggle,
+                not a segmented control — fast is the default and the
+                tooltip is where the trade is explained. */}
+            <button
+              type="button"
+              onClick={() => setMode(mode === "thinking" ? "fast" : "thinking")}
+              disabled={!assistReady}
+              aria-pressed={mode === "thinking"}
+              aria-label={t("notes.meetingPanel.mode.label")}
+              title={
+                mode === "thinking"
+                  ? t("notes.meetingPanel.mode.thinkingOn")
+                  : t("notes.meetingPanel.mode.thinkingOff")
+              }
               className={cn(
-                // A tonal well, no stroke — focus brightens the fill instead
-                // of drawing a ring (matches the assistant bar's field).
-                "flex shrink-0 items-center gap-1.5 rounded-xl bg-white/[0.1] p-1.5 pl-1.5",
-                "transition-colors duration-150 focus-within:bg-white/[0.14]"
+                iconButtonClass,
+                mode === "thinking" && "bg-hud-accent/20 text-hud-accent hover:bg-hud-accent/30"
               )}
-              onSubmit={(event) => {
-                event.preventDefault();
-                submitQuestion();
-              }}
             >
-              {/* Observe my screen: opt-in, and every answer then carries a
-                  screenshot of the display under the cursor, read by the same
-                  chat model as a co-equal source. A setting, not meeting
-                  state — it stays the way the user left it. Enabled even
-                  before the assistant connects, because it is configuration,
-                  not an ask. */}
-              <button
-                type="button"
-                onClick={() => setMeetingScreenObserve(!meetingScreenObserve)}
-                aria-pressed={meetingScreenObserve}
-                aria-label={
-                  meetingScreenObserve
-                    ? t("notes.meetingPanel.observe.disable")
-                    : t("notes.meetingPanel.observe.enable")
-                }
-                title={
-                  meetingScreenObserve
-                    ? t("notes.meetingPanel.observe.disable")
-                    : t("notes.meetingPanel.observe.enable")
-                }
-                className={cn(
-                  "flex size-7 shrink-0 items-center justify-center rounded-full",
-                  "transition-colors duration-150",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-                  meetingScreenObserve
-                    ? "bg-hud-accent/20 text-hud-accent hover:bg-hud-accent/30"
-                    : "bg-white/[0.08] text-hud-muted hover:bg-white/[0.12] hover:text-hud-foreground"
-                )}
-              >
-                {meetingScreenObserve ? <Eye size={13} /> : <EyeOff size={13} />}
-              </button>
-              <input
-                value={question}
-                onChange={(event) => setQuestion(event.target.value)}
-                disabled={!assistReady}
-                placeholder={
-                  assistReady
-                    ? mode === "thinking"
-                      ? t("notes.meetingPanel.ask.placeholderThinking")
-                      : t("notes.meetingPanel.ask.placeholder")
-                    : assistNeedsModel
-                      ? t("notes.meetingPanel.ask.needsModelPlaceholder")
-                      : t("notes.meetingPanel.ask.connectingPlaceholder")
-                }
-                aria-label={t("notes.meetingPanel.ask.label")}
-                className={cn(
-                  // input-inline opts out of the app's boxed input chrome —
-                  // without it the global stylesheet draws its own border and
-                  // focus ring inside this well.
-                  "input-inline min-w-0 flex-1 bg-transparent p-0 text-[14px] text-hud-foreground outline-none",
-                  "placeholder:text-hud-muted disabled:cursor-not-allowed"
-                )}
-              />
-              <button
-                type="submit"
-                disabled={!assistReady || !question.trim()}
-                aria-label={t("notes.meetingPanel.ask.send")}
-                className={cn(
-                  "flex size-7 shrink-0 items-center justify-center rounded-full",
-                  "bg-hud-accent text-hud-surface transition-colors duration-150 hover:bg-hud-accent/85",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
-                  "disabled:bg-white/10 disabled:text-hud-muted"
-                )}
-              >
-                <SendHorizontal size={13} />
-              </button>
-            </form>
-
-            {/* The configuration row, under the well: answer speed on the
-                left, the model on the right. The chip writes the same
-                chatIntelligence scope the app chat's chip writes — one brain,
-                pickable from either surface — and stays enabled while the
-                panel says "needs model", because picking one is the fix. */}
-            <div className="flex shrink-0 items-center justify-between gap-2 px-0.5">
-              <ModeToggle mode={mode} onChange={setMode} disabled={!assistReady} />
-              <ModelPickerChip scope="chatIntelligence" variant="hud" />
-            </div>
-          </div>
-        )}
+              <Brain size={13} />
+            </button>
+            {/* The chip writes the same chatIntelligence scope the app chat's
+                chip writes — one brain, pickable from either surface — and
+                stays enabled while the card says "needs model", because
+                picking one is the fix. */}
+            <ModelPickerChip scope="chatIntelligence" variant="hud" className="h-7" />
+            {/* The transcript lives in the meeting's note, one click away:
+                main surfaces the dashboard and the note opens on its
+                transcript view. An icon only — the dashboard — with the
+                label as its tooltip and accessible name: the toolbar is
+                the card's tightest row, and a labeled button here took the
+                room the model chip needs. */}
+            <button
+              type="button"
+              onClick={() => void send("transcript")}
+              aria-label={transcriptLabel}
+              title={transcriptLabel}
+              className={iconButtonClass}
+            >
+              <LayoutDashboard size={13} />
+            </button>
+          </span>
+        </div>
       </div>
     </div>
   );

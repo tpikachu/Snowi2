@@ -113,6 +113,7 @@ const MEETING_PANEL_COMMANDS = new Set([
   "open",
   "configureModels",
   "clearAsks",
+  "transcript",
 ]);
 /** Long enough for any question worth asking mid-meeting; short enough not to be a paste channel. */
 const MEETING_PANEL_QUESTION_MAX = 2000;
@@ -4386,20 +4387,33 @@ class IPCHandlers {
             throw new Error("No model specified for Anthropic API call");
           }
 
-          const screenContext = config?.screenContext;
-          const userContent = screenContext
-            ? [
-                { type: "text", text: userPrompt },
-                {
-                  type: "image",
-                  source: {
-                    type: "base64",
-                    media_type: screenContext.mediaType,
-                    data: screenContext.data,
-                  },
-                },
-              ]
-            : userPrompt;
+          // One screenshot (dictation) or several (the meeting cue card's
+          // observe, one per display). With more than one, each is
+          // introduced by its label so the model can tell the screens apart.
+          const screenImages = Array.isArray(config?.screenContext)
+            ? config.screenContext.filter(Boolean)
+            : config?.screenContext
+              ? [config.screenContext]
+              : [];
+          const userContent =
+            screenImages.length > 0
+              ? [
+                  { type: "text", text: userPrompt },
+                  ...screenImages.flatMap((image) => [
+                    ...(screenImages.length > 1 && image.label
+                      ? [{ type: "text", text: `${image.label}:` }]
+                      : []),
+                    {
+                      type: "image",
+                      source: {
+                        type: "base64",
+                        media_type: image.mediaType,
+                        data: image.data,
+                      },
+                    },
+                  ]),
+                ]
+              : userPrompt;
 
           // Claude models from Opus 4.7 onward reject `temperature` with a 400;
           // the renderer derives support from the model registry.
@@ -4729,6 +4743,24 @@ class IPCHandlers {
         .catch(() => null)
         .then((targetBounds) => screenContextCapture.captureActiveDisplay(targetBounds));
     });
+
+    // The meeting cue card's "observe": every display (or the one the card
+    // chose), each as its own labeled image. The card itself is hidden from
+    // the capture — content protection takes effect on the next composed
+    // frame, hence the short settle before the grab.
+    ipcMain.handle("capture-meeting-screens", async (_event, target) => {
+      const restore = this.windowManager?.hideAgentWindowFromCapture?.() ?? (() => {});
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 80));
+        return await screenContextCapture.captureObserveDisplays({
+          target: typeof target === "string" ? target : "all",
+        });
+      } finally {
+        restore();
+      }
+    });
+
+    ipcMain.handle("list-displays", () => screenContextCapture.listDisplays());
 
     // Snapshot the launch-time TCC status so a mid-session grant (which macOS
     // only honors after a relaunch) is detectable even if the renderer never

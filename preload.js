@@ -632,6 +632,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   checkScreenRecordingAccess: () => ipcRenderer.invoke("check-screen-recording-access"),
   requestScreenRecordingAccess: () => ipcRenderer.invoke("request-screen-recording-access"),
   captureScreenContext: () => ipcRenderer.invoke("capture-screen-context"),
+  captureMeetingScreens: (target) => ipcRenderer.invoke("capture-meeting-screens", target),
+  listDisplays: () => ipcRenderer.invoke("list-displays"),
   setScreenContextEnabled: (enabled) => ipcRenderer.invoke("screen-context-set-enabled", enabled),
   showEmojiPanel: () => ipcRenderer.invoke("show-emoji-panel"),
   toggleMediaPlayback: () => ipcRenderer.invoke("toggle-media-playback"),

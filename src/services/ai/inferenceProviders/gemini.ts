@@ -5,6 +5,7 @@ import { API_ENDPOINTS, TOKEN_LIMITS } from "../../../config/constants";
 import { wrapCleanupTranscript } from "../../../config/prompts";
 import { extractApiErrorMessage } from "../apiErrorMessage";
 import logger from "../../../utils/logger";
+import { screenContextImages, screenImageParts } from "../../../utils/screenContextImages";
 
 interface GeminiResponse {
   candidates?: Array<{
@@ -56,14 +57,14 @@ export const geminiProvider: InferenceProvider = {
     const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [
       { text: `${systemPrompt}\n\n${userContent}` },
     ];
-    if (config.screenContext) {
-      parts.push({
-        inlineData: {
-          mimeType: config.screenContext.mediaType,
-          data: config.screenContext.data,
-        },
-      });
-    }
+    const screenImages = screenContextImages(config.screenContext);
+    parts.push(
+      ...screenImageParts(
+        screenImages,
+        (text) => ({ text }),
+        (image) => ({ inlineData: { mimeType: image.mediaType, data: image.data } })
+      )
+    );
     const requestBody = {
       contents: [{ parts }],
       generationConfig,
@@ -74,7 +75,7 @@ export const geminiProvider: InferenceProvider = {
         endpoint: `${API_ENDPOINTS.GEMINI}/models/${model}:generateContent`,
         model,
         hasApiKey: !!apiKey,
-        hasScreenContext: !!config.screenContext,
+        hasScreenContext: screenImages.length > 0,
         // A short prompt could let the 200-char preview reach into the base64
         // image part — preview the text part only, never the full body.
         requestBody: JSON.stringify({

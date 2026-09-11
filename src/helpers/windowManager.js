@@ -1644,6 +1644,33 @@ class WindowManager {
     }
   }
 
+  /**
+   * Keeps the bar / cue card out of a screenshot the assistant is about to
+   * read. With stealth off the card is an ordinary window, so an observe
+   * capture would photograph the card over the meeting — the model reading
+   * its own last answer instead of the slide underneath. Content protection
+   * is flipped on for the capture and back off after; while stealth is on
+   * there is nothing to do. Returns the restore function.
+   */
+  hideAgentWindowFromCapture() {
+    const win = this.agentWindow;
+    if (!win || win.isDestroyed() || this._overlayStealth) return () => {};
+    try {
+      win.setContentProtection(true);
+    } catch {
+      return () => {};
+    }
+    return () => {
+      if (!win.isDestroyed() && !this._overlayStealth) {
+        try {
+          win.setContentProtection(false);
+        } catch {
+          /* the window is on its way out */
+        }
+      }
+    };
+  }
+
   sendMeetingPanelLevel(level) {
     // Dropped rather than queued: a level is only meaningful when it arrives.
     const win = this.agentWindow;
@@ -1721,10 +1748,16 @@ class WindowManager {
    *
    * Stop surfaces the control panel as well as forwarding: it is followed by
    * the keep-or-discard prompt, and a question asked behind the meeting window
-   * the user is looking at is a question they never see.
+   * the user is looking at is a question they never see. Transcript does too:
+   * the transcript lives in the dashboard, and the renderer lands on it.
    */
   async handleMeetingPanelCommand(command) {
-    if (command === "open" || command === "stop" || command === "configureModels") {
+    if (
+      command === "open" ||
+      command === "stop" ||
+      command === "configureModels" ||
+      command === "transcript"
+    ) {
       await this.createControlPanelWindow();
     }
     this.sendToControlPanel("meeting-panel-command", command);

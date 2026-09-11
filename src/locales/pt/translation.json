@@ -95,6 +95,7 @@
       "callbackRequired": "Uma função de callback é obrigatória para configurar o atalho",
       "globeOnlyMac": "A tecla Globe está disponível apenas no macOS.",
       "mouseButtonOnlyMac": "Atalhos com botões do mouse atualmente são compatíveis apenas no macOS.",
+      "fnNeedsFunctionKey": "Fn só se combina com uma tecla de função (F1 a F12): \"{{hotkey}}\" seria registrado como \"{{accelerator}}\" e dispararia a cada {{accelerator}} pressionado.",
       "alreadyRegistered": "\"{{hotkey}}\" já está registrada por outro aplicativo.",
       "osReserved": "\"{{hotkey}}\" pode estar reservada pelo seu ambiente de desktop.",
       "registrationFailed": "Não foi possível registrar \"{{hotkey}}\". Pode estar em uso por outro aplicativo.",
@@ -2919,7 +2920,8 @@
         "working": "Pensando…",
         "empty": "Uma sugestão aparece quando o outro lado para de falar.",
         "needsModel": "Configure um modelo de IA para receber sugestões ao vivo.",
-        "connecting": "Conectando ao assistente…"
+        "connecting": "Conectando ao assistente…",
+        "sayNext": "Algo que você poderia dizer a seguir"
       },
       "transcript": {
         "label": "Transcrição",
@@ -2934,12 +2936,14 @@
         "fast": "Rápido",
         "thinking": "Pensar",
         "fastHint": "Rápido — respostas instantâneas só desta reunião",
-        "thinkingHint": "Pensar — demora mais e também pesquisa nas suas notas anteriores"
+        "thinkingHint": "Pensar — demora mais e também pesquisa nas suas notas anteriores",
+        "thinkingOn": "Modo reflexivo ativado: as respostas também pesquisam suas notas anteriores. Clique para respostas instantâneas.",
+        "thinkingOff": "Respostas instantâneas desta reunião. Clique para também pesquisar suas notas anteriores."
       },
       "ask": {
         "label": "Pergunte sobre esta reunião",
         "send": "Enviar",
-        "empty": "Faça uma pergunta e a resposta aparece aqui.",
+        "empty": "Pergunte qualquer coisa sobre esta reunião.",
         "modesHint": "Rápido responde na hora com esta reunião. Pensar também pesquisa nas suas notas anteriores.",
         "placeholder": "Pergunte sobre esta reunião…",
         "placeholderThinking": "Pergunte sobre esta reunião e suas notas…",
@@ -2967,14 +2971,23 @@
       },
       "answer": {
         "fromMeeting": "Desta reunião",
-        "checkedNotes": "Consultou suas notas"
+        "checkedNotes": "Consultou suas notas",
+        "sayLine": "Frase para dizer",
+        "copyLine": "Copiar esta frase"
       },
       "thread": {
         "clear": "Limpar"
       },
       "observe": {
         "enable": "Observar minha tela — as respostas podem usar o que está nela",
-        "disable": "Observando sua tela — clique para parar"
+        "disable": "Observando sua tela — clique para parar",
+        "needsAccess": "Acesso à tela necessário — clique para permitir",
+        "needsRelaunch": "Reinicie o aplicativo para concluir a permissão de acesso à tela",
+        "unsupported": "A captura de tela não está disponível neste sistema",
+        "allScreens": "Todas as telas",
+        "screen": "Tela {{n}}",
+        "primary": "principal",
+        "chooseScreen": "Qual tela observar"
       }
     },
     "transcript": {

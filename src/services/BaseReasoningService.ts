@@ -15,8 +15,12 @@ export interface ReasoningConfig {
   customApiKey?: string;
   provider?: string;
   disableThinking?: boolean;
-  /** Screenshot attached to voice-agent requests when screen context is on. */
-  screenContext?: ScreenContextImage;
+  /**
+   * Screenshot(s) riding this request: one for a voice-agent command with
+   * screen context on, one per display for a meeting ask with observe on.
+   * Read through `screenContextImages()` — never by bare truthiness.
+   */
+  screenContext?: ScreenContextImage | ScreenContextImage[];
   /** Suffix-free prompt used when a screenshot-carrying request is retried text-only. */
   textOnlySystemPrompt?: string;
   language?: string;

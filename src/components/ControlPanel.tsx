@@ -31,6 +31,7 @@ import {
   consumeSettingsRequest,
   useSettingsNavigationStore,
 } from "../stores/settingsNavigationStore";
+import { useNoteNavigationStore } from "../stores/noteNavigationStore";
 import {
   useIsMeetingMode,
   useIsNarrowWindow,
@@ -505,6 +506,22 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     setActiveFolderId(recordingFolderId);
     setActiveNoteId(recordingNoteId);
   }, [recordingFolderId, recordingNoteId]);
+
+  // A note asked for from outside — the cue card's "Show transcript", which
+  // main has already surfaced this window for. Selecting the note is this
+  // component's half; the editor that mounts for it applies the view and
+  // consumes the request. Read from the stores at the moment of the request,
+  // so the effect keys on the request alone.
+  const noteViewNonce = useNoteNavigationStore((s) => s.nonce);
+  useEffect(() => {
+    const pending = useNoteNavigationStore.getState().pending;
+    if (!pending) return;
+    const recording = useMeetingRecordingStore.getState();
+    setActiveView("personal-notes");
+    if (pending.noteId === recording.recordingNoteId)
+      setActiveFolderId(recording.recordingFolderId);
+    setActiveNoteId(pending.noteId);
+  }, [noteViewNonce]);
 
   const handleExitMeetingMode = useCallback(() => {
     // Two ways into the side-panel layout, two ways back. A live meeting

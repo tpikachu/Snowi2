@@ -95,6 +95,7 @@
       "callbackRequired": "設定快捷鍵需要回呼函式",
       "globeOnlyMac": "Globe 鍵僅在 macOS 上可用。",
       "mouseButtonOnlyMac": "滑鼠按鍵快捷鍵目前僅在 macOS 上受支援。",
+      "fnNeedsFunctionKey": "Fn 只能與功能鍵（F1 到 F12）組合：「{{hotkey}}」會被註冊為「{{accelerator}}」，每次按下 {{accelerator}} 都會觸發。",
       "alreadyRegistered": "\"{{hotkey}}\" 已被其他應用程式註冊。",
       "osReserved": "\"{{hotkey}}\" 可能被你的作業系統保留。",
       "registrationFailed": "無法註冊「{{hotkey}}」。可能已被其他應用程式使用。",
@@ -2919,7 +2920,8 @@
         "working": "思考中…",
         "empty": "對方說完後這裡會出現建議。",
         "needsModel": "設定 AI 模型後即可獲得即時建議。",
-        "connecting": "正在連接助手…"
+        "connecting": "正在連接助手…",
+        "sayNext": "接下來可以說的話"
       },
       "transcript": {
         "label": "轉錄",
@@ -2934,12 +2936,14 @@
         "fast": "快速",
         "thinking": "思考",
         "fastHint": "快速 — 僅根據本次會議即時回答",
-        "thinkingHint": "思考 — 較慢，還會搜尋你過去的筆記"
+        "thinkingHint": "思考 — 較慢，還會搜尋你過去的筆記",
+        "thinkingOn": "深度思考已開啟：回答也會搜尋你過去的筆記。點擊切換為即時回答。",
+        "thinkingOff": "根據本次會議的即時回答。點擊以同時搜尋你過去的筆記。"
       },
       "ask": {
         "label": "詢問這場會議",
         "send": "傳送",
-        "empty": "提問後，答案會顯示在這裡。",
+        "empty": "關於這場會議，隨便問。",
         "modesHint": "快速根據本次會議即時回答。思考還會搜尋你過去的筆記。",
         "placeholder": "問問這場會議…",
         "placeholderThinking": "詢問本次會議和你的筆記…",
@@ -2967,14 +2971,23 @@
       },
       "answer": {
         "fromMeeting": "來自本次會議",
-        "checkedNotes": "已查閱你的筆記"
+        "checkedNotes": "已查閱你的筆記",
+        "sayLine": "可以這樣說",
+        "copyLine": "複製這句話"
       },
       "thread": {
         "clear": "清除"
       },
       "observe": {
         "enable": "觀察我的螢幕——回答可以利用螢幕內容",
-        "disable": "正在觀察螢幕——點擊停止"
+        "disable": "正在觀察螢幕——點擊停止",
+        "needsAccess": "需要螢幕存取權限 — 點擊以允許",
+        "needsRelaunch": "請重新啟動應用程式以完成螢幕存取授權",
+        "unsupported": "此系統不支援螢幕擷取",
+        "allScreens": "所有螢幕",
+        "screen": "螢幕 {{n}}",
+        "primary": "主螢幕",
+        "chooseScreen": "要觀察哪個螢幕"
       }
     },
     "transcript": {

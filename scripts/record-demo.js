@@ -9,10 +9,16 @@
  * the one-time OpenAI key setup (a placeholder is typed on camera; the real
  * key from .env.local is saved silently and never filmed — and entering the
  * key IS the whole AI setup: the app picks each feature's model itself),
- * then an actual recorded call: a scripted two-voice meeting is synthesized
+ * then an actual recorded call: a scripted two-voice meeting, about four
+ * minutes long and dense with the things a buyer actually asks (seats,
+ * price, a competitor's quote, SOC 2, SSO, data residency), is synthesized
  * with Windows TTS and fed to the app as its microphone (Chromium's fake
- * audio capture), so the live transcript, the AI-written summary, and the
- * chat answer in the video are all real.
+ * audio capture), so the live transcript, every cue-card answer, the
+ * AI-written summary, and the chat answer in the video are all real. The
+ * call is long on purpose: the cue-card tour in the middle — the unprompted
+ * line, What should I say, a typed question, Think deeper, Recap, observe
+ * my screen, Show transcript, the model chip, Stop — needs the meeting to
+ * still be going while every answer is filmed.
  * A fake cursor and a two-line caption card are injected so the viewer can
  * follow along; every chapter is best-effort, so a changed selector skips
  * that chapter instead of killing the recording.
@@ -73,7 +79,7 @@ function readOpenAIKey() {
 const CALL_LINES = [
   [
     "Microsoft David Desktop",
-    "Hi Priya, thanks for joining. Today I want to walk you through the rollout plan for your team.",
+    "Hi Priya, thanks for joining. Today I want to walk you through the rollout plan for your team, and answer the questions your director sent over.",
   ],
   [
     "Microsoft Zira Desktop",
@@ -88,45 +94,104 @@ const CALL_LINES = [
     "That works for us. Can you have the training materials ready by next Friday?",
   ],
   ["Microsoft David Desktop", "Yes, I will send the training guide and a short video by Friday."],
+  ["Microsoft Zira Desktop", "Great. How many seats do you recommend for the pilot?"],
+  [
+    "Microsoft David Desktop",
+    "About twenty five to start. We can add more at any point during the two weeks.",
+  ],
   [
     "Microsoft Zira Desktop",
-    "Great. One more thing. Our director Dana needs to approve the annual pricing before we sign.",
+    "Let us plan for twenty five, and I will send you the list of names tomorrow.",
   ],
-  ["Microsoft David Desktop", "No problem. I will email the full pricing proposal to Dana today."],
+  ["Microsoft David Desktop", "Perfect. I will set up their accounts the same day I get the list."],
+  [
+    "Microsoft Zira Desktop",
+    "Now the harder part. Dana needs to approve the annual pricing before we sign anything.",
+  ],
+  [
+    "Microsoft David Desktop",
+    "No problem. The annual plan is eighteen dollars per seat per month, billed yearly.",
+  ],
+  [
+    "Microsoft Zira Desktop",
+    "Honestly, that is higher than we expected. Another vendor quoted us twelve dollars a seat.",
+  ],
+  [
+    "Microsoft David Desktop",
+    "I hear you. The difference is the meeting memory and the summaries, which the other tool does not do.",
+  ],
+  ["Microsoft Zira Desktop", "Is there any flexibility if we commit for the full year up front?"],
+  [
+    "Microsoft David Desktop",
+    "Yes. For an annual prepay I can offer ten percent off, so about sixteen dollars a seat.",
+  ],
+  ["Microsoft Zira Desktop", "Okay, that helps. Please put that in the proposal for Dana."],
+  [
+    "Microsoft David Desktop",
+    "Will do. I will email the full pricing proposal to Dana today, with the ten percent noted.",
+  ],
+  [
+    "Microsoft Zira Desktop",
+    "Two more questions from our security team. Are you SOC two certified?",
+  ],
+  [
+    "Microsoft David Desktop",
+    "Yes, we completed our SOC two type two audit in March, and I can share the report under NDA.",
+  ],
+  ["Microsoft Zira Desktop", "Good. And do you support single sign on with Okta?"],
+  [
+    "Microsoft David Desktop",
+    "Okta support ships in the fourth quarter. Until then, your team signs in with email and a code.",
+  ],
+  [
+    "Microsoft Zira Desktop",
+    "Alright. Our data has to stay in the European region. Is that possible?",
+  ],
+  [
+    "Microsoft David Desktop",
+    "Yes, we can pin your workspace to our Frankfurt region before the pilot starts.",
+  ],
+  [
+    "Microsoft Zira Desktop",
+    "That covers security. Can your assistant join our Teams calls automatically?",
+  ],
+  [
+    "Microsoft David Desktop",
+    "It runs on each person's computer and listens to whatever call is on screen, so there is nothing to invite.",
+  ],
+  [
+    "Microsoft Zira Desktop",
+    "Nice. And can the team keep using their current tools during the pilot?",
+  ],
+  [
+    "Microsoft David Desktop",
+    "Yes, nothing changes in their workflow. Snowy runs quietly alongside the tools they already use.",
+  ],
   [
     "Microsoft Zira Desktop",
     "Perfect. Let us meet again in two weeks to review how the pilot is going.",
   ],
   [
     "Microsoft David Desktop",
-    "Agreed. Let me quickly recap. We start a two week pilot in Austin, and I send the training guide and video by Friday.",
+    "Agreed. Let me quickly recap. A two week pilot in Austin with twenty five seats, and the training guide and video from me by Friday.",
   ],
   [
     "Microsoft Zira Desktop",
-    "Right. And the pricing proposal goes to Dana today so she can review it before we sign.",
-  ],
-  ["Microsoft David Desktop", "Exactly. How many people should we plan for in the pilot?"],
-  [
-    "Microsoft Zira Desktop",
-    "About twenty five people from the Austin sales team. I will send you the list tomorrow.",
+    "Right. The pricing proposal goes to Dana today with the ten percent annual discount, and we pin the data to Frankfurt.",
   ],
   [
     "Microsoft David Desktop",
-    "Great, twenty five seats it is. I will set up their accounts as soon as I get the list.",
+    "Exactly. And I will send the SOC two report under NDA, plus the calendar invite for the two week review.",
   ],
   [
     "Microsoft Zira Desktop",
-    "One question. Can our team keep using their current tools during the pilot?",
+    "Great. One last thing, please copy Marcus from procurement on the proposal.",
   ],
   [
     "Microsoft David Desktop",
-    "Yes, nothing changes in their workflow. Snowy runs quietly alongside the tools they already use.",
+    "Noted, Marcus will be on the email. Thank you Priya, this was really productive.",
   ],
-  ["Microsoft Zira Desktop", "That is exactly what I hoped. Alright, I think we have a plan."],
-  [
-    "Microsoft David Desktop",
-    "Wonderful. I will send the calendar invite for the two week review. Have a great day, Priya!",
-  ],
+  ["Microsoft Zira Desktop", "Thanks, talk soon."],
 ];
 
 /**
@@ -925,105 +990,276 @@ async function main() {
 
       // -- The cue card: the bar, morphed ----------------------------------
       // While a meeting records, the assistant bar window IS the cue card —
-      // one surface growing in place, no second window to find. Its demo
-      // chrome is already injected; framePanel repositions the caption.
+      // one surface growing in place, no second window to find. The card
+      // fills its window, so for the camera the window is padded taller and
+      // the card pinned to its height, which leaves a dark strip under the
+      // toolbar for the caption to live in.
       const panelPage = barPage;
+      let stoppedFromCard = false;
       if (panelPage) {
         await sleep(800);
+        const CARD = { width: 560, height: 520, strip: 120 };
 
-        // Crop the capture to the card's content (the window is taller than
-        // the card) and park the caption in the spare strip just below it.
-        // Re-run after anything that grows the card.
         const framePanel = async () => {
-          const metrics = await panelPage.evaluate(() => {
-            // Skip full-height containers (the React root spans the window);
-            // the card itself is the tallest element that doesn't.
-            let bottom = 0;
-            for (const el of document.querySelectorAll("body *")) {
-              if (el.id && el.id.startsWith("__demo")) continue;
-              if (el.closest("#__demo-caption")) continue;
-              const rect = el.getBoundingClientRect();
-              if (rect.width < 2 || rect.height < 2) continue;
-              if (rect.height >= window.innerHeight * 0.95) continue;
-              bottom = Math.max(bottom, Math.min(rect.bottom, window.innerHeight));
+          await barBw.evaluate((win, card) => {
+            const bounds = win.getBounds();
+            win.setBounds({ ...bounds, width: card.width, height: card.height + card.strip });
+          }, CARD);
+          await panelPage.evaluate((card) => {
+            let style = document.getElementById("__demo-card-style");
+            if (!style) {
+              style = document.createElement("style");
+              style.id = "__demo-card-style";
+              document.head.appendChild(style);
             }
-            return {
-              width: window.innerWidth,
-              height: window.innerHeight,
-              bottom: Math.ceil(bottom),
-            };
-          });
-          const height = Math.min(metrics.height, metrics.bottom + 100);
-          await panelPage.evaluate(
-            (top) => {
-              const el = document.getElementById("__demo-caption");
-              if (el) {
-                el.style.bottom = "";
-                el.style.top = `${top}px`;
-              }
-            },
-            Math.min(metrics.bottom + 10, height - 90)
-          );
-          captureClip = { x: 0, y: 0, width: metrics.width, height };
+            style.textContent =
+              ".agent-overlay-window { background: #0d1214 !important; }" +
+              `.meeting-panel-window { height: ${card.height}px !important; }`;
+            const el = document.getElementById("__demo-caption");
+            if (el) {
+              el.style.bottom = "";
+              el.style.top = `${card.height + 12}px`;
+            }
+          }, CARD);
+          captureClip = { x: 0, y: 0, width: CARD.width, height: CARD.height + CARD.strip };
+          capturePage = panelPage;
         };
-        await framePanel();
-        capturePage = panelPage;
+        const cutToDashboard = async () => {
+          capturePage = page;
+          captureClip = null;
+        };
 
+        // An answer has settled when the live answer's footer is back: it
+        // hides while text streams. Best-effort throughout — a slow model
+        // only makes the shot run long. The previous answer's footer goes
+        // away the instant a new question starts, so waiting for "hidden"
+        // first keeps a stale footer from passing as the new answer.
+        const settle = async (timeout = 45_000) => {
+          const copy = panelPage.getByRole("button", { name: "Copy", exact: true }).first();
+          await copy.waitFor({ state: "hidden", timeout: 5_000 }).catch(() => {});
+          await copy.waitFor({ state: "visible", timeout }).catch(() => {});
+        };
+
+        await framePanel();
         await caption(
           panelPage,
           "The bar just grew into the cue card",
-          "It floats above every app during the call — and one switch in Settings keeps it out of screen shares."
+          "Three parts: a place to ask at the top, the answers in the middle, and the call controls at the bottom."
         );
         await sleep(2500);
 
-        // The cue card no longer shows a transcript (it lives in the note);
-        // the level meter and the suggestion are the live signals on film.
-        await sleep(800);
-        await framePanel();
+        // 1. The unprompted line: ready before you ask.
         await caption(
           panelPage,
           "The assistant listens along with you",
-          "The full transcript lands in the meeting's note — this card stays focused on what to say next."
+          "The moment the other side pauses, it has a line ready — something you could say next."
         );
-        await sleep(5000);
-        await framePanel();
+        await panelPage
+          .getByRole("group", { name: "Something you could say next" })
+          .waitFor({ state: "visible", timeout: 40_000 })
+          .catch(() => {});
+        await sleep(4000);
 
-        await caption(panelPage, "Stuck mid-call? Ask for a suggestion");
-        await moveClick(panelPage, panelPage.getByText("What should I say?").first(), {
+        // 2. What should I say?
+        await caption(
+          panelPage,
+          "Stuck mid-call? Ask what to say",
+          "One tap. The answer is built to be read in a glance, while the other side is still talking."
+        );
+        await moveClick(panelPage, panelPage.getByRole("button", { name: "What should I say?" }), {
           timeout: 8000,
         }).catch(() => {});
-        await sleep(4000);
-        await framePanel();
-        await sleep(5000);
+        await settle();
+        await caption(
+          panelPage,
+          "Every answer has the same shape",
+          "One direct line, the key facts in bold, and the exact words to say — with a copy button."
+        );
+        await sleep(6500);
 
+        // 3. A typed question, answered fast from the call alone.
         await caption(
           panelPage,
           "Or ask anything about the call so far",
-          "The answer comes from this very conversation, in real time."
+          "Fast answers come from this conversation alone — in about a second."
         );
         await moveClick(panelPage, panelPage.getByLabel("Ask about this meeting").first(), {
           timeout: 8000,
         }).catch(() => {});
-        await panelPage.keyboard.type("What do I need to send before Friday?", { delay: 45 });
+        await panelPage.keyboard.type("What did they ask me to send by Friday?", { delay: 45 });
         await sleep(300);
         await panelPage.keyboard.press("Enter");
-        await sleep(4000);
-        await framePanel();
-        await sleep(8000);
-        await caption(panelPage, "");
+        await settle();
+        await sleep(4500);
 
-        // Back to the main window for the rest of the story.
-        capturePage = page;
-        captureClip = null;
+        // 4. Think deeper: the same question, checked against past notes.
+        await caption(
+          panelPage,
+          "Need more? Think deeper",
+          "The same question again — this time checked against your past meetings with Acme."
+        );
+        await moveClick(panelPage, panelPage.getByRole("button", { name: "Think deeper" }), {
+          timeout: 8000,
+        }).catch(() => {});
+        await settle(60_000);
+        await sleep(6000);
+
+        // 5. Recap so far.
+        await caption(
+          panelPage,
+          "Lost the thread? Recap so far",
+          "A summary of the call up to this moment, without leaving it."
+        );
+        await moveClick(panelPage, panelPage.getByRole("button", { name: "Recap so far" }), {
+          timeout: 8000,
+        }).catch(() => {});
+        await settle(60_000);
+        await sleep(7000);
+
+        // 6. Observe my screen: the eye, the screen picker, a question the
+        // transcript alone cannot answer. The dashboard is maximized on its
+        // display so what the model reads is Snowy's own window.
+        await caption(
+          panelPage,
+          "Turn on the eye, and answers can see your screen",
+          "A slide, a shared document, a chat window — whatever is on screen counts as part of the meeting."
+        );
+        await moveClick(panelPage, panelPage.getByRole("button", { name: /Watch my screen/ }), {
+          timeout: 8000,
+        }).catch(() => {});
+        await sleep(1800);
+        const appDisplayId = await app
+          .evaluate(({ BrowserWindow, screen }) => {
+            const win = BrowserWindow.getAllWindows().find((w) =>
+              w.webContents.getURL().includes("panel=true")
+            );
+            return win ? screen.getDisplayMatching(win.getBounds()).id : null;
+          })
+          .catch(() => null);
+        const displays = await page
+          .evaluate(() => window.electronAPI?.listDisplays?.() ?? [])
+          .catch(() => []);
+        const appDisplay = displays.find((display) => display.id === appDisplayId) ?? null;
+        const picker = panelPage.getByRole("button", { name: "Which screen to watch" });
+        if (await picker.isVisible().catch(() => false)) {
+          await caption(
+            panelPage,
+            "More than one monitor? Pick the screen to watch — or watch them all",
+            "By default every screen counts: the meeting is usually on the one this card is not."
+          );
+          await moveClick(panelPage, picker).catch(() => {});
+          await sleep(1800);
+          if (appDisplay) {
+            await moveClick(
+              panelPage,
+              panelPage.getByRole("button", {
+                name: new RegExp(`^Screen ${appDisplay.index + 1}(\\s|$)`),
+              })
+            ).catch(() => panelPage.keyboard.press("Escape"));
+          } else {
+            await panelPage.keyboard.press("Escape");
+          }
+          await sleep(600);
+        }
+        await bw.evaluate((win) => {
+          win.restore();
+          win.maximize();
+          win.focus();
+        });
+        await sleep(1200);
+        await moveClick(panelPage, panelPage.getByLabel("Ask about this meeting").first(), {
+          timeout: 8000,
+        }).catch(() => {});
+        await panelPage.keyboard.type("What is on my screen right now?", { delay: 45 });
+        await sleep(300);
+        await panelPage.keyboard.press("Enter");
+        await settle(60_000);
+        await caption(
+          panelPage,
+          "It read the screen — not just the audio",
+          "The same model that answers from the call answers from what you are looking at."
+        );
+        await sleep(6500);
+        await bw.evaluate((win, size) => {
+          win.unmaximize();
+          win.setBounds({ width: size.width, height: size.height });
+          win.center();
+        }, SIZE);
+        // Off again, so the rest of the tour answers at full speed.
+        await moveClick(
+          panelPage,
+          panelPage.getByRole("button", { name: /Watching your screen/ }),
+          {
+            timeout: 5000,
+          }
+        ).catch(() => {});
+        await sleep(600);
+
+        // 7. Show transcript: the dashboard comes forward on the transcript.
+        await caption(
+          panelPage,
+          "The full transcript is one click away",
+          "The card stays focused on what to say; every word lives in the meeting's note."
+        );
+        await moveClick(panelPage, panelPage.getByRole("button", { name: "Show transcript" }), {
+          timeout: 8000,
+        }).catch(() => {});
+        await sleep(900);
+        await cutToDashboard();
+        await caption(
+          page,
+          "Every line of the call, with who said it",
+          "Search it, copy it, or hand it to the AI the moment the call ends."
+        );
+        await sleep(5500);
+        await caption(page, "");
+        await framePanel();
+        await sleep(600);
+
+        // 8. The controls that stay with the card.
+        await caption(
+          panelPage,
+          "Pause, resume, or stop — the controls stay with the card",
+          "Step away for a minute and nothing is captured until you come back."
+        );
+        await moveTo(panelPage, panelPage.getByRole("button", { name: "Pause" })).catch(() => {});
+        await sleep(2200);
+        await caption(
+          panelPage,
+          "Prefer a different AI? Change it right here, mid-call",
+          "The choice lives where you use it — never buried in Settings."
+        );
+        await moveTo(
+          panelPage,
+          panelPage.getByRole("button", { name: "Model", exact: true })
+        ).catch(() => {});
+        await sleep(2600);
+
+        // 9. Stop, from the card.
+        await caption(panelPage, "When the call wraps up, press Stop");
+        await moveClick(panelPage, panelPage.getByRole("button", { name: "Stop" }), {
+          timeout: 8000,
+        })
+          .then(() => {
+            stoppedFromCard = true;
+          })
+          .catch(() => {});
+        await sleep(600);
+        await panelPage
+          .evaluate(() => document.getElementById("__demo-card-style")?.remove())
+          .catch(() => {});
+        await cutToDashboard();
         await bw.evaluate((win) => win.focus());
-        await sleep(1000);
+        await sleep(1200);
       }
 
-      await caption(page, "When the call wraps up, press Stop");
-      await moveClick(page, page.locator('button[aria-label="Stop"]').first(), {
-        timeout: 10_000,
-      });
-      await sleep(1200);
+      if (!stoppedFromCard) {
+        await caption(page, "When the call wraps up, press Stop");
+        await moveClick(page, page.locator('button[aria-label="Stop"]').first(), {
+          timeout: 10_000,
+        });
+        await sleep(1200);
+      }
 
       await caption(page, "You stay in charge", "Keep the meeting, or discard it — your call.");
       await moveClick(page, page.getByRole("button", { name: /^Save/ }), { timeout: 10_000 });
@@ -1052,7 +1288,7 @@ async function main() {
       await caption(
         page,
         "This summary was written by the AI just now",
-        "Everything you told Priya is captured — including what to send Dana."
+        "Every promise is captured — the discount for Dana, the SOC 2 report, the Frankfurt region, Marcus on the email."
       );
       await sleep(BEAT_MS * 2);
 

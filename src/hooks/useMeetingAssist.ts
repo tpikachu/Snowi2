@@ -60,8 +60,16 @@ const TICK_MS = 1_000;
 const ASSIST_NOTE_LIMIT = 4;
 const ANSWER_NOTE_LIMIT = 6;
 
-/** A meeting question that hangs is worthless — the moment it was asked for has passed. */
-const ASSIST_TIMEOUT_MS = 30_000;
+/**
+ * A meeting question that hangs is worthless — the moment it was asked for
+ * has passed. Two budgets, because the two lanes promise different things: a
+ * fast answer that has not started in half a minute is broken, while a
+ * thinking answer is reasoning over retrieval and a long transcript, and a
+ * recap that lands after forty seconds is still the recap the user asked
+ * for. Cutting it at thirty showed "No answer came back" for exactly that.
+ */
+const FAST_TIMEOUT_MS = 30_000;
+const THINKING_TIMEOUT_MS = 90_000;
 
 /** How long a paid-for retrieval stays good enough to ground a fast answer.
  *  Two minutes of meeting rarely changes which past notes are relevant. */
@@ -79,7 +87,7 @@ interface ResolvedAssistModel {
     baseUrl?: string;
     customApiKey?: string;
     disableThinking?: boolean;
-    screenContext?: ScreenContextImage;
+    screenContext?: ScreenContextImage[];
     textOnlySystemPrompt?: string;
   };
 }
@@ -465,23 +473,27 @@ export function useMeetingAssist(): MeetingAssist {
       activityRef.current = "answer";
       startAnswer(trimmed, mode);
 
-      // The cue card's "observe my screen" opt-in: a screenshot of the
-      // display under the cursor rides along with the question, parsed by the
-      // same chat model. Kicked off now so it overlaps retrieval; a failed
-      // capture sends the question text-only rather than failing it, and
-      // ReasoningService already drops the image on routes that cannot carry
-      // one. The screenshot lives in this renderer's memory for one request.
-      const screenPromise: Promise<ScreenContextImage | undefined> =
-        getSettings().meetingScreenObserve && window.electronAPI?.captureScreenContext
+      // The cue card's "observe my screen" opt-in: EVERY ask, fast or
+      // thinking, carries a screenshot of every display (or the one the card
+      // chose) — the meeting is on whichever screen the card is not, and the
+      // model is what can tell which. Kicked off now so it overlaps
+      // retrieval; a failed capture sends the question text-only rather than
+      // failing it, and ReasoningService already drops images on routes that
+      // cannot carry one. The screenshots live in this renderer's memory for
+      // one request.
+      const observeSettings = getSettings();
+      const screenPromise: Promise<ScreenContextImage[]> =
+        observeSettings.meetingScreenObserve && window.electronAPI?.captureMeetingScreens
           ? window.electronAPI
-              .captureScreenContext()
-              .then((image) => {
-                // Observe is ON: a null capture must be visible in the logs,
+              .captureMeetingScreens(observeSettings.meetingScreenObserveTarget || "all")
+              .then((images) => {
+                const list = Array.isArray(images) ? images : [];
+                // Observe is ON: an empty capture must be visible in the logs,
                 // or "the answer ignores my screen" is undiagnosable.
-                if (!image) {
+                if (list.length === 0) {
                   logger.warn("Screen observe: capture returned nothing", {}, "meeting");
                 }
-                return image ?? undefined;
+                return list;
               })
               .catch((error) => {
                 logger.warn(
@@ -489,9 +501,9 @@ export function useMeetingAssist(): MeetingAssist {
                   { error: (error as Error).message },
                   "meeting"
                 );
-                return undefined;
+                return [];
               })
-          : Promise.resolve(undefined);
+          : Promise.resolve([]);
 
       const now = Date.now();
       const state = useMeetingRecordingStore.getState();
@@ -532,12 +544,13 @@ export function useMeetingAssist(): MeetingAssist {
       // must say a screenshot is attached when one is, or the model — told
       // to answer from the transcript — rightly ignores the image. That was
       // exactly the "screen observe does nothing" bug.
-      const screenContext = await screenPromise;
+      const screenImages = await screenPromise;
       if (!isCurrent()) return;
 
-      // screenAttached folds the screen-source block into the base prompt —
-      // a co-equal source the model is told to read every time, not a suffix
-      // it may ignore. That is the "answers should consider the screen" ask.
+      // screenCount folds the screen-source block into the base prompt — a
+      // co-equal source the model is told to read every time, not a suffix
+      // it may ignore — and, with several displays, tells it each image is
+      // labeled. That is the "answers should consider the screen" ask.
       const built = buildAnswerMessages({
         meetingTitle: state.recordingNoteTitle,
         segments,
@@ -546,7 +559,7 @@ export function useMeetingAssist(): MeetingAssist {
         question: trimmed,
         mode,
         draft,
-        screenAttached: !!screenContext,
+        screenCount: screenImages.length,
       });
       const systemPrompt = built.systemPrompt;
       const messages = built.messages;
@@ -559,18 +572,21 @@ export function useMeetingAssist(): MeetingAssist {
         return;
       }
 
-      if (screenContext) {
-        resolved.config.screenContext = screenContext;
+      if (screenImages.length > 0) {
+        resolved.config.screenContext = screenImages;
         // For the text-only pass (route drop or rejected-image retry): the
-        // promise of a screenshot must leave the prompt with the image.
+        // promise of a screenshot must leave the prompt with the images.
         resolved.config.textOnlySystemPrompt = built.textOnlySystemPrompt;
       }
 
       // A question that hangs is worthless — the moment it was asked for has
       // passed — so it is abandoned rather than left waiting on a provider.
-      const timeout = setTimeout(() => {
-        if (askSeqRef.current === seq) ReasoningService.cancelActiveStream();
-      }, ASSIST_TIMEOUT_MS);
+      const timeout = setTimeout(
+        () => {
+          if (askSeqRef.current === seq) ReasoningService.cancelActiveStream();
+        },
+        mode === "thinking" ? THINKING_TIMEOUT_MS : FAST_TIMEOUT_MS
+      );
       try {
         const text = await collectStream(
           ReasoningService.processTextStreamingAI(

@@ -95,6 +95,7 @@
       "callbackRequired": "Eine Callback-Funktion ist für das Hotkey-Setup erforderlich",
       "globeOnlyMac": "Die Globe-Taste ist nur auf macOS verfügbar.",
       "mouseButtonOnlyMac": "Maustasten-Hotkeys werden derzeit nur auf macOS unterstützt.",
+      "fnNeedsFunctionKey": "Fn lässt sich nur mit einer Funktionstaste (F1 bis F12) kombinieren: „{{hotkey}}“ würde als „{{accelerator}}“ registriert und bei jedem Druck auf {{accelerator}} auslösen.",
       "alreadyRegistered": "\"{{hotkey}}\" ist bereits von einer anderen Anwendung registriert.",
       "osReserved": "\"{{hotkey}}\" ist möglicherweise von Ihrer Desktop-Umgebung reserviert.",
       "registrationFailed": "\"{{hotkey}}\" konnte nicht registriert werden. Möglicherweise wird es von einer anderen Anwendung verwendet.",
@@ -3126,7 +3127,8 @@
         "working": "Denkt nach…",
         "empty": "Ein Vorschlag erscheint, sobald die andere Seite aufhört zu sprechen.",
         "needsModel": "Richten Sie ein KI-Modell ein, um Live-Vorschläge zu erhalten.",
-        "connecting": "Verbindung zum Assistenten…"
+        "connecting": "Verbindung zum Assistenten…",
+        "sayNext": "Etwas, das Sie als Nächstes sagen könnten"
       },
       "transcript": {
         "label": "Transkript",
@@ -3141,12 +3143,14 @@
         "fast": "Schnell",
         "thinking": "Denken",
         "fastHint": "Schnell — sofortige Antworten nur aus diesem Meeting",
-        "thinkingHint": "Denken — dauert länger, durchsucht auch Ihre früheren Notizen"
+        "thinkingHint": "Denken — dauert länger, durchsucht auch Ihre früheren Notizen",
+        "thinkingOn": "Nachdenken ist an: Antworten durchsuchen auch Ihre früheren Notizen. Klicken für sofortige Antworten.",
+        "thinkingOff": "Sofortige Antworten aus diesem Meeting. Klicken, um auch frühere Notizen zu durchsuchen."
       },
       "ask": {
         "label": "Frage zu diesem Meeting",
         "send": "Senden",
-        "empty": "Stellen Sie eine Frage, die Antwort erscheint hier.",
+        "empty": "Fragen Sie alles zu diesem Meeting.",
         "modesHint": "Schnell antwortet sofort aus diesem Meeting. Denken durchsucht zusätzlich Ihre früheren Notizen.",
         "placeholder": "Frage zu diesem Meeting…",
         "placeholderThinking": "Fragen Sie zu diesem Meeting und Ihren Notizen…",
@@ -3174,14 +3178,23 @@
       },
       "answer": {
         "fromMeeting": "Aus diesem Meeting",
-        "checkedNotes": "Mit deinen Notizen abgeglichen"
+        "checkedNotes": "Mit deinen Notizen abgeglichen",
+        "sayLine": "Satz zum Sagen",
+        "copyLine": "Diesen Satz kopieren"
       },
       "thread": {
         "clear": "Leeren"
       },
       "observe": {
         "enable": "Meinen Bildschirm beobachten – Antworten können nutzen, was zu sehen ist",
-        "disable": "Dein Bildschirm wird beobachtet – klicke zum Beenden"
+        "disable": "Dein Bildschirm wird beobachtet – klicke zum Beenden",
+        "needsAccess": "Bildschirmzugriff erforderlich – zum Erlauben klicken",
+        "needsRelaunch": "Starten Sie die App neu, um den Bildschirmzugriff abzuschließen",
+        "unsupported": "Bildschirmaufnahme ist auf diesem System nicht verfügbar",
+        "allScreens": "Alle Bildschirme",
+        "screen": "Bildschirm {{n}}",
+        "primary": "Hauptbildschirm",
+        "chooseScreen": "Welcher Bildschirm beobachtet wird"
       }
     },
     "transcript": {

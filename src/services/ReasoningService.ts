@@ -11,6 +11,11 @@ import { SecureCache } from "../utils/SecureCache";
 import { withRetry, createApiRetryStrategy, httpError } from "../utils/retry";
 import { API_ENDPOINTS, TOKEN_LIMITS, buildApiUrl, ensureV1Suffix } from "../config/constants";
 import logger from "../utils/logger";
+import {
+  screenContextImages,
+  screenImageDataUrl,
+  screenImageParts,
+} from "../utils/screenContextImages";
 import { getSettings } from "../stores/settingsStore";
 import { wrapCleanupTranscript } from "../config/prompts";
 import { stripThinkingTags } from "../helpers/stripThinking.js";
@@ -761,24 +766,29 @@ class ReasoningService extends BaseReasoningService {
     };
     const hasProviderOptions = Object.keys(providerOptions).length > 0;
 
-    // A screenshot rides only routes whose client can carry an image; local
-    // and LAN paths drop it. Logged as a boolean, never the payload.
-    const screenContext = !isLocalProvider && !isLanChat ? config.screenContext : undefined;
-    const lastUserIndex = screenContext
-      ? messages.reduce((last, m, i) => (m.role === "user" ? i : last), -1)
-      : -1;
+    // Screenshots ride only routes whose client can carry an image; local
+    // and LAN paths drop them. One image (dictation) or one per display (the
+    // meeting cue card's observe), each labeled when there are several.
+    // Logged as a count, never the payload.
+    const attachedImages = screenContextImages(config.screenContext);
+    const screenImages = !isLocalProvider && !isLanChat ? attachedImages : [];
+    const lastUserIndex =
+      screenImages.length > 0
+        ? messages.reduce((last, m, i) => (m.role === "user" ? i : last), -1)
+        : -1;
 
     const buildMessages = (withImage: boolean): import("ai").ModelMessage[] =>
       messages.map((m, i) =>
-        withImage && screenContext && i === lastUserIndex
+        withImage && screenImages.length > 0 && i === lastUserIndex
           ? {
               role: "user" as const,
               content: [
                 { type: "text" as const, text: m.content },
-                {
-                  type: "image" as const,
-                  image: `data:${screenContext.mediaType};base64,${screenContext.data}`,
-                },
+                ...screenImageParts(
+                  screenImages,
+                  (text) => ({ type: "text" as const, text }),
+                  (image) => ({ type: "image" as const, image: screenImageDataUrl(image) })
+                ),
               ],
             }
           : {
@@ -788,7 +798,7 @@ class ReasoningService extends BaseReasoningService {
               // that promise around for the model to hallucinate against.
               content:
                 !withImage &&
-                config.screenContext &&
+                attachedImages.length > 0 &&
                 m.role === "system" &&
                 config.textOnlySystemPrompt
                   ? config.textOnlySystemPrompt
@@ -802,7 +812,8 @@ class ReasoningService extends BaseReasoningService {
       hasTools: !!tools,
       toolCount: tools ? Object.keys(tools).length : 0,
       messageCount: messages.length,
-      hasScreenContext: !!screenContext,
+      hasScreenContext: screenImages.length > 0,
+      screenImageCount: screenImages.length,
     });
 
     const useTemperature = isLocalProvider || isLanChat || apiConfig.supportsTemperature;
@@ -811,7 +822,7 @@ class ReasoningService extends BaseReasoningService {
     // the image must not cost the user their question, so the second pass
     // resends text-only — but never after content has already streamed, which
     // would duplicate the answer.
-    const attempts = screenContext && lastUserIndex !== -1 ? [true, false] : [false];
+    const attempts = screenImages.length > 0 && lastUserIndex !== -1 ? [true, false] : [false];
     for (let attempt = 0; attempt < attempts.length; attempt++) {
       // cancelActiveStream() aborts this controller; streamText propagates it
       // into doStream, cancelling the enterprise IPC proxy's request in main.

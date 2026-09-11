@@ -806,6 +806,11 @@ export interface SettingsState
   // card itself; the cross-window sync carries it to the renderer that runs
   // the assistant.
   meetingScreenObserve: boolean;
+  /**
+   * Which display(s) observe photographs: "all" (default — the meeting is on
+   * whichever screen the card is not) or "display:<id>" for one screen.
+   */
+  meetingScreenObserveTarget: string;
   useDictationAgentVisionModel: boolean;
   dictationAgentVisionMode: InferenceMode;
   dictationAgentVisionProvider: string;
@@ -852,6 +857,7 @@ export interface SettingsState
   setAgentScreenContext: (value: boolean) => void;
   setAgentScreenContextPrompted: (value: boolean) => void;
   setMeetingScreenObserve: (value: boolean) => void;
+  setMeetingScreenObserveTarget: (target: string) => void;
   setUseDictationAgentVisionModel: (value: boolean) => void;
   setDictationAgentVisionMode: (mode: InferenceMode) => void;
   setDictationAgentVisionProvider: (value: string) => void;
@@ -1751,6 +1757,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   agentScreenContext: readBoolean("agentScreenContext", false),
   agentScreenContextPrompted: readBoolean("agentScreenContextPrompted", false),
   meetingScreenObserve: readBoolean("meetingScreenObserve", false),
+  meetingScreenObserveTarget: readString("meetingScreenObserveTarget", "all"),
   useDictationAgentVisionModel: readBoolean("useDictationAgentVisionModel", false),
   // Fast-lane override, BYOK providers only — same shape as the vision
   // override. Off by default: the fast lane derives its model automatically.
@@ -1803,6 +1810,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setAgentScreenContext: createBooleanSetter("agentScreenContext"),
   setAgentScreenContextPrompted: createBooleanSetter("agentScreenContextPrompted"),
   setMeetingScreenObserve: createBooleanSetter("meetingScreenObserve"),
+  setMeetingScreenObserveTarget: createStringSetter("meetingScreenObserveTarget"),
   setUseDictationAgentVisionModel: createBooleanSetter("useDictationAgentVisionModel"),
   setDictationAgentVisionMode: createStringSetter("dictationAgentVisionMode") as (
     mode: InferenceMode

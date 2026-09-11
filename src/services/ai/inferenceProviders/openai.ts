@@ -5,6 +5,11 @@ import { getModelFamilyConstraints } from "../modelFamilyConstraints";
 import { getSettings } from "../../../stores/settingsStore";
 import { withRetry, createApiRetryStrategy, httpError } from "../../../utils/retry";
 import logger from "../../../utils/logger";
+import {
+  screenContextImages,
+  screenImageDataUrl,
+  screenImageParts,
+} from "../../../utils/screenContextImages";
 import { canBorrowCleanupCustomKey, resolveConfiguredOpenAIBase } from "../openaiBase";
 import {
   applyChatCompletionsParams,
@@ -155,12 +160,10 @@ export const openaiProvider: InferenceProvider = {
 
     const systemPrompt = config.systemPrompt || ctx.getSystemPrompt(agentName);
     const userContent = config.systemPrompt ? text : wrapCleanupTranscript(text);
-    const imageDataUrl = config.screenContext
-      ? `data:${config.screenContext.mediaType};base64,${config.screenContext.data}`
-      : null;
+    const screenImages = screenContextImages(config.screenContext);
     // The Responses and Chat Completions APIs name image content parts differently.
     const buildMessages = (type: "responses" | "chat") =>
-      imageDataUrl
+      screenImages.length > 0
         ? [
             { role: "system", content: systemPrompt },
             {
@@ -169,9 +172,15 @@ export const openaiProvider: InferenceProvider = {
                 type === "responses"
                   ? { type: "input_text", text: userContent }
                   : { type: "text", text: userContent },
-                type === "responses"
-                  ? { type: "input_image", image_url: imageDataUrl }
-                  : { type: "image_url", image_url: { url: imageDataUrl } },
+                ...screenImageParts(
+                  screenImages,
+                  (text) =>
+                    type === "responses" ? { type: "input_text", text } : { type: "text", text },
+                  (image) =>
+                    type === "responses"
+                      ? { type: "input_image", image_url: screenImageDataUrl(image) }
+                      : { type: "image_url", image_url: { url: screenImageDataUrl(image) } }
+                ),
               ],
             },
           ]

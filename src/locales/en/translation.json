@@ -95,6 +95,7 @@
       "callbackRequired": "Callback function is required for hotkey setup",
       "globeOnlyMac": "The Globe key is only available on macOS.",
       "mouseButtonOnlyMac": "Mouse button hotkeys are currently supported on macOS only.",
+      "fnNeedsFunctionKey": "Fn only combines with a function key (F1 to F12): \"{{hotkey}}\" would register as \"{{accelerator}}\" and fire on every {{accelerator}} you press.",
       "alreadyRegistered": "\"{{hotkey}}\" is already registered by another application.",
       "osReserved": "\"{{hotkey}}\" may be reserved by your desktop environment.",
       "registrationFailed": "Could not register \"{{hotkey}}\". It may be in use by another application.",
@@ -3126,7 +3127,8 @@
         "working": "Thinking…",
         "empty": "A suggestion appears when the other side stops talking.",
         "needsModel": "Set up an AI model to get live suggestions.",
-        "connecting": "Connecting to the assistant…"
+        "connecting": "Connecting to the assistant…",
+        "sayNext": "Something you could say next"
       },
       "transcript": {
         "label": "Transcript",
@@ -3141,12 +3143,14 @@
         "fast": "Fast",
         "thinking": "Thinking",
         "fastHint": "Fast — instant answers from this meeting only",
-        "thinkingHint": "Thinking — takes longer, also searches your past notes"
+        "thinkingHint": "Thinking — takes longer, also searches your past notes",
+        "thinkingOn": "Thinking is on: answers also search your past notes. Click for instant answers.",
+        "thinkingOff": "Instant answers from this meeting. Click to also search your past notes."
       },
       "ask": {
         "label": "Ask about this meeting",
         "send": "Send",
-        "empty": "Ask a question and the answer appears here.",
+        "empty": "Ask anything about this meeting.",
         "modesHint": "Fast answers instantly from this meeting. Thinking also searches your past notes.",
         "placeholder": "Ask about this meeting…",
         "placeholderThinking": "Ask across this meeting and your notes…",
@@ -3174,14 +3178,23 @@
       },
       "answer": {
         "fromMeeting": "From this meeting",
-        "checkedNotes": "Checked your notes"
+        "checkedNotes": "Checked your notes",
+        "sayLine": "Line to say",
+        "copyLine": "Copy this line"
       },
       "thread": {
         "clear": "Clear"
       },
       "observe": {
         "enable": "Watch my screen — answers can use what's on it",
-        "disable": "Watching your screen — click to stop"
+        "disable": "Watching your screen — click to stop",
+        "needsAccess": "Screen access needed — click to allow",
+        "needsRelaunch": "Restart the app to finish allowing screen access",
+        "unsupported": "Screen capture isn't available on this system",
+        "allScreens": "All screens",
+        "screen": "Screen {{n}}",
+        "primary": "primary",
+        "chooseScreen": "Which screen to watch"
       }
     },
     "transcript": {

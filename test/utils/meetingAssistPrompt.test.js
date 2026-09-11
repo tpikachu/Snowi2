@@ -2,6 +2,8 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const {
+  ANSWER_FORMAT_BLOCK,
+  screenSourceBlock,
   formatAssistTranscript,
   buildAssistRetrievalQuery,
   formatAssistNotes,
@@ -344,4 +346,71 @@ test("quotes around a line are stripped, the line is kept", () => {
     "Ask them for the renewal date."
   );
   assert.equal(parseSuggestion("None of that is settled yet."), "None of that is settled yet.");
+});
+
+test("both answer prompts carry the one skeleton, with its example", () => {
+  const input = {
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    question: "what did we agree?",
+  };
+  for (const mode of ["fast", "thinking"]) {
+    const prompt = buildAnswerMessages({ ...input, mode }).systemPrompt;
+    assert.ok(prompt.includes(ANSWER_FORMAT_BLOCK), `${mode}: shares the format block`);
+    assert.match(prompt, /follows this skeleton/, `${mode}: the shape is a rule`);
+    assert.match(prompt, /Example of the shape:/, `${mode}: teaches by example`);
+    // The say-line is last, alone, backticked — what the cue card's renderer
+    // lifts into its own block.
+    assert.match(prompt, /LAST, alone on its own line, wrapped in backticks/);
+  }
+  // The shared block must not smuggle the note library into the fast prompt.
+  assert.ok(!ANSWER_FORMAT_BLOCK.includes("past notes"));
+});
+
+test("an observed screen is promised in the prompt and absent from the text-only one", () => {
+  const built = buildAnswerMessages({
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    question: "what does the slide say?",
+    mode: "fast",
+    screenCount: 1,
+  });
+  assert.match(built.systemPrompt, /A screenshot of the user's current screen is attached/);
+  assert.match(built.systemPrompt, /same standing as the transcript/);
+  // The text-only prompt is what a rejected-image retry swaps in: a prompt
+  // that promises a screenshot the request lacks makes the model invent one.
+  assert.ok(!/screenshot/i.test(built.textOnlySystemPrompt));
+  assert.notEqual(built.systemPrompt, built.textOnlySystemPrompt);
+});
+
+test("several screens tell the model they are labeled and to read every one", () => {
+  const built = buildAnswerMessages({
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    question: "what does the slide say?",
+    mode: "thinking",
+    screenCount: 3,
+  });
+  assert.match(built.systemPrompt, /3 screenshots are attached, one per display/);
+  assert.match(built.systemPrompt, /each introduced by its label/);
+  assert.match(built.systemPrompt, /read every one/);
+  assert.ok(!screenSourceBlock(1).includes("one per display"));
+});
+
+test("without a screenshot the prompt never mentions one", () => {
+  const input = {
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    question: "what did we agree?",
+    mode: "fast",
+  };
+  for (const screenCount of [undefined, 0, -1]) {
+    const built = buildAnswerMessages({ ...input, screenCount });
+    assert.ok(!/screenshot/i.test(built.systemPrompt), `screenCount=${screenCount}`);
+    assert.equal(built.systemPrompt, built.textOnlySystemPrompt);
+  }
 });

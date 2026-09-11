@@ -23,6 +23,7 @@ import {
 } from "../utils/meetingAssistState";
 import { isControlPanelWindow } from "../utils/windowContext";
 import { requestSettings } from "../stores/settingsNavigationStore";
+import { requestNoteView } from "../stores/noteNavigationStore";
 import { remedyTarget } from "../config/settingsRemedies";
 import type { MeetingPanelCommand } from "../types/electron";
 import logger from "../utils/logger";
@@ -129,6 +130,13 @@ export function useMeetingPanelBridge(
             // The panel's Clear button: the ask thread lives in this
             // renderer's store, so the command comes home to be applied.
             else if (command === "clearAsks") clearAskThread();
+            // "Show transcript": main surfaced this window; landing on the
+            // recording note's transcript view is ControlPanel's and the
+            // editor's job, reached through the navigation store.
+            else if (command === "transcript") {
+              const noteId = useMeetingRecordingStore.getState().recordingNoteId;
+              if (noteId != null) requestNoteView({ noteId, view: "transcript" });
+            }
             // "open" only had to surface the control panel, which main did.
           } catch (err) {
             logger.error(

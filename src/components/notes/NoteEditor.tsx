@@ -16,6 +16,7 @@ import { buildMeetingRecap } from "../../utils/meetingRecap";
 import FollowUpEmailDialog from "./FollowUpEmailDialog";
 import { useToast } from "../ui/useToast";
 import { useSpaces, navigateToContainer } from "../../stores/noteStore";
+import { consumeNoteViewRequest, useNoteNavigationStore } from "../../stores/noteNavigationStore";
 import { RichTextEditor } from "../ui/RichTextEditor";
 import type { Editor } from "@tiptap/react";
 import { MeetingTranscriptChat, SelectionBar } from "./MeetingTranscriptChat";
@@ -550,6 +551,15 @@ export default function NoteEditor({
     }
     prevRecordingRef.current = isRecording;
   }, [isRecording, scheduleUiUpdate]);
+
+  // A view requested from outside — the cue card's "Show transcript" — for
+  // this note. Checked on mount as well as per request: ControlPanel switches
+  // the note first, and this editor mounts fresh with the request waiting.
+  const noteViewNonce = useNoteNavigationStore((s) => s.nonce);
+  useEffect(() => {
+    const request = consumeNoteViewRequest(note.id);
+    if (request) scheduleUiUpdate(() => setViewMode(request.view));
+  }, [noteViewNonce, note.id, scheduleUiUpdate]);
 
   const handleContentChange = useCallback(
     (newValue: string) => {

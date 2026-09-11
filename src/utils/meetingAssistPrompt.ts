@@ -96,6 +96,46 @@ const SUGGESTION_SYSTEM_PROMPT = [
 ].join("\n");
 
 /**
+ * The one shape every answer takes, shared by both answer prompts.
+ *
+ * Read mid-call, at a glance, by someone whose turn to talk is coming: a
+ * direct line, then facts one per line, then — last and alone — the words to
+ * say. The cue card renders that last line as its own block (see
+ * assistAnswerFormat.ts), which is why the skeleton is a hard rule with an
+ * example rather than a preference: a model that drifts into prose or tucks
+ * the line into a bullet defeats the renderer as well as the reader. The
+ * example is short on purpose — it teaches the shape, not the length.
+ */
+export const ANSWER_FORMAT_BLOCK = [
+  "Format for a glance, never as a paragraph — the user reads this mid-call.",
+  "Every answer follows this skeleton, in markdown, and nothing else:",
+  "",
+  "First line: the direct answer, ONE line, with its decisive words — the",
+  "number, the name, the yes or no — bolded with **…**. Just the answer",
+  "itself: no label in front of it, no numbering.",
+  "Then, only if there is more: dash bullets, at most four. Each bullet is",
+  "ONE line that opens with a bolded key phrase of two to four words and a",
+  "colon, then the fact. One fact per bullet, never a run-on.",
+  "Last, only when the user needs words to say out loud: the exact line to",
+  "say, LAST, alone on its own line, wrapped in backticks (`…`). The line",
+  "itself, in the user's voice — not advice about it, never inside a bullet,",
+  'no "Say:" label.',
+  "",
+  "Never two sentences of prose in a row. No headings, no tables, no",
+  "numbered lists, no preamble, no closing remark, and never a label that",
+  'names a part of the answer ("Direct answer:", "Key facts:", "Line to',
+  'say:"). Never invent a date, a number, or a name: anything stated as fact',
+  "comes from the meeting or the material below. A one-fact answer is just",
+  "its first line.",
+  "",
+  "Example of the shape:",
+  "Delivery slips to **March 14**, two weeks past the original date.",
+  "- **Cause:** the vendor's API is not certified until March 10.",
+  "- **Their ask:** Priya wants a written revised timeline by Friday.",
+  "`We can commit to March 14, and I'll send the revised timeline by Friday.`",
+].join("\n");
+
+/**
  * The fast answer works from the live transcript alone. It is told so
  * explicitly: a model that suspects there is a note library will hedge with
  * "I don't have access to…" preambles, and the one thing a fast answer must
@@ -106,19 +146,7 @@ const FAST_ANSWER_SYSTEM_PROMPT = [
   "reading your answer while someone waits, so stay under about 50 words.",
   "Lead with the answer; no preamble, no caveats.",
   "",
-  "Format for a glance, never as a paragraph — two sentences of prose in a row",
-  "is a formatting failure. Every answer takes this shape:",
-  "",
-  "- One short line with the direct answer, its decisive words — the number,",
-  "  the date, the name — bolded with **…**.",
-  "- Anything beyond that one line becomes dash bullets (at most four), each a",
-  "  single line opening with its bolded key phrase. One fact per bullet,",
-  "  never a run-on.",
-  "- When the user needs words to say out loud, END with the exact line to",
-  "  say, alone on its own line, wrapped in backticks (`…`) — the line itself,",
-  "  not advice about it.",
-  "",
-  "A genuinely one-fact answer is just its one line. No headings, no tables.",
+  ANSWER_FORMAT_BLOCK,
   "",
   "Two kinds of questions arrive, and they are answered differently:",
   "",
@@ -137,19 +165,7 @@ const THINKING_ANSWER_SYSTEM_PROMPT = [
   "reading your answer while someone waits, so stay under about 80 words.",
   "Lead with the answer; leave out the preamble and the caveats.",
   "",
-  "Format for a glance, never as a paragraph — two sentences of prose in a row",
-  "is a formatting failure. Every answer takes this shape:",
-  "",
-  "- One short line with the direct answer, its decisive words — the number,",
-  "  the date, the name — bolded with **…**.",
-  "- Anything beyond that one line becomes dash bullets (at most four), each a",
-  "  single line opening with its bolded key phrase. One fact per bullet,",
-  "  never a run-on.",
-  "- When the user needs words to say out loud, END with the exact line to",
-  "  say, alone on its own line, wrapped in backticks (`…`) — the line itself,",
-  "  not advice about it.",
-  "",
-  "A genuinely one-fact answer is just its one line. No headings, no tables.",
+  ANSWER_FORMAT_BLOCK,
   "",
   "The live transcript below is the primary context — a question asked during a",
   "meeting is almost always about that meeting. The user's past notes are",
@@ -262,18 +278,34 @@ export interface AssistMessages {
 /**
  * Appended while "observe my screen" is on and a capture succeeded. It has to
  * out-argue the base prompt's "answer only from the transcript" — the screen
- * is a co-equal live source, not an attachment to mention. English like the
- * rest of the system prompt (AI prompts are not localized).
+ * is a co-equal live source, not an attachment to mention. With several
+ * displays every screen is attached, each introduced by its label, because
+ * on a multi-monitor desk the meeting is on whichever screen the cue card is
+ * not — and the model, not the card, is what can tell which. English like
+ * the rest of the system prompt (AI prompts are not localized).
  */
-const SCREEN_SOURCE_BLOCK = [
-  "A screenshot of the user's current screen is attached. It is a live source",
-  "with the same standing as the transcript — read it before answering, every",
-  "time. Whatever is visible — a document, a slide, code, a dashboard, an",
-  'error, a message thread — is context you HAVE, and "answer only from the',
-  'transcript" extends to it: what is on screen counts as what happened.',
-  "Questions about what is on the screen are answered from the screenshot",
-  "directly; when both sources speak to the question, combine them.",
-].join("\n");
+export function screenSourceBlock(count: number): string {
+  const attached =
+    count > 1
+      ? [
+          `${count} screenshots are attached, one per display, in left-to-right`,
+          "order, each introduced by its label (Screen 1 of N, …). Together they",
+          "are the user's whole desktop; the meeting, a shared screen, or a",
+          "document may be on any of them, so read every one. When a screen",
+          "matters to the answer, name it the way its label does.",
+        ]
+      : ["A screenshot of the user's current screen is attached."];
+  return [
+    ...attached,
+    "The screen is a live source with the same standing as the transcript —",
+    "read it before answering, every time. Whatever is visible — a document, a",
+    "slide, code, a dashboard, an error, a message thread — is context you",
+    'HAVE, and "answer only from the transcript" extends to it: what is on',
+    "screen counts as what happened. Questions about what is on the screen are",
+    "answered from the screenshot directly; when both sources speak to the",
+    "question, combine them.",
+  ].join("\n");
+}
 
 function buildContext(input: AssistMessagesInput): string {
   const transcript = formatAssistTranscript(input.segments, input.labels);
@@ -336,15 +368,20 @@ export function buildAnswerMessages(
     question: string;
     mode: AssistMode;
     draft?: string;
-    /** A screenshot rides with this ask; the prompt must direct the model to it. */
-    screenAttached?: boolean;
+    /**
+     * How many screenshots ride with this ask — one per display when observe
+     * is on. Zero (or absent) means none, and the prompt must not mention one.
+     */
+    screenCount?: number;
   }
 ): AssistMessages {
   const textOnlySystemPrompt =
     input.mode === "fast" ? FAST_ANSWER_SYSTEM_PROMPT : THINKING_ANSWER_SYSTEM_PROMPT;
-  const systemPrompt = input.screenAttached
-    ? `${textOnlySystemPrompt}\n\n${SCREEN_SOURCE_BLOCK}`
-    : textOnlySystemPrompt;
+  const screenCount = Math.max(0, Math.floor(input.screenCount ?? 0));
+  const systemPrompt =
+    screenCount > 0
+      ? `${textOnlySystemPrompt}\n\n${screenSourceBlock(screenCount)}`
+      : textOnlySystemPrompt;
   // Draft-then-refine: when a fast answer is escalated, its text rides along
   // so the thinking model verifies and extends an answer the user has already
   // read, instead of starting blind and possibly contradicting it for no
@@ -357,10 +394,10 @@ export function buildAnswerMessages(
         "",
         "A first answer was already drafted from the live transcript alone:",
         `"${draft}"`,
-        "Check it against the notes and memory above: keep what holds, correct",
-        "anything they contradict, and add the concrete details they contribute.",
-        "Reply with the improved answer only — never mention the draft or that",
-        "you revised it.",
+        "Check it against the notes and memory above: keep what holds, silently",
+        "correct anything they contradict, and add the concrete details they",
+        "contribute. Reply with the improved answer only, in the same skeleton —",
+        "never mention the draft, a correction, or what changed.",
       ].join("\n")
     : "";
   return {

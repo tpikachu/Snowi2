@@ -6,7 +6,14 @@ import type { AssistMode, MeetingAssistState } from "../utils/meetingAssistState
 
 /** What the floating meeting panel can ask the control panel to do. */
 export type MeetingPanelCommand =
-  "pause" | "resume" | "stop" | "open" | "configureModels" | "clearAsks";
+  | "pause"
+  | "resume"
+  | "stop"
+  | "open"
+  | "configureModels"
+  | "clearAsks"
+  /** Surface the dashboard on the recording note's transcript view. */
+  | "transcript";
 
 /**
  * Setup readiness and download state for the assistant bar, published by the
@@ -712,6 +719,21 @@ export interface ScreenContextImage {
   mediaType: string;
   /** Base64 image bytes, no data-URL prefix. */
   data: string;
+  /**
+   * How the prompt introduces this image when several are attached — the
+   * meeting cue card's observe sends one per display ("Screen 2 of 3,
+   * primary, 1920×1080"). Absent on a single screenshot.
+   */
+  label?: string;
+}
+
+/** A display as the cue card's screen picker lists it. Reading order. */
+export interface DisplayInfo {
+  id: number;
+  index: number;
+  primary: boolean;
+  width: number;
+  height: number;
 }
 
 export interface UpdateCheckResult {
@@ -1851,6 +1873,9 @@ declare global {
       checkScreenRecordingAccess?: () => Promise<ScreenRecordingAccessResult>;
       requestScreenRecordingAccess?: () => Promise<ScreenRecordingAccessResult>;
       captureScreenContext?: () => Promise<ScreenContextImage | null>;
+      /** The cue card's observe capture: every display, or "display:<id>". Empty on failure. */
+      captureMeetingScreens?: (target?: string) => Promise<ScreenContextImage[]>;
+      listDisplays?: () => Promise<DisplayInfo[]>;
       setScreenContextEnabled?: (enabled: boolean) => Promise<{ success: boolean }>;
       showEmojiPanel?: () => Promise<boolean>;
       toggleMediaPlayback?: () => Promise<boolean>;
