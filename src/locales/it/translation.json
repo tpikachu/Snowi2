@@ -188,8 +188,7 @@
       "useCase": "Su di te",
       "meeting": "Riunioni",
       "finish": "Fine",
-      "voiceAgent": "Agente vocale",
-      "textSize": "Comfort"
+      "voiceAgent": "Agente vocale"
     },
     "rail": {
       "ariaLabel": "Passaggi di configurazione",
@@ -349,14 +348,6 @@
       "downloadStillRunning": "Il tuo modello vocale ({{model}}) è ancora in download — {{percent}}% completato. Snowy lo finirà in background.",
       "launchAtLogin": "Avvia Snowy all'accesso",
       "launchAtLoginDescription": "La barra di Snowy ti aspetterà nella parte superiore dello schermo: un clic per registrare."
-    },
-    "textSize": {
-      "title": "Quanto deve essere grande il testo?",
-      "description": "Tutta l'app segue questa scelta, applicata subito: ciò che vedi è ciò che avrai.",
-      "previewLabel": "Anteprima",
-      "previewHeading": "Sync settimanale — riepilogo",
-      "previewBody": "Sarah invierà il budget rivisto entro venerdì. Il lancio slitta alla prima settimana di ottobre.",
-      "changeLater": "Puoi cambiarlo in qualsiasi momento in Impostazioni → Preferenze."
     }
   },
   "streaming": {
@@ -3921,8 +3912,6 @@
           "missing": "Niente viene riepilogato e l'assistente non può rispondere. Una chiave — o un modello locale — alimenta riepiloghi, chat e risposte in riunione."
         }
       },
-      "descriptionAllSet": "È tutto configurato. Ecco cosa usa ogni parte.",
-      "collapsedSummaryAllSet": "È tutto configurato.",
       "change": "Cambia",
       "onThisMachine": "Su questo computer"
     },

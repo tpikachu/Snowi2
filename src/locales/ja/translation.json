@@ -188,8 +188,7 @@
       "useCase": "あなたについて",
       "meeting": "会議",
       "finish": "完了",
-      "voiceAgent": "ボイスエージェント",
-      "textSize": "見やすさ"
+      "voiceAgent": "ボイスエージェント"
     },
     "rail": {
       "ariaLabel": "セットアップの手順",
@@ -349,14 +348,6 @@
       "downloadStillRunning": "音声モデル（{{model}}）はまだダウンロード中です — {{percent}}% 完了。残りは Snowy がバックグラウンドで進めます。",
       "launchAtLogin": "ログイン時にSnowyを起動",
       "launchAtLoginDescription": "Snowyバーが画面上部で待機し、ワンクリックで録音できます。"
-    },
-    "textSize": {
-      "title": "文字の大きさはどうしますか？",
-      "description": "アプリ全体がこの選択に従います。今すぐ反映されるので、見たままが結果です。",
-      "previewLabel": "プレビュー",
-      "previewHeading": "週次ミーティング — まとめ",
-      "previewBody": "サラは金曜までに修正版の予算を送ります。ローンチは 10 月第 1 週に変更。",
-      "changeLater": "設定 → 環境設定でいつでも変更できます。"
     }
   },
   "streaming": {
@@ -3921,8 +3912,6 @@
           "missing": "何もまとめられず、アシスタントも回答できません。キー 1 つ（またはローカルモデル）で、まとめ・チャット・会議中の回答が動きます。"
         }
       },
-      "descriptionAllSet": "すべて設定済みです。それぞれが使っているものはこちらです。",
-      "collapsedSummaryAllSet": "すべて設定済みです。",
       "change": "変更",
       "onThisMachine": "この端末で実行"
     },

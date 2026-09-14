@@ -188,8 +188,7 @@
       "useCase": "關於你",
       "meeting": "會議",
       "finish": "完成",
-      "voiceAgent": "語音助手",
-      "textSize": "舒適度"
+      "voiceAgent": "語音助手"
     },
     "rail": {
       "ariaLabel": "設定步驟",
@@ -349,14 +348,6 @@
       "downloadStillRunning": "語音模型（{{model}}）仍在下載 — 已完成 {{percent}}%。Snowy 會在背景完成下載。",
       "launchAtLogin": "登入時啟動 Snowy",
       "launchAtLoginDescription": "Snowy 小列會在螢幕頂部待命，一鍵即可錄製。"
-    },
-    "textSize": {
-      "title": "文字要多大？",
-      "description": "整個應用都會遵循這個選擇——立即生效，所見即所得。",
-      "previewLabel": "預覽",
-      "previewHeading": "每週同步會——紀要",
-      "previewBody": "Sarah 會在週五前傳送修訂後的預算。發布延到十月第一週。",
-      "changeLater": "隨時可以在設定 → 偏好中變更。"
     }
   },
   "streaming": {
@@ -3921,8 +3912,6 @@
           "missing": "什麼都不會被整理，助手也無法回答。一個金鑰——或一個本地模型——即可驅動紀要、聊天和會議中的回答。"
         }
       },
-      "descriptionAllSet": "都已設定完成。以下是各部分正在使用的模型。",
-      "collapsedSummaryAllSet": "都已設定完成。",
       "change": "變更",
       "onThisMachine": "在本機執行"
     },

@@ -188,8 +188,7 @@
       "useCase": "Über dich",
       "meeting": "Meetings",
       "finish": "Fertig",
-      "voiceAgent": "Sprachagent",
-      "textSize": "Komfort"
+      "voiceAgent": "Sprachagent"
     },
     "rail": {
       "ariaLabel": "Einrichtungsschritte",
@@ -349,14 +348,6 @@
       "downloadStillRunning": "Ihr Sprachmodell ({{model}}) wird noch heruntergeladen — {{percent}} % fertig. Snowy schließt es im Hintergrund ab.",
       "launchAtLogin": "Snowy beim Anmelden starten",
       "launchAtLoginDescription": "Die Snowy-Leiste wartet oben auf deinem Bildschirm — ein Klick zum Aufnehmen."
-    },
-    "textSize": {
-      "title": "Wie groß soll der Text sein?",
-      "description": "Die ganze App folgt dieser Wahl – sie gilt sofort, du siehst also genau das Ergebnis.",
-      "previewLabel": "Vorschau",
-      "previewHeading": "Weekly Sync – Zusammenfassung",
-      "previewBody": "Sarah schickt das überarbeitete Budget bis Freitag. Der Launch rückt in die erste Oktoberwoche.",
-      "changeLater": "Du kannst das jederzeit unter Einstellungen → Präferenzen ändern."
     }
   },
   "streaming": {
@@ -3921,8 +3912,6 @@
           "missing": "Nichts wird zusammengefasst und der Assistent kann nicht antworten. Ein Schlüssel – oder ein lokales Modell – treibt Zusammenfassungen, Chat und Meeting-Antworten an."
         }
       },
-      "descriptionAllSet": "Alles ist eingerichtet. Das läuft jeweils darunter.",
-      "collapsedSummaryAllSet": "Alles ist eingerichtet.",
       "change": "Ändern",
       "onThisMachine": "Auf diesem Rechner"
     },

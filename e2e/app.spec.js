@@ -33,10 +33,12 @@ test("past onboarding, Home offers Start and the capabilities card", async () =>
   const page = await controlPanelPage(app);
   await skipOnboarding(page);
 
-  // The page's one act, in the hero and mirrored in the window header.
-  await expect(page.getByRole("button", { name: "Start meeting" }).first()).toBeVisible({
+  // Starting lives in the window header's capture control (labeled
+  // "Meeting") and in the empty state's own CTA — there is no hero button.
+  await expect(page.getByRole("button", { name: "Meeting", exact: true })).toBeVisible({
     timeout: 30_000,
   });
+  await expect(page.getByRole("button", { name: "Record a meeting" })).toBeVisible();
 
   // The restored setup card: on a fresh install no language model is set, so
   // it must say so instead of letting a meeting record into a void.
@@ -66,4 +68,33 @@ test("the capabilities card deep-links into Settings, where upload stays retired
   // same copy in the DOM, and roles only match what is actually on screen.
   await expect(page.getByRole("region", { name: "Engine" })).toBeVisible();
   await expect(page.getByText("Audio Upload", { exact: true })).toHaveCount(0);
+});
+
+test("once a key is in, the capabilities card leaves Home", async () => {
+  ({ app } = await launchApp(test.info()));
+  const page = await controlPanelPage(app);
+  await skipOnboarding(page);
+
+  // Fresh install: the card is there because no language model is set.
+  await expect(page.getByText("What Snowy can do right now")).toBeVisible({ timeout: 30_000 });
+
+  // Entering a key IS the setup: the setter assigns that provider's scope
+  // defaults, so both rows turn ready at once — and a card with nothing left
+  // to set up has no reason to stay (client direction, 2026-09-11).
+  await page.getByRole("button", { name: "Set up" }).first().click();
+  // A fresh install's engine is Local; the key field lives under Cloud
+  // Providers, and the first provider card (OpenAI) is the selected one.
+  await page
+    .getByRole("button", { name: /Cloud Providers/ })
+    .first()
+    .click();
+  await page.getByRole("button", { name: "Add API key" }).click();
+  const field = page.getByPlaceholder("Paste your API key");
+  await field.fill("sk-not-a-real-key-for-the-e2e-run");
+  await field.press("Enter");
+  await page.keyboard.press("Escape");
+
+  await expect(page.getByText("What Snowy can do right now")).toHaveCount(0, {
+    timeout: 15_000,
+  });
 });

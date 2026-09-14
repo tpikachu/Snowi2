@@ -795,22 +795,6 @@ async function main() {
       await sleep(BEAT_MS);
     });
 
-    await chapter("onboarding: text size", async () => {
-      await caption(
-        page,
-        "Make it comfortable to read",
-        "Try a text size — the window resizes the moment you click."
-      );
-      // The size cards are a radiogroup; the whole onboarding window zooms
-      // live on selection, which is the point of filming this step.
-      await moveClick(page, page.getByRole("radio", { name: /larger/i }), { timeout: 10_000 });
-      await sleep(BEAT_MS);
-      await moveClick(page, page.getByRole("radio", { name: /default/i }));
-      await sleep(600);
-      await moveClick(page, page.getByRole("button", { name: "Next", exact: true }));
-      await sleep(BEAT_MS);
-    });
-
     // Skip the first-run product tour so the video moves straight to the app.
     await page.evaluate(() => {
       localStorage.setItem("tourCompletedVersion", "999");
@@ -889,17 +873,17 @@ async function main() {
 
     // -- Act 2: the setup card agrees ---------------------------------------
     await chapter("everything ready", async () => {
-      // Home's capabilities card shows both rows — transcription and the AI
-      // model — already green. No clicks; the point is that there is nothing
-      // to click.
+      // Home's capabilities card exists to flag what still needs setting up.
+      // With the key entered a minute ago, nothing does — so it is not there.
+      // No clicks; the point is that there is nothing to click.
       await page
         .getByText("What Snowy can do right now")
         .first()
-        .waitFor({ state: "visible", timeout: 15_000 });
+        .waitFor({ state: "hidden", timeout: 15_000 });
       await caption(
         page,
-        "See for yourself — both lights are green",
-        "Speech-to-text and the AI writer are ready. You never picked a model, and you never have to."
+        "See for yourself — nothing left to set up",
+        "Speech-to-text and the AI writer are ready, so the setup card is gone. You never picked a model, and you never have to."
       );
       await sleep(BEAT_MS * 2);
       await caption(page, "");

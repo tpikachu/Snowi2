@@ -188,8 +188,7 @@
       "useCase": "About you",
       "meeting": "Meetings",
       "finish": "Finish",
-      "voiceAgent": "Voice Agent",
-      "textSize": "Comfort"
+      "voiceAgent": "Voice Agent"
     },
     "rail": {
       "ariaLabel": "Setup steps",
@@ -349,14 +348,6 @@
       "downloadStillRunning": "Your speech model ({{model}}) is still downloading — {{percent}}% done. Snowy will finish it in the background.",
       "launchAtLogin": "Start Snowy when you log in",
       "launchAtLoginDescription": "The Snowy bar will be waiting at the top of your screen — one click to record."
-    },
-    "textSize": {
-      "title": "How big should text be?",
-      "description": "The whole app follows this choice — and it applies right now, so what you see is what you'll get.",
-      "previewLabel": "Preview",
-      "previewHeading": "Weekly sync — write-up",
-      "previewBody": "Sarah will send the revised budget by Friday. The launch moves to the first week of October.",
-      "changeLater": "You can change this anytime in Settings → Preferences."
     }
   },
   "streaming": {
@@ -3921,8 +3912,6 @@
           "missing": "Nothing gets written up and the assistant can't answer. One key — or a local model — powers write-ups, chat and in-meeting answers."
         }
       },
-      "descriptionAllSet": "Everything is set up. Here is what each part is running on.",
-      "collapsedSummaryAllSet": "Everything is set up.",
       "change": "Change",
       "onThisMachine": "On this machine"
     },

@@ -92,7 +92,8 @@ export default function HomeView({
         {/* What the app can do right now, and what it still needs. Back on
             Home by request: setup gaps are invisible everywhere else, and a
             meeting recorded with no model configured looks complete right up
-            until the write-up is missing. The card collapses once answered. */}
+            until the write-up is missing. It collapses while something is
+            missing, and is gone once everything is set. */}
         <CapabilitiesCard />
 
         <div className="mt-5">

@@ -73,6 +73,12 @@ interface CapabilityRow extends Capability {
  * use this and the free tier is exactly that, so a card that cannot be quieted
  * is nagging — but one that can be erased leaves the user with no way back to
  * an offer they might want later, and no answer to either question above.
+ *
+ * Once both rows are ready the card is not rendered at all (client direction,
+ * 2026-09-11): two green rows on every visit to Home is a status report nobody
+ * asked for, and the "which model" question has its answer at the point of
+ * use — the model chips — and in Settings. The bar's setup warning that leads
+ * here only shows while something is missing, so the two never disagree.
  */
 export default function CapabilitiesCard() {
   const { t } = useTranslation();
@@ -166,7 +172,7 @@ export default function CapabilitiesCard() {
   }, [resolved, t]);
 
   const missing = rows.filter((row) => !row.ready);
-  const allSet = missing.length === 0;
+  if (missing.length === 0) return null;
 
   const toggleLabel = collapsed ? t("home.capabilities.expand") : t("home.capabilities.collapse");
 
@@ -177,12 +183,8 @@ export default function CapabilitiesCard() {
           <h2 className="text-sm font-semibold text-foreground">{t("home.capabilities.title")}</h2>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             {collapsed
-              ? allSet
-                ? t("home.capabilities.collapsedSummaryAllSet")
-                : t("home.capabilities.collapsedSummary", { count: missing.length })
-              : allSet
-                ? t("home.capabilities.descriptionAllSet")
-                : t("home.capabilities.description")}
+              ? t("home.capabilities.collapsedSummary", { count: missing.length })
+              : t("home.capabilities.description")}
           </p>
         </div>
         <button
@@ -197,17 +199,15 @@ export default function CapabilitiesCard() {
       </div>
 
       {collapsed ? (
-        !allSet && (
-          <div className="mt-2.5">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => requestSettings(SETTINGS_REMEDIES[missing[0].remedy])}
-            >
-              {t("home.capabilities.configure")}
-            </Button>
-          </div>
-        )
+        <div className="mt-2.5">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => requestSettings(SETTINGS_REMEDIES[missing[0].remedy])}
+          >
+            {t("home.capabilities.configure")}
+          </Button>
+        </div>
       ) : (
         <>
           <ul className="mt-3 space-y-2">
@@ -273,15 +273,12 @@ export default function CapabilitiesCard() {
             ))}
           </ul>
 
-          {/* Says the quiet part, but only while there is something to buy:
-              this needs either a subscription or a key of their own. Finding
-              that out after clicking through to Settings is a worse experience
-              than being told here. */}
-          {!allSet && (
-            <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground/70">
-              {t("home.capabilities.footnote")}
-            </p>
-          )}
+          {/* Says the quiet part: this needs either a subscription or a key of
+              their own. Finding that out after clicking through to Settings is
+              a worse experience than being told here. */}
+          <p className="mt-2.5 text-[11px] leading-relaxed text-muted-foreground/70">
+            {t("home.capabilities.footnote")}
+          </p>
         </>
       )}
     </section>

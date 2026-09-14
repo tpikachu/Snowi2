@@ -188,8 +188,7 @@
       "useCase": "À propos de vous",
       "meeting": "Réunions",
       "finish": "Terminer",
-      "voiceAgent": "Agent vocal",
-      "textSize": "Confort"
+      "voiceAgent": "Agent vocal"
     },
     "rail": {
       "ariaLabel": "Étapes de configuration",
@@ -349,14 +348,6 @@
       "downloadStillRunning": "Votre modèle vocal ({{model}}) est encore en téléchargement — {{percent}} % terminé. Snowy le finira en arrière-plan.",
       "launchAtLogin": "Lancer Snowy à l'ouverture de session",
       "launchAtLoginDescription": "La barre Snowy vous attendra en haut de l'écran — un clic pour enregistrer."
-    },
-    "textSize": {
-      "title": "Quelle taille de texte préférez-vous ?",
-      "description": "Toute l'application suit ce choix — appliqué immédiatement : ce que vous voyez est ce que vous aurez.",
-      "previewLabel": "Aperçu",
-      "previewHeading": "Point hebdo — compte rendu",
-      "previewBody": "Sarah enverra le budget révisé d'ici vendredi. Le lancement est reporté à la première semaine d'octobre.",
-      "changeLater": "Modifiable à tout moment dans Réglages → Préférences."
     }
   },
   "streaming": {
@@ -3921,8 +3912,6 @@
           "missing": "Rien n'est rédigé et l'assistant ne peut pas répondre. Une clé — ou un modèle local — alimente les comptes rendus, le chat et les réponses en réunion."
         }
       },
-      "descriptionAllSet": "Tout est configuré. Voici ce que chaque partie utilise.",
-      "collapsedSummaryAllSet": "Tout est configuré.",
       "change": "Modifier",
       "onThisMachine": "Sur cet appareil"
     },

@@ -188,8 +188,7 @@
       "useCase": "关于你",
       "meeting": "会议",
       "finish": "完成",
-      "voiceAgent": "语音助手",
-      "textSize": "舒适度"
+      "voiceAgent": "语音助手"
     },
     "rail": {
       "ariaLabel": "设置步骤",
@@ -349,14 +348,6 @@
       "downloadStillRunning": "语音模型（{{model}}）仍在下载 — 已完成 {{percent}}%。Snowy 会在后台完成下载。",
       "launchAtLogin": "登录时启动 Snowy",
       "launchAtLoginDescription": "Snowy 小条将在屏幕顶部等候，一键即可录制。"
-    },
-    "textSize": {
-      "title": "文字要多大？",
-      "description": "整个应用都会遵循这个选择——立即生效，所见即所得。",
-      "previewLabel": "预览",
-      "previewHeading": "每周同步会——纪要",
-      "previewBody": "Sarah 会在周五前发送修订后的预算。发布推迟到十月第一周。",
-      "changeLater": "随时可以在设置 → 偏好中更改。"
     }
   },
   "streaming": {
@@ -3921,8 +3912,6 @@
           "missing": "什么都不会被整理，助手也无法回答。一个密钥——或一个本地模型——即可驱动纪要、聊天和会议中的回答。"
         }
       },
-      "descriptionAllSet": "都已配置完成。以下是各部分正在使用的模型。",
-      "collapsedSummaryAllSet": "都已配置完成。",
       "change": "更改",
       "onThisMachine": "在本机运行"
     },
