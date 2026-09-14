@@ -1,4 +1,5 @@
 import { getModelFamilyConstraints } from "./modelFamilyConstraints";
+import { resolveSuppressEffort } from "./reasoningEffortRecovery";
 
 /**
  * Per-provider dialects for turning a model's thinking off. Model-family
@@ -62,7 +63,10 @@ export function suppressThinking(
   // so send nothing unless the family is known.
   if (providerKey === "groq" || providerKey === "cerebras") {
     if (family?.reasoningEffort) {
-      requestBody.reasoning_effort = family.reasoningEffort.suppressValue;
+      requestBody.reasoning_effort = resolveSuppressEffort(
+        model,
+        family.reasoningEffort.suppressValue
+      );
     }
     return;
   }
@@ -89,7 +93,7 @@ export function suppressThinking(
     // disables Ollama thinking; other backends drop it (flat reasoning_effort trips vLLM).
     requestBody.reasoning = { effort: "none" };
   } else {
-    requestBody.reasoning_effort = family?.reasoningEffort?.suppressValue ?? "none";
+    requestBody.reasoning_effort = resolveSuppressEffort(model, "none");
   }
   requestBody.chat_template_kwargs = { enable_thinking: false };
 }

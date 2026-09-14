@@ -1,7 +1,7 @@
 import type { InferenceProvider } from "./types";
 import { API_ENDPOINTS, TOKEN_LIMITS, buildApiUrl } from "../../../config/constants";
 import { getCloudModel, getOpenAiApiConfig } from "../../../models/ModelRegistry";
-import { getModelFamilyConstraints } from "../modelFamilyConstraints";
+import { resolveSuppressEffort } from "../reasoningEffortRecovery";
 import { getSettings } from "../../../stores/settingsStore";
 import { withRetry, createApiRetryStrategy, httpError } from "../../../utils/retry";
 import logger from "../../../utils/logger";
@@ -250,10 +250,7 @@ export const openaiProvider: InferenceProvider = {
             // latency-sensitive scopes are not billed seconds of hidden
             // reasoning before the first output token.
             if (config.disableThinking === true && getCloudModel(model)?.supportsThinking) {
-              requestBody.reasoning = {
-                effort:
-                  getModelFamilyConstraints(model)?.reasoningEffort?.suppressValue ?? "minimal",
-              };
+              requestBody.reasoning = { effort: resolveSuppressEffort(model, "minimal") };
             }
             // A known endpoint host knows its own request shape better than the model id does.
             const apiConfig = dialect ?? getOpenAiApiConfig(model, resolvedProvider);

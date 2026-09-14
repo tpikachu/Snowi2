@@ -35,7 +35,11 @@ import {
   fetchWithParamFallback,
   isTruncatedFinishReason,
 } from "./ai/chatRequestBody";
-import { getModelFamilyConstraints } from "./ai/modelFamilyConstraints";
+import {
+  apiErrorText,
+  learnSuppressEffortFromError,
+  resolveSuppressEffort,
+} from "./ai/reasoningEffortRecovery";
 import { detectEndpointDialect } from "./ai/thinkingSuppressionDialects";
 import { extractApiErrorMessage } from "./ai/apiErrorMessage";
 import { clearTinfoilClientCache } from "./ai/tinfoilClient";
@@ -742,29 +746,26 @@ class ReasoningService extends BaseReasoningService {
     // alone they spend seconds thinking before the first token — which broke
     // the meeting assistant's fast lane on its own designated fast model.
     const needsOpenAIMinimalReasoning = provider === "openai" && userSuppressesThinking;
-    const providerOptions = {
-      // The effort value is a family fact: gpt-oss has no "none" (#1611).
+    // The effort value is a family fact (gpt-oss has no "none", #1611) that
+    // the API can overrule: a 400 naming the enum the model takes is learned
+    // per model, so the options are built per attempt — see the catch below.
+    const sentSuppressEffort = () =>
+      needsOpenAIMinimalReasoning
+        ? resolveSuppressEffort(model, "minimal")
+        : needsGroqDisableThinking
+          ? resolveSuppressEffort(model, "none")
+          : undefined;
+    const buildProviderOptions = () => ({
       ...(needsGroqDisableThinking
-        ? {
-            groq: {
-              reasoningEffort:
-                getModelFamilyConstraints(model)?.reasoningEffort?.suppressValue ?? "none",
-            },
-          }
+        ? { groq: { reasoningEffort: resolveSuppressEffort(model, "none") } }
         : {}),
       ...(needsGeminiMinimalThinking
         ? { google: { thinkingConfig: { thinkingLevel: "minimal", includeThoughts: false } } }
         : {}),
       ...(needsOpenAIMinimalReasoning
-        ? {
-            openai: {
-              reasoningEffort:
-                getModelFamilyConstraints(model)?.reasoningEffort?.suppressValue ?? "minimal",
-            },
-          }
+        ? { openai: { reasoningEffort: resolveSuppressEffort(model, "minimal") } }
         : {}),
-    };
-    const hasProviderOptions = Object.keys(providerOptions).length > 0;
+    });
 
     // Screenshots ride only routes whose client can carry an image; local
     // and LAN paths drop them. One image (dictation) or one per display (the
@@ -823,12 +824,15 @@ class ReasoningService extends BaseReasoningService {
     // resends text-only — but never after content has already streamed, which
     // would duplicate the answer.
     const attempts = screenImages.length > 0 && lastUserIndex !== -1 ? [true, false] : [false];
+    let effortCorrected = false;
     for (let attempt = 0; attempt < attempts.length; attempt++) {
       // cancelActiveStream() aborts this controller; streamText propagates it
       // into doStream, cancelling the enterprise IPC proxy's request in main.
       const abortController = new AbortController();
       this.streamAbortController = abortController;
 
+      const providerOptions = buildProviderOptions();
+      const hasProviderOptions = Object.keys(providerOptions).length > 0;
       const result = streamText({
         model: aiModel,
         messages: buildMessages(attempts[attempt]),
@@ -891,6 +895,25 @@ class ReasoningService extends BaseReasoningService {
         if (abortController.signal.aborted) {
           yield { type: "done", finishReason: "stop" };
           return;
+        }
+        // A rejected effort value: the 400 names the enum this model takes.
+        // Learn it and send the same messages again, once — this path has no
+        // param-stripping ladder, so without it a moved enum (gpt-5.5 lost
+        // "minimal" in 2026-09) costs the user every answer.
+        const sentEffort = sentSuppressEffort();
+        if (sentEffort !== undefined && !yieldedAny && !effortCorrected) {
+          const corrected = learnSuppressEffortFromError(model, sentEffort, apiErrorText(error));
+          if (corrected) {
+            effortCorrected = true;
+            logger.logReasoning("AGENT_REASONING_EFFORT_CORRECTED", {
+              model,
+              provider,
+              from: sentEffort,
+              to: corrected,
+            });
+            attempt -= 1;
+            continue;
+          }
         }
         if (attempts[attempt] && !yieldedAny && attempt < attempts.length - 1) {
           logger.logReasoning("AGENT_SCREEN_CONTEXT_RETRY_TEXT_ONLY", { model, provider });

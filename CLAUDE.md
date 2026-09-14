@@ -412,6 +412,7 @@ All AI model definitions are centralized in `src/models/modelRegistryData.json` 
 - New response format with `output` array containing typed items
 - Automatic handling of GPT-5 and o-series model requirements
 - No temperature parameter for newer models (GPT-5, o-series)
+- **Reasoning effort for "thinking off" is a family fact the API can overrule.** `modelFamilyConstraints.ts` says which value means off (live-probed 2026-09-11: the undotted gpt-5 / -mini / -nano take `minimal` and reject `none`; every dotted 5.x — 5.2, 5.5, 5.6 — takes `none` and rejects `minimal`, 5.6 adding `max`). When the guess is wrong the 400 names the enum ("Supported values are: …"), and `reasoningEffortRecovery.ts` (pure + unit-tested) parses it, picks the best off-switch on the list (none → minimal → low), remembers it per model for the session, and both request paths retry once with it: `fetchWithParamFallback`'s rung 0 (the non-streaming `processText` path every note write-up takes) and the streaming loop in `ReasoningService`. Every call site reads the value through `resolveSuppressEffort(model, fallback)` — learned, then family, then fallback. History: a client's Generate Notes on gpt-5.5 died with "Enhancement error … 'minimal'" on 2026-09-11 because the table had only moved 5.6+ (f751802).
 
 **Anthropic Integration**:
 

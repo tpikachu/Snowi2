@@ -29,13 +29,14 @@ export interface ModelFamilyConstraints {
 const FAMILIES: Array<ModelFamilyConstraints & { match: RegExp }> = [
   {
     family: "gpt-5",
-    // The 5.6 generation dropped "minimal" and gained a true off switch:
-    // reasoning_effort accepts none|low|medium|high|xhigh — a live 400 from
-    // gpt-5.6-sol names exactly that enum ("'reasoning_effort' does not
-    // support 'minimal' with this model"). Matched for the whole 5.6–5.9
-    // range on the bet that later 5.x generations keep the post-minimal
-    // enum; listed before the generic gpt-5 entry because first match wins.
-    match: /^gpt-5\.[6-9]/,
+    // Every DOTTED gpt-5 generation — 5.2, 5.5, 5.6 and on — has dropped
+    // "minimal" and takes a true off switch: reasoning effort accepts
+    // none|low|medium|high|xhigh (5.6 adds "max"). Live-probed against the
+    // API on 2026-09-11 after a client's Generate Notes died on gpt-5.5 with
+    // "Unsupported value: 'minimal' is not supported with the 'gpt-5.5'
+    // model" — the earlier entry only moved 5.6+ and left 5.2/5.5 on the
+    // rejected floor. Listed before the generic gpt-5 entry: first match wins.
+    match: /^gpt-5\.\d/,
     reasoningEffort: { suppressValue: "none" },
   },
   {
@@ -43,10 +44,13 @@ const FAMILIES: Array<ModelFamilyConstraints & { match: RegExp }> = [
     // Anchored: "gpt-oss" and "gpt-4.1" must not match, and gpt-oss ids
     // arrive prefixed ("openai/gpt-oss-120b"), never bare.
     match: /^gpt-5/,
-    // The 5.0–5.5 generations reason by default and have no hard off switch;
-    // "minimal" is the floor they all accept, and it is what turns an
-    // eight-second time-to-first-token into under two. (5.6+ rejects it —
-    // see the entry above.)
+    // The undotted first generation — gpt-5, gpt-5-mini, gpt-5-nano — is the
+    // mirror image: it REJECTS "none" ("Supported values are: 'minimal',
+    // 'low', 'medium', and 'high'", same live probe) and "minimal" is its
+    // floor, the one that turns an eight-second time-to-first-token into
+    // under two. Should OpenAI move this enum too, the reply's own
+    // "supported values" list corrects the request on the spot — see
+    // reasoningEffortRecovery.
     reasoningEffort: { suppressValue: "minimal" },
   },
   {

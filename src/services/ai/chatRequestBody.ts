@@ -2,6 +2,7 @@ import type { ReasoningConfig } from "../BaseReasoningService";
 import { getOpenAiApiConfig } from "../../models/ModelRegistry";
 import { detectEndpointDialect } from "./thinkingSuppressionDialects";
 import { getModelFamilyConstraints } from "./modelFamilyConstraints";
+import { learnSuppressEffortFromError } from "./reasoningEffortRecovery";
 import { applyThinkingSuppression } from "./thinkingSuppression";
 
 /**
@@ -85,20 +86,66 @@ const STRIPPABLE_SHAPED_PARAMS = [
   "temperature",
 ] as const;
 
+/** The effort value a shaped body carries, in either OpenAI shape. */
+function sentSuppressEffort(requestBody: Record<string, unknown>): string | undefined {
+  const reasoning = requestBody.reasoning as { effort?: unknown } | undefined;
+  if (reasoning && typeof reasoning === "object" && typeof reasoning.effort === "string") {
+    return reasoning.effort;
+  }
+  return typeof requestBody.reasoning_effort === "string"
+    ? requestBody.reasoning_effort
+    : undefined;
+}
+
+function setSuppressEffort(requestBody: Record<string, unknown>, effort: string): void {
+  const reasoning = requestBody.reasoning as { effort?: unknown } | undefined;
+  if (reasoning && typeof reasoning === "object" && "effort" in reasoning) {
+    reasoning.effort = effort;
+    return;
+  }
+  requestBody.reasoning_effort = effort;
+}
+
 /**
- * Fetch with a bounded param-stripping ladder for 400/422 rejections.
+ * Fetch with a bounded ladder for 400/422 rejections.
+ * Rung 0 (corrective): a rejected reasoning-effort value is replaced by the
+ * best off-switch the error's own "supported values" list allows — the
+ * request keeps a low-latency effort instead of losing it to the blind strip,
+ * and the value is remembered for the model (reasoningEffortRecovery).
  * Rung 1 (blind): old Ollama/strict proxies reject the `reasoning` object
  * without naming it — drop it and retry once. Rung 2 (named): strip exactly
- * the shaped params the error body names and retry once. At most two retries;
- * the caller must build the body inside `doFetch` so retries re-serialize.
+ * the shaped params the error body names and retry once. At most three
+ * retries; the caller must build the body inside `doFetch` so retries
+ * re-serialize.
  */
 export async function fetchWithParamFallback(
   doFetch: () => Promise<Response>,
   requestBody: Record<string, unknown>,
-  logRejection: (details: { status: number; stripped: string[] }) => void
+  logRejection: (details: {
+    status: number;
+    stripped: string[];
+    corrected?: { effort: string };
+  }) => void
 ): Promise<Response> {
   let res = await doFetch();
   if (res.ok || (res.status !== 400 && res.status !== 422)) return res;
+
+  const sentEffort = sentSuppressEffort(requestBody);
+  if (sentEffort !== undefined) {
+    const errorText = await res
+      .clone()
+      .text()
+      .catch(() => "");
+    const model = typeof requestBody.model === "string" ? requestBody.model : "";
+    const corrected = learnSuppressEffortFromError(model, sentEffort, errorText);
+    if (corrected) {
+      logRejection({ status: res.status, stripped: [], corrected: { effort: corrected } });
+      setSuppressEffort(requestBody, corrected);
+      void res.body?.cancel();
+      res = await doFetch();
+      if (res.ok || (res.status !== 400 && res.status !== 422)) return res;
+    }
+  }
 
   if (requestBody.reasoning) {
     logRejection({ status: res.status, stripped: ["reasoning"] });

@@ -107,14 +107,26 @@ test("unlisted providers keep the legacy reasoning_effort none plus chat_templat
   });
 });
 
-test("gpt-5 family suppresses at its minimal floor — the family rejects none", async () => {
+test("the undotted gpt-5 generation suppresses at its minimal floor — it rejects none", async () => {
+  const { suppressThinking } = await load();
+
+  const body = {};
+  suppressThinking(body, "openai", "gpt-5-nano");
+
+  assert.deepEqual(body, {
+    reasoning_effort: "minimal",
+    chat_template_kwargs: { enable_thinking: false },
+  });
+});
+
+test("a dotted gpt-5.x generation suppresses with none — it rejects minimal (live, 2026-09-11)", async () => {
   const { suppressThinking } = await load();
 
   const body = {};
   suppressThinking(body, "openai", "gpt-5.2");
 
   assert.deepEqual(body, {
-    reasoning_effort: "minimal",
+    reasoning_effort: "none",
     chat_template_kwargs: { enable_thinking: false },
   });
 });

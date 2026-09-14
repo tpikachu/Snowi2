@@ -104,3 +104,69 @@ test("non-4xx server errors never trigger stripping", async () => {
   assert.equal(doFetch.count(), 1);
   assert.ok("reasoning_effort" in body);
 });
+
+const loadRecovery = () => import("../../src/services/ai/reasoningEffortRecovery.ts");
+const EFFORT_REJECTION =
+  "Unsupported value: 'minimal' is not supported with the 'gpt-5.5' model. " +
+  "Supported values are: 'none', 'low', 'medium', 'high', and 'xhigh'.";
+
+test("400 naming the effort enum swaps in the model's own off switch and retries (Responses shape)", async () => {
+  const { fetchWithParamFallback } = await load();
+  const { forgetLearnedEfforts, learnedSuppressEffort } = await loadRecovery();
+  forgetLearnedEfforts();
+  const doFetch = fetcher(
+    jsonResponse(400, { error: { message: EFFORT_REJECTION } }),
+    jsonResponse(200, {})
+  );
+  const body = { model: "gpt-5.5", reasoning: { effort: "minimal" }, max_output_tokens: 10 };
+  const logged = [];
+
+  const res = await fetchWithParamFallback(doFetch, body, (d) => logged.push(d));
+  assert.equal(res.status, 200);
+  assert.equal(doFetch.count(), 2);
+  assert.deepEqual(body.reasoning, { effort: "none" }, "corrected, not stripped");
+  assert.deepEqual(logged, [{ status: 400, stripped: [], corrected: { effort: "none" } }]);
+  assert.equal(learnedSuppressEffort("gpt-5.5"), "none", "remembered for the model");
+  forgetLearnedEfforts();
+});
+
+test("the chat-completions shape is corrected the same way, from the older wording too", async () => {
+  const { fetchWithParamFallback } = await load();
+  const { forgetLearnedEfforts } = await loadRecovery();
+  forgetLearnedEfforts();
+  const doFetch = fetcher(
+    jsonResponse(400, {
+      error: {
+        message:
+          "Unsupported value: 'reasoning_effort' does not support 'minimal' with this model. " +
+          "Supported values are: 'none', 'low', 'medium', 'high', and 'xhigh'.",
+      },
+    }),
+    jsonResponse(200, {})
+  );
+  const body = { model: "gpt-5.2", reasoning_effort: "minimal", max_completion_tokens: 10 };
+
+  const res = await fetchWithParamFallback(doFetch, body, () => {});
+  assert.equal(res.status, 200);
+  assert.equal(doFetch.count(), 2);
+  assert.equal(body.reasoning_effort, "none");
+  forgetLearnedEfforts();
+});
+
+test("a correction that still fails falls through to the stripping rungs", async () => {
+  const { fetchWithParamFallback } = await load();
+  const { forgetLearnedEfforts } = await loadRecovery();
+  forgetLearnedEfforts();
+  const doFetch = fetcher(
+    jsonResponse(400, { error: { message: EFFORT_REJECTION } }),
+    jsonResponse(400, { error: "reasoning_effort rejected outright" }),
+    jsonResponse(200, {})
+  );
+  const body = { model: "odd-proxy-model", reasoning_effort: "minimal", max_tokens: 10 };
+
+  const res = await fetchWithParamFallback(doFetch, body, () => {});
+  assert.equal(res.status, 200);
+  assert.equal(doFetch.count(), 3);
+  assert.ok(!("reasoning_effort" in body), "the named strip still runs after a failed correction");
+  forgetLearnedEfforts();
+});
