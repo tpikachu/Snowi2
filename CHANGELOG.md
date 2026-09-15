@@ -5,6 +5,160 @@ All notable changes to Snowy are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-rc9] — 2026-09-15
+
+Ninth release candidate: the cue card answers like an advisor, the transcript
+gets a second, slower pass once the meeting ends, every meeting's audio stays
+with its note, and the app finds its next update on its own.
+
+**Still a release candidate.** See _Known limitations_ under 0.1.0-rc1.
+
+**Installing over rc8:** rc8's update check cannot see this release (see
+_Updates_ below), so install rc9 by hand once. From rc9 on, updates arrive
+through the app.
+
+### The cue card answers like an advisor
+
+- **Asked what to say, the words come first.** Two or three spoken sentences
+  in your own voice, opening by responding to what the other side just said,
+  then a position, then a next step — followed by the reasons, each tied to
+  something said in the meeting, and an optional firmer or softer version.
+  Asked what happened, the answer stays a direct line with bullets that quote
+  the exact words a claim rests on.
+- The assistant's unprompted line now sits under its own **"Suggested next
+  line"** heading with a quiet edge, so the accent block always means "what
+  you asked". Under a live answer, one muted line names what it read beyond
+  the meeting — your screen, the notes it drew on.
+- The card's transcript control is a labeled **Transcript** button again.
+
+### Speech: language first, then a careful second pass
+
+- **Onboarding asks your language before anything else**, because the answer
+  decides which speech models are installed. One model pair is fetched for
+  it; change your mind mid-download and the right pair is fetched instead.
+  English speakers had been routed to the multilingual models — fixed.
+- **A second pass over the whole meeting.** While a meeting is transcribed on
+  this computer, Snowy keeps the raw audio and, after Stop, has a slower,
+  more accurate model go over all of it. The refined transcript replaces the
+  live captions, the notes are written from it, and the transcript view
+  shows "Refining the transcript…" meanwhile. On by default under Settings →
+  Meetings.
+
+### Providers
+
+- **The provider card in Settings is the switch.** The highlighted card is the
+  provider chat and meeting write-ups run on, wearing an "In use" badge.
+  Click a card that has a key and both move at once; click one without a key
+  and saving its key is the switch. Before, adding a second provider's key
+  changed nothing and there was no way to move.
+- **OpenRouter is a provider like the others**: a curated list of the models
+  worth picking, plus an "Other model…" row that takes any model id.
+- **Chat and write-ups run on cloud providers only.** Local language models
+  are no longer offered: the best a laptop runs produced answers far below
+  what the same question gets from a cloud model on your own key. An install
+  that was on a local model moves to cloud and asks for a key. Speech
+  recognition still runs on your machine; only transcript text goes out.
+
+### Updates
+
+- **Updates find the next release again.** The update library read "rc8" as a
+  release channel and only ever accepted tags carrying the same one, so every
+  check ended in "No published versions" and a red toast. Snowy now picks the
+  release itself. Background checks fail quietly; a manual check still tells
+  you what went wrong.
+- **A banner stays until you act.** When an update is found, a banner under
+  the window header offers Download, shows progress, then Restart to update.
+  Later hides it for a day. The corner card no longer opens blank.
+
+### Recordings
+
+- **Every meeting's audio stays with its note.** Both sides of the call are
+  mixed to one MP3 per session (about 30 MB an hour), listed under the note's
+  header with play, a scrubber, Download and Show in folder. A resumed note
+  lists each session. Recordings go with the note when it is deleted, and
+  Discard at Stop drops the session's file. Toggle under Settings → Meetings.
+
+### Fixed
+
+- Generate Notes on gpt-5.5 no longer fails with "'minimal' is not supported":
+  the reasoning-effort value now follows what the API accepts, and a
+  rejection corrects it on the spot.
+- Home's capabilities card leaves once transcription and the AI model are both
+  ready, instead of staying to report "all set".
+- Onboarding's text-size step is gone; the setting lives in Settings →
+  Preferences.
+
+## [0.1.0-rc8] — 2026-09-11
+
+Eighth release candidate: the cue card is rebuilt beside the reference
+product — it sees every screen, answers in one glanceable shape, and is three
+zones — the assistant bar earns its summon, and the app updates itself.
+
+**Still a release candidate.** See _Known limitations_ under 0.1.0-rc1.
+
+### The cue card, side by side with the reference
+
+- **Observe means every screen.** With the eye on, every answer — fast or
+  thinking, typed or from a quick-action chip — reads every display, up to
+  three, labeled in reading order, with a screen picker in the toolbar when
+  there is more than one. The card hides itself from the capture. The eye
+  turns amber when the OS has not granted screen access, and clicking it
+  asks again. Until now the model was never told a screenshot was attached.
+- **One answer shape.** A direct line with the decisive words bolded, at most
+  four "Key: fact" bullets, and the exact words to say last, on their own,
+  with a copy button — the same shape whether the answer is fast or thinking.
+- **Three zones, nothing else.** The ask bar with the quick-action chips under
+  it; the thread, newest first; and a toolbar with the level meter and clock,
+  pause, Stop, the observe eye, a Thinking toggle, the model chip and Show
+  transcript. The glass is more translucent, so the desktop shows through.
+- Fast answers give up after 30 seconds and Thinking answers after 90, instead
+  of spinning.
+
+### The bar is the front door
+
+- **A summon hotkey out of the box**: Cmd/Ctrl+Shift+K on first launch, the
+  same binding Settings suggests. The hotkey is a plain show/hide — it no
+  longer starts voice capture on the second press — and a summon lands with
+  the cursor in the ask field.
+- The bar is **width-resizable** by its side grips and remembers its width.
+- The guided tour opens on the bar, showing your actual summon keys as
+  keycaps. The rest of the tour reads friendlier, in all ten languages.
+- **macOS: Globe summons on a tap, never on the press.** With the bar bound to
+  the Globe/Fn key, every Fn combo — Fn+Left, Fn+F5 — had been summoning the
+  bar and swallowing the second key. The bar now appears on a bare tap only,
+  and a hotkey may pair Fn only with a function key. Not yet verified on a
+  Mac; the check is to bind the bar to Globe and use Fn+Left in another app.
+
+### Updates
+
+- **Auto-update is live.** Snowy checks on launch and every four hours,
+  downloads and installs on your click, and shows a corner card when a
+  release is found. Unsigned macOS builds can check but not install; signing
+  is the macOS prerequisite.
+
+### Notes and search
+
+- **A question in plain words finds its note.** Search demanded every word of
+  the question; a note about Dana was "not found" by "what did I promise to
+  send Dana?". A second pass now ranks notes that match any of the words.
+- **Meeting notes are named by date and time** when there is no calendar
+  title — "Meeting — Sep 6, 2:30 PM" instead of "New note" — and the write-up
+  renames them, as it does any placeholder.
+- The chat agent answers "how many meetings did we have?" with the number
+  instead of reciting the list, and no longer guesses a space named
+  "private".
+- Home's hero Start button is gone; starting lives in the window header and
+  on the bar, both always on screen.
+
+### Fixed
+
+- Generate Notes on GPT-5.6 failed with "Enhancement error": the model
+  rejects the reasoning-effort value earlier generations require.
+- The hidden dictation feature could still claim a hotkey — the bar's new
+  Ctrl+Shift+K started a dictation on some installs.
+- The cue card showed light text on dark glass under the light theme.
+- Dependencies cleared by audit: adm-zip, js-yaml, fast-uri.
+
 ## [0.1.0-rc7] — 2026-09-02
 
 Seventh release candidate: the app learns to answer at two speeds, the bar
