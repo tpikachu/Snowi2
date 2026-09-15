@@ -2242,6 +2242,10 @@
         "cloudInUse": "Le chat et les comptes rendus de réunion s'exécutent sur {{provider}}.",
         "cloudChooseHint": "Cliquez sur {{provider}} pour y exécuter le chat et les comptes rendus de réunion.",
         "cloudSwitchHint": "Enregistrez une clé pour basculer le chat et les comptes rendus de réunion vers {{provider}}."
+      },
+      "provider": {
+        "title": "Fournisseur cloud",
+        "description": "Le chat et les comptes rendus de réunion s'exécutent chez le fournisseur choisi ici, avec votre propre clé API. Le modèle se choisit directement là où vous l'utilisez."
       }
     },
     "transcription": {

@@ -74,6 +74,7 @@ import { requestHomeSetup } from "../stores/homeSetupStore";
 import type { NoteItem } from "../types/electron";
 import type { CalendarEvent } from "../types/calendar";
 import logger from "../utils/logger";
+import { LOCAL_LLM_ENABLED } from "../config/features";
 
 const platform = getCachedPlatform();
 const searchShortcut = platform === "darwin" ? "⌘K" : "Ctrl K";
@@ -324,7 +325,9 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
           }
         } catch {}
       }
-      if (useCleanupModel) {
+      // No local language model runs while the flag is off, so no GPU build
+      // of llama-server is worth advertising for it.
+      if (useCleanupModel && LOCAL_LLM_ENABLED) {
         try {
           const [gpu, vulkan] = await Promise.all([
             window.electronAPI?.detectVulkanGpu?.(),

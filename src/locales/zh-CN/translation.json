@@ -1959,6 +1959,10 @@
         "cloudInUse": "聊天和会议纪要通过 {{provider}} 运行。",
         "cloudChooseHint": "点击 {{provider}} 以在其上运行聊天和会议纪要。",
         "cloudSwitchHint": "保存密钥后，聊天和会议纪要将切换到 {{provider}}。"
+      },
+      "provider": {
+        "title": "云服务商",
+        "description": "聊天和会议纪要在此处选择的服务商上运行，使用你自己的 API 密钥。模型本身在使用它的地方直接选择。"
       }
     },
     "transcription": {

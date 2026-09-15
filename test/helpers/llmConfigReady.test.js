@@ -16,10 +16,12 @@ test("selectLLMConfigReady judges a scope the way the request path will", async 
   const state = () => useSettingsStore.getState();
 
   await t.test("the fresh-install chat defaults are not ready", () => {
-    // Local mode holding the defaulted cloud model id — the exact state that
-    // used to render as "Working · OpenAI GPT-5 Mini" on Home.
+    // The store still holds local mode with the defaulted cloud model id —
+    // the exact state that used to render as "Working · OpenAI GPT-5 Mini"
+    // on Home. With local language models hidden it resolves as cloud
+    // (retireLocalMode), and a cloud id without its key is not ready either.
     const chat = selectResolvedLLMConfig(state(), "chatIntelligence");
-    assert.equal(chat.mode, "local");
+    assert.equal(chat.mode, "providers");
     assert.equal(chat.model, "gpt-5-mini");
     assert.equal(selectLLMConfigReady(state(), chat), false);
   });

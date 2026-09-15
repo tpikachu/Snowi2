@@ -55,10 +55,11 @@ test("the capabilities card deep-links into Settings, where upload stays retired
   await skipOnboarding(page);
 
   // "Set up" on the missing AI-model capability opens Settings on Language
-  // Models — one page now: the engine choice, keys, and the advanced hatch.
+  // Models — one page: the provider grid over one key field (local language
+  // models are hidden behind LOCAL_LLM_ENABLED).
   await page.getByRole("button", { name: "Set up" }).first().click();
   await expect(page.getByText("Language Models").first()).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText("Cloud Providers").first()).toBeVisible();
+  await expect(page.getByRole("radiogroup", { name: "Provider" })).toBeVisible();
 
   // Over in Speech-to-Text the note-recording engine page loads directly —
   // a lone panel spawns no nav sub-items — and the upload surface stays
@@ -82,12 +83,12 @@ test("once a key is in, the capabilities card leaves Home", async () => {
   // defaults, so both rows turn ready at once — and a card with nothing left
   // to set up has no reason to stay (client direction, 2026-09-11).
   await page.getByRole("button", { name: "Set up" }).first().click();
-  // A fresh install's engine is Local; the key field lives under Cloud
-  // Providers, and the first provider card (OpenAI) is the selected one.
-  await page
-    .getByRole("button", { name: /Cloud Providers/ })
-    .first()
-    .click();
+  // Language Models is the provider grid over one key field (local language
+  // models are hidden), and the first provider card (OpenAI) is the selected
+  // one.
+  await expect(page.getByRole("radiogroup", { name: "Provider" })).toBeVisible({
+    timeout: 15_000,
+  });
   await page.getByRole("button", { name: "Add API key" }).click();
   const field = page.getByPlaceholder("Paste your API key");
   await field.fill("sk-not-a-real-key-for-the-e2e-run");

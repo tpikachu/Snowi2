@@ -17,21 +17,23 @@ import { ProviderGrid } from "../ui/ProviderGrid";
 import ReasoningModelSelector from "../ReasoningModelSelector";
 import { getProviderDisplayName } from "../../models/ModelRegistry";
 import { CLOUD_PROVIDER_KEY_LINKS } from "../../config/providerKeyLinks";
+import { LOCAL_LLM_ENABLED } from "../../config/features";
 
 /**
  * The whole Language Models setup, on one page — because chat and actions
  * share one LLM, and configuring it twice bought nothing anyone could
  * perceive (client direction, 2026-09).
  *
- * The user makes exactly one choice here: cloud or local, the same engine
- * cards the Speech-to-Text page uses. Cloud shows the provider grid and a key
- * field: the highlighted card is the provider chat and write-ups run on, a
- * click on a keyed card switches, and on a card without a key the switch
- * happens the moment its key is saved (setCoreCloudProvider) — the scope
- * defaults (scopeModelDefaults.ts) pick each feature's model. Local shows
- * the model list with downloads, and a selection routes chat and actions to
- * it together. Everything else is handled by the app: models are changed at
- * point of use (chat bar, cue card, action editor), never here. The former
+ * With local language models hidden (LOCAL_LLM_ENABLED false — client
+ * direction 2026-09-15) the page is the provider grid and a key field: the
+ * highlighted card is the provider chat and write-ups run on, a click on a
+ * keyed card switches, and on a card without a key the switch happens the
+ * moment its key is saved (setCoreCloudProvider) — the scope defaults
+ * (scopeModelDefaults.ts) pick each feature's model. With the flag on, the
+ * cloud | local engine cards the Speech-to-Text page uses lead, and Local
+ * shows the model list with downloads, a selection routing chat and actions
+ * to it together. Everything else is handled by the app: models are changed
+ * at point of use (chat bar, cue card, action editor), never here. The former
  * Advanced disclosure (per-scope editors, fast-lane override, chat prompt)
  * was removed on client direction, 2026-09 — the fast lane auto-derives
  * (assistFastLane.ts) and actions are managed from the notes sidebar.
@@ -223,6 +225,20 @@ export default function LanguageModelsPanel() {
       icon: <Cpu className="w-4 h-4" />,
     },
   ];
+
+  if (!LOCAL_LLM_ENABLED) {
+    return (
+      <SettingsPanelBody>
+        <SettingsGroup
+          id="llmEngine"
+          title={t("settingsPage.llms.provider.title")}
+          description={t("settingsPage.llms.provider.description")}
+        >
+          <CloudKeysSection />
+        </SettingsGroup>
+      </SettingsPanelBody>
+    );
+  }
 
   return (
     <SettingsPanelBody>

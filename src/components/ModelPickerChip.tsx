@@ -23,6 +23,7 @@ import {
 } from "../utils/modelPickerOptions";
 import type { InferenceScope } from "../config/inferenceScopes";
 import { openrouterModelLabel, openrouterPickerModels } from "../config/openrouterModels";
+import { LOCAL_LLM_ENABLED } from "../config/features";
 import logger from "../utils/logger";
 
 /**
@@ -137,8 +138,14 @@ export default function ModelPickerChip({
 
   // Downloaded local models, fetched when the popover first opens: the main
   // process owns the on-disk truth, and a closed chip should cost nothing.
+  // With local language models hidden the group is simply empty — a model on
+  // disk is not on offer.
   const [localModels, setLocalModels] = useState<PickerLocalModelInput[] | null>(null);
   const loadLocalModels = useCallback(async () => {
+    if (!LOCAL_LLM_ENABLED) {
+      setLocalModels([]);
+      return;
+    }
     try {
       const all = await window.electronAPI?.modelGetAll?.();
       const downloaded = new Set(

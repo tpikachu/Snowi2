@@ -1959,6 +1959,10 @@
         "cloudInUse": "チャットと会議のまとめは {{provider}} で実行されます。",
         "cloudChooseHint": "{{provider}} をクリックすると、チャットと会議のまとめをそこで実行します。",
         "cloudSwitchHint": "キーを保存すると、チャットと会議のまとめが {{provider}} に切り替わります。"
+      },
+      "provider": {
+        "title": "クラウドプロバイダー",
+        "description": "チャットと会議のまとめは、ここで選んだプロバイダーで自分の API キーを使って実行されます。モデル自体は使う場所でそのまま選べます。"
       }
     },
     "transcription": {

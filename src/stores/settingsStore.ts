@@ -4,6 +4,7 @@ import i18n, { normalizeUiLanguage } from "../i18n";
 import { ensureAgentNameInDictionary } from "../utils/agentName";
 import { chooseDictionaryStartupAction } from "../helpers/dictionaryStartup";
 import logger from "../utils/logger";
+import { LOCAL_LLM_ENABLED } from "../config/features";
 import whisperVadConstants from "../constants/whisperVad.json";
 import type {
   ChineseScriptPreference,
@@ -28,7 +29,11 @@ import {
 } from "../config/inferenceScopes";
 import { normalizeChineseScriptPreference } from "../utils/chineseScript";
 import { adjustBedrockModelForRegion } from "../utils/bedrockRegions";
-import { DEFAULTABLE_SCOPES, defaultModelForScope } from "../utils/scopeModelDefaults";
+import {
+  DEFAULTABLE_SCOPES,
+  defaultModelForScope,
+  type DefaultableScope,
+} from "../utils/scopeModelDefaults";
 import modelRegistryData from "../models/modelRegistryData.json";
 import type {
   TranscriptionSettings,
@@ -2740,7 +2745,7 @@ export const selectResolvedLLMConfig = (
   if (managed.kind === "error") {
     return { ...localConfig, mode: "enterprise", provider: "", model: "" };
   }
-  if (managed.kind !== "managed") return localConfig;
+  if (managed.kind !== "managed") return retireLocalMode(state, localConfig);
   return {
     ...localConfig,
     mode: "enterprise",
@@ -2871,6 +2876,39 @@ function firstKeyedDefaultableProvider(state: SettingsState): string | null {
 }
 
 /**
+ * With local language models hidden (LOCAL_LLM_ENABLED false — client
+ * direction 2026-09-15, after a side-by-side where Qwen3.5 9B produced the
+ * thin answer), a scope stored in local mode resolves as cloud on the READ
+ * path. No migration marker: every window agrees from its first render, keys
+ * that hydrate later are seen the moment they land, and the stored selection
+ * survives for the day the flag flips back.
+ *
+ * What it resolves to, in order: the stored cloud provider when its key is
+ * present (the former fresh-install default kept a cloud id under local
+ * mode); else the first keyed provider's scope defaults; else the stored
+ * cloud provider unkeyed — so Settings can say "save a key to move chat
+ * here" about it — or, for a local family id, nothing: "needs setup" until a
+ * key arrives, when applyDefaultModelsForNewKey writes the real routing.
+ */
+function retireLocalMode(state: SettingsState, config: ResolvedLLMConfig): ResolvedLLMConfig {
+  if (LOCAL_LLM_ENABLED) return config;
+  if ((config.mode || "local") !== "local") return config;
+  const cloud: ResolvedLLMConfig = {
+    ...config,
+    mode: "providers",
+    cloudMode: config.cloudMode || "byok",
+  };
+  const storedIsCloud = providerValidForCoreMode(cloud.provider, "providers");
+  if (storedIsCloud && selectLLMConfigReady(state, cloud)) return cloud;
+  const provider = firstKeyedDefaultableProvider(state);
+  const scope = config.scope as DefaultableScope;
+  const model =
+    provider && DEFAULTABLE_SCOPES.includes(scope) ? defaultModelForScope(provider, scope) : null;
+  if (provider && model) return { ...cloud, provider, model };
+  return storedIsCloud ? cloud : { ...cloud, provider: "", model: "" };
+}
+
+/**
  * The Language Models page's engine choice — cloud or local — applied to the
  * one LLM chat and actions share. Explicitly a radio: flipping to local
  * routes both scopes at whatever local model is (or gets) selected below the
@@ -2881,6 +2919,8 @@ function firstKeyedDefaultableProvider(state: SettingsState): string | null {
  * resolve.
  */
 export function setCoreLlmEngine(engine: "cloud" | "local"): void {
+  // Local is not on offer while the flag is off; nothing routes there.
+  if (engine === "local" && !LOCAL_LLM_ENABLED) return;
   const mode: InferenceMode = engine === "local" ? "local" : "providers";
   for (const scope of DEFAULTABLE_SCOPES) {
     const state = useSettingsStore.getState();

@@ -1959,6 +1959,10 @@
         "cloudInUse": "La chat e i riepiloghi delle riunioni girano su {{provider}}.",
         "cloudChooseHint": "Fai clic su {{provider}} per far girare lì la chat e i riepiloghi delle riunioni.",
         "cloudSwitchHint": "Salva una chiave per spostare la chat e i riepiloghi delle riunioni su {{provider}}."
+      },
+      "provider": {
+        "title": "Provider cloud",
+        "description": "La chat e i riepiloghi delle riunioni vengono eseguiti sul provider scelto qui, con la tua chiave API. Il modello si sceglie direttamente dove lo usi."
       }
     },
     "transcription": {

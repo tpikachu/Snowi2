@@ -68,13 +68,16 @@ test("models are picked at point of use; Settings is engine plus keys", async ()
   await page.screenshot({ path: test.info().outputPath("model-chip-popover.png") });
   await page.keyboard.press("Escape");
 
-  // Settings → Language Models is one page: the engine choice leads. A fresh
-  // install resolves local, so the cloud grid appears on flipping the card —
-  // which also routes chat and actions to providers mode in one stroke.
+  // Settings → Language Models is one page, and with local language models
+  // hidden (LOCAL_LLM_ENABLED false, client direction 2026-09-15) it is the
+  // provider grid over one key field: no Cloud | Local engine cards to flip.
   await page.getByRole("button", { name: "Settings" }).first().click();
   await page.getByRole("button", { name: "Language Models" }).first().click();
-  await expect(page.getByText("Cloud Providers").first()).toBeVisible({ timeout: 15_000 });
-  await page.getByText("Cloud Providers").first().click();
+  await expect(page.getByRole("radiogroup", { name: "Provider" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await expect(page.getByRole("button", { name: /Cloud Providers/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /^Local/ })).toHaveCount(0);
   await expect(page.getByText("OpenAI").first()).toBeVisible();
   await page.screenshot({ path: test.info().outputPath("language-models-panel.png") });
 });
@@ -86,10 +89,9 @@ test("the provider card is the switch: a key saved on the chosen card moves chat
 
   await page.getByRole("button", { name: "Settings" }).first().click();
   await page.getByRole("button", { name: "Language Models" }).first().click();
-  await expect(page.getByText("Cloud Providers").first()).toBeVisible({ timeout: 15_000 });
-  await page.getByText("Cloud Providers").first().click();
 
   const grid = page.getByRole("radiogroup", { name: "Provider" });
+  await expect(grid).toBeVisible({ timeout: 15_000 });
   // A card's accessible name is icon alt + name + badge + readiness; the
   // spaces keep OpenAI from matching OpenRouter.
   const card = (name) => grid.getByRole("radio", { name: new RegExp(" " + name + " ") });

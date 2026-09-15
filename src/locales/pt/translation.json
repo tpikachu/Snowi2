@@ -1938,6 +1938,10 @@
         "cloudInUse": "O chat e os resumos de reuniões são executados em {{provider}}.",
         "cloudChooseHint": "Clique em {{provider}} para executar nele o chat e os resumos de reuniões.",
         "cloudSwitchHint": "Salve uma chave para mover o chat e os resumos de reuniões para {{provider}}."
+      },
+      "provider": {
+        "title": "Provedor na nuvem",
+        "description": "O chat e os resumos de reuniões são executados no provedor escolhido aqui, com a sua própria chave de API. O modelo em si é escolhido bem onde você o usa."
       }
     },
     "transcription": {

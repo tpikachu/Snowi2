@@ -2242,6 +2242,10 @@
         "cloudInUse": "Chat und Meeting-Zusammenfassungen laufen über {{provider}}.",
         "cloudChooseHint": "Klicke auf {{provider}}, um Chat und Meeting-Zusammenfassungen darüber laufen zu lassen.",
         "cloudSwitchHint": "Speichere einen Schlüssel, um Chat und Meeting-Zusammenfassungen zu {{provider}} zu verschieben."
+      },
+      "provider": {
+        "title": "Cloud-Anbieter",
+        "description": "Chat und Meeting-Zusammenfassungen laufen über den hier gewählten Anbieter mit deinem eigenen API-Schlüssel. Das Modell selbst wählst du direkt dort, wo du es verwendest."
       }
     },
     "transcription": {

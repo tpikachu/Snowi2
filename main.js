@@ -290,7 +290,7 @@ const LinuxPortalAudioManager = require("./src/helpers/linuxPortalAudioManager")
 const WindowsLoopbackAudioManager = require("./src/helpers/windowsLoopbackAudioManager");
 const MeetingAecManager = require("./src/helpers/meetingAecManager");
 const MeetingDetectionEngine = require("./src/helpers/meetingDetectionEngine");
-const { CALENDAR_ENABLED } = require("./src/config/features");
+const { CALENDAR_ENABLED, LOCAL_LLM_ENABLED } = require("./src/config/features");
 const { i18nMain, changeLanguage } = require("./src/helpers/i18nMain");
 const { ensureYdotool } = require("./src/helpers/ensureYdotool");
 const sidecarRegistry = require("./src/helpers/sidecarRegistry");
@@ -969,7 +969,8 @@ async function startApp() {
   // TODO: drop legacy REASONING_PROVIDER / LOCAL_REASONING_MODEL fallbacks after 2 releases.
   const cleanupProvider = process.env.CLEANUP_PROVIDER || process.env.REASONING_PROVIDER;
   const cleanupLocalModel = process.env.LOCAL_CLEANUP_MODEL || process.env.LOCAL_REASONING_MODEL;
-  if (cleanupProvider === "local" && cleanupLocalModel) {
+  // No pre-warm while local language models are hidden: nothing routes there.
+  if (LOCAL_LLM_ENABLED && cleanupProvider === "local" && cleanupLocalModel) {
     const modelManager = require("./src/helpers/modelManagerBridge").default;
     modelManager.prewarmServer(cleanupLocalModel).catch((err) => {
       debugLogger.debug("llama-server pre-warm error (non-fatal)", { error: err.message });
@@ -977,6 +978,7 @@ async function startApp() {
   }
 
   if (
+    LOCAL_LLM_ENABLED &&
     process.env.DICTATION_AGENT_PROVIDER === "local" &&
     process.env.LOCAL_DICTATION_AGENT_MODEL &&
     process.env.LOCAL_DICTATION_AGENT_MODEL !== cleanupLocalModel

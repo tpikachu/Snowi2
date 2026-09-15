@@ -1959,6 +1959,10 @@
         "cloudInUse": "聊天與會議摘要透過 {{provider}} 執行。",
         "cloudChooseHint": "點選 {{provider}} 以在其上執行聊天與會議摘要。",
         "cloudSwitchHint": "儲存金鑰後，聊天與會議摘要將切換至 {{provider}}。"
+      },
+      "provider": {
+        "title": "雲端服務商",
+        "description": "聊天與會議摘要在此處選擇的服務商上執行，使用你自己的 API 金鑰。模型本身可在使用它的地方直接選擇。"
       }
     },
     "transcription": {

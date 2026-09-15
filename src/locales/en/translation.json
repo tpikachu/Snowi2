@@ -2242,6 +2242,10 @@
         "cloudInUse": "Chat and meeting write-ups run on {{provider}}.",
         "cloudChooseHint": "Click {{provider}} to run chat and meeting write-ups on it.",
         "cloudSwitchHint": "Save a key to move chat and meeting write-ups to {{provider}}."
+      },
+      "provider": {
+        "title": "Cloud provider",
+        "description": "Chat and meeting write-ups run on the provider you choose here, with your own API key. The model itself is picked right where you use it."
       }
     },
     "transcription": {
