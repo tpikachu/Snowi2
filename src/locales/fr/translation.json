@@ -225,6 +225,7 @@
       "title": "Configuration de la transcription",
       "description": "Choisissez votre mode et fournisseur",
       "preferredLanguage": "Langue préférée",
+      "preferredLanguageHint": "Détermine les modèles vocaux installés. Choisissez votre langue, ou Détection automatique pour les appels multilingues.",
       "automaticDescription": "Snowy choisit un modèle adapté à votre matériel",
       "path": {
         "question": "Comment Snowy doit-il transformer la parole en texte ?",

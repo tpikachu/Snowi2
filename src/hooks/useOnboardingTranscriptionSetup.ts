@@ -138,6 +138,21 @@ export function useOnboardingTranscriptionSetup(
   );
   const liveReady = recommendation ? installed.has(recommendation.live.name) : false;
 
+  // The language picker sits above the download on purpose, so someone who
+  // changes it after "Set it up for me" has already started fetching the
+  // other pair is retargeted: the running download is cancelled the moment
+  // the recommendation no longer lists it, and the auto-start re-arms on the
+  // new live model (TranscriptionAutoSetup keys its one shot by that name).
+  // While the probe re-runs the old recommendation stands, so nothing is
+  // cancelled until the new pair is actually known.
+  const activeModel = active.downloadingModel;
+  const cancelActive = active.cancelDownload;
+  useEffect(() => {
+    if (!activeModel || models.length === 0) return;
+    if (models.some(({ model }) => model.name === activeModel)) return;
+    void cancelActive();
+  }, [activeModel, models, cancelActive]);
+
   const startDownloads = useCallback(async () => {
     for (const { model } of missing) {
       const hook = model.runtime === "whisper" ? whisperDownload : parakeetDownload;

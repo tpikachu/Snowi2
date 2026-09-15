@@ -3076,11 +3076,20 @@ class IPCHandlers {
     ipcMain.handle("get-transcription-recommendation", async (_event, options) => {
       try {
         const { getCapabilities } = require("./capabilityProbe");
-        const { selectTier } = require("../utils/modelTiering");
+        const {
+          selectTier,
+          withoutArchive,
+          ARCHIVE_PASS_SHIPPED,
+        } = require("../utils/modelTiering");
         const cachePath = path.join(app.getPath("userData"), "capability.json");
 
         const capability = await getCapabilities(cachePath, { force: options?.force === true });
-        const recommendation = selectTier(capability, { language: options?.language });
+        const selected = selectTier(capability, { language: options?.language });
+        // Until the post-Stop archive pass exists, the second model is a
+        // download nothing reads — see ARCHIVE_PASS_SHIPPED.
+        const recommendation = ARCHIVE_PASS_SHIPPED
+          ? selected
+          : withoutArchive(selected, capability);
 
         return { success: true, capability, recommendation };
       } catch (error) {
@@ -3090,11 +3099,11 @@ class IPCHandlers {
         debugLogger.warn("capability probe failed; falling back to the conservative tier", {
           error: error.message,
         });
-        const { selectTier } = require("../utils/modelTiering");
+        const { selectTier, withoutArchive } = require("../utils/modelTiering");
         return {
           success: true,
           capability: null,
-          recommendation: selectTier(null, { language: options?.language }),
+          recommendation: withoutArchive(selectTier(null, { language: options?.language }), null),
           probeFailed: true,
         };
       }

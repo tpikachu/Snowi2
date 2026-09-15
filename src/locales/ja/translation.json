@@ -225,6 +225,7 @@
       "title": "文字起こし設定",
       "description": "モードとプロバイダーを選択してください",
       "preferredLanguage": "優先言語",
+      "preferredLanguageHint": "インストールする音声モデルを決めます。言語を選ぶか、複数言語が混ざる通話には自動検出を選んでください。",
       "automaticDescription": "Snowy がハードウェアに合ったモデルを選びます",
       "path": {
         "question": "Snowy はどのように音声を文字にしますか？",

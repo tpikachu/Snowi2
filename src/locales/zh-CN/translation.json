@@ -225,6 +225,7 @@
       "title": "转录设置",
       "description": "选择模式和服务商",
       "preferredLanguage": "首选语言",
+      "preferredLanguageHint": "决定安装哪些语音模型。选择你的语言，或为混合语言的通话选择自动检测。",
       "automaticDescription": "Snowy 会根据你的硬件挑选模型",
       "path": {
         "question": "Snowy 应如何把语音转成文字？",

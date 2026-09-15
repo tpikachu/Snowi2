@@ -70,6 +70,21 @@ const MODELS = {
  */
 const UNIFIED_EN_STREAMING_IS_VIABLE = false;
 
+/**
+ * Whether the app runs the archive pass at all.
+ *
+ * The tiers still choose an archive model — that is the design, and the
+ * post-Stop re-transcription it exists for is the next piece of work — but
+ * until that pass ships, the second download buys the user nothing: only the
+ * live model is written to settings and no code path reads the archive. On
+ * every 12 GB machine that was ~680 MB of onboarding download and a caption
+ * ("goes back over the whole meeting afterwards") the app did not honor —
+ * client report, 2026-09-15: two models at once, quality unchanged. Flip
+ * this when the pass lands; withoutArchive() is what the recommendation IPC
+ * applies meanwhile.
+ */
+const ARCHIVE_PASS_SHIPPED = false;
+
 function pickModels(language) {
   const multilingual = language === "multilingual";
   return {
@@ -202,8 +217,30 @@ function selectTier(capability, options = {}) {
   };
 }
 
+/**
+ * The recommendation with its archive model withheld: the live model alone,
+ * its download size, and the disk warning re-judged against that size. The
+ * tier and its label are untouched, so the UI's "why this machine" line
+ * stays true. Pure. Removing a download can only clear the disk warning,
+ * never raise it, so the other warnings keep their order.
+ */
+function withoutArchive(recommendation, capability) {
+  if (!recommendation) return recommendation;
+  const downloadGb = recommendation.live?.diskGb ?? 0;
+  const freeDiskGb = Number(capability?.freeDiskGb);
+  const lowDisk = Number.isFinite(freeDiskGb) && freeDiskGb < downloadGb * 1.5;
+  return {
+    ...recommendation,
+    archive: null,
+    downloadGb: Number(downloadGb.toFixed(2)),
+    warnings: recommendation.warnings.filter((warning) => warning !== "lowDisk" || lowDisk),
+  };
+}
+
 module.exports = {
   selectTier,
+  withoutArchive,
+  ARCHIVE_PASS_SHIPPED,
   MODELS,
   STREAMING_RESIDENT_GB,
   OFFLINE_RESIDENT_GB,

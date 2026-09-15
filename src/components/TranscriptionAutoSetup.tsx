@@ -100,14 +100,20 @@ export default function TranscriptionAutoSetup({
     startDownloads,
   } = setup;
 
-  // One shot per mount: choosing the auto card again after a cancel re-arms
-  // it, but progress events must never resurrect a download the user stopped.
-  const autoStartedRef = useRef(false);
+  // One shot per live model: choosing the auto card again after a cancel
+  // re-arms it, but progress events must never resurrect a download the user
+  // stopped. Keyed by the live model's name rather than by mount so that
+  // changing the language above — which swaps the pair — starts the new pair
+  // on its own once the hook has cancelled the old one. The key is written
+  // only when a download actually starts: while the old pair is still
+  // downloading, the new pair must stay armed for the moment it stops.
+  const autoStartedForRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!autoStart || autoStartedRef.current) return;
+    if (!autoStart) return;
     if (probing || checking || !recommendation) return;
-    autoStartedRef.current = true;
+    if (autoStartedForRef.current === recommendation.live.name) return;
     if (missing.length === 0 || isDownloading) return;
+    autoStartedForRef.current = recommendation.live.name;
     void startDownloads();
   }, [autoStart, probing, checking, recommendation, missing, isDownloading, startDownloads]);
 

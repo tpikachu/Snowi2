@@ -225,6 +225,7 @@
       "title": "Transcription Setup",
       "description": "Choose your mode and provider",
       "preferredLanguage": "Preferred Language",
+      "preferredLanguageHint": "Decides which speech models are installed. Pick your language, or Auto-detect for calls that mix languages.",
       "automaticDescription": "Snowy picks a model to match your hardware",
       "path": {
         "question": "How should Snowy turn speech into text?",

@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 
 const {
   selectTier,
+  withoutArchive,
   MODELS,
   MIN_RAM_STREAMING_GB,
   MIN_RAM_ARCHIVE_GB,
@@ -176,4 +177,37 @@ test("a GPU cannot rescue a machine without the memory to use it", () => {
 
   assert.equal(result.tier, "T1");
   assert.equal(result.archive, null);
+});
+
+test("withholding the archive keeps the tier and the live model and drops the second download", () => {
+  const full = selectTier(machine());
+  const trimmed = withoutArchive(full, machine());
+  assert.equal(full.archive.name, MODELS.archiveEn.name);
+  assert.equal(trimmed.archive, null);
+  assert.equal(trimmed.tier, full.tier);
+  assert.equal(trimmed.label, full.label);
+  assert.deepEqual(trimmed.live, full.live);
+  assert.equal(trimmed.streaming, true);
+  assert.equal(trimmed.downloadGb, MODELS.streamingEn.diskGb);
+});
+
+test("withholding the archive re-judges the disk warning against the live model alone", () => {
+  // 1.5 GB free: too little for two models, enough for one.
+  const roomForOne = machine({ freeDiskGb: 1.5 });
+  assert.ok(selectTier(roomForOne).warnings.includes("lowDisk"));
+  assert.ok(!withoutArchive(selectTier(roomForOne), roomForOne).warnings.includes("lowDisk"));
+  // 0.5 GB free: too little even for the live model.
+  const tight = machine({ freeDiskGb: 0.5 });
+  assert.ok(withoutArchive(selectTier(tight), tight).warnings.includes("lowDisk"));
+  // Other warnings survive.
+  const battery = machine({ onBattery: true });
+  assert.deepEqual(withoutArchive(selectTier(battery), battery).warnings, ["onBattery"]);
+});
+
+test("a recommendation with no archive passes through unchanged", () => {
+  const small = machine({ totalMemGb: 8, physicalCores: 6, logicalCores: 6 });
+  const baseline = selectTier(small);
+  assert.equal(baseline.archive, null);
+  assert.deepEqual(withoutArchive(baseline, small), baseline);
+  assert.equal(withoutArchive(null, null), null);
 });

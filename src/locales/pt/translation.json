@@ -204,6 +204,7 @@
       "title": "Configuração de transcrição",
       "description": "Escolha seu modo e provedor",
       "preferredLanguage": "Idioma preferido",
+      "preferredLanguageHint": "Define quais modelos de fala são instalados. Escolha seu idioma ou Detecção automática para chamadas com vários idiomas.",
       "automaticDescription": "O Snowy escolhe um modelo compatível com seu hardware",
       "path": {
         "question": "Como o Snowy deve transformar fala em texto?",

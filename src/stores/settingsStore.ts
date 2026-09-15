@@ -1377,7 +1377,14 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   allowOpenAIFallback: readBoolean("allowOpenAIFallback", false),
   allowLocalFallback: readBoolean("allowLocalFallback", false),
   fallbackWhisperModel: readString("fallbackWhisperModel", "base"),
-  preferredLanguage: readString("preferredLanguage", "auto"),
+  // A fresh install defaults to English: most users are, and the language
+  // decides which speech-model pair onboarding fetches (client direction
+  // 2026-09-15). An install that finished onboarding before this keeps the
+  // auto-detect it was running on rather than being silently switched.
+  preferredLanguage: readString(
+    "preferredLanguage",
+    readBoolean("onboardingCompleted", false) ? "auto" : "en-US"
+  ),
   chineseScriptPreference: normalizeChineseScriptPreference(
     readString("chineseScriptPreference", "as-transcribed")
   ),

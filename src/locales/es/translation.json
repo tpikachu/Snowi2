@@ -225,6 +225,7 @@
       "title": "Configuración de transcripción",
       "description": "Elige tu modo y proveedor",
       "preferredLanguage": "Idioma preferido",
+      "preferredLanguageHint": "Decide qué modelos de voz se instalan. Elige tu idioma o Detección automática para llamadas con varios idiomas.",
       "automaticDescription": "Snowy elige un modelo acorde a tu hardware",
       "path": {
         "question": "¿Cómo debería Snowy convertir la voz en texto?",

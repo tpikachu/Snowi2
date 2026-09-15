@@ -189,6 +189,20 @@ export default function TranscriptionStep({
         </button>
       )}
 
+      {/* The language is asked before the fork, not after it: it decides
+          which model pair "Set it up for me" fetches, and that download
+          starts the moment the card is chosen. A picker under the download
+          was answered too late (client, 2026-09-15). */}
+      <StepSection label={t("onboarding.transcription.preferredLanguage")}>
+        <LanguageSelector
+          value={preferredLanguage}
+          onChange={onPreferredLanguageChange}
+          className="w-full"
+        />
+        <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">
+          {t("onboarding.transcription.preferredLanguageHint")}
+        </p>
+      </StepSection>
       {questionLabel && (
         <p className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           {questionLabel}
@@ -209,14 +223,6 @@ export default function TranscriptionStep({
           {t("onboarding.transcription.advancedLink")}
         </button>
       )}
-
-      <StepSection label={t("onboarding.transcription.preferredLanguage")}>
-        <LanguageSelector
-          value={preferredLanguage}
-          onChange={onPreferredLanguageChange}
-          className="w-full"
-        />
-      </StepSection>
     </StepShell>
   );
 }

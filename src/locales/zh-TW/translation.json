@@ -225,6 +225,7 @@
       "title": "轉錄設定",
       "description": "選擇模式和服務供應商",
       "preferredLanguage": "偏好語言",
+      "preferredLanguageHint": "決定安裝哪些語音模型。選擇你的語言，或為混合語言的通話選擇自動偵測。",
       "automaticDescription": "Snowy 會根據你的硬體挑選模型",
       "path": {
         "question": "Snowy 應如何把語音轉成文字？",

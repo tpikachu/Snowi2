@@ -225,6 +225,7 @@
       "title": "Transkriptions-Einrichtung",
       "description": "Wählen Sie Modus und Anbieter",
       "preferredLanguage": "Bevorzugte Sprache",
+      "preferredLanguageHint": "Bestimmt, welche Sprachmodelle installiert werden. Wähle deine Sprache oder Automatisch erkennen für gemischtsprachige Gespräche.",
       "automaticDescription": "Snowy wählt ein Modell passend zu Ihrer Hardware",
       "path": {
         "question": "Wie soll Snowy Sprache in Text umwandeln?",

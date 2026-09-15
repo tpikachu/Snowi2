@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { speechModelLanguage } from "../utils/languageSupport";
 import { DICTATION_ENABLED } from "../config/features";
 import { Button } from "./ui/button";
 import {
@@ -139,7 +140,7 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   // survive it. `installed` updating on completion is what re-opens the Next
   // button after the user walked ahead mid-download.
   const transcriptionSetup = useOnboardingTranscriptionSetup(
-    preferredLanguage === "en" ? "en" : "multilingual"
+    speechModelLanguage(preferredLanguage)
   );
 
   const applyRecommendation = useCallback(
