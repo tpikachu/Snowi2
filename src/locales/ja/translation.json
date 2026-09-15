@@ -476,7 +476,18 @@
       "enableButton": "GPU を有効化",
       "dismissButton": "後で"
     },
-    "backToNotes": "ノートに戻る"
+    "backToNotes": "ノートに戻る",
+    "updateBanner": {
+      "available": "Snowy {{version}} が利用できます。",
+      "downloading": "Snowy {{version}} をダウンロード中… {{percent}}%",
+      "ready": "Snowy {{version}} をインストールする準備ができました。",
+      "download": "ダウンロード",
+      "restart": "再起動して更新",
+      "later": "あとで",
+      "laterHint": "明日また知らせる",
+      "downloadFailed": "ダウンロードが完了しませんでした。もう一度お試しください。",
+      "installFailed": "再起動できませんでした。もう一度お試しください。"
+    }
   },
   "reasoning": {
     "mode": {

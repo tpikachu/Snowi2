@@ -38,6 +38,7 @@ import {
   useMeetingRecordingStore,
 } from "../stores/meetingRecordingStore";
 import IconRail, { ICON_RAIL_WIDTH_PX, type ControlPanelView } from "./shell/IconRail";
+import UpdateBanner from "./UpdateBanner";
 import ContextPane from "./shell/ContextPane";
 import { macTopRowInset } from "./shell/macChrome";
 import {
@@ -1139,6 +1140,10 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                 </div>
               )}
             </header>
+
+            {/* A new version, until acted on. Hidden with the rail during a
+                meeting: that layout belongs to the meeting. */}
+            <UpdateBanner hidden={isSidePanelLayout} />
             {/* The speech model onboarding left downloading. Visible from
                 every section so a disabled Start is never a mystery; the
                 side-panel layout means a meeting is already running, where

@@ -455,7 +455,18 @@
       "enableButton": "Ativar GPU",
       "dismissButton": "Agora não"
     },
-    "backToNotes": "Voltar para notas"
+    "backToNotes": "Voltar para notas",
+    "updateBanner": {
+      "available": "O Snowy {{version}} está disponível.",
+      "downloading": "Baixando o Snowy {{version}}… {{percent}}%",
+      "ready": "O Snowy {{version}} está pronto para instalar.",
+      "download": "Baixar",
+      "restart": "Reiniciar para atualizar",
+      "later": "Mais tarde",
+      "laterHint": "Lembrar amanhã",
+      "downloadFailed": "O download não foi concluído. Tente novamente.",
+      "installFailed": "A reinicialização não foi concluída. Tente novamente."
+    }
   },
   "reasoning": {
     "mode": {

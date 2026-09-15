@@ -476,7 +476,18 @@
       "enableButton": "啟用 GPU",
       "dismissButton": "暫時不要"
     },
-    "backToNotes": "返回筆記"
+    "backToNotes": "返回筆記",
+    "updateBanner": {
+      "available": "Snowy {{version}} 已可用。",
+      "downloading": "正在下載 Snowy {{version}}… {{percent}}%",
+      "ready": "Snowy {{version}} 已準備好安裝。",
+      "download": "下載",
+      "restart": "重新啟動以更新",
+      "later": "稍後",
+      "laterHint": "明天提醒我",
+      "downloadFailed": "下載未完成。請再試一次。",
+      "installFailed": "重新啟動未完成。請再試一次。"
+    }
   },
   "reasoning": {
     "mode": {

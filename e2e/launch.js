@@ -13,15 +13,17 @@ const CONTROL_PANEL_TIMEOUT_MS = 60_000;
  * the developer's own dev data (see SNOWY_USER_DATA_DIR in main.js).
  *
  * @param {import("@playwright/test").TestInfo} testInfo
+ * @param {{ env?: Record<string, string> }} [options] extra environment for this launch
  * @returns {Promise<{ app: import("playwright").ElectronApplication, userDataDir: string }>}
  */
-async function launchApp(testInfo) {
+async function launchApp(testInfo, { env: extraEnv = {} } = {}) {
   const userDataDir = testInfo.outputPath("user-data");
   const env = {
     ...process.env,
     NODE_ENV: "development",
     SNOWY_CHANNEL: "development",
     SNOWY_USER_DATA_DIR: userDataDir,
+    ...extraEnv,
   };
   // Inherited from a shell that ran electron-as-node (the better-sqlite3 ABI
   // check does), this turns the binary into plain Node and the launch dies on

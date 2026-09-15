@@ -476,7 +476,18 @@
       "enableButton": "Enable GPU",
       "dismissButton": "Not now"
     },
-    "backToNotes": "Back to notes"
+    "backToNotes": "Back to notes",
+    "updateBanner": {
+      "available": "Snowy {{version}} is available.",
+      "downloading": "Downloading Snowy {{version}}… {{percent}}%",
+      "ready": "Snowy {{version}} is ready to install.",
+      "download": "Download",
+      "restart": "Restart to update",
+      "later": "Later",
+      "laterHint": "Remind me tomorrow",
+      "downloadFailed": "The download didn't finish. Try again.",
+      "installFailed": "The restart didn't go through. Try again."
+    }
   },
   "reasoning": {
     "mode": {

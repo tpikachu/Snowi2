@@ -21,6 +21,8 @@ const {
   WindowPositionUtil,
 } = require("./windowConfig");
 
+const UPDATE_NOTIFICATION_LIFETIME_MS = 30_000;
+
 class WindowManager {
   constructor() {
     this.mainWindow = null;
@@ -1775,6 +1777,14 @@ class WindowManager {
       this._updateNotificationAutoDismiss = null;
     }
 
+    // Set before the page loads: the overlay pulls it on mount, and a card
+    // that only learned its data from the 3 s fallback push spent most of
+    // its life invisible.
+    this._pendingUpdateNotificationData = {
+      version: info?.version,
+      releaseDate: info?.releaseDate,
+    };
+
     const display = screen.getPrimaryDisplay();
     const position = WindowPositionUtil.getNotificationPosition(display);
 
@@ -1798,11 +1808,6 @@ class WindowManager {
       });
     }
 
-    this._pendingUpdateNotificationData = {
-      version: info?.version,
-      releaseDate: info?.releaseDate,
-    };
-
     this._updateNotificationReadyFallback = setTimeout(() => {
       this._updateNotificationReadyFallback = null;
       if (this.updateNotificationWindow && !this.updateNotificationWindow.isDestroyed()) {
@@ -1814,9 +1819,11 @@ class WindowManager {
       }
     }, 3000);
 
+    // Long enough to be read and acted on; the control panel's banner is the
+    // persistent half, so the card need not nag past this.
     this._updateNotificationAutoDismiss = setTimeout(() => {
       this.dismissUpdateNotification({ persistent: false });
-    }, 5000);
+    }, UPDATE_NOTIFICATION_LIFETIME_MS);
 
     win.on("closed", () => {
       if (this.updateNotificationWindow !== win) return;

@@ -476,7 +476,18 @@
       "enableButton": "Attiva GPU",
       "dismissButton": "Non ora"
     },
-    "backToNotes": "Torna alle note"
+    "backToNotes": "Torna alle note",
+    "updateBanner": {
+      "available": "Snowy {{version}} è disponibile.",
+      "downloading": "Download di Snowy {{version}} in corso… {{percent}}%",
+      "ready": "Snowy {{version}} è pronto per l'installazione.",
+      "download": "Scarica",
+      "restart": "Riavvia per aggiornare",
+      "later": "Più tardi",
+      "laterHint": "Ricordamelo domani",
+      "downloadFailed": "Il download non è stato completato. Riprova.",
+      "installFailed": "Il riavvio non è riuscito. Riprova."
+    }
   },
   "reasoning": {
     "mode": {

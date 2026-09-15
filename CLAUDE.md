@@ -44,6 +44,7 @@ Snowy is an Electron-based desktop dictation application that uses whisper.cpp f
 
 - **main.js**: Application entry point, initializes all managers
 - **preload.js**: Exposes safe IPC methods to renderer via window.api
+- **updater.js**: Automatic updates over the fork's GitHub releases (`electron-updater`, packaged builds only; 15 s after launch, then every 4 h; download and install on the user's click, install-on-quit otherwise). **Main resolves the release itself**: pure `helpers/updateFeed.js` picks, from the repo's release list, the newest version above the running one that carries the platform's channel file (`latest.yml` / `latest-mac.yml`), and `updater.js` points the library's **generic** provider at that release's download folder. The library's own GitHub provider could not: it reads a tag's prerelease identifier as a channel name and accepts only tags carrying the same one, so an rc8 install never saw `v0.1.0-rc9` and every check ended in "No published versions on GitHub" plus a red toast (client, 2026-09-15). Installs of rc8 and earlier carry the old matching and need one manual install; rc1–rc7 also predate `publishAutoUpdate` and have no channel file. Background checks fail quietly (`_quietErrors`); a manual check or a download/install failure still reaches the renderer. What the user sees: the **persistent banner** under the control panel header (`UpdateBanner.tsx`; Download with progress, then Restart to update; Later/X snooze that version for a day via pure `utils/updateBanner.ts`, hidden during a meeting), the corner card (`UpdateNotificationOverlay`, its data set before the page loads, 30 s lifetime), the rail icon, and Settings → System. Dev hook `SNOWY_FAKE_UPDATE_VERSION=<version>` makes an unpackaged run announce that version and fake its download — `e2e/update.spec.js` drives the banner with it
 
 ### Native Resources (resources/)
 
@@ -116,6 +117,7 @@ Snowy is an Electron-based desktop dictation application that uses whisper.cpp f
   - `syncAutostartEntry()` runs from `autoStart.syncAutoStartEntry()` in `initializeCoreManagers()` and re-points a stale `Exec` after the executable moves (renamed or auto-updated AppImage); it never re-enables an entry the user disabled, and no-ops in development
   - Unit-tested in `test/helpers/linuxAutostart.test.js`
 - **ipcHandlers.js**: Centralized IPC handler registration
+- **updateFeed.js**: Pure release picker for the updater (see `updater.js` above); unit-tested in `test/helpers/updateFeed.test.js`
 - **windowsKeyManager.js**: Windows Push-to-Talk support with native key listener
   - Spawns native `windows-key-listener.exe` binary for low-level keyboard hooks
   - Supports compound hotkeys (e.g., `Ctrl+Shift+F11`, `CommandOrControl+Space`)
