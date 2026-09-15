@@ -33,6 +33,11 @@
       "speakerDetection": {
         "title": "Identifica ed etichetta i partecipanti",
         "description": "Se disattivato, le trascrizioni mostrano \"Tu\" e \"Altri\""
+      },
+      "recordings": {
+        "title": "Conserva le registrazioni delle riunioni",
+        "description": "L'audio di ogni riunione resta con la sua nota, da riascoltare o scaricare. Se disattivato, non viene scritto nulla su disco.",
+        "usage": "Registrazioni su disco: {{count}} ({{size}})"
       }
     }
   },
@@ -3032,6 +3037,17 @@
         "noWriteUp": "Questa riunione non ha ancora un riepilogo — generane uno prima.",
         "failed": "La bozza non è arrivata. Riprova."
       }
+    },
+    "recordings": {
+      "title": "Registrazioni",
+      "play": "Riproduci",
+      "pause": "Pausa",
+      "download": "Scarica",
+      "showInFolder": "Mostra nella cartella",
+      "preparing": "Preparazione della registrazione…",
+      "seek": "Posizione",
+      "saveFailed": "Impossibile salvare la registrazione.",
+      "loadFailed": "Impossibile aprire la registrazione."
     }
   },
   "dictionary": {

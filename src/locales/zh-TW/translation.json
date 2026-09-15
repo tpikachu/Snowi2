@@ -33,6 +33,11 @@
       "speakerDetection": {
         "title": "辨識並標記發言者",
         "description": "關閉後，逐字稿會顯示「你」和「其他人」"
+      },
+      "recordings": {
+        "title": "保留會議錄音",
+        "description": "每場會議的音訊都與其筆記保存在一起，可回放或下載。關閉後不會寫入磁碟。",
+        "usage": "磁碟上的錄音：{{count}} 個（{{size}}）"
       }
     }
   },
@@ -3032,6 +3037,17 @@
         "noWriteUp": "此會議還沒有摘要 — 請先產生。",
         "failed": "草稿未能產生。請重試。"
       }
+    },
+    "recordings": {
+      "title": "錄音",
+      "play": "播放",
+      "pause": "暫停",
+      "download": "下載",
+      "showInFolder": "在資料夾中顯示",
+      "preparing": "正在準備錄音…",
+      "seek": "位置",
+      "saveFailed": "無法儲存錄音。",
+      "loadFailed": "無法開啟錄音。"
     }
   },
   "dictionary": {

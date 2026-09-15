@@ -16,6 +16,7 @@ export function resolveMeetingTranscriptionOptions({
   cortiTenant,
   keyterms,
   archivePass,
+  keepRecording,
 }) {
   if (transcriptionMode === "local") {
     return {
@@ -29,6 +30,8 @@ export function resolveMeetingTranscriptionOptions({
       // Only the local engines run the post-stop archive pass; main reads
       // this to decide whether to mirror the meeting's audio.
       ...(archivePass === undefined ? {} : { archivePass }),
+      // Whether main keeps the meeting's audio with the note, in any mode.
+      ...(keepRecording === undefined ? {} : { keepRecording }),
     };
   }
 
@@ -52,6 +55,7 @@ export function resolveMeetingTranscriptionOptions({
     model: resolveModel(provider, selectedModel),
     mode: "byok",
     language,
+    ...(keepRecording === undefined ? {} : { keepRecording }),
   };
 
   if (provider.id === "corti") {

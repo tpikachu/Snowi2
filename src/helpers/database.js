@@ -671,6 +671,13 @@ class DatabaseManager {
         END
       `);
 
+      // Meeting recordings kept with their notes (noteRecordingsSchema.js; the
+      // files live under userData/recordings). Same trigger pattern as the
+      // segments: notes are deleted from many paths, some with foreign keys off.
+      for (const statement of require("./noteRecordingsSchema").NOTE_RECORDINGS_DDL) {
+        this.db.exec(statement);
+      }
+
       // Memory objects (§19), indexed half only — see memoryStore.js for the
       // split. Nothing here is meeting substance: `type`, `status` and
       // `subject` are enums, `subject` is a role rather than a name, and the
@@ -3790,6 +3797,95 @@ class DatabaseManager {
       debugLogger.error("Error deleting note", { error: error.message }, "notes");
       throw error;
     }
+  }
+
+  // --- Meeting recordings kept with notes (note_recordings) -------------------
+
+  _mapNoteRecording(row) {
+    if (!row) return null;
+    return {
+      id: row.id,
+      noteId: row.note_id,
+      sessionId: row.session_id,
+      relPath: row.rel_path,
+      startedAt: row.started_at_ms,
+      endedAt: row.ended_at_ms,
+      durationMs: row.duration_ms,
+      bytes: row.bytes,
+      codec: row.codec,
+    };
+  }
+
+  addNoteRecording({
+    noteId,
+    sessionId = null,
+    relPath,
+    startedAt,
+    endedAt = null,
+    durationMs = null,
+    bytes = null,
+    codec = "mp3",
+  }) {
+    if (!this.db) throw new Error("Database not initialized");
+    const result = this.db
+      .prepare(
+        `INSERT INTO note_recordings
+           (note_id, session_id, rel_path, started_at_ms, ended_at_ms, duration_ms, bytes, codec)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(noteId, sessionId, relPath, startedAt, endedAt, durationMs, bytes, codec);
+    return this.getNoteRecording(Number(result.lastInsertRowid));
+  }
+
+  getNoteRecording(id) {
+    if (!this.db) throw new Error("Database not initialized");
+    return this._mapNoteRecording(
+      this.db.prepare("SELECT * FROM note_recordings WHERE id = ?").get(id)
+    );
+  }
+
+  getNoteRecordingBySession(sessionId) {
+    if (!this.db) throw new Error("Database not initialized");
+    return this._mapNoteRecording(
+      this.db.prepare("SELECT * FROM note_recordings WHERE session_id = ?").get(sessionId)
+    );
+  }
+
+  getNoteRecordings(noteId) {
+    if (!this.db) throw new Error("Database not initialized");
+    return this.db
+      .prepare("SELECT * FROM note_recordings WHERE note_id = ? ORDER BY started_at_ms ASC")
+      .all(noteId)
+      .map((row) => this._mapNoteRecording(row));
+  }
+
+  listNoteRecordings() {
+    if (!this.db) throw new Error("Database not initialized");
+    return this.db
+      .prepare("SELECT * FROM note_recordings ORDER BY id ASC")
+      .all()
+      .map((row) => this._mapNoteRecording(row));
+  }
+
+  deleteNoteRecording(id) {
+    if (!this.db) throw new Error("Database not initialized");
+    const result = this.db.prepare("DELETE FROM note_recordings WHERE id = ?").run(id);
+    return { success: result.changes > 0, id };
+  }
+
+  /** Removes the note's rows and returns them, so the caller can unlink the files. */
+  deleteNoteRecordingsForNote(noteId) {
+    const rows = this.getNoteRecordings(noteId);
+    this.db.prepare("DELETE FROM note_recordings WHERE note_id = ?").run(noteId);
+    return rows;
+  }
+
+  getNoteRecordingsUsage() {
+    if (!this.db) throw new Error("Database not initialized");
+    const row = this.db
+      .prepare("SELECT COUNT(*) AS count, COALESCE(SUM(bytes), 0) AS bytes FROM note_recordings")
+      .get();
+    return { count: Number(row?.count ?? 0), bytes: Number(row?.bytes ?? 0) };
   }
 
   createAgentConversation(title = "Untitled", noteId = null, spaceId = null, folderId = null) {

@@ -33,6 +33,11 @@
       "speakerDetection": {
         "title": "Identifier et étiqueter les intervenants",
         "description": "Lorsque désactivé, les transcriptions affichent « Vous » et « Autres »"
+      },
+      "recordings": {
+        "title": "Conserver les enregistrements de réunion",
+        "description": "L'audio de chaque réunion reste avec sa note, pour l'écouter ou le télécharger. Désactivé, rien n'est écrit sur le disque.",
+        "usage": "Enregistrements sur le disque : {{count}} ({{size}})"
       }
     }
   },
@@ -3239,6 +3244,17 @@
         "noWriteUp": "Cette réunion n'a pas encore de résumé — générez-en un d'abord.",
         "failed": "Le brouillon n'est pas arrivé. Réessayez."
       }
+    },
+    "recordings": {
+      "title": "Enregistrements",
+      "play": "Lire",
+      "pause": "Pause",
+      "download": "Télécharger",
+      "showInFolder": "Afficher dans le dossier",
+      "preparing": "Préparation de l'enregistrement…",
+      "seek": "Position",
+      "saveFailed": "L'enregistrement n'a pas pu être sauvegardé.",
+      "loadFailed": "L'enregistrement n'a pas pu être ouvert."
     }
   },
   "dictionary": {

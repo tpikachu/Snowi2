@@ -33,6 +33,11 @@
       "speakerDetection": {
         "title": "Sprecher erkennen und beschriften",
         "description": "Wenn deaktiviert, zeigen Transkripte „Du“ und „Andere“"
+      },
+      "recordings": {
+        "title": "Meeting-Aufnahmen behalten",
+        "description": "Die Tonaufnahme jedes Meetings bleibt bei seiner Notiz, zum Anhören oder Herunterladen. Aus: Es wird nichts auf die Festplatte geschrieben.",
+        "usage": "Aufnahmen auf der Festplatte: {{count}} ({{size}})"
       }
     }
   },
@@ -3239,6 +3244,17 @@
         "noWriteUp": "Dieses Meeting hat noch keine Zusammenfassung — erstellen Sie zuerst eine.",
         "failed": "Der Entwurf kam nicht an. Versuchen Sie es erneut."
       }
+    },
+    "recordings": {
+      "title": "Aufnahmen",
+      "play": "Abspielen",
+      "pause": "Pause",
+      "download": "Herunterladen",
+      "showInFolder": "Im Ordner anzeigen",
+      "preparing": "Aufnahme wird vorbereitet…",
+      "seek": "Position",
+      "saveFailed": "Die Aufnahme konnte nicht gespeichert werden.",
+      "loadFailed": "Die Aufnahme konnte nicht geöffnet werden."
     }
   },
   "dictionary": {

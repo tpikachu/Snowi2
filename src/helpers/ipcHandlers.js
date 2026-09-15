@@ -1219,6 +1219,67 @@ class IPCHandlers {
       return this.audioStorageManager.getStorageUsage();
     });
 
+    // Meeting recordings kept with their notes (noteRecordings.js). Rows go
+    // out without their stored path; every file access takes the id and
+    // resolves under the recordings directory.
+    ipcMain.handle("note-recordings-list", async (_event, noteId) => {
+      if (!Number.isInteger(noteId)) return [];
+      return this.databaseManager
+        .getNoteRecordings(noteId)
+        .map((row) => this._publicRecording(row));
+    });
+    ipcMain.handle("note-recording-buffer", async (_event, id) => {
+      try {
+        const row = this.databaseManager.getNoteRecording(id);
+        if (!row) return null;
+        const { recordingAbsolutePath } = require("./noteRecordings");
+        const buffer = fs.readFileSync(recordingAbsolutePath(this._recordingsDir(), row.relPath));
+        return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
+      } catch (error) {
+        debugLogger.warn("Recording could not be read", { id, error: error.message }, "meeting");
+        return null;
+      }
+    });
+    ipcMain.handle("note-recording-save-as", async (_event, id) => {
+      try {
+        const row = this.databaseManager.getNoteRecording(id);
+        if (!row) return { success: false };
+        const { dialog } = require("electron");
+        const { recordingAbsolutePath, recordingDownloadName } = require("./noteRecordings");
+        const note = this.databaseManager.getNote(row.noteId);
+        const result = await dialog.showSaveDialog({
+          defaultPath: recordingDownloadName(note?.title, row.startedAt),
+          filters: [{ name: "MP3 audio", extensions: ["mp3"] }],
+        });
+        if (result.canceled || !result.filePath) return { success: false, canceled: true };
+        fs.copyFileSync(recordingAbsolutePath(this._recordingsDir(), row.relPath), result.filePath);
+        return { success: true, filePath: result.filePath };
+      } catch (error) {
+        debugLogger.warn("Recording could not be saved", { id, error: error.message }, "meeting");
+        return { success: false, error: error.message };
+      }
+    });
+    ipcMain.handle("note-recording-show-in-folder", async (_event, id) => {
+      const row = this.databaseManager.getNoteRecording(id);
+      if (!row) return { success: false };
+      const { recordingAbsolutePath } = require("./noteRecordings");
+      shell.showItemInFolder(recordingAbsolutePath(this._recordingsDir(), row.relPath));
+      return { success: true };
+    });
+    ipcMain.handle("note-recording-delete", async (_event, id) => {
+      const row = this.databaseManager.getNoteRecording(id);
+      if (!row) return { success: false };
+      this._deleteNoteRecording(row);
+      return { success: true };
+    });
+    ipcMain.handle("note-recordings-usage", async () =>
+      this.databaseManager.getNoteRecordingsUsage()
+    );
+    ipcMain.handle("meeting-recording-discard-session", async (_event, sessionId) => {
+      this._discardRecordingSession(typeof sessionId === "string" ? sessionId : null);
+      return { success: true };
+    });
+
     ipcMain.on(
       "retention-settings-changed",
       createRetentionSettingsHandler({
@@ -3347,6 +3408,13 @@ class IPCHandlers {
         this.audioStorageManager.deleteAllAudio();
       } catch (e) {
         errors.push(`Audio delete: ${e.message}`);
+      }
+
+      // Meeting recordings live beside the database, under recordings/.
+      try {
+        fs.rmSync(this._recordingsDir(), { recursive: true, force: true });
+      } catch (e) {
+        errors.push(`Recordings delete: ${e.message}`);
       }
 
       // Delete downloaded models
@@ -6045,6 +6113,11 @@ class IPCHandlers {
     // the post-stop chain by captureMeetingArchiveState.
     let meetingArchivePlan = null;
     let meetingArchiveMirrors = { mic: null, system: null };
+    // The recording kept with the note (noteRecordings.js): planned at start
+    // from the keepRecording option and the note, written through the same
+    // mirrors, encoded to an MP3 by the post-stop chain.
+    let meetingRecordingPlan = null;
+    let meetingMirrorKey = null;
     // Meeting capture is paused (spec §11). Everything stays wired up — the
     // websocket, the diarization stream, the native helper — and audio is simply
     // not accepted, so resuming costs nothing and cannot lose the session.
@@ -6119,18 +6192,21 @@ class IPCHandlers {
 
     const MEETING_MIRROR_SAMPLE_RATE = 24000;
 
-    const discardMeetingArchiveMirrors = () => {
+    const discardMeetingMirrors = () => {
       for (const source of ["mic", "system"]) meetingArchiveMirrors[source]?.discard();
       meetingArchiveMirrors = { mic: null, system: null };
       meetingArchivePlan = null;
+      meetingRecordingPlan = null;
+      meetingMirrorKey = null;
     };
 
-    // Raw copy of every track for the archive pass. Tapped here, after AEC and
-    // before the bleed gate, so the archive model hears what the microphone
-    // heard — the gate exists for the live model's echo, and the pass keeps
-    // each track on its own side. Both tracks arrive as 24 kHz mono s16le.
+    // Raw copy of every track, for the archive pass and for the recording kept
+    // with the note. Tapped here, after AEC and before the bleed gate, so the
+    // archive model hears what the microphone heard — the gate exists for the
+    // live model's echo, and the pass keeps each track on its own side. Both
+    // tracks arrive as 24 kHz mono s16le.
     const mirrorMeetingAudio = (buffer, source) => {
-      if (!meetingArchivePlan) return;
+      if (!meetingArchivePlan && !meetingRecordingPlan) return;
       let mirror = meetingArchiveMirrors[source];
       if (!mirror) {
         try {
@@ -6138,15 +6214,15 @@ class IPCHandlers {
             dir: getSafeTempDir(),
             source,
             sampleRate: MEETING_MIRROR_SAMPLE_RATE,
-            sessionKey: meetingArchivePlan.sessionKey,
+            sessionKey: meetingMirrorKey || `${Date.now()}-${process.pid}`,
           });
         } catch (error) {
           debugLogger.warn(
-            "Meeting archive mirror could not be created; no archive pass for this meeting",
+            "Meeting audio mirror could not be created; no archive pass or kept recording for this meeting",
             { source, error: error.message },
             "meeting"
           );
-          discardMeetingArchiveMirrors();
+          discardMeetingMirrors();
           return;
         }
         meetingArchiveMirrors[source] = mirror;
@@ -6154,17 +6230,23 @@ class IPCHandlers {
       mirror.write(buffer, Date.now());
     };
 
-    // Ends the mirrors and hands them to the post-stop chain as a job, or
-    // null when there is nothing to re-transcribe. Runs before the local state
-    // is reset, because it reads the session's start and its token.
-    const captureMeetingArchiveState = async () => {
-      const plan = meetingArchivePlan;
+    // Ends the mirrors and hands them to the post-stop chain: the archive job
+    // (re-transcription) and the recording job (the MP3 kept with the note),
+    // either null when it was not planned or there is no audio. Both read the
+    // same files; the chain unlinks them once both are done. Runs before the
+    // local state is reset, because it reads the session's start and token.
+    const captureMeetingMirrorJobs = async (sessionId) => {
+      const archivePlan = meetingArchivePlan;
+      const recordingPlan = meetingRecordingPlan;
       const mirrors = meetingArchiveMirrors;
       meetingArchivePlan = null;
+      meetingRecordingPlan = null;
+      meetingMirrorKey = null;
       meetingArchiveMirrors = { mic: null, system: null };
-      if (!plan) {
+      const none = { archiveJob: null, recordingJob: null };
+      if (!archivePlan && !recordingPlan) {
         for (const source of ["mic", "system"]) mirrors[source]?.discard();
-        return null;
+        return none;
       }
       const tracks = [];
       for (const source of ["mic", "system"]) {
@@ -6180,22 +6262,36 @@ class IPCHandlers {
           path: ended.path,
           sampleRate: mirror.sampleRate,
           timeline: ended.timeline,
+          startedAt: ended.timeline.startedAt,
           bytes: ended.bytes,
         });
       }
-      if (!tracks.length) return null;
+      if (!tracks.length) return none;
       const sessionToken = meetingSystemAudioSession;
       const durationMs = Math.max(
         ...tracks.map((track) => (track.bytes / (track.sampleRate * 2)) * 1000)
       );
-      return {
-        model: plan.model,
-        language: plan.language,
-        tracks,
-        durationMs,
-        replaceSince: meetingStartedAt,
-        isStale: () => meetingSystemAudioSession !== sessionToken,
-      };
+      const archiveJob = archivePlan
+        ? {
+            model: archivePlan.model,
+            language: archivePlan.language,
+            tracks,
+            durationMs,
+            replaceSince: meetingStartedAt,
+            isStale: () => meetingSystemAudioSession !== sessionToken,
+          }
+        : null;
+      const recordingJob = recordingPlan
+        ? {
+            noteId: recordingPlan.noteId,
+            sessionId,
+            tracks,
+            startedAt: meetingStartedAt ?? Date.now(),
+            endedAt: Date.now(),
+            durationMs: Math.round(durationMs),
+          }
+        : null;
+      return { archiveJob, recordingJob };
     };
 
     const dispatchMeetingAudioBuffer = (buffer, source) => {
@@ -6689,7 +6785,7 @@ class IPCHandlers {
       this._activeMeetingNoteId = null;
       meetingLocalMode = false;
       meetingLocalBuffers = { mic: [], system: [] };
-      discardMeetingArchiveMirrors();
+      discardMeetingMirrors();
       if (meetingDiarizationStream) {
         meetingDiarizationStream.end();
         meetingDiarizationStream = null;
@@ -7058,6 +7154,14 @@ class IPCHandlers {
         meetingEchoLeakDetector.reset();
         meetingOneOnOneAttendee = resolveOneOnOneAttendeeForNote(options.noteId);
         meetingOneOnOneProfileBound = false;
+        meetingMirrorKey = `${Date.now()}-${process.pid}`;
+        meetingRecordingPlan =
+          options.keepRecording === false || options.noteId == null
+            ? null
+            : { noteId: options.noteId };
+        if (meetingRecordingPlan) {
+          debugLogger.info("Meeting recording planned", { noteId: options.noteId }, "meeting");
+        }
         meetingNoteId = options.noteId ?? null;
         this._activeMeetingNoteId = meetingNoteId;
 
@@ -7558,7 +7662,7 @@ class IPCHandlers {
           flushPendingMicFinals(true);
           const { diarizationPcmPath, diarizationSegments, diarizationStartedAt } =
             await captureMeetingDiarizationState();
-          const archiveJob = await captureMeetingArchiveState();
+          const { archiveJob, recordingJob } = await captureMeetingMirrorJobs(diarizationSessionId);
           const transcript =
             buildOrderedTranscriptText(diarizationSegments) || meetingLocalTranscript;
           const sessionSpeakerConfigSnapshot = this.activeMeetingSpeakerConfig;
@@ -7576,7 +7680,8 @@ class IPCHandlers {
             liveSpeakerState,
             sessionSpeakerConfigSnapshot,
             noteIdSnapshot,
-            archiveJob
+            archiveJob,
+            recordingJob
           );
 
           return {
@@ -7584,13 +7689,14 @@ class IPCHandlers {
             transcript,
             diarizationSessionId,
             archivePass: Boolean(archiveJob),
+            recording: Boolean(recordingJob),
           };
         }
 
         const results = await disconnectMeetingStreaming({ flushPending: true });
         const { diarizationPcmPath, diarizationSegments, diarizationStartedAt } =
           await captureMeetingDiarizationState();
-        const archiveJob = await captureMeetingArchiveState();
+        const { archiveJob, recordingJob } = await captureMeetingMirrorJobs(diarizationSessionId);
         const transcript =
           buildOrderedTranscriptText(diarizationSegments) ||
           [results[0]?.text, results[1]?.text].filter(Boolean).join(" ");
@@ -7609,7 +7715,8 @@ class IPCHandlers {
           liveSpeakerState,
           sessionSpeakerConfigSnapshot,
           noteIdSnapshot,
-          archiveJob
+          archiveJob,
+          recordingJob
         );
 
         return {
@@ -7617,6 +7724,7 @@ class IPCHandlers {
           transcript,
           diarizationSessionId,
           archivePass: Boolean(archiveJob),
+          recording: Boolean(recordingJob),
         };
       } catch (error) {
         debugLogger.error("Meeting transcription stop error", { error: error.message });
@@ -9353,11 +9461,7 @@ class IPCHandlers {
       { tier, model: archive.name, runtime: archive.runtime, language, live: options.localModel },
       "meeting"
     );
-    return {
-      model: archive,
-      language: options.language || null,
-      sessionKey: `${Date.now()}-${process.pid}`,
-    };
+    return { model: archive, language: options.language || null };
   }
 
   /** The archive pass's transcriber for the planned model: sherpa or whisper. */
@@ -9382,11 +9486,11 @@ class IPCHandlers {
 
   /**
    * Runs the archive pass over a stopped meeting's mirrors. Never throws:
-   * null means "keep the live transcript". The mirrors are unlinked either way.
+   * null means "keep the live transcript". The mirrors are the chain's to
+   * unlink, once the kept recording and the pass have both read them.
    */
   async _runMeetingArchivePass(job) {
     const { runMeetingArchivePass, archivePassBudgetMs } = require("./meetingArchivePass");
-    const fs = require("fs");
     const model = job.model;
     const startedAt = Date.now();
     debugLogger.info(
@@ -9436,8 +9540,174 @@ class IPCHandlers {
         "meeting"
       );
       return null;
-    } finally {
-      for (const track of job.tracks) fs.unlink(track.path, () => {});
+    }
+  }
+
+  _recordingsDir() {
+    return require("./noteRecordings").recordingsDir(app.getPath("userData"));
+  }
+
+  /** A recording row as the renderer sees it: no stored path, the id is the handle. */
+  _publicRecording(row) {
+    return {
+      id: row.id,
+      noteId: row.noteId,
+      sessionId: row.sessionId,
+      startedAt: row.startedAt,
+      endedAt: row.endedAt,
+      durationMs: row.durationMs,
+      bytes: row.bytes,
+      codec: row.codec,
+    };
+  }
+
+  _discardedRecordingSessions() {
+    if (!this._discardedRecordingSessionSet) this._discardedRecordingSessionSet = new Set();
+    return this._discardedRecordingSessionSet;
+  }
+
+  /**
+   * Mixes the session's mirrored tracks to the note's MP3 and records the
+   * row (noteRecordings.js). Never throws: a failure costs the recording,
+   * not the transcript. A session discarded from the stop prompt, or a note
+   * deleted meanwhile, gets nothing kept.
+   */
+  async _keepMeetingRecording(job) {
+    const {
+      encodeMeetingRecording,
+      recordingRelPath,
+      unlinkRecording,
+    } = require("./noteRecordings");
+    const discarded = this._discardedRecordingSessions();
+    if (discarded.has(job.sessionId)) {
+      debugLogger.info(
+        "Meeting recording dropped: session discarded",
+        { noteId: job.noteId },
+        "meeting"
+      );
+      return;
+    }
+    const dir = this._recordingsDir();
+    const relPath = recordingRelPath(job.noteId, job.startedAt);
+    const outputPath = path.join(dir, relPath);
+    const encodeStartedAt = Date.now();
+    try {
+      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+      const { bytes } = await encodeMeetingRecording({ tracks: job.tracks, outputPath });
+      const note = this.databaseManager.getNote(job.noteId);
+      if (discarded.has(job.sessionId) || !note || note.deleted_at) {
+        unlinkRecording(dir, relPath);
+        debugLogger.info(
+          "Meeting recording dropped after encoding: note gone or session discarded",
+          { noteId: job.noteId },
+          "meeting"
+        );
+        return;
+      }
+      const row = this.databaseManager.addNoteRecording({
+        noteId: job.noteId,
+        sessionId: job.sessionId,
+        relPath,
+        startedAt: job.startedAt,
+        endedAt: job.endedAt,
+        durationMs: job.durationMs,
+        bytes,
+      });
+      debugLogger.info(
+        "Meeting recording kept",
+        {
+          noteId: job.noteId,
+          bytes,
+          durationMs: job.durationMs,
+          tracks: job.tracks.length,
+          encodeMs: Date.now() - encodeStartedAt,
+        },
+        "meeting"
+      );
+      broadcastToWindows("note-recording-added", {
+        noteId: job.noteId,
+        recording: this._publicRecording(row),
+      });
+    } catch (error) {
+      debugLogger.warn(
+        "Meeting recording could not be kept",
+        { noteId: job.noteId, error: error.message },
+        "meeting"
+      );
+      try {
+        unlinkRecording(dir, relPath);
+      } catch {
+        // Nothing to remove.
+      }
+    }
+  }
+
+  /** Stop → Discard: the session's recording goes too, made or still encoding. */
+  _discardRecordingSession(sessionId) {
+    if (!sessionId) return;
+    this._discardedRecordingSessions().add(sessionId);
+    const row = this.databaseManager.getNoteRecordingBySession(sessionId);
+    if (row) this._deleteNoteRecording(row);
+  }
+
+  _deleteNoteRecording(row) {
+    const { unlinkRecording } = require("./noteRecordings");
+    this.databaseManager.deleteNoteRecording(row.id);
+    try {
+      unlinkRecording(this._recordingsDir(), row.relPath);
+    } catch (error) {
+      debugLogger.warn(
+        "Recording file could not be removed",
+        { id: row.id, error: error.message },
+        "meeting"
+      );
+    }
+    broadcastToWindows("note-recording-deleted", { noteId: row.noteId, id: row.id });
+  }
+
+  /** A note deleted from the app takes its recordings with it, rows and files. */
+  _deleteNoteRecordingsForNote(noteId) {
+    const { unlinkRecording } = require("./noteRecordings");
+    let rows = [];
+    try {
+      rows = this.databaseManager.deleteNoteRecordingsForNote(noteId);
+    } catch (error) {
+      debugLogger.warn(
+        "Note recordings could not be removed",
+        { noteId, error: error.message },
+        "meeting"
+      );
+      return;
+    }
+    for (const row of rows) {
+      try {
+        unlinkRecording(this._recordingsDir(), row.relPath);
+      } catch {
+        // Swept at the next launch.
+      }
+    }
+  }
+
+  /**
+   * Files no row points at and rows whose file is gone — a crash between
+   * the encode and the row, a note hard-deleted by sync. Run once the
+   * launch rush is over.
+   */
+  sweepNoteRecordings() {
+    try {
+      const { sweepRecordings } = require("./noteRecordings");
+      const rows = this.databaseManager.listNoteRecordings();
+      const { filesToDelete, rowsToDelete } = sweepRecordings({ dir: this._recordingsDir(), rows });
+      for (const row of rowsToDelete) this.databaseManager.deleteNoteRecording(row.id);
+      if (filesToDelete.length || rowsToDelete.length) {
+        debugLogger.info(
+          "Meeting recordings swept",
+          { files: filesToDelete.length, rows: rowsToDelete.length },
+          "meeting"
+        );
+      }
+    } catch (error) {
+      debugLogger.warn("Meeting recordings sweep failed", { error: error.message }, "meeting");
     }
   }
 
@@ -9450,7 +9720,8 @@ class IPCHandlers {
     liveSpeakerState = null,
     sessionConfig = null,
     noteId = null,
-    archiveJob = null
+    archiveJob = null,
+    recordingJob = null
   ) {
     const send = (payload) => {
       if (win && !win.isDestroyed()) {
@@ -9467,24 +9738,32 @@ class IPCHandlers {
     const fs = require("fs");
 
     (async () => {
-      // The archive pass goes first: its lines are what identification then
-      // labels and what the renderer swaps in for the session. A failed pass
-      // leaves the live lines in place — never half of each.
+      // The kept recording is encoded first — seconds of ffmpeg — then the
+      // archive pass reads the same raw files, and only then are they
+      // unlinked. The pass's lines are what identification then labels and
+      // what the renderer swaps in for the session. A failed pass leaves the
+      // live lines in place — never half of each.
       let transcriptSegments = liveSegments;
       let replacement = {};
-      if (archiveJob) {
-        const refined = await this._runMeetingArchivePass(archiveJob);
-        if (refined) {
-          transcriptSegments = refined.segments;
-          replacement = {
-            replaceSince: archiveJob.replaceSince,
-            archive: {
-              model: archiveJob.model.name,
-              windows: refined.windows,
-              elapsedMs: refined.elapsedMs,
-            },
-          };
+      const mirrorTracks = recordingJob?.tracks ?? archiveJob?.tracks ?? [];
+      try {
+        if (recordingJob) await this._keepMeetingRecording(recordingJob);
+        if (archiveJob) {
+          const refined = await this._runMeetingArchivePass(archiveJob);
+          if (refined) {
+            transcriptSegments = refined.segments;
+            replacement = {
+              replaceSince: archiveJob.replaceSince,
+              archive: {
+                model: archiveJob.model.name,
+                windows: refined.windows,
+                elapsedMs: refined.elapsedMs,
+              },
+            };
+          }
         }
+      } finally {
+        for (const track of mirrorTracks) fs.unlink(track.path, () => {});
       }
 
       if (!runDiarization) {
@@ -9698,6 +9977,7 @@ class IPCHandlers {
       setImmediate(() => broadcastToWindows("note-deleted", { id }));
       this._asyncVectorDelete(id);
       this._asyncMirrorDelete(id);
+      this._deleteNoteRecordingsForNote(id);
     }
     return result;
   }

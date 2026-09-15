@@ -33,6 +33,11 @@
       "speakerDetection": {
         "title": "Identificar y etiquetar participantes",
         "description": "Cuando está desactivado, las transcripciones muestran \"Tú\" y \"Otros\""
+      },
+      "recordings": {
+        "title": "Conservar las grabaciones de reuniones",
+        "description": "El audio de cada reunión se queda con su nota, para reproducirlo o descargarlo. Desactivado, no se escribe nada en el disco.",
+        "usage": "Grabaciones en disco: {{count}} ({{size}})"
       }
     }
   },
@@ -3080,6 +3085,17 @@
         "noWriteUp": "Esta reunión aún no tiene resumen — genera uno primero.",
         "failed": "El borrador no llegó. Inténtalo de nuevo."
       }
+    },
+    "recordings": {
+      "title": "Grabaciones",
+      "play": "Reproducir",
+      "pause": "Pausar",
+      "download": "Descargar",
+      "showInFolder": "Mostrar en la carpeta",
+      "preparing": "Preparando la grabación…",
+      "seek": "Posición",
+      "saveFailed": "No se pudo guardar la grabación.",
+      "loadFailed": "No se pudo abrir la grabación."
     }
   },
   "dictionary": {

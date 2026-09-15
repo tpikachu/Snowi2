@@ -97,6 +97,24 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getAudioBuffer: (id) => ipcRenderer.invoke("get-audio-buffer", id),
   deleteTranscriptionAudio: (id) => ipcRenderer.invoke("delete-transcription-audio", id),
   getAudioStorageUsage: () => ipcRenderer.invoke("get-audio-storage-usage"),
+
+  // Meeting recordings kept with their notes
+  noteRecordingsList: (noteId) => ipcRenderer.invoke("note-recordings-list", noteId),
+  noteRecordingBuffer: (id) => ipcRenderer.invoke("note-recording-buffer", id),
+  noteRecordingSaveAs: (id) => ipcRenderer.invoke("note-recording-save-as", id),
+  noteRecordingShowInFolder: (id) => ipcRenderer.invoke("note-recording-show-in-folder", id),
+  noteRecordingDelete: (id) => ipcRenderer.invoke("note-recording-delete", id),
+  noteRecordingsUsage: () => ipcRenderer.invoke("note-recordings-usage"),
+  meetingRecordingDiscardSession: (sessionId) =>
+    ipcRenderer.invoke("meeting-recording-discard-session", sessionId),
+  onNoteRecordingAdded: registerListener(
+    "note-recording-added",
+    (callback) => (_event, data) => callback(data)
+  ),
+  onNoteRecordingDeleted: registerListener(
+    "note-recording-deleted",
+    (callback) => (_event, data) => callback(data)
+  ),
   deleteAllAudio: () => ipcRenderer.invoke("delete-all-audio"),
   syncRetentionSettings: (settings) => ipcRenderer.send("retention-settings-changed", settings),
   retryTranscription: (id, settings) => ipcRenderer.invoke("retry-transcription", id, settings),

@@ -330,6 +330,19 @@ export interface MeetingSeriesBrief {
   excerpt?: string | null;
 }
 
+/** A meeting session's audio kept with its note (userData/recordings). */
+export interface NoteRecordingItem {
+  id: number;
+  noteId: number;
+  sessionId: string | null;
+  /** Epoch ms of the session's start and end. */
+  startedAt: number;
+  endedAt: number | null;
+  durationMs: number | null;
+  bytes: number | null;
+  codec: string;
+}
+
 export interface NoteItem {
   id: number;
   title: string;
@@ -1074,6 +1087,22 @@ declare global {
       getAudioPath: (id: number) => Promise<string | null>;
       showAudioInFolder: (id: number) => Promise<{ success: boolean }>;
       getAudioBuffer: (id: number) => Promise<ArrayBuffer | null>;
+      // Meeting recordings kept with their notes
+      noteRecordingsList?: (noteId: number) => Promise<NoteRecordingItem[]>;
+      noteRecordingBuffer?: (id: number) => Promise<ArrayBuffer | null>;
+      noteRecordingSaveAs?: (
+        id: number
+      ) => Promise<{ success: boolean; canceled?: boolean; filePath?: string; error?: string }>;
+      noteRecordingShowInFolder?: (id: number) => Promise<{ success: boolean }>;
+      noteRecordingDelete?: (id: number) => Promise<{ success: boolean }>;
+      noteRecordingsUsage?: () => Promise<{ count: number; bytes: number }>;
+      meetingRecordingDiscardSession?: (sessionId: string) => Promise<{ success: boolean }>;
+      onNoteRecordingAdded?: (
+        callback: (data: { noteId: number; recording: NoteRecordingItem }) => void
+      ) => () => void;
+      onNoteRecordingDeleted?: (
+        callback: (data: { noteId: number; id: number }) => void
+      ) => () => void;
       deleteTranscriptionAudio: (id: number) => Promise<{ success: boolean }>;
       getAudioStorageUsage: () => Promise<{ fileCount: number; totalBytes: number }>;
       deleteAllAudio: () => Promise<{ deleted: number }>;
@@ -2157,6 +2186,8 @@ declare global {
         noteId?: number | null;
         /** Local engines only: mirror the audio and re-transcribe it after Stop. */
         archivePass?: boolean;
+        /** Keep the meeting's audio with its note (userData/recordings). */
+        keepRecording?: boolean;
       }) => Promise<
         {
           success: boolean;
@@ -2172,6 +2203,8 @@ declare global {
         diarizationSessionId?: string;
         /** Main is re-transcribing the session; its lines arrive on onMeetingDiarizationComplete. */
         archivePass?: boolean;
+        /** Main is encoding the session's recording; its row arrives on onNoteRecordingAdded. */
+        recording?: boolean;
         error?: string;
       }>;
       meetingTranscriptionCancel?: () => Promise<{

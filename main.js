@@ -1054,6 +1054,9 @@ async function startApp() {
   await trayManager.createTray();
 
   updateManager.checkForUpdatesOnStartup();
+  // Recordings whose row or file is gone (a crash between the two, a note
+  // hard-deleted by sync) are swept once the launch rush is over.
+  setTimeout(() => ipcHandlers?.sweepNoteRecordings(), 20_000);
 
   if (process.platform === "darwin") {
     const { isGlobeLikeHotkey, isMouseButtonHotkey } = require("./src/helpers/hotkeyManager");

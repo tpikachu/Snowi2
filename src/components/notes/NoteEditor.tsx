@@ -45,6 +45,7 @@ import {
   serializeTranscriptSegments,
 } from "../../utils/transcriptSpeakerState";
 import NoteParticipants from "./NoteParticipants";
+import NoteRecordings from "./NoteRecordings";
 import type { CalendarAttendee } from "../../types/calendar";
 
 // Metadata chips read as quiet, factual labels: one hairline, one muted type
@@ -369,6 +370,7 @@ export default function NoteEditor({
   const archivePassPending = useMeetingRecordingStore((s) => s.archivePassPending);
   const archivePassNoteId = useMeetingRecordingStore((s) => s.recordingNoteId);
   const isRefining = archivePassPending && archivePassNoteId === note.id && !isRecording;
+  const recordingPending = useMeetingRecordingStore((s) => s.recordingPending);
   useEffect(() => {
     if (!completedDiarization || completedDiarization.noteId !== note.id) return;
     // Consume so a remount can't repaint this overlay over newer edits; the
@@ -862,6 +864,16 @@ export default function NoteEditor({
             </div>
           </div>
         </div>
+
+        {/* The sessions' audio, one row each, under the header of a meeting
+            note; the row for the session just stopped appears when main has
+            encoded it. Nothing shows while recording. */}
+        {note.note_type === "meeting" && !isRecording && (
+          <NoteRecordings
+            noteId={note.id}
+            pending={recordingPending && archivePassNoteId === note.id}
+          />
+        )}
 
         {canCopyRecap && (
           <FollowUpEmailDialog

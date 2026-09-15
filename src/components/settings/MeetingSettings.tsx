@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Key, Cpu } from "lucide-react";
 import { useSettingsStore } from "../../stores/settingsStore";
@@ -10,6 +10,7 @@ import {
 } from "../ui/SettingsSection";
 import type { InferenceModeOption } from "../ui/SettingsSection";
 import { Toggle } from "../ui/toggle";
+import { formatBytes } from "../../utils/formatBytes";
 import { SPEAKER_IDENTIFICATION_ENABLED } from "../../helpers/speakerIdentificationPolicy";
 import TranscriptionModelPicker from "../TranscriptionModelPicker";
 import type { InferenceMode } from "../../types/electron";
@@ -51,6 +52,50 @@ export function MeetingArchivePassRow() {
       description={t("settings.meeting.archivePass.description")}
     >
       <Toggle checked={meetingArchivePass} onChange={setMeetingArchivePass} />
+    </SettingsRow>
+  );
+}
+
+/**
+ * The recordings kept with meeting notes (noteRecordings.js in main): every
+ * engine, cloud or local, since the audio is mirrored before transcription.
+ * The description carries what is on disk, so the cost of keeping them is
+ * visible where the switch is.
+ */
+export function MeetingRecordingsRow() {
+  const { t } = useTranslation();
+  const keep = useSettingsStore((s) => s.meetingKeepRecordings);
+  const setKeep = useSettingsStore((s) => s.setMeetingKeepRecordings);
+  const [usage, setUsage] = useState<{ count: number; bytes: number } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    window.electronAPI
+      ?.noteRecordingsUsage?.()
+      .then((result) => {
+        if (!cancelled && result) setUsage(result);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const description = [
+    t("settings.meeting.recordings.description"),
+    usage && usage.count > 0
+      ? t("settings.meeting.recordings.usage", {
+          count: usage.count,
+          size: formatBytes(usage.bytes, 1),
+        })
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <SettingsRow label={t("settings.meeting.recordings.title")} description={description}>
+      <Toggle checked={keep} onChange={setKeep} />
     </SettingsRow>
   );
 }
@@ -151,6 +196,9 @@ export function MeetingTranscriptionPanel() {
             <MeetingArchivePassRow />
           </SettingsPanelRow>
         )}
+        <SettingsPanelRow>
+          <MeetingRecordingsRow />
+        </SettingsPanelRow>
         <SettingsPanelRow>
           <MeetingSpeakerDetectionRow />
         </SettingsPanelRow>

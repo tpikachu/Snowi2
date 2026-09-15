@@ -13,10 +13,11 @@ const CONTROL_PANEL_TIMEOUT_MS = 60_000;
  * the developer's own dev data (see SNOWY_USER_DATA_DIR in main.js).
  *
  * @param {import("@playwright/test").TestInfo} testInfo
- * @param {{ env?: Record<string, string> }} [options] extra environment for this launch
+ * @param {{ env?: Record<string, string>, args?: string[] }} [options] extra environment and
+ *   Chromium flags (fake media devices, say) for this launch
  * @returns {Promise<{ app: import("playwright").ElectronApplication, userDataDir: string }>}
  */
-async function launchApp(testInfo, { env: extraEnv = {} } = {}) {
+async function launchApp(testInfo, { env: extraEnv = {}, args: extraArgs = [] } = {}) {
   const userDataDir = testInfo.outputPath("user-data");
   const env = {
     ...process.env,
@@ -33,7 +34,7 @@ async function launchApp(testInfo, { env: extraEnv = {} } = {}) {
     // Resolved explicitly: from a plain Node process, require("electron")
     // returns the path to the binary the project has installed.
     executablePath: require("electron"),
-    args: [PROJECT_ROOT],
+    args: [...extraArgs, PROJECT_ROOT],
     cwd: PROJECT_ROOT,
     env,
   });

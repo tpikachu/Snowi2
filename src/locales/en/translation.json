@@ -33,6 +33,11 @@
       "speakerDetection": {
         "title": "Identify and label speakers",
         "description": "When off, transcripts show \"You\" and \"Others\""
+      },
+      "recordings": {
+        "title": "Keep meeting recordings",
+        "description": "Each meeting's audio stays with its note, to play back or download. Off, nothing is written to disk.",
+        "usage": "Recordings on disk: {{count}} ({{size}})"
       }
     }
   },
@@ -3239,6 +3244,17 @@
         "noWriteUp": "This meeting has no summary yet — generate one first.",
         "failed": "The draft didn't come through. Try again."
       }
+    },
+    "recordings": {
+      "title": "Recordings",
+      "play": "Play",
+      "pause": "Pause",
+      "download": "Download",
+      "showInFolder": "Show in folder",
+      "preparing": "Preparing the recording…",
+      "seek": "Position",
+      "saveFailed": "The recording could not be saved.",
+      "loadFailed": "The recording could not be opened."
     }
   },
   "dictionary": {

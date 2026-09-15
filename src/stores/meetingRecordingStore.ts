@@ -145,6 +145,8 @@ interface MeetingRecordingState {
   diarizationSessionId: string | null;
   /** Main is re-transcribing the session with the archive model; cleared by its completion. */
   archivePassPending: boolean;
+  /** Main is encoding the session's recording; cleared when its row arrives (settleRecordingPending). */
+  recordingPending: boolean;
   /** Latest diarization result published for UI mirroring; consumed (nulled) by the editor that applies it. */
   completedDiarization: { noteId: number; segments: TranscriptSegment[] } | null;
   sessionDiarizationEnabled: boolean;
@@ -242,6 +244,7 @@ const getMeetingTranscriptionOptions = () => {
     cortiTenant: state.cortiTenant,
     keyterms: (state.customDictionary ?? []).filter(Boolean),
     archivePass: state.meetingArchivePass,
+    keepRecording: state.meetingKeepRecordings,
   });
 };
 
@@ -675,6 +678,7 @@ export const useMeetingRecordingStore = create<MeetingRecordingState>()(() => ({
   systemPartialSpeakerName: null,
   diarizationSessionId: null,
   archivePassPending: false,
+  recordingPending: false,
   completedDiarization: null,
   sessionDiarizationEnabled:
     (getSettings() as { speakerDiarizationEnabled?: boolean }).speakerDiarizationEnabled ?? true,
@@ -1058,6 +1062,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
     systemPartialSpeakerName: null,
     diarizationSessionId: null,
     archivePassPending: false,
+    recordingPending: false,
     completedDiarization: null,
     error: null,
     micCaptureStatus: "inactive",
@@ -1818,6 +1823,12 @@ export async function resolvePendingStop(keep: boolean): Promise<void> {
   // that is about to be deleted or rolled back.
   cancelAction(pending.noteId);
 
+  // The session's recording is encoded in main after Stop; discarding the
+  // session drops it too, whether it has landed or is still encoding.
+  const sessionId = useMeetingRecordingStore.getState().diarizationSessionId;
+  if (sessionId) void window.electronAPI?.meetingRecordingDiscardSession?.(sessionId);
+  useMeetingRecordingStore.setState({ recordingPending: false });
+
   if (pending.seedSegmentCount > 0) {
     // A resumed session: write the seed back over whatever the periodic
     // autosave merged in. The seed entries lead `segments` because a resume's
@@ -1850,6 +1861,14 @@ export async function resolvePendingStop(keep: boolean): Promise<void> {
       "meeting"
     );
     reportMeetingError("Could not discard the meeting. It is still in your notes.");
+  }
+}
+
+/** The session's recording row landed on the note: its strip stops saying it is being prepared. */
+export function settleRecordingPending(noteId: number): void {
+  const state = useMeetingRecordingStore.getState();
+  if (state.recordingPending && state.recordingNoteId === noteId) {
+    useMeetingRecordingStore.setState({ recordingPending: false });
   }
 }
 
@@ -1909,6 +1928,7 @@ export async function stopRecording(): Promise<StopRecordingResult> {
       useMeetingRecordingStore.setState({
         diarizationSessionId,
         archivePassPending: result.archivePass === true,
+        recordingPending: result.recording === true,
       });
     }
     if (result?.success && result.transcript) {

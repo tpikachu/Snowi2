@@ -33,6 +33,11 @@
       "speakerDetection": {
         "title": "识别并标记发言者",
         "description": "关闭后，转写会显示\"你\"和\"其他人\""
+      },
+      "recordings": {
+        "title": "保留会议录音",
+        "description": "每次会议的音频都与其笔记保存在一起，可回放或下载。关闭后不会向磁盘写入任何内容。",
+        "usage": "磁盘上的录音：{{count}} 个（{{size}}）"
       }
     }
   },
@@ -3032,6 +3037,17 @@
         "noWriteUp": "此会议还没有摘要 — 请先生成。",
         "failed": "草稿未能生成。请重试。"
       }
+    },
+    "recordings": {
+      "title": "录音",
+      "play": "播放",
+      "pause": "暂停",
+      "download": "下载",
+      "showInFolder": "在文件夹中显示",
+      "preparing": "正在准备录音…",
+      "seek": "位置",
+      "saveFailed": "无法保存录音。",
+      "loadFailed": "无法打开录音。"
     }
   },
   "dictionary": {

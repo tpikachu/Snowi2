@@ -149,3 +149,16 @@ test("local mode carries the archive-pass preference through, and nothing when u
   });
   assert.equal("archivePass" in resolveMeetingTranscriptionOptions(local), false);
 });
+
+test("the keep-recording preference rides along in every mode, and nothing when unset", async () => {
+  const { resolveMeetingTranscriptionOptions } = await load();
+  const local = { ...baseOptions, transcriptionMode: "local", localProvider: "whisper" };
+  assert.equal(
+    resolveMeetingTranscriptionOptions({ ...local, keepRecording: false }).keepRecording,
+    false
+  );
+  assert.equal("keepRecording" in resolveMeetingTranscriptionOptions(local), false);
+  const cloud = resolveMeetingTranscriptionOptions({ ...baseOptions, keepRecording: true });
+  assert.equal(cloud.keepRecording, true);
+  assert.match(cloud.provider, /-realtime$/);
+});
