@@ -26,6 +26,10 @@
       }
     },
     "meeting": {
+      "archivePass": {
+        "title": "Refine the transcript after each meeting",
+        "description": "When a meeting ends, a slower and more accurate model goes back over the recording, and the notes are written from that transcript."
+      },
       "speakerDetection": {
         "title": "Identify and label speakers",
         "description": "When off, transcripts show \"You\" and \"Others\""
@@ -3197,7 +3201,8 @@
       "showEarlier_other": "Show {{count}} earlier messages",
       "jumpToLive": "Jump to live",
       "jumpToLatest": "Jump to latest",
-      "resumedSession": "Resumed {{date}}"
+      "resumedSession": "Resumed {{date}}",
+      "refining": "Refining the transcript…"
     },
     "recap": {
       "copy": "Copy summary",

@@ -7,6 +7,8 @@ const {
   MODELS,
   MIN_RAM_STREAMING_GB,
   MIN_RAM_ARCHIVE_GB,
+  ARCHIVE_PASS_SHIPPED,
+  speechLanguageFamily,
 } = require("../../src/utils/modelTiering.js");
 
 /** A capable desktop, overridden per test. */
@@ -210,4 +212,16 @@ test("a recommendation with no archive passes through unchanged", () => {
   assert.equal(baseline.archive, null);
   assert.deepEqual(withoutArchive(baseline, small), baseline);
   assert.equal(withoutArchive(null, null), null);
+});
+
+test("the archive pass is shipped, so the tiers' archive model reaches onboarding again", () => {
+  assert.equal(ARCHIVE_PASS_SHIPPED, true);
+  assert.equal(selectTier(machine()).archive.name, MODELS.archiveEn.name);
+});
+
+test("main maps a base language code to the same pair the renderer picks", () => {
+  assert.equal(speechLanguageFamily("en"), "en");
+  for (const code of ["de", "ru", "ja", "", null, undefined]) {
+    assert.equal(speechLanguageFamily(code), "multilingual", String(code));
+  }
 });

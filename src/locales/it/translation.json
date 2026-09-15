@@ -26,6 +26,10 @@
       }
     },
     "meeting": {
+      "archivePass": {
+        "title": "Perfeziona la trascrizione dopo ogni riunione",
+        "description": "Al termine della riunione, un modello più lento e preciso riesamina la registrazione, e le note vengono scritte da quella trascrizione."
+      },
       "speakerDetection": {
         "title": "Identifica ed etichetta i partecipanti",
         "description": "Se disattivato, le trascrizioni mostrano \"Tu\" e \"Altri\""
@@ -2990,7 +2994,8 @@
       "showEarlier_other": "Mostra {{count}} messaggi precedenti",
       "jumpToLive": "Vai al live",
       "jumpToLatest": "Vai al più recente",
-      "resumedSession": "Ripresa {{date}}"
+      "resumedSession": "Ripresa {{date}}",
+      "refining": "Perfezionamento della trascrizione…"
     },
     "recap": {
       "copy": "Copia riepilogo",

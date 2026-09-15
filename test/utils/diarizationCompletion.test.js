@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const {
   resolveDiarizationTarget,
   selectBaseSegments,
+  replaceSessionSegments,
 } = require("../../src/utils/diarizationCompletion.ts");
 
 // Issue #1495: a delayed diarization result must be saved to the note that
@@ -112,4 +113,22 @@ test("no persisted transcript and empty live segments merge into nothing", () =>
     targetNoteId: 1,
   });
   assert.deepEqual(result, []);
+});
+
+test("the archive pass replaces the session that started at replaceSince and keeps what came before", () => {
+  const sessionStart = 1_000_000;
+  const base = [
+    { id: "seed-1", text: "from last week", timestamp: 500_000 },
+    { id: "legacy", text: "no stamp at all" },
+    { id: "seg-1", text: "live rough", timestamp: sessionStart },
+    { id: "seg-2", text: "live rougher", timestamp: sessionStart + 5000 },
+  ];
+  const incoming = [
+    { id: "archive-mic-1", text: "live, refined", timestamp: sessionStart + 100 },
+    { id: "archive-system-1", text: "their line, refined", timestamp: sessionStart + 4000 },
+  ];
+  assert.deepEqual(
+    replaceSessionSegments({ base, incoming, replaceSince: sessionStart }).map((s) => s.id),
+    ["seed-1", "legacy", "archive-mic-1", "archive-system-1"]
+  );
 });

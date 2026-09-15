@@ -26,6 +26,10 @@
       }
     },
     "meeting": {
+      "archivePass": {
+        "title": "会議のあとに文字起こしを精緻化",
+        "description": "会議が終わると、時間はかかるがより高精度なモデルが録音を聞き直し、その文字起こしからノートを作成します。"
+      },
       "speakerDetection": {
         "title": "話者を識別してラベル付け",
         "description": "オフにすると、文字起こしには「あなた」と「他の人」と表示されます"
@@ -2918,7 +2922,8 @@
       "showEarlier_other": "以前のメッセージを{{count}}件表示",
       "jumpToLive": "ライブに移動",
       "jumpToLatest": "最新に移動",
-      "resumedSession": "{{date}} に再開"
+      "resumedSession": "{{date}} に再開",
+      "refining": "文字起こしを精緻化しています…"
     },
     "recap": {
       "copy": "要約をコピー",

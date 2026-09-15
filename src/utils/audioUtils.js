@@ -44,8 +44,18 @@ function pcm16ToFloat32(pcmBuffer) {
   return output;
 }
 
+function float32ToPcm16(samples) {
+  const output = new Int16Array(samples.length);
+  for (let i = 0; i < samples.length; i++) {
+    const clamped = Math.max(-1, Math.min(1, samples[i]));
+    output[i] = Math.round(clamped < 0 ? clamped * 32768 : clamped * 32767);
+  }
+  return Buffer.from(output.buffer, output.byteOffset, output.byteLength);
+}
+
 module.exports = {
   downsample24kTo16k,
   pcm16ToWav,
   pcm16ToFloat32,
+  float32ToPcm16,
 };

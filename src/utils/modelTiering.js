@@ -73,17 +73,25 @@ const UNIFIED_EN_STREAMING_IS_VIABLE = false;
 /**
  * Whether the app runs the archive pass at all.
  *
- * The tiers still choose an archive model — that is the design, and the
- * post-Stop re-transcription it exists for is the next piece of work — but
- * until that pass ships, the second download buys the user nothing: only the
- * live model is written to settings and no code path reads the archive. On
- * every 12 GB machine that was ~680 MB of onboarding download and a caption
- * ("goes back over the whole meeting afterwards") the app did not honor —
- * client report, 2026-09-15: two models at once, quality unchanged. Flip
- * this when the pass lands; withoutArchive() is what the recommendation IPC
- * applies meanwhile.
+ * The tiers choose an archive model, onboarding downloads it, and after every
+ * meeting transcribed on this computer main re-transcribes the mirrored audio
+ * with it before the write-up (helpers/meetingArchivePass.js). A kill switch
+ * rather than a deleted branch, like SPEAKER_IDENTIFICATION_ENABLED: off, the
+ * recommendation IPC hands out withoutArchive() — the live model only, no
+ * second download — which is how the tree stood while the pass was built
+ * (client report, 2026-09-15: two models fetched in onboarding, one used).
  */
-const ARCHIVE_PASS_SHIPPED = false;
+const ARCHIVE_PASS_SHIPPED = true;
+
+/**
+ * Which model pair a preferred language calls for, from its base code ("en",
+ * "de", undefined for auto-detect). Main's copy of the renderer's
+ * speechModelLanguage(): the meeting start options carry the base code, and
+ * the archive pass has to pick the same pair onboarding downloaded.
+ */
+function speechLanguageFamily(baseLanguageCode) {
+  return baseLanguageCode === "en" ? "en" : "multilingual";
+}
 
 function pickModels(language) {
   const multilingual = language === "multilingual";
@@ -241,6 +249,7 @@ module.exports = {
   selectTier,
   withoutArchive,
   ARCHIVE_PASS_SHIPPED,
+  speechLanguageFamily,
   MODELS,
   STREAMING_RESIDENT_GB,
   OFFLINE_RESIDENT_GB,

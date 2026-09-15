@@ -26,6 +26,10 @@
       }
     },
     "meeting": {
+      "archivePass": {
+        "title": "Refinar la transcripción después de cada reunión",
+        "description": "Al terminar la reunión, un modelo más lento y preciso repasa la grabación, y las notas se escriben a partir de esa transcripción."
+      },
       "speakerDetection": {
         "title": "Identificar y etiquetar participantes",
         "description": "Cuando está desactivado, las transcripciones muestran \"Tú\" y \"Otros\""
@@ -3038,7 +3042,8 @@
       "showEarlier_other": "Mostrar {{count}} mensajes anteriores",
       "jumpToLive": "Ir al directo",
       "jumpToLatest": "Ir a lo último",
-      "resumedSession": "Reanudado {{date}}"
+      "resumedSession": "Reanudado {{date}}",
+      "refining": "Refinando la transcripción…"
     },
     "recap": {
       "copy": "Copiar resumen",

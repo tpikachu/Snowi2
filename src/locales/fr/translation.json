@@ -26,6 +26,10 @@
       }
     },
     "meeting": {
+      "archivePass": {
+        "title": "Affiner la transcription après chaque réunion",
+        "description": "À la fin de la réunion, un modèle plus lent et plus précis repasse sur l'enregistrement, et les notes sont rédigées à partir de cette transcription."
+      },
       "speakerDetection": {
         "title": "Identifier et étiqueter les intervenants",
         "description": "Lorsque désactivé, les transcriptions affichent « Vous » et « Autres »"
@@ -3197,7 +3201,8 @@
       "showEarlier_other": "Afficher {{count}} messages précédents",
       "jumpToLive": "Aller au direct",
       "jumpToLatest": "Aller au plus récent",
-      "resumedSession": "Repris le {{date}}"
+      "resumedSession": "Repris le {{date}}",
+      "refining": "Affinage de la transcription…"
     },
     "recap": {
       "copy": "Copier le résumé",

@@ -26,6 +26,10 @@
       }
     },
     "meeting": {
+      "archivePass": {
+        "title": "會議結束後精修轉錄",
+        "description": "會議結束後，較慢但更準確的模型會重新處理錄音，筆記將依據該轉錄產生。"
+      },
       "speakerDetection": {
         "title": "辨識並標記發言者",
         "description": "關閉後，逐字稿會顯示「你」和「其他人」"
@@ -2990,7 +2994,8 @@
       "showEarlier_other": "顯示 {{count}} 則較早的訊息",
       "jumpToLive": "跳至即時",
       "jumpToLatest": "跳至最新",
-      "resumedSession": "{{date}} 繼續"
+      "resumedSession": "{{date}} 繼續",
+      "refining": "正在精修轉錄…"
     },
     "recap": {
       "copy": "複製摘要",

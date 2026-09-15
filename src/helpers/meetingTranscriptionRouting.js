@@ -15,6 +15,7 @@ export function resolveMeetingTranscriptionOptions({
   cortiEnvironment,
   cortiTenant,
   keyterms,
+  archivePass,
 }) {
   if (transcriptionMode === "local") {
     return {
@@ -25,6 +26,9 @@ export function resolveMeetingTranscriptionOptions({
           ? parakeetModel || "parakeet-tdt-0.6b-v3"
           : whisperModel || "base",
       language,
+      // Only the local engines run the post-stop archive pass; main reads
+      // this to decide whether to mirror the meeting's audio.
+      ...(archivePass === undefined ? {} : { archivePass }),
     };
   }
 

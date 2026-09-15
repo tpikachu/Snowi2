@@ -79,7 +79,9 @@ const {
   isSpeakerLocked,
 } = require("./speakerAssignmentPolicy");
 const { normalizeStoredSpeakerCount } = require("./speakerCount");
-const { downsample24kTo16k, pcm16ToWav } = require("../utils/audioUtils");
+const { downsample24kTo16k, pcm16ToWav, float32ToPcm16 } = require("../utils/audioUtils");
+const { createMeetingAudioMirror } = require("./meetingAudioMirror");
+const { getSafeTempDir } = require("./safeTempDir");
 const screenContextCapture = require("./screenContextCapture");
 const {
   DEFAULT_EXPECTED_SPEAKER_COUNT,
@@ -6038,6 +6040,11 @@ class IPCHandlers {
     let meetingPendingMicFinals = [];
     let meetingPendingMicFinalTimer = null;
     let meetingAecEnabled = false;
+    // The archive pass's raw mirrors of both tracks (meetingAudioMirror.js):
+    // planned at start, written from dispatchMeetingAudioBuffer, handed to
+    // the post-stop chain by captureMeetingArchiveState.
+    let meetingArchivePlan = null;
+    let meetingArchiveMirrors = { mic: null, system: null };
     // Meeting capture is paused (spec §11). Everything stays wired up — the
     // websocket, the diarization stream, the native helper — and audio is simply
     // not accepted, so resuming costs nothing and cannot lose the session.
@@ -6110,7 +6117,89 @@ class IPCHandlers {
       }
     };
 
+    const MEETING_MIRROR_SAMPLE_RATE = 24000;
+
+    const discardMeetingArchiveMirrors = () => {
+      for (const source of ["mic", "system"]) meetingArchiveMirrors[source]?.discard();
+      meetingArchiveMirrors = { mic: null, system: null };
+      meetingArchivePlan = null;
+    };
+
+    // Raw copy of every track for the archive pass. Tapped here, after AEC and
+    // before the bleed gate, so the archive model hears what the microphone
+    // heard — the gate exists for the live model's echo, and the pass keeps
+    // each track on its own side. Both tracks arrive as 24 kHz mono s16le.
+    const mirrorMeetingAudio = (buffer, source) => {
+      if (!meetingArchivePlan) return;
+      let mirror = meetingArchiveMirrors[source];
+      if (!mirror) {
+        try {
+          mirror = createMeetingAudioMirror({
+            dir: getSafeTempDir(),
+            source,
+            sampleRate: MEETING_MIRROR_SAMPLE_RATE,
+            sessionKey: meetingArchivePlan.sessionKey,
+          });
+        } catch (error) {
+          debugLogger.warn(
+            "Meeting archive mirror could not be created; no archive pass for this meeting",
+            { source, error: error.message },
+            "meeting"
+          );
+          discardMeetingArchiveMirrors();
+          return;
+        }
+        meetingArchiveMirrors[source] = mirror;
+      }
+      mirror.write(buffer, Date.now());
+    };
+
+    // Ends the mirrors and hands them to the post-stop chain as a job, or
+    // null when there is nothing to re-transcribe. Runs before the local state
+    // is reset, because it reads the session's start and its token.
+    const captureMeetingArchiveState = async () => {
+      const plan = meetingArchivePlan;
+      const mirrors = meetingArchiveMirrors;
+      meetingArchivePlan = null;
+      meetingArchiveMirrors = { mic: null, system: null };
+      if (!plan) {
+        for (const source of ["mic", "system"]) mirrors[source]?.discard();
+        return null;
+      }
+      const tracks = [];
+      for (const source of ["mic", "system"]) {
+        const mirror = mirrors[source];
+        if (!mirror) continue;
+        const ended = await mirror.end();
+        if (ended.error || !ended.bytes) {
+          fs.unlink(ended.path, () => {});
+          continue;
+        }
+        tracks.push({
+          source,
+          path: ended.path,
+          sampleRate: mirror.sampleRate,
+          timeline: ended.timeline,
+          bytes: ended.bytes,
+        });
+      }
+      if (!tracks.length) return null;
+      const sessionToken = meetingSystemAudioSession;
+      const durationMs = Math.max(
+        ...tracks.map((track) => (track.bytes / (track.sampleRate * 2)) * 1000)
+      );
+      return {
+        model: plan.model,
+        language: plan.language,
+        tracks,
+        durationMs,
+        replaceSince: meetingStartedAt,
+        isStale: () => meetingSystemAudioSession !== sessionToken,
+      };
+    };
+
     const dispatchMeetingAudioBuffer = (buffer, source) => {
+      mirrorMeetingAudio(buffer, source);
       if (meetingLocalMode) {
         meetingLocalBuffers[source].push(buffer);
         return;
@@ -6600,6 +6689,7 @@ class IPCHandlers {
       this._activeMeetingNoteId = null;
       meetingLocalMode = false;
       meetingLocalBuffers = { mic: [], system: [] };
+      discardMeetingArchiveMirrors();
       if (meetingDiarizationStream) {
         meetingDiarizationStream.end();
         meetingDiarizationStream = null;
@@ -7020,6 +7110,7 @@ class IPCHandlers {
           meetingLocalProvider = options.localProvider || "whisper";
           meetingLocalModel = options.localModel || null;
           meetingLocalLanguage = options.language || null;
+          meetingArchivePlan = await this._planMeetingArchivePass(options);
           meetingLocalWin = BrowserWindow.fromWebContents(event.sender);
           meetingLocalBuffers = { mic: [], system: [] };
           meetingLocalTranscript = "";
@@ -7467,6 +7558,7 @@ class IPCHandlers {
           flushPendingMicFinals(true);
           const { diarizationPcmPath, diarizationSegments, diarizationStartedAt } =
             await captureMeetingDiarizationState();
+          const archiveJob = await captureMeetingArchiveState();
           const transcript =
             buildOrderedTranscriptText(diarizationSegments) || meetingLocalTranscript;
           const sessionSpeakerConfigSnapshot = this.activeMeetingSpeakerConfig;
@@ -7483,15 +7575,22 @@ class IPCHandlers {
             diarizationWin,
             liveSpeakerState,
             sessionSpeakerConfigSnapshot,
-            noteIdSnapshot
+            noteIdSnapshot,
+            archiveJob
           );
 
-          return { success: true, transcript, diarizationSessionId };
+          return {
+            success: true,
+            transcript,
+            diarizationSessionId,
+            archivePass: Boolean(archiveJob),
+          };
         }
 
         const results = await disconnectMeetingStreaming({ flushPending: true });
         const { diarizationPcmPath, diarizationSegments, diarizationStartedAt } =
           await captureMeetingDiarizationState();
+        const archiveJob = await captureMeetingArchiveState();
         const transcript =
           buildOrderedTranscriptText(diarizationSegments) ||
           [results[0]?.text, results[1]?.text].filter(Boolean).join(" ");
@@ -7509,10 +7608,16 @@ class IPCHandlers {
           diarizationWin,
           liveSpeakerState,
           sessionSpeakerConfigSnapshot,
-          noteIdSnapshot
+          noteIdSnapshot,
+          archiveJob
         );
 
-        return { success: true, transcript, diarizationSessionId };
+        return {
+          success: true,
+          transcript,
+          diarizationSessionId,
+          archivePass: Boolean(archiveJob),
+        };
       } catch (error) {
         debugLogger.error("Meeting transcription stop error", { error: error.message });
         return { success: false, error: error.message };
@@ -9205,15 +9310,147 @@ class IPCHandlers {
     return { numSpeakers: -1, cap: Math.max(1, DEFAULT_EXPECTED_SPEAKER_COUNT - 1) };
   }
 
+  /**
+   * Whether this meeting gets an archive pass, and with which model.
+   *
+   * Decided at start so the mirrors are written from the first chunk: the
+   * tier the machine measured into picks the model (the one onboarding
+   * downloaded), and the pass only runs when that model is on disk and the
+   * setting is on. Anything unresolved means no pass, never a stalled start.
+   */
+  async _planMeetingArchivePass(options) {
+    const {
+      ARCHIVE_PASS_SHIPPED,
+      selectTier,
+      speechLanguageFamily,
+    } = require("../utils/modelTiering");
+    const skip = (reason, extra = {}) => {
+      debugLogger.info("Meeting archive pass not planned", { reason, ...extra }, "meeting");
+      return null;
+    };
+    if (!ARCHIVE_PASS_SHIPPED) return null;
+    if (options.archivePass === false) return skip("setting off");
+    if (options.localProvider !== "nvidia" && options.localProvider !== "whisper") {
+      return skip("not a local engine", { provider: options.localProvider });
+    }
+    let capability = null;
+    try {
+      const { getCapabilities } = require("./capabilityProbe");
+      capability = await getCapabilities(path.join(app.getPath("userData"), "capability.json"));
+    } catch (error) {
+      return skip("capability probe failed", { error: error.message });
+    }
+    const language = speechLanguageFamily(options.language);
+    const { tier, archive } = selectTier(capability, { language });
+    if (!archive) return skip("tier has no archive model", { tier });
+    const downloaded =
+      archive.runtime === "whisper"
+        ? require("fs").existsSync(this.whisperManager.getModelPath(archive.name))
+        : this.parakeetManager.isModelDownloaded(archive.name);
+    if (!downloaded) return skip("archive model not installed", { tier, model: archive.name });
+    debugLogger.info(
+      "Meeting archive pass planned",
+      { tier, model: archive.name, runtime: archive.runtime, language, live: options.localModel },
+      "meeting"
+    );
+    return {
+      model: archive,
+      language: options.language || null,
+      sessionKey: `${Date.now()}-${process.pid}`,
+    };
+  }
+
+  /** The archive pass's transcriber for the planned model: sherpa or whisper. */
+  _buildArchiveTranscriber(model, language) {
+    if (model.runtime === "whisper") {
+      const vadOptions = this._resolveWhisperVadOptions("meeting");
+      return async (samples) => {
+        const wav = pcm16ToWav(float32ToPcm16(samples), 16000, 1);
+        const result = await this.whisperManager.transcribeLocalWhisper(wav, {
+          model: model.name,
+          language: language || undefined,
+          ...vadOptions,
+        });
+        return result?.success && typeof result.text === "string" ? result.text : "";
+      };
+    }
+    return async (samples) => {
+      const result = await this.parakeetManager.transcribeSamples(samples, { model: model.name });
+      return result?.text || "";
+    };
+  }
+
+  /**
+   * Runs the archive pass over a stopped meeting's mirrors. Never throws:
+   * null means "keep the live transcript". The mirrors are unlinked either way.
+   */
+  async _runMeetingArchivePass(job) {
+    const { runMeetingArchivePass, archivePassBudgetMs } = require("./meetingArchivePass");
+    const fs = require("fs");
+    const model = job.model;
+    const startedAt = Date.now();
+    debugLogger.info(
+      "Meeting archive pass started",
+      {
+        model: model.name,
+        runtime: model.runtime,
+        tracks: job.tracks.map((track) => ({
+          source: track.source,
+          seconds: Math.round(track.bytes / (track.sampleRate * 2)),
+        })),
+      },
+      "meeting"
+    );
+    try {
+      const result = await runMeetingArchivePass({
+        tracks: job.tracks,
+        transcribe: this._buildArchiveTranscriber(model, job.language),
+        isStale: job.isStale,
+        deadlineMs: startedAt + archivePassBudgetMs(job.durationMs),
+        log: (event, data) => debugLogger.debug(`Meeting ${event}`, data, "meeting"),
+      });
+      if (!result.segments.length) {
+        debugLogger.info(
+          "Meeting archive pass heard nothing; keeping the live transcript",
+          { model: model.name, windows: result.windows },
+          "meeting"
+        );
+        return null;
+      }
+      debugLogger.info(
+        "Meeting archive pass finished",
+        {
+          model: model.name,
+          windows: result.windows,
+          segments: result.segments.length,
+          elapsedMs: result.elapsedMs,
+          tracks: result.tracks,
+        },
+        "meeting"
+      );
+      return result;
+    } catch (error) {
+      debugLogger.warn(
+        "Meeting archive pass abandoned; keeping the live transcript",
+        { model: model.name, error: error.message, elapsedMs: Date.now() - startedAt },
+        "meeting"
+      );
+      return null;
+    } finally {
+      for (const track of job.tracks) fs.unlink(track.path, () => {});
+    }
+  }
+
   _startOrSkipDiarization(
     sessionId,
     rawPcmPath,
     audioStartedAt,
-    transcriptSegments,
+    liveSegments,
     win,
     liveSpeakerState = null,
     sessionConfig = null,
-    noteId = null
+    noteId = null,
+    archiveJob = null
   ) {
     const send = (payload) => {
       if (win && !win.isDestroyed()) {
@@ -9224,20 +9461,43 @@ class IPCHandlers {
     const diarizationEnabled = isSpeakerIdentificationEnabled(
       sessionConfig?.enabled ?? this.speakerDiarizationEnabled
     );
-
-    if (!diarizationEnabled || !this.diarizationManager?.isAvailable() || !rawPcmPath) {
-      send({
-        segments: transcriptSegments.map((segment, index) => ({
-          ...segment,
-          id: segment.id || `segment-${index}`,
-        })),
-      });
-      return;
-    }
+    const runDiarization =
+      diarizationEnabled && this.diarizationManager?.isAvailable() && Boolean(rawPcmPath);
 
     const fs = require("fs");
 
     (async () => {
+      // The archive pass goes first: its lines are what identification then
+      // labels and what the renderer swaps in for the session. A failed pass
+      // leaves the live lines in place — never half of each.
+      let transcriptSegments = liveSegments;
+      let replacement = {};
+      if (archiveJob) {
+        const refined = await this._runMeetingArchivePass(archiveJob);
+        if (refined) {
+          transcriptSegments = refined.segments;
+          replacement = {
+            replaceSince: archiveJob.replaceSince,
+            archive: {
+              model: archiveJob.model.name,
+              windows: refined.windows,
+              elapsedMs: refined.elapsedMs,
+            },
+          };
+        }
+      }
+
+      if (!runDiarization) {
+        send({
+          ...replacement,
+          segments: transcriptSegments.map((segment, index) => ({
+            ...segment,
+            id: segment.id || `segment-${index}`,
+          })),
+        });
+        return;
+      }
+
       let tmpWav = null;
       try {
         tmpWav = await this.diarizationManager.convertRawPcmToWav(rawPcmPath, 24000);
@@ -9395,10 +9655,19 @@ class IPCHandlers {
           }
         }
 
-        send({ segments: enrichedSegments, speakerEmbeddings: speakerEmbeddingsMap });
+        send({
+          ...replacement,
+          segments: enrichedSegments,
+          speakerEmbeddings: speakerEmbeddingsMap,
+        });
       } catch (err) {
         debugLogger.warn("Background diarization failed", { error: err.message });
-        send({ segments: [] });
+        // Identification failing must not cost the refined transcript.
+        send(
+          replacement.replaceSince
+            ? { ...replacement, segments: transcriptSegments }
+            : { segments: [] }
+        );
       } finally {
         try {
           fs.unlinkSync(rawPcmPath);

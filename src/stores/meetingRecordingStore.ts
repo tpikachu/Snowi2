@@ -33,12 +33,18 @@ import {
   lockTranscriptSpeaker,
   mergeTranscriptSegments,
   normalizeTranscriptSegment,
+  normalizeTranscriptSegments,
   serializeTranscriptSegments,
   type TranscriptSpeakerLockSource,
   type TranscriptSpeakerStatus,
 } from "../utils/transcriptSpeakerState";
 import { parseTranscriptSegments } from "../utils/parseTranscriptSegments";
-import { resolveDiarizationTarget, selectBaseSegments } from "../utils/diarizationCompletion";
+import {
+  replaceSessionSegments,
+  resolveDiarizationTarget,
+  selectBaseSegments,
+} from "../utils/diarizationCompletion";
+import { createPassWaiters } from "../utils/postStopPass";
 import { createSerialQueue } from "../utils/serialQueue";
 import {
   applyPartial,
@@ -137,6 +143,8 @@ interface MeetingRecordingState {
   systemPartialSpeakerId: string | null;
   systemPartialSpeakerName: string | null;
   diarizationSessionId: string | null;
+  /** Main is re-transcribing the session with the archive model; cleared by its completion. */
+  archivePassPending: boolean;
   /** Latest diarization result published for UI mirroring; consumed (nulled) by the editor that applies it. */
   completedDiarization: { noteId: number; segments: TranscriptSegment[] } | null;
   sessionDiarizationEnabled: boolean;
@@ -233,6 +241,7 @@ const getMeetingTranscriptionOptions = () => {
     cortiEnvironment: state.cortiEnvironment,
     cortiTenant: state.cortiTenant,
     keyterms: (state.customDictionary ?? []).filter(Boolean),
+    archivePass: state.meetingArchivePass,
   });
 };
 
@@ -665,6 +674,7 @@ export const useMeetingRecordingStore = create<MeetingRecordingState>()(() => ({
   systemPartialSpeakerId: null,
   systemPartialSpeakerName: null,
   diarizationSessionId: null,
+  archivePassPending: false,
   completedDiarization: null,
   sessionDiarizationEnabled:
     (getSettings() as { speakerDiarizationEnabled?: boolean }).speakerDiarizationEnabled ?? true,
@@ -1047,6 +1057,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
     systemPartialSpeakerId: null,
     systemPartialSpeakerName: null,
     diarizationSessionId: null,
+    archivePassPending: false,
     completedDiarization: null,
     error: null,
     micCaptureStatus: "inactive",
@@ -1895,7 +1906,10 @@ export async function stopRecording(): Promise<StopRecordingResult> {
     const result = await window.electronAPI?.meetingTranscriptionStop?.();
     if (result?.diarizationSessionId) {
       diarizationSessionId = result.diarizationSessionId;
-      useMeetingRecordingStore.setState({ diarizationSessionId });
+      useMeetingRecordingStore.setState({
+        diarizationSessionId,
+        archivePassPending: result.archivePass === true,
+      });
     }
     if (result?.success && result.transcript) {
       useMeetingRecordingStore.setState({ transcript: result.transcript });
@@ -1949,6 +1963,20 @@ export function cancelPreparedTranscription(): void {
   window.electronAPI?.meetingTranscriptionCancel?.();
 }
 
+const postStopWaiters = createPassWaiters<TranscriptSegment[]>();
+
+/**
+ * Resolves with the session's transcript once main's post-stop pass has
+ * landed on the note — the archive lines, with speakers when identification
+ * ran — or null after `timeoutMs`, or when the pass produced nothing.
+ */
+export function waitForPostStopPass(
+  sessionId: string,
+  timeoutMs: number
+): Promise<TranscriptSegment[] | null> {
+  return postStopWaiters.wait(sessionId, timeoutMs);
+}
+
 // Persists delayed diarization results to the note that owns the recording
 // session (#1495). Registered once at module load so results survive the
 // notes view unmounting; NoteEditor only mirrors `completedDiarization`.
@@ -1969,7 +1997,17 @@ if (typeof window !== "undefined") {
         payloadSessionId: data?.sessionId,
         currentSessionId: diarizationSessionId,
       });
-      if (targetNoteId == null) return;
+      const sessionId = typeof data?.sessionId === "string" ? data.sessionId : null;
+      // Whatever happens below, the pass is over for this session: Keep stops
+      // waiting and the transcript view stops saying it is being refined.
+      const finishPass = (segments: TranscriptSegment[] | null) => {
+        if (isCurrentSession) useMeetingRecordingStore.setState({ archivePassPending: false });
+        if (sessionId) postStopWaiters.settle(sessionId, segments);
+      };
+      if (targetNoteId == null) {
+        finishPass(null);
+        return;
+      }
 
       // Publishing an empty result clears a waiting editor's spinner without
       // painting an overlay; anything non-empty is already persisted.
@@ -1979,6 +2017,7 @@ if (typeof window !== "undefined") {
             completedDiarization: { noteId: targetNoteId, segments },
           });
         }
+        finishPass(segments.length ? segments : null);
       };
 
       if (!data?.segments?.length) {
@@ -2012,13 +2051,19 @@ if (typeof window !== "undefined") {
         recordingNoteId,
         targetNoteId,
       });
-      const enriched = mergeTranscriptSegments(
-        existing,
-        data.segments.map((segment, index) => ({
-          ...segment,
-          id: segment.id || `diarized-${index}`,
-        }))
-      );
+      const incoming = data.segments.map((segment, index) => ({
+        ...segment,
+        id: segment.id || `diarized-${index}`,
+      }));
+      // The archive pass sends the session's lines anew; identification alone
+      // sends the live lines back with speakers on them.
+      const replaceSince = typeof data.replaceSince === "number" ? data.replaceSince : null;
+      const enriched =
+        replaceSince != null
+          ? normalizeTranscriptSegments(
+              replaceSessionSegments({ base: existing, incoming, replaceSince })
+            )
+          : mergeTranscriptSegments(existing, incoming);
 
       try {
         // Awaited so the next queued completion's getNote is guaranteed to
@@ -2030,6 +2075,12 @@ if (typeof window !== "undefined") {
       } catch (error) {
         publish([]);
         throw error;
+      }
+      // The live segments are what a resume seeds from and what the panel
+      // bridge still publishes; after a replacement they must be the refined ones.
+      if (replaceSince != null && isCurrentSession && recordingNoteId === targetNoteId) {
+        segmentsRefValue = enriched;
+        useMeetingRecordingStore.setState({ segments: enriched });
       }
       publish(enriched);
 

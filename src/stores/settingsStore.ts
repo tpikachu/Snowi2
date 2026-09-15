@@ -269,6 +269,7 @@ const BOOLEAN_SETTINGS = new Set([
   "meetingProcessDetection",
   "meetingPreRollEnabled",
   "speakerDiarizationEnabled",
+  "meetingArchivePass",
   "dictationSileroEnabled",
   "noteRecordingSileroEnabled",
   "meetingSileroEnabled",
@@ -713,6 +714,8 @@ export interface SettingsState
    */
   meetingPreRollEnabled: boolean;
   speakerDiarizationEnabled: boolean;
+  /** Re-transcribe each meeting with the tier's archive model after Stop (local engines). */
+  meetingArchivePass: boolean;
   dictationSileroEnabled: boolean;
   noteRecordingSileroEnabled: boolean;
   meetingSileroEnabled: boolean;
@@ -1060,6 +1063,7 @@ export interface SettingsState
   setMeetingProcessDetection: (value: boolean) => void;
   setMeetingPreRollEnabled: (value: boolean) => void;
   setSpeakerDiarizationEnabled: (value: boolean) => void;
+  setMeetingArchivePass: (value: boolean) => void;
   setDictationSileroEnabled: (value: boolean) => void;
   setNoteRecordingSileroEnabled: (value: boolean) => void;
   setMeetingSileroEnabled: (value: boolean) => void;
@@ -1531,6 +1535,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   meetingProcessDetection: readBoolean("meetingProcessDetection", true),
   meetingPreRollEnabled: readBoolean("meetingPreRollEnabled", true),
   speakerDiarizationEnabled: readBoolean("speakerDiarizationEnabled", true),
+  meetingArchivePass: readBoolean("meetingArchivePass", true),
   // Off by default: VAD on pause-heavy dictations can strip the speech and make
   // Whisper hallucinate the dictionary prompt as the transcript (#1454).
   dictationSileroEnabled: readBoolean("dictationSileroEnabled", false),
@@ -2305,6 +2310,7 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setAppleCalendarConnected: createBooleanSetter("appleCalendarConnected"),
   setMeetingProcessDetection: createBooleanSetter("meetingProcessDetection"),
   setMeetingPreRollEnabled: createBooleanSetter("meetingPreRollEnabled"),
+  setMeetingArchivePass: createBooleanSetter("meetingArchivePass"),
   setSpeakerDiarizationEnabled: (value: boolean) => {
     if (isBrowser) localStorage.setItem("speakerDiarizationEnabled", String(value));
     useSettingsStore.setState({ speakerDiarizationEnabled: value });

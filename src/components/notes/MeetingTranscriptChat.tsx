@@ -563,6 +563,8 @@ interface MeetingTranscriptChatProps {
   selectedSegmentIds?: Set<string>;
   isRecording?: boolean;
   isDiarizing?: boolean;
+  /** Main is re-transcribing the session with the archive model. */
+  isRefining?: boolean;
   sessionDiarizationEnabled?: boolean;
   sessionExpectedCount?: number;
   userTouchedStepper?: boolean;
@@ -589,6 +591,7 @@ export function MeetingTranscriptChat({
   selectedSegmentIds,
   isRecording,
   isDiarizing,
+  isRefining = false,
   sessionDiarizationEnabled = true,
   sessionExpectedCount = 2,
   userTouchedStepper = false,
@@ -716,6 +719,18 @@ export function MeetingTranscriptChat({
 
   return (
     <div className="h-full relative">
+      {/* The archive pass: the meeting is being re-transcribed by the slower
+          model, and the lines below are about to be replaced. Only one pill
+          at a time — identification's takes the spot while it finalizes. */}
+      {isRefining && !(SPEAKER_IDENTIFICATION_ENABLED && isDiarizing) && (
+        <div
+          role="status"
+          className="absolute top-2 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2 px-2 py-1 rounded-lg border border-border-subtle bg-popover/95 backdrop-blur-xl shadow-elevated text-[11px] text-foreground"
+        >
+          <Loader2 size={12} className="animate-spin text-muted-foreground" />
+          <span>{t("notes.transcript.refining")}</span>
+        </div>
+      )}
       {/* The speaker pill — expected-count stepper, per-session toggle,
           "identifying…" status — is entirely about identification. With it off
           none of those controls change anything, so the pill would just hover

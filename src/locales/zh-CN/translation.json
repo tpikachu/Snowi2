@@ -26,6 +26,10 @@
       }
     },
     "meeting": {
+      "archivePass": {
+        "title": "会议结束后精修转录",
+        "description": "会议结束后，更慢但更准确的模型会重新处理录音，笔记将基于该转录生成。"
+      },
       "speakerDetection": {
         "title": "识别并标记发言者",
         "description": "关闭后，转写会显示\"你\"和\"其他人\""
@@ -2990,7 +2994,8 @@
       "showEarlier_other": "显示 {{count}} 条更早的消息",
       "jumpToLive": "跳到实时",
       "jumpToLatest": "跳到最新",
-      "resumedSession": "{{date}} 继续"
+      "resumedSession": "{{date}} 继续",
+      "refining": "正在精修转录…"
     },
     "recap": {
       "copy": "复制摘要",

@@ -2155,6 +2155,8 @@ declare global {
         model?: string;
         language?: string;
         noteId?: number | null;
+        /** Local engines only: mirror the audio and re-transcribe it after Stop. */
+        archivePass?: boolean;
       }) => Promise<
         {
           success: boolean;
@@ -2168,6 +2170,8 @@ declare global {
         success: boolean;
         transcript?: string;
         diarizationSessionId?: string;
+        /** Main is re-transcribing the session; its lines arrive on onMeetingDiarizationComplete. */
+        archivePass?: boolean;
         error?: string;
       }>;
       meetingTranscriptionCancel?: () => Promise<{
@@ -2288,6 +2292,9 @@ declare global {
             speakerLockSource?: "user" | "diarization" | "suggestion";
           }>;
           speakerEmbeddings?: Record<string, number[]> | null;
+          /** Set when the segments REPLACE the session that began at this epoch ms (archive pass). */
+          replaceSince?: number;
+          archive?: { model: string; windows: number; elapsedMs: number };
         }) => void
       ) => () => void;
 

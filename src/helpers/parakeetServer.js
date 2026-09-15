@@ -87,6 +87,32 @@ class ParakeetServerManager {
     return { wavBuffer, filesToCleanup: [tempInputPath, tempWavPath] };
   }
 
+  /**
+   * Transcribe 16 kHz float32 samples straight from memory.
+   *
+   * The archive pass (meetingArchivePass.js) cuts the meeting at its pauses
+   * itself, so it needs neither the WAV round-trip nor transcribe()'s fixed
+   * 15-second segmentation, which would slice its utterance-shaped windows
+   * mid-word. Same server, same model switch, same empty-decode retry.
+   */
+  async transcribeSamples(samples, options = {}) {
+    const { modelName = "parakeet-tdt-0.6b-v3" } = options;
+    const modelDir = path.join(this.getModelsDir(), modelName);
+    if (!this.isModelDownloaded(modelName)) {
+      throw new Error(`Parakeet model "${modelName}" not downloaded`);
+    }
+    const buffer = Buffer.isBuffer(samples)
+      ? samples
+      : Buffer.from(samples.buffer, samples.byteOffset, samples.byteLength);
+    if (buffer.length === 0) return { text: "", elapsed: 0 };
+    await this.wsServer.start(modelName, modelDir, getModelRuntime(modelName));
+    if (computeFloat32RMS(buffer) < SILENCE_RMS_THRESHOLD) return { text: "", elapsed: 0 };
+    const result = await this.wsServer.transcribe(buffer, SAMPLE_RATE);
+    if (result.text?.trim()) return result;
+    const retry = await this.wsServer.transcribe(buffer, SAMPLE_RATE);
+    return { ...retry, elapsed: (result.elapsed || 0) + (retry.elapsed || 0) };
+  }
+
   async transcribe(audioBuffer, options = {}) {
     const { modelName = "parakeet-tdt-0.6b-v3" } = options;
 

@@ -135,3 +135,17 @@ test("unknown and custom providers fail closed", async () => {
     );
   }
 });
+
+test("local mode carries the archive-pass preference through, and nothing when unset", async () => {
+  const { resolveMeetingTranscriptionOptions } = await load();
+  const local = { ...baseOptions, transcriptionMode: "local", localProvider: "nvidia" };
+
+  assert.deepEqual(resolveMeetingTranscriptionOptions({ ...local, archivePass: false }), {
+    provider: "local",
+    localProvider: "nvidia",
+    localModel: "parakeet-tdt-0.6b-v3",
+    language: "en",
+    archivePass: false,
+  });
+  assert.equal("archivePass" in resolveMeetingTranscriptionOptions(local), false);
+});

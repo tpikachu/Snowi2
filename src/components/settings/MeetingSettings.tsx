@@ -35,6 +35,26 @@ export function MeetingSpeakerDetectionRow() {
   );
 }
 
+/**
+ * The archive pass: the meeting re-transcribed by the tier's slower model
+ * after Stop, before the write-up. Only the local engines run it, so the row
+ * shows with the local picker.
+ */
+export function MeetingArchivePassRow() {
+  const { t } = useTranslation();
+  const meetingArchivePass = useSettingsStore((s) => s.meetingArchivePass);
+  const setMeetingArchivePass = useSettingsStore((s) => s.setMeetingArchivePass);
+
+  return (
+    <SettingsRow
+      label={t("settings.meeting.archivePass.title")}
+      description={t("settings.meeting.archivePass.description")}
+    >
+      <Toggle checked={meetingArchivePass} onChange={setMeetingArchivePass} />
+    </SettingsRow>
+  );
+}
+
 const noop = () => {};
 
 export function MeetingTranscriptionPanel() {
@@ -126,6 +146,11 @@ export function MeetingTranscriptionPanel() {
       {meetingTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
       {meetingTranscriptionMode === "local" && renderTranscriptionPicker("local")}
       <SettingsPanel>
+        {meetingTranscriptionMode === "local" && (
+          <SettingsPanelRow>
+            <MeetingArchivePassRow />
+          </SettingsPanelRow>
+        )}
         <SettingsPanelRow>
           <MeetingSpeakerDetectionRow />
         </SettingsPanelRow>

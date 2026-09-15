@@ -26,6 +26,10 @@
       }
     },
     "meeting": {
+      "archivePass": {
+        "title": "Transkript nach jedem Meeting verfeinern",
+        "description": "Nach dem Meeting geht ein langsameres, genaueres Modell die Aufnahme noch einmal durch, und die Notizen entstehen aus diesem Transkript."
+      },
       "speakerDetection": {
         "title": "Sprecher erkennen und beschriften",
         "description": "Wenn deaktiviert, zeigen Transkripte „Du“ und „Andere“"
@@ -3197,7 +3201,8 @@
       "showEarlier_other": "{{count}} frühere Nachrichten anzeigen",
       "jumpToLive": "Zum Live-Verlauf",
       "jumpToLatest": "Zum Neuesten",
-      "resumedSession": "Fortgesetzt am {{date}}"
+      "resumedSession": "Fortgesetzt am {{date}}",
+      "refining": "Transkript wird verfeinert…"
     },
     "recap": {
       "copy": "Zusammenfassung kopieren",

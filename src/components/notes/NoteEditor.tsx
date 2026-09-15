@@ -364,6 +364,11 @@ export default function NoteEditor({
   // Persistence happens in meetingRecordingStore's module-level listener
   // (#1495); this only mirrors a published result into the rendered note's UI.
   const completedDiarization = useMeetingRecordingStore((s) => s.completedDiarization);
+  // The archive pass is main re-transcribing the session that just ended; the
+  // transcript view says so until its lines land through the same completion.
+  const archivePassPending = useMeetingRecordingStore((s) => s.archivePassPending);
+  const archivePassNoteId = useMeetingRecordingStore((s) => s.recordingNoteId);
+  const isRefining = archivePassPending && archivePassNoteId === note.id && !isRecording;
   useEffect(() => {
     if (!completedDiarization || completedDiarization.noteId !== note.id) return;
     // Consume so a remount can't repaint this overlay over newer edits; the
@@ -898,6 +903,7 @@ export default function NoteEditor({
                   speakerProfiles={knownSpeakers}
                   participants={parsedParticipants}
                   isDiarizing={isDiarizing}
+                  isRefining={isRefining}
                   sessionDiarizationEnabled={sessionDiarizationEnabled}
                   sessionExpectedCount={sessionExpectedCount}
                   userTouchedStepper={userTouchedStepper}

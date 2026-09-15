@@ -8,7 +8,9 @@ import {
   resolvePendingStop,
   startMeetingPreRoll,
   useMeetingRecordingStore,
+  waitForPostStopPass,
 } from "../stores/meetingRecordingStore";
+import logger from "../utils/logger";
 import { ConfirmDialog } from "./ui/dialog";
 import { useMeetingPanelBridge } from "../hooks/useMeetingPanelBridge";
 import { useMeetingAssist } from "../hooks/useMeetingAssist";
@@ -38,6 +40,15 @@ const MEETING_ERROR_KEYS: Record<string, string> = {};
  * anyone comes looking for it.
  */
 const STOP_AUTO_SAVE_SECONDS = 30;
+
+/**
+ * How long Keep waits for the archive pass before writing the notes from the
+ * live lines instead. The pass decodes at a few times real time on a CPU, so
+ * an hour-long meeting needs minutes. Past this the summary is written from
+ * what the live model heard, and the refined transcript marks it stale when
+ * it lands.
+ */
+const ARCHIVE_PASS_WAIT_MS = 8 * 60_000;
 
 /**
  * The keep-or-discard prompt shown after Stop.
@@ -77,31 +88,54 @@ function MeetingStopDialog() {
    * than against state that has already moved on.
    */
   const keepMeeting = useCallback(() => {
-    const pending = useMeetingRecordingStore.getState().pendingStop;
+    const {
+      pendingStop: pending,
+      archivePassPending,
+      diarizationSessionId,
+    } = useMeetingRecordingStore.getState();
     void resolvePendingStop(true);
 
     if (!pending || pending.noteId == null || !pending.hasContent) return;
     const noteId = pending.noteId;
     const speakerLabels = { you: t("notes.speaker.you"), them: t("notes.speaker.them") };
 
-    void autoGenerateMeetingNotes({
-      noteId,
-      noteTitle: pending.noteTitle ?? null,
-      segments: pending.segments ?? [],
-      speakerLabels,
-      titlePlaceholders: meetingTitlePlaceholders(t),
-      labels: {
-        noModel: t("notes.actions.errors.noModel"),
-        noEndpoint: t("notes.actions.errors.noEndpoint"),
-        actionFailed: t("notes.actions.errors.actionFailed"),
-      },
-    });
+    void (async () => {
+      let segments = pending.segments ?? [];
+      // The archive pass rewrites this session's transcript; the notes wait
+      // for it rather than summarizing captions the note is about to replace.
+      if (archivePassPending && diarizationSessionId) {
+        logger.info("Waiting for the archive pass before writing the notes", { noteId }, "meeting");
+        const refined = await waitForPostStopPass(diarizationSessionId, ARCHIVE_PASS_WAIT_MS);
+        if (refined?.length) {
+          segments = refined;
+        } else {
+          logger.info(
+            "Archive pass not available in time; notes written from the live transcript",
+            { noteId },
+            "meeting"
+          );
+        }
+      }
 
-    // Memory extraction rides the same trigger but is not tied to the note
-    // result: it reads segments back from the database (so the ids it cites are
-    // the ones a citation resolves against), and a meeting should still yield
-    // its commitments when note generation is off or fails.
-    void generateMeetingMemory({ noteId, speakerLabels });
+      await autoGenerateMeetingNotes({
+        noteId,
+        noteTitle: pending.noteTitle ?? null,
+        segments,
+        speakerLabels,
+        titlePlaceholders: meetingTitlePlaceholders(t),
+        labels: {
+          noModel: t("notes.actions.errors.noModel"),
+          noEndpoint: t("notes.actions.errors.noEndpoint"),
+          actionFailed: t("notes.actions.errors.actionFailed"),
+        },
+      });
+
+      // Memory extraction rides the same trigger but is not tied to the note
+      // result: it reads segments back from the database (so the ids it cites are
+      // the ones a citation resolves against), and a meeting should still yield
+      // its commitments when note generation is off or fails.
+      void generateMeetingMemory({ noteId, speakerLabels });
+    })();
   }, [t]);
 
   const hasPending = Boolean(pendingStop);

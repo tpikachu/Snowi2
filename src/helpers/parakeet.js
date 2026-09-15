@@ -192,6 +192,23 @@ class ParakeetManager {
     return this.serverManager.createOnlineStream(options);
   }
 
+  isModelDownloaded(modelName) {
+    return this.serverManager.isModelDownloaded(modelName);
+  }
+
+  /** 16 kHz float32 samples in, `{ text }` out — the archive pass's entry point. */
+  async transcribeSamples(samples, options = {}) {
+    const model = options.model || "parakeet-tdt-0.6b-v3";
+    this.validateModelName(model);
+    if (!this.serverManager.isAvailable(getModelRuntime(model))) {
+      throw new Error(
+        "sherpa-onnx binary not found. Please ensure the app is installed correctly."
+      );
+    }
+    const result = await this.serverManager.transcribeSamples(samples, { modelName: model });
+    return { text: typeof result?.text === "string" ? result.text.trim() : "" };
+  }
+
   async transcribeLocalParakeet(audioBlob, options = {}) {
     const model = options.model || "parakeet-tdt-0.6b-v3";
     const serverAvailable = this.serverManager.isAvailable(getModelRuntime(model));
