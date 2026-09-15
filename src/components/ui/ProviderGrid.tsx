@@ -7,6 +7,8 @@ export interface ProviderGridItem {
   name: string;
   /** A key/credential is stored for this provider. */
   configured?: boolean;
+  /** The provider currently serving — worn as an "In use" badge. */
+  active?: boolean;
   /** One short qualifier under the name — region limits, "no key needed", etc. */
   note?: string;
 }
@@ -73,20 +75,27 @@ export function ProviderGrid({ providers, selectedId, onSelect, className }: Pro
               )}
             </span>
 
-            {/* Readiness, not selection: a filled dot means a key is stored.
-                Titled rather than icon-only so it survives greyscale. */}
-            <span
-              aria-hidden="true"
-              title={
-                provider.configured
-                  ? t("reasoning.providerGrid.keySet")
-                  : t("reasoning.providerGrid.keyMissing")
-              }
-              className={cn(
-                "size-1.5 shrink-0 rounded-full",
-                provider.configured ? "bg-primary" : "border border-border-hover"
-              )}
-            />
+            {/* The badge says which provider is serving; otherwise readiness,
+                not selection: a filled dot means a key is stored. Titled
+                rather than icon-only so it survives greyscale. */}
+            {provider.active ? (
+              <span className="shrink-0 rounded-full bg-primary/12 px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary">
+                {t("reasoning.providerGrid.inUse")}
+              </span>
+            ) : (
+              <span
+                aria-hidden="true"
+                title={
+                  provider.configured
+                    ? t("reasoning.providerGrid.keySet")
+                    : t("reasoning.providerGrid.keyMissing")
+                }
+                className={cn(
+                  "size-1.5 shrink-0 rounded-full",
+                  provider.configured ? "bg-primary" : "border border-border-hover"
+                )}
+              />
+            )}
             <span className="sr-only">
               {provider.configured
                 ? t("reasoning.providerGrid.keySet")

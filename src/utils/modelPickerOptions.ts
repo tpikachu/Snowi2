@@ -26,6 +26,9 @@ export interface PickerCloudProviderInput {
   id: string;
   name: string;
   models: PickerModel[];
+  /** The provider fronts more ids than it lists (OpenRouter): the picker
+   *  also takes one typed in. Only meaningful once the key is present. */
+  acceptsAnyModelId?: boolean;
 }
 
 export interface PickerLocalModelInput {
@@ -44,6 +47,8 @@ export interface ModelPickerGroup {
   /** False only for the trailing keyless cloud groups. */
   hasKey: boolean;
   models: PickerModel[];
+  /** A keyed group that also accepts a model id typed in by hand. */
+  acceptsAnyModelId: boolean;
 }
 
 export function buildModelPickerGroups(input: {
@@ -64,6 +69,8 @@ export function buildModelPickerGroups(input: {
       providerName: provider.name,
       hasKey: input.keyedProviderIds.has(provider.id),
       models: input.keyedProviderIds.has(provider.id) ? provider.models : [],
+      acceptsAnyModelId:
+        input.keyedProviderIds.has(provider.id) && provider.acceptsAnyModelId === true,
     };
     (group.hasKey ? keyed : keyless).push(group);
   }
@@ -76,6 +83,7 @@ export function buildModelPickerGroups(input: {
             providerId: "local",
             providerName: input.localGroupName,
             hasKey: true,
+            acceptsAnyModelId: false,
             models: input.localModels.map(({ id, label, descriptionKey, description }) => ({
               id,
               label,

@@ -578,7 +578,8 @@
     "providerGrid": {
       "keyMissing": "Noch kein API-Schlüssel",
       "keySet": "API-Schlüssel gespeichert",
-      "label": "Anbieter"
+      "label": "Anbieter",
+      "inUse": "In Verwendung"
     },
     "readiness": {
       "needsKey": "Noch nicht einsatzbereit — fügen Sie Ihren {{provider}}-API-Schlüssel hinzu, um dieses Modell zu nutzen.",
@@ -2221,7 +2222,10 @@
       },
       "engine": {
         "title": "Engine",
-        "description": "Wo Chat und Meeting-Zusammenfassungen laufen. Eine Wahl treibt beides an – das Modell wählst du direkt dort, wo du es nutzt."
+        "description": "Wo Chat und Meeting-Zusammenfassungen laufen. Eine Wahl treibt beides an – das Modell wählst du direkt dort, wo du es nutzt.",
+        "cloudInUse": "Chat und Meeting-Zusammenfassungen laufen über {{provider}}.",
+        "cloudChooseHint": "Klicke auf {{provider}}, um Chat und Meeting-Zusammenfassungen darüber laufen zu lassen.",
+        "cloudSwitchHint": "Speichere einen Schlüssel, um Chat und Meeting-Zusammenfassungen zu {{provider}} zu verschieben."
       }
     },
     "transcription": {
@@ -3506,7 +3510,10 @@
       "addKey": "Schlüssel hinzufügen",
       "localGroup": "Auf diesem Computer",
       "choose": "Modell wählen",
-      "defaultWithModel": "{{label}} ({{model}})"
+      "defaultWithModel": "{{label}} ({{model}})",
+      "customModel": "Anderes Modell…",
+      "customModelPlaceholder": "anbieter/modell-id",
+      "useModel": "Verwenden"
     }
   },
   "integrations": {

@@ -7,6 +7,7 @@ import {
   selectResolvedLLMConfig,
   setResolvedLLMConfig,
   setCoreLlmEngine,
+  setCoreCloudProvider,
 } from "../../stores/settingsStore";
 import SettingsGroup, { SettingsPanelBody } from "./SettingsGroup";
 import { InferenceModeSelector, type InferenceModeOption } from "../ui/SettingsSection";
@@ -24,10 +25,12 @@ import { CLOUD_PROVIDER_KEY_LINKS } from "../../config/providerKeyLinks";
  *
  * The user makes exactly one choice here: cloud or local, the same engine
  * cards the Speech-to-Text page uses. Cloud shows the provider grid and a key
- * field — entering a key IS the setup, the scope defaults
- * (scopeModelDefaults.ts) pick each feature's model. Local shows the model
- * list with downloads, and a selection routes chat and actions to it
- * together. Everything else is handled by the app: models are changed at
+ * field: the highlighted card is the provider chat and write-ups run on, a
+ * click on a keyed card switches, and on a card without a key the switch
+ * happens the moment its key is saved (setCoreCloudProvider) — the scope
+ * defaults (scopeModelDefaults.ts) pick each feature's model. Local shows
+ * the model list with downloads, and a selection routes chat and actions to
+ * it together. Everything else is handled by the app: models are changed at
  * point of use (chat bar, cue card, action editor), never here. The former
  * Advanced disclosure (per-scope editors, fast-lane override, chat prompt)
  * was removed on client direction, 2026-09 — the fast lane auto-derives
@@ -65,18 +68,78 @@ const PROVIDER_ROWS: Array<{
 const providerName = (id: string) =>
   id === "openrouter" ? "OpenRouter" : getProviderDisplayName(id);
 
-/** Cloud: the provider cards and the selected provider's key. */
+const isProviderRow = (id: string) => PROVIDER_ROWS.some((row) => row.id === id);
+
+/**
+ * Cloud: the provider cards and the selected provider's key.
+ *
+ * The highlighted card is derived from the store — the provider serving chat
+ * (the canonical copy), else write-ups — so the page opens on what is in use
+ * rather than always on the first card. A card clicked without a key is a
+ * pending choice held here until its key lands; before this, the cards only
+ * chose which key box was shown and nothing on the page switched providers
+ * (client report, 2026-09-15).
+ */
 function CloudKeysSection() {
   const { t } = useTranslation();
-  const [selectedId, setSelectedId] = useState(PROVIDER_ROWS[0].id);
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
-  const selected = PROVIDER_ROWS.find((row) => row.id === selectedId) ?? PROVIDER_ROWS[0];
-  const value = useSettingsStore((s) => s[selected.keyField]);
-  const setValue = useSettingsStore((s) => s[selected.setter]);
+  const chatProvider = useSettingsStore((s) => {
+    const config = selectResolvedLLMConfig(s, "chatIntelligence");
+    return config.mode === "providers" ? config.provider : "";
+  });
+  const actionsProvider = useSettingsStore((s) => {
+    const config = selectResolvedLLMConfig(s, "actions");
+    return config.mode === "providers" ? config.provider : "";
+  });
   const configured = useSettingsStore(
     useShallow((s) => PROVIDER_ROWS.map((row) => !!(s[row.keyField] as string | undefined)?.trim()))
   );
+
+  const inUseId = isProviderRow(chatProvider)
+    ? chatProvider
+    : isProviderRow(actionsProvider)
+      ? actionsProvider
+      : null;
+  const selectedId = pendingId ?? inUseId ?? PROVIDER_ROWS[0].id;
+  const selected = PROVIDER_ROWS.find((row) => row.id === selectedId) ?? PROVIDER_ROWS[0];
+  const selectedHasKey = configured[PROVIDER_ROWS.indexOf(selected)];
+  // Serving, not merely routed: a fresh install's defaulted provider survives
+  // the flip to cloud with no key, and "In use" over "No API key yet" would
+  // read as a contradiction.
+  const isServing = (id: string) =>
+    (id === chatProvider || id === actionsProvider) &&
+    configured[PROVIDER_ROWS.findIndex((row) => row.id === id)] === true;
+  const selectedInUse = isServing(selected.id);
+  const value = useSettingsStore((s) => s[selected.keyField]);
+  const storeSetter = useSettingsStore((s) => s[selected.setter]);
   const link = CLOUD_PROVIDER_KEY_LINKS[selected.id];
+
+  const choose = (id: string) => {
+    const index = PROVIDER_ROWS.findIndex((row) => row.id === id);
+    if (index >= 0 && configured[index]) {
+      setCoreCloudProvider(id);
+      setPendingId(null);
+    } else {
+      setPendingId(id);
+    }
+  };
+  // Saving the first key on the selected card is the switch the click promised.
+  const setValue = (key: string) => {
+    const hadKey = !!(value ?? "").trim();
+    storeSetter(key);
+    if (!hadKey && key.trim()) {
+      setCoreCloudProvider(selected.id);
+      setPendingId(null);
+    }
+  };
+
+  const providerLabel = providerName(selected.id);
+  const hint = selectedInUse
+    ? t("settingsPage.llms.engine.cloudInUse", { provider: providerLabel })
+    : selectedHasKey
+      ? t("settingsPage.llms.engine.cloudChooseHint", { provider: providerLabel })
+      : t("settingsPage.llms.engine.cloudSwitchHint", { provider: providerLabel });
 
   return (
     <div className="space-y-4">
@@ -87,11 +150,12 @@ function CloudKeysSection() {
             id: row.id,
             name: providerName(row.id),
             configured: configured[index],
+            active: isServing(row.id),
             note: rowLink?.noteKey ? t(rowLink.noteKey) : undefined,
           };
         })}
         selectedId={selected.id}
-        onSelect={setSelectedId}
+        onSelect={choose}
       />
 
       <div className="space-y-1.5">
@@ -99,7 +163,7 @@ function CloudKeysSection() {
           <span className="text-sm font-medium text-foreground">{t("common.apiKey")}</span>
           {link && <GetApiKeyLink url={link.url} />}
         </div>
-        <ApiKeyInput apiKey={value ?? ""} setApiKey={setValue} label="" helpText="" />
+        <ApiKeyInput apiKey={value ?? ""} setApiKey={setValue} label="" helpText={hint} />
       </div>
     </div>
   );

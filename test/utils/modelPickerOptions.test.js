@@ -51,3 +51,35 @@ test("a provider with no catalog models and no key is dropped, not advertised", 
   });
   assert.ok(!groups.some((g) => g.providerId === "tinfoil"));
 });
+
+test("a provider that fronts more ids than it lists takes a typed id, but only once keyed", () => {
+  const openrouter = {
+    id: "openrouter",
+    name: "OpenRouter",
+    models: [{ id: "openai/gpt-5-mini", label: "GPT-5 Mini" }],
+    acceptsAnyModelId: true,
+  };
+  const keyed = buildModelPickerGroups({
+    cloudProviders: [openrouter],
+    keyedProviderIds: new Set(["openrouter"]),
+    localModels: [],
+    localGroupName: "Local",
+  });
+  assert.equal(keyed[0].acceptsAnyModelId, true);
+  const keyless = buildModelPickerGroups({
+    cloudProviders: [openrouter],
+    keyedProviderIds: new Set(),
+    localModels: [],
+    localGroupName: "Local",
+  });
+  assert.equal(keyless[0].hasKey, false);
+  assert.equal(keyless[0].acceptsAnyModelId, false);
+  // Vendors with a fixed catalog never take a typed id.
+  const vendors = buildModelPickerGroups({
+    cloudProviders,
+    keyedProviderIds: new Set(["openai"]),
+    localModels: [],
+    localGroupName: "Local",
+  });
+  assert.ok(vendors.every((g) => g.acceptsAnyModelId === false));
+});

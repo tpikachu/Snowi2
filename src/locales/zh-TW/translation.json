@@ -578,7 +578,8 @@
     "providerGrid": {
       "keyMissing": "尚無 API 金鑰",
       "keySet": "已儲存 API 金鑰",
-      "label": "供應商"
+      "label": "供應商",
+      "inUse": "使用中"
     },
     "readiness": {
       "needsKey": "尚未就緒 — 新增你的 {{provider}} API 金鑰以使用此模型。",
@@ -1938,7 +1939,10 @@
       },
       "engine": {
         "title": "引擎",
-        "description": "聊天和會議紀要的執行位置。一次選擇同時作用於兩者——模型本身在使用處選擇。"
+        "description": "聊天和會議紀要的執行位置。一次選擇同時作用於兩者——模型本身在使用處選擇。",
+        "cloudInUse": "聊天與會議摘要透過 {{provider}} 執行。",
+        "cloudChooseHint": "點選 {{provider}} 以在其上執行聊天與會議摘要。",
+        "cloudSwitchHint": "儲存金鑰後，聊天與會議摘要將切換至 {{provider}}。"
       }
     },
     "transcription": {
@@ -3341,7 +3345,10 @@
       "addKey": "新增金鑰",
       "localGroup": "本機模型",
       "choose": "選擇模型",
-      "defaultWithModel": "{{label}}（{{model}}）"
+      "defaultWithModel": "{{label}}（{{model}}）",
+      "customModel": "其他模型…",
+      "customModelPlaceholder": "供應商/模型 ID",
+      "useModel": "使用"
     }
   },
   "integrations": {

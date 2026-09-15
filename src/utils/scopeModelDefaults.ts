@@ -8,11 +8,14 @@
  * write-ups run in the background where latency is invisible and volume adds
  * up. The user changes either later from the chips, never from Settings.
  *
- * Applied only to a scope that cannot currently serve (see
- * `applyDefaultModelsForNewKey` in settingsStore): a model someone picked, on
- * any provider whose key is present, is never overridden by adding another
- * key. Providers without a static catalog (openrouter, custom) have no entry
- * — there is nothing safe to default to on someone else's model list.
+ * A key arriving applies these only to a scope that cannot currently serve
+ * (see `applyDefaultModelsForNewKey` in settingsStore): a model someone
+ * picked, on any provider whose key is present, is never overridden by
+ * adding another key. Choosing a provider card in Settings
+ * (`setCoreCloudProvider`) is the deliberate switch, and applies them to both
+ * scopes. OpenRouter's entry names slugs from the curated slice in
+ * `src/config/openrouterModels.ts`; `custom` has no entry — there is nothing
+ * safe to default to on someone else's model list.
  *
  * Pure — no store, no Electron — so the mapping is testable, and the test can
  * hold every id here against the model registry.
@@ -29,6 +32,7 @@ const SCOPE_DEFAULT_MODELS: Record<string, Record<DefaultableScope, string>> = {
   groq: { chatIntelligence: "openai/gpt-oss-120b", actions: "openai/gpt-oss-20b" },
   tinfoil: { chatIntelligence: "kimi-k2-6", actions: "gpt-oss-120b" },
   corti: { chatIntelligence: "corti-s1", actions: "corti-s1-instant" },
+  openrouter: { chatIntelligence: "openai/gpt-5-mini", actions: "openai/gpt-5-nano" },
 };
 
 export function defaultModelForScope(providerId: string, scope: DefaultableScope): string | null {

@@ -79,6 +79,76 @@ test("models are picked at point of use; Settings is engine plus keys", async ()
   await page.screenshot({ path: test.info().outputPath("language-models-panel.png") });
 });
 
+test("the provider card is the switch: a key saved on the chosen card moves chat and write-ups there", async () => {
+  ({ app } = await launchApp(test.info()));
+  const page = await controlPanelPage(app);
+  await skipOnboarding(page);
+
+  await page.getByRole("button", { name: "Settings" }).first().click();
+  await page.getByRole("button", { name: "Language Models" }).first().click();
+  await expect(page.getByText("Cloud Providers").first()).toBeVisible({ timeout: 15_000 });
+  await page.getByText("Cloud Providers").first().click();
+
+  const grid = page.getByRole("radiogroup", { name: "Provider" });
+  // A card's accessible name is icon alt + name + badge + readiness; the
+  // spaces keep OpenAI from matching OpenRouter.
+  const card = (name) => grid.getByRole("radio", { name: new RegExp(" " + name + " ") });
+  await expect(card("OpenAI")).toBeVisible();
+
+  // Nothing keyed yet: the first card is merely selected, and the hint says
+  // what saving a key there would do.
+  await expect(
+    page.getByText("Save a key to move chat and meeting write-ups to OpenAI.")
+  ).toBeVisible();
+
+  // A keyless card clicked is a pending choice, not a switch.
+  await card("Anthropic").click();
+  await expect(card("Anthropic")).toHaveAttribute("aria-checked", "true");
+  await expect(
+    page.getByText("Save a key to move chat and meeting write-ups to Anthropic.")
+  ).toBeVisible();
+
+  // Saving its key is the switch (client, 2026-09-15: "added the key, it
+  // still uses the previous provider, no obvious way to switch").
+  await page.getByRole("button", { name: "Add API key" }).click();
+  await page.getByRole("textbox", { name: "API Key" }).fill("sk-ant-e2e");
+  await page.keyboard.press("Enter");
+  await expect(card("Anthropic")).toContainText("In use");
+  await expect(page.getByText("Chat and meeting write-ups run on Anthropic.")).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("provider-in-use.png") });
+
+  // Another keyless card is pending again; Anthropic keeps serving meanwhile.
+  await card("OpenAI").click();
+  await expect(
+    page.getByText("Save a key to move chat and meeting write-ups to OpenAI.")
+  ).toBeVisible();
+  await expect(card("Anthropic")).toContainText("In use");
+
+  // OpenRouter is a provider like the others now: its key routes both scopes
+  // at the curated slugs…
+  await card("OpenRouter").click();
+  await page.getByRole("button", { name: "Add API key" }).click();
+  await page.getByRole("textbox", { name: "API Key" }).fill("sk-or-e2e");
+  await page.keyboard.press("Enter");
+  await expect(card("OpenRouter")).toContainText("In use");
+  await expect(card("Anthropic")).not.toContainText("In use");
+
+  // …and the chat chip shows the pick under the vendor's label, and takes an
+  // id typed in for anything beyond the curated slice. Settings is a modal;
+  // close it before reaching for the nav.
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.locator('[data-tour="nav-chat"]').click();
+  const chip = page.getByRole("button", { name: "Model" });
+  await expect(chip).toHaveText(/GPT-5 Mini/, { timeout: 15_000 });
+  await chip.click();
+  await page.getByRole("button", { name: "Other model…" }).click();
+  await page.getByRole("textbox", { name: "Other model…" }).fill("mistralai/mistral-small-2603");
+  await page.keyboard.press("Enter");
+  await expect(chip).toHaveText(/mistralai\/mistral-small-2603/);
+  await page.screenshot({ path: test.info().outputPath("provider-openrouter-chip.png") });
+});
+
 test("the text-size preference zooms the control panel window", async () => {
   ({ app } = await launchApp(test.info()));
   const page = await controlPanelPage(app);

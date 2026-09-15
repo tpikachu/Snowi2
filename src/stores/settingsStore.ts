@@ -2054,7 +2054,12 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setGroqApiKey: createProviderKeySetter("groq", "groqApiKey", "groq", "groq"),
   setXaiApiKey: createSecretSetter("xaiApiKey", "xai"),
   setMistralApiKey: createSecretSetter("mistralApiKey", "mistral", "mistral"),
-  setOpenrouterApiKey: createSecretSetter("openrouterApiKey", "openrouter", "openrouter"),
+  setOpenrouterApiKey: createProviderKeySetter(
+    "openrouter",
+    "openrouterApiKey",
+    "openrouter",
+    "openrouter"
+  ),
   setCortiClientId: (key: string) => {
     set({ cortiClientId: key });
     debouncedSaveSecret("cortiClientId", key);
@@ -2894,6 +2899,37 @@ export function setCoreLlmEngine(engine: "cloud" | "local"): void {
   }
   // Leaving local frees the llama server's RAM; arriving starts on demand.
   if (mode !== "local") void window.electronAPI?.llamaServerStop?.();
+}
+
+/**
+ * The Language Models page's provider choice: the highlighted card is the
+ * provider chat and meeting write-ups run on. Routes both scopes at it —
+ * keeping a model already picked on that provider, otherwise its scope
+ * defaults — and leaves enterprise-managed scopes alone. Until this existed
+ * the cards only chose which key box was shown, and a second provider's key
+ * moved nothing (client report, 2026-09-15: added the OpenRouter key, the
+ * write-ups kept using OpenAI, "no obvious way to switch").
+ */
+export function setCoreCloudProvider(providerId: string): void {
+  if (!providerValidForCoreMode(providerId, "providers")) return;
+  let wasLocal = false;
+  for (const scope of DEFAULTABLE_SCOPES) {
+    const resolved = selectResolvedLLMConfig(useSettingsStore.getState(), scope);
+    if ((resolved.mode || "") === "enterprise") continue;
+    if (resolved.mode === "local") wasLocal = true;
+    const keepsModel =
+      resolved.mode === "providers" && resolved.provider === providerId && !!resolved.model;
+    const model = keepsModel ? resolved.model : defaultModelForScope(providerId, scope);
+    if (!model) continue;
+    setResolvedLLMConfig(scope, {
+      mode: "providers",
+      cloudMode: "byok",
+      provider: providerId,
+      model,
+    });
+  }
+  // Leaving local frees the llama server's RAM.
+  if (wasLocal) void window.electronAPI?.llamaServerStop?.();
 }
 
 // --- Convenience getters for non-React code ---

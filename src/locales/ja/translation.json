@@ -578,7 +578,8 @@
     "providerGrid": {
       "keyMissing": "API キー未設定",
       "keySet": "API キー保存済み",
-      "label": "プロバイダー"
+      "label": "プロバイダー",
+      "inUse": "使用中"
     },
     "readiness": {
       "needsKey": "まだ利用できません — このモデルを使うには {{provider}} の API キーを追加してください。",
@@ -1938,7 +1939,10 @@
       },
       "engine": {
         "title": "エンジン",
-        "description": "チャットと会議のまとめが動く場所。1 つの選択で両方に適用され、モデル自体は使う場所で選べます。"
+        "description": "チャットと会議のまとめが動く場所。1 つの選択で両方に適用され、モデル自体は使う場所で選べます。",
+        "cloudInUse": "チャットと会議のまとめは {{provider}} で実行されます。",
+        "cloudChooseHint": "{{provider}} をクリックすると、チャットと会議のまとめをそこで実行します。",
+        "cloudSwitchHint": "キーを保存すると、チャットと会議のまとめが {{provider}} に切り替わります。"
       }
     },
     "transcription": {
@@ -3341,7 +3345,10 @@
       "addKey": "キーを追加",
       "localGroup": "このコンピューター上",
       "choose": "モデルを選択",
-      "defaultWithModel": "{{label}}（{{model}}）"
+      "defaultWithModel": "{{label}}（{{model}}）",
+      "customModel": "その他のモデル…",
+      "customModelPlaceholder": "ベンダー/モデルID",
+      "useModel": "使用"
     }
   },
   "integrations": {

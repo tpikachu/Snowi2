@@ -22,6 +22,7 @@ import {
   type PickerLocalModelInput,
 } from "../utils/modelPickerOptions";
 import type { InferenceScope } from "../config/inferenceScopes";
+import { openrouterModelLabel, openrouterPickerModels } from "../config/openrouterModels";
 import logger from "../utils/logger";
 
 /**
@@ -66,22 +67,26 @@ interface ModelPickerChipProps {
   className?: string;
 }
 
-/** Providers the popover can enumerate: static catalog + a BYOK key field.
- *  OpenRouter/custom type their model ids in and stay in Advanced settings —
- *  an existing selection of theirs still displays, it just can't be built here. */
+/** Providers the popover can enumerate: a BYOK key field plus a catalog —
+ *  the registry's for the vendors, the curated slice for OpenRouter, which
+ *  fronts hundreds more and so also takes an id typed in (`acceptsAnyModelId`).
+ *  Until 2026-09-15 OpenRouter was filtered out here and its key was dead
+ *  weight: the Advanced editor the comment sent people to had been removed. */
 const listableCloudProviders = () =>
-  Object.keys(BYOK_PROVIDER_KEY_FIELDS)
-    .filter((id) => id !== "openrouter")
-    .map((id) => ({
-      id,
-      name: REASONING_PROVIDERS[id]?.name ?? getProviderDisplayName(id),
-      models: (REASONING_PROVIDERS[id]?.models ?? []).map((m) => ({
-        id: m.value,
-        label: m.label,
-        descriptionKey: m.descriptionKey,
-        description: m.description,
-      })),
-    }));
+  Object.keys(BYOK_PROVIDER_KEY_FIELDS).map((id) => ({
+    id,
+    name: REASONING_PROVIDERS[id]?.name ?? getProviderDisplayName(id),
+    models:
+      id === "openrouter"
+        ? openrouterPickerModels()
+        : (REASONING_PROVIDERS[id]?.models ?? []).map((m) => ({
+            id: m.value,
+            label: m.label,
+            descriptionKey: m.descriptionKey,
+            description: m.description,
+          })),
+    acceptsAnyModelId: id === "openrouter",
+  }));
 
 const shortModelLabel = (modelId: string): string => {
   for (const provider of Object.values(REASONING_PROVIDERS)) {
@@ -93,7 +98,7 @@ const shortModelLabel = (modelId: string): string => {
     const hit = provider.models.find((m) => m.id === modelId);
     if (hit) return hit.name;
   }
-  return modelId;
+  return openrouterModelLabel(modelId) ?? modelId;
 };
 
 export default function ModelPickerChip({
@@ -107,6 +112,8 @@ export default function ModelPickerChip({
 }: ModelPickerChipProps) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  // The typed-in id row (OpenRouter): null while collapsed, the draft while open.
+  const [customDraft, setCustomDraft] = useState<string | null>(null);
   const hud = variant === "hud";
 
   const resolved = useSettingsStore(
@@ -184,6 +191,7 @@ export default function ModelPickerChip({
           ? { mode: "local", provider: localProviderById.get(modelId) ?? "", model: modelId }
           : { mode: "providers", provider: group.providerId, model: modelId };
       setOpen(false);
+      setCustomDraft(null);
       if (onSelect) {
         onSelect(selection);
         return;
@@ -247,6 +255,7 @@ export default function ModelPickerChip({
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
+        if (!next) setCustomDraft(null);
         if (next && localModels === null) void loadLocalModels();
       }}
     >
@@ -322,6 +331,71 @@ export default function ModelPickerChip({
                   </button>
                 );
               })}
+              {group.acceptsAnyModelId &&
+                current?.provider === group.providerId &&
+                !!current.model &&
+                !group.models.some((m) => m.id === current.model) && (
+                  /* An id typed in earlier: shown as the selection it is. */
+                  <button
+                    type="button"
+                    onClick={() => pick(group, current.model)}
+                    className={rowClass}
+                  >
+                    <span className="min-w-0 flex-1 truncate leading-tight">{current.model}</span>
+                    <Check
+                      size={12}
+                      className={cn("shrink-0", hud ? "text-hud-accent" : "text-primary")}
+                    />
+                  </button>
+                )}
+              {group.acceptsAnyModelId &&
+                (customDraft === null ? (
+                  <button
+                    type="button"
+                    onClick={() => setCustomDraft("")}
+                    className={cn(rowClass, hud ? "text-hud-muted" : "text-muted-foreground")}
+                  >
+                    <span className="min-w-0 flex-1 truncate">
+                      {t("agentMode.modelPicker.customModel")}
+                    </span>
+                  </button>
+                ) : (
+                  <form
+                    className="flex items-center gap-1 px-2 py-1"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      const id = customDraft.trim();
+                      if (id) pick(group, id);
+                    }}
+                  >
+                    <input
+                      autoFocus
+                      value={customDraft}
+                      onChange={(event) => setCustomDraft(event.target.value)}
+                      placeholder={t("agentMode.modelPicker.customModelPlaceholder")}
+                      aria-label={t("agentMode.modelPicker.customModel")}
+                      spellCheck={false}
+                      className={cn(
+                        "h-7 min-w-0 flex-1 rounded-md border px-2 text-[12px] outline-none",
+                        hud
+                          ? "border-white/15 bg-white/5 text-hud-foreground placeholder:text-hud-muted focus:border-hud-accent/60"
+                          : "border-border-subtle bg-background text-foreground placeholder:text-muted-foreground focus:border-primary/50"
+                      )}
+                    />
+                    <button
+                      type="submit"
+                      disabled={!customDraft.trim()}
+                      className={cn(
+                        "h-7 shrink-0 rounded-md px-2 text-[11px] font-medium disabled:opacity-50",
+                        hud
+                          ? "bg-white/10 text-hud-foreground hover:bg-white/15"
+                          : "bg-surface-2 text-foreground hover:bg-surface-3"
+                      )}
+                    >
+                      {t("agentMode.modelPicker.useModel")}
+                    </button>
+                  </form>
+                ))}
             </div>
           ) : (
             /* No key: one row advertising the provider, walking to Settings. */

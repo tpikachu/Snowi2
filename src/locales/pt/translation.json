@@ -557,7 +557,8 @@
     "providerGrid": {
       "keyMissing": "Ainda sem chave de API",
       "keySet": "Chave de API salva",
-      "label": "Provedor"
+      "label": "Provedor",
+      "inUse": "Em uso"
     },
     "readiness": {
       "needsKey": "Ainda não está pronto — adicione sua chave de API da {{provider}} para usar este modelo.",
@@ -1917,7 +1918,10 @@
       },
       "engine": {
         "title": "Motor",
-        "description": "Onde o chat e os resumos de reuniões são executados. Uma escolha alimenta os dois — o modelo é escolhido onde você o usa."
+        "description": "Onde o chat e os resumos de reuniões são executados. Uma escolha alimenta os dois — o modelo é escolhido onde você o usa.",
+        "cloudInUse": "O chat e os resumos de reuniões são executados em {{provider}}.",
+        "cloudChooseHint": "Clique em {{provider}} para executar nele o chat e os resumos de reuniões.",
+        "cloudSwitchHint": "Salve uma chave para mover o chat e os resumos de reuniões para {{provider}}."
       }
     },
     "transcription": {
@@ -3341,7 +3345,10 @@
       "addKey": "Adicionar chave",
       "localGroup": "Neste computador",
       "choose": "Escolher modelo",
-      "defaultWithModel": "{{label}} ({{model}})"
+      "defaultWithModel": "{{label}} ({{model}})",
+      "customModel": "Outro modelo…",
+      "customModelPlaceholder": "fornecedor/id-do-modelo",
+      "useModel": "Usar"
     }
   },
   "integrations": {
