@@ -2906,7 +2906,7 @@
         "systemOnly": "Solo audio di sistema"
       },
       "suggestion": {
-        "label": "Suggerimento",
+        "heading": "Prossima frase suggerita",
         "stale": "Poco fa",
         "working": "Sto pensando…",
         "empty": "Un suggerimento compare quando l'altra parte smette di parlare.",
@@ -2920,6 +2920,7 @@
         "earlier_one": "{{count}} riga precedente",
         "earlier_other": "{{count}} righe precedenti",
         "show": "Mostra trascrizione",
+        "button": "Trascrizione",
         "hide": "Nascondi trascrizione"
       },
       "mode": {
@@ -2961,7 +2962,9 @@
         "stillOpen": "Cosa resta aperto?"
       },
       "answer": {
-        "fromMeeting": "Da questa riunione",
+        "viewedScreen_one": "Schermo consultato",
+        "viewedScreen_other": "{{count}} schermi consultati",
+        "altLine": "Un altro modo per dirlo",
         "checkedNotes": "Note consultate",
         "sayLine": "Frase da dire",
         "copyLine": "Copia questa frase"

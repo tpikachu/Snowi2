@@ -773,6 +773,9 @@ class ReasoningService extends BaseReasoningService {
     // Logged as a count, never the payload.
     const attachedImages = screenContextImages(config.screenContext);
     const screenImages = !isLocalProvider && !isLanChat ? attachedImages : [];
+    if (attachedImages.length > 0 && screenImages.length === 0) {
+      config.onScreenContextDropped?.();
+    }
     const lastUserIndex =
       screenImages.length > 0
         ? messages.reduce((last, m, i) => (m.role === "user" ? i : last), -1)
@@ -917,6 +920,7 @@ class ReasoningService extends BaseReasoningService {
         }
         if (attempts[attempt] && !yieldedAny && attempt < attempts.length - 1) {
           logger.logReasoning("AGENT_SCREEN_CONTEXT_RETRY_TEXT_ONLY", { model, provider });
+          config.onScreenContextDropped?.();
           continue;
         }
         throw error;

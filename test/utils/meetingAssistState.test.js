@@ -28,6 +28,11 @@ test("a rebuilt but identical state is not worth an IPC hop", () => {
   assert.equal(assistStatesEqual(withAnswer(), withAnswer()), true);
 });
 
+test("a screenshot reaching the model counts as a change, and an absent count reads as none", () => {
+  assert.equal(assistStatesEqual(withAnswer(), withAnswer({ screens: 1 })), false);
+  assert.equal(assistStatesEqual(withAnswer(), withAnswer({ screens: 0 })), true);
+});
+
 test("one more streamed token counts as a change", () => {
   assert.equal(assistStatesEqual(withAnswer(), withAnswer({ text: "15% through Q3. " })), false);
 });

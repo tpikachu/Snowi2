@@ -53,6 +53,12 @@ export interface AssistAnswer {
   text: string;
   streaming: boolean;
   sources: AssistNoteRef[];
+  /**
+   * Screenshots that rode with the ask and reached the model — what the
+   * card's source line calls "Viewed your screen". Optional on the wire: a
+   * main process that predates it forwards answers without the field.
+   */
+  screens?: number;
   /** i18n key, resolved by whichever window renders it. */
   errorKey: string | null;
 }
@@ -118,6 +124,7 @@ const answersEqual = (a: AssistAnswer, b: AssistAnswer): boolean =>
   a.text === b.text &&
   a.streaming === b.streaming &&
   a.errorKey === b.errorKey &&
+  (a.screens ?? 0) === (b.screens ?? 0) &&
   noteRefsEqual(a.sources, b.sources);
 
 /**

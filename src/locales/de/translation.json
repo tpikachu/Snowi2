@@ -3113,7 +3113,7 @@
         "systemOnly": "Nur Systemaudio"
       },
       "suggestion": {
-        "label": "Vorschlag",
+        "heading": "Vorgeschlagener nächster Satz",
         "stale": "Vor einem Moment",
         "working": "Denkt nach…",
         "empty": "Ein Vorschlag erscheint, sobald die andere Seite aufhört zu sprechen.",
@@ -3127,6 +3127,7 @@
         "earlier_one": "{{count}} frühere Zeile",
         "earlier_other": "{{count}} frühere Zeilen",
         "show": "Transkript anzeigen",
+        "button": "Transkript",
         "hide": "Transkript ausblenden"
       },
       "mode": {
@@ -3168,7 +3169,9 @@
         "stillOpen": "Was ist noch offen?"
       },
       "answer": {
-        "fromMeeting": "Aus diesem Meeting",
+        "viewedScreen_one": "Hat deinen Bildschirm gesehen",
+        "viewedScreen_other": "Hat {{count}} Bildschirme gesehen",
+        "altLine": "Eine andere Formulierung",
         "checkedNotes": "Mit deinen Notizen abgeglichen",
         "sayLine": "Satz zum Sagen",
         "copyLine": "Diesen Satz kopieren"

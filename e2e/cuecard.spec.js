@@ -97,6 +97,52 @@ test("a published meeting renders the three-zone card, lifts the say-line, and c
   await expect(bar.getByRole("button", { name: "Think deeper" })).toBeVisible();
   await expect(bar.getByText("Suggested", { exact: true })).toHaveCount(0);
 
+  // Asked what to say, the whole answer is the words: one say block, a
+  // second under its lead-in, and the source line naming what the answer
+  // read beyond the meeting — the screen it viewed and the note it drew on.
+  await page.evaluate(
+    ({ assist }) => {
+      /** @type {any} */ (window).electronAPI.meetingPanelAssist(assist);
+    },
+    {
+      assist: {
+        ...ASSIST,
+        answer: {
+          question: "How do I respond to that?",
+          mode: "thinking",
+          text: [
+            "```",
+            "That's fair, the price does look high next to the pilot. I'd rather hold it and widen what's included.",
+            "```",
+            '- **Their point:** "the pilot was half this" — anchoring on the pilot rate.',
+            "- **Why this lands:** it concedes the comparison, not the price.",
+            "If you want to push further:",
+            "```",
+            "The pilot was priced to prove the fit, not to set the rate.",
+            "```",
+          ].join("\n"),
+          streaming: false,
+          sources: [{ noteId: 5, title: "Product roadmap sync" }],
+          screens: 1,
+          errorKey: null,
+        },
+      },
+    }
+  );
+  await expect(bar.getByRole("group", { name: "Line to say" })).toContainText(
+    "I'd rather hold it and widen what's included"
+  );
+  await expect(bar.getByText("Their point:")).toBeVisible();
+  await expect(bar.getByText("If you want to push further:")).toBeVisible();
+  // The unprompted line is set apart from the thread by its own heading.
+  await expect(bar.getByText("Suggested next line")).toBeVisible();
+  await expect(bar.getByRole("group", { name: "Another way to say it" })).toContainText(
+    "priced to prove the fit"
+  );
+  await expect(bar.getByText("Viewed your screen · From Product roadmap sync")).toBeVisible();
+  // No fence ever reaches the screen as code.
+  await expect(bar.locator("pre")).toHaveCount(0);
+
   // Zone 3: the toolbar carries capture control and configuration.
   await expect(bar.getByRole("button", { name: "Stop" })).toBeVisible();
   await expect(bar.getByRole("button", { name: "Pause" })).toBeVisible();
@@ -104,7 +150,7 @@ test("a published meeting renders the three-zone card, lifts the say-line, and c
     "aria-pressed",
     "false"
   );
-  await expect(bar.getByRole("button", { name: "Show transcript" })).toBeVisible();
+  await expect(bar.getByRole("button", { name: "Transcript" })).toBeVisible();
 
   // A picture of the card in the test's output (test-results/<test>/cue-card.png):
   // card changes are reviewed from here rather than by launching the app.

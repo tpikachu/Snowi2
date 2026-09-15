@@ -1179,13 +1179,13 @@ async function main() {
         ).catch(() => {});
         await sleep(600);
 
-        // 7. Show transcript: the dashboard comes forward on the transcript.
+        // 7. Transcript: the dashboard comes forward on the transcript.
         await caption(
           panelPage,
           "The full transcript is one click away",
           "The card stays focused on what to say; every word lives in the meeting's note."
         );
-        await moveClick(panelPage, panelPage.getByRole("button", { name: "Show transcript" }), {
+        await moveClick(panelPage, panelPage.getByRole("button", { name: "Transcript" }), {
           timeout: 8000,
         }).catch(() => {});
         await sleep(900);

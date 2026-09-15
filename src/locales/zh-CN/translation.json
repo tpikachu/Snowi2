@@ -2906,7 +2906,7 @@
         "systemOnly": "仅系统音频"
       },
       "suggestion": {
-        "label": "建议",
+        "heading": "建议的下一句",
         "stale": "刚才的内容",
         "working": "思考中…",
         "empty": "对方说完后这里会出现建议。",
@@ -2920,6 +2920,7 @@
         "earlier_one": "更早的 {{count}} 行",
         "earlier_other": "更早的 {{count}} 行",
         "show": "显示转录",
+        "button": "转录",
         "hide": "隐藏转录"
       },
       "mode": {
@@ -2961,7 +2962,9 @@
         "stillOpen": "还有什么未解决？"
       },
       "answer": {
-        "fromMeeting": "来自本次会议",
+        "viewedScreen_one": "已查看你的屏幕",
+        "viewedScreen_other": "已查看 {{count}} 个屏幕",
+        "altLine": "另一种说法",
         "checkedNotes": "已查阅你的笔记",
         "sayLine": "可以这样说",
         "copyLine": "复制这句话"

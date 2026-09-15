@@ -3113,7 +3113,7 @@
         "systemOnly": "System audio only"
       },
       "suggestion": {
-        "label": "Suggested",
+        "heading": "Suggested next line",
         "stale": "A moment ago",
         "working": "Thinking…",
         "empty": "A suggestion appears when the other side stops talking.",
@@ -3127,6 +3127,7 @@
         "earlier_one": "{{count}} earlier line",
         "earlier_other": "{{count}} earlier lines",
         "show": "Show transcript",
+        "button": "Transcript",
         "hide": "Hide transcript"
       },
       "mode": {
@@ -3168,7 +3169,9 @@
         "stillOpen": "What's still open?"
       },
       "answer": {
-        "fromMeeting": "From this meeting",
+        "viewedScreen_one": "Viewed your screen",
+        "viewedScreen_other": "Viewed {{count}} screens",
+        "altLine": "Another way to say it",
         "checkedNotes": "Checked your notes",
         "sayLine": "Line to say",
         "copyLine": "Copy this line"

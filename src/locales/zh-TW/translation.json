@@ -2906,7 +2906,7 @@
         "systemOnly": "僅系統音訊"
       },
       "suggestion": {
-        "label": "建議",
+        "heading": "建議的下一句",
         "stale": "剛才的內容",
         "working": "思考中…",
         "empty": "對方說完後這裡會出現建議。",
@@ -2920,6 +2920,7 @@
         "earlier_one": "更早的 {{count}} 行",
         "earlier_other": "更早的 {{count}} 行",
         "show": "顯示轉錄",
+        "button": "轉錄",
         "hide": "隱藏轉錄"
       },
       "mode": {
@@ -2961,7 +2962,9 @@
         "stillOpen": "還有什麼未解決？"
       },
       "answer": {
-        "fromMeeting": "來自本次會議",
+        "viewedScreen_one": "已查看你的螢幕",
+        "viewedScreen_other": "已查看 {{count}} 個螢幕",
+        "altLine": "另一種說法",
         "checkedNotes": "已查閱你的筆記",
         "sayLine": "可以這樣說",
         "copyLine": "複製這句話"

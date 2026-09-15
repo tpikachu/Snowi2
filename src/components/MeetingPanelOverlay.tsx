@@ -31,10 +31,10 @@ import type {
   AssistAnswer,
   AssistLastTime,
   AssistMode,
-  AssistNoteRef,
   MeetingAssistState,
 } from "../utils/meetingAssistState";
-import { parseAssistAnswer } from "../utils/assistAnswerFormat";
+import { parseAssistAnswer, sayAnswerText } from "../utils/assistAnswerFormat";
+import { describeAnswerSources } from "../utils/answerProvenance";
 import type {
   DisplayInfo,
   MeetingPanelCommand,
@@ -61,7 +61,7 @@ import { cn } from "./lib/utils";
  *     provenance lines, no chrome between the reader and the words.
  *  3. The toolbar. Capture status on the left (level, clock, pause, stop),
  *     configuration on the right (observe my screen, thinking, model), and
- *     Show transcript — the card's one way out, to the dashboard's note.
+ *     Transcript — the card's one way out, to the dashboard's note.
  *     Everything that used to be a labeled row is an icon here, and the
  *     toolbar is the card's drag handle.
  *
@@ -89,9 +89,6 @@ const computeBarHeight = (level: number, index: number) => {
   const scaled = Math.sqrt(level) * 2.4 * BAR_WEIGHTS[index];
   return `${(METER_HEIGHT_PX * Math.max(BAR_FLOOR, Math.min(1, scaled))).toFixed(2)}px`;
 };
-
-/** How many past notes are named under an answer. */
-const MAX_VISIBLE_SOURCES = 3;
 
 /**
  * Answers render as markdown, restyled for the dark glass: bold for the
@@ -178,12 +175,18 @@ function SayLine({
   dim = false,
   label,
   title,
+  streaming = false,
+  tone = "accent",
 }: {
   text: string;
   icon?: typeof Quote;
   dim?: boolean;
   label: string;
   title?: string;
+  /** Still arriving: a caret follows the text. */
+  streaming?: boolean;
+  /** Quiet is the unprompted suggestion's muted edge; accent means an answer to what was asked. */
+  tone?: "accent" | "quiet";
 }) {
   const { t } = useTranslation();
   const [copied, copy] = useCopy();
@@ -193,13 +196,21 @@ function SayLine({
       aria-label={label}
       title={title}
       className={cn(
-        "flex items-start gap-2 rounded-lg border-l-2 border-hud-accent bg-hud-accent/[0.08] py-2 pl-2.5 pr-1",
+        "flex items-start gap-2 rounded-lg border-l-2 py-2 pl-2.5 pr-1",
+        tone === "accent"
+          ? "border-hud-accent bg-hud-accent/[0.08]"
+          : "border-hud-muted/40 bg-white/[0.05]",
         "transition-opacity duration-300",
         dim && "opacity-55"
       )}
     >
       <Icon size={13} className="mt-[4px] shrink-0 text-hud-accent" />
-      <p className="min-w-0 flex-1 text-[14px] leading-relaxed text-hud-foreground">{text}</p>
+      <p className="min-w-0 flex-1 text-[14px] leading-relaxed text-hud-foreground">
+        {text}
+        {streaming && (
+          <span className="ml-0.5 inline-block h-3 w-[2px] translate-y-[2px] animate-pulse bg-hud-accent" />
+        )}
+      </p>
       <button
         type="button"
         onClick={() => copy(text)}
@@ -211,13 +222,6 @@ function SayLine({
       </button>
     </div>
   );
-}
-
-/** Which past notes an answer drew on — one muted line, truncated. */
-function sourceNames(sources: readonly AssistNoteRef[]): string {
-  const shown = sources.slice(0, MAX_VISIBLE_SOURCES);
-  const extra = sources.length - shown.length;
-  return shown.map((source) => source.title).join(" · ") + (extra > 0 ? ` +${extra}` : "");
 }
 
 /**
@@ -269,14 +273,38 @@ function AnswerBlock({
 }) {
   const { t } = useTranslation();
   const [copied, copy] = useCopy();
-  const { body, sayLine } = useMemo(() => parseAssistAnswer(answer.text), [answer.text]);
+  const { form, body, sayLine, blocks } = useMemo(
+    () => parseAssistAnswer(answer.text),
+    [answer.text]
+  );
+  // Words to say copy as the words, never the fences around them.
+  const copyText = form === "say" ? sayAnswerText({ blocks, body }) : answer.text;
+  // A lead-in whose block has not arrived yet is shown only while it still
+  // may — once the answer has settled an empty block is nothing to show.
+  const shownBlocks = blocks.filter((block) => block.text || (answer.streaming && block.open));
 
-  const provenance =
-    answer.sources.length > 0
-      ? `${t("notes.meetingPanel.sourcesLabel")} ${sourceNames(answer.sources)}`
-      : answer.mode === "thinking"
-        ? t("notes.meetingPanel.answer.checkedNotes")
-        : "";
+  const renderSayBlock = (block: (typeof blocks)[number], index: number) => (
+    <div key={index}>
+      {block.lead && <p className="mb-1 text-[11px] text-hud-muted">{block.lead}</p>}
+      <SayLine
+        text={block.text}
+        label={t(
+          index === 0 ? "notes.meetingPanel.answer.sayLine" : "notes.meetingPanel.answer.altLine"
+        )}
+        streaming={answer.streaming && block.open}
+      />
+    </div>
+  );
+
+  // What the answer read beyond the meeting; nothing for a plain fast answer.
+  const provenance = describeAnswerSources(
+    { screens: answer.screens ?? 0, sources: answer.sources, mode: answer.mode },
+    {
+      viewedScreens: (count) => t("notes.meetingPanel.answer.viewedScreen", { count }),
+      from: t("notes.meetingPanel.sourcesLabel"),
+      checkedNotes: t("notes.meetingPanel.answer.checkedNotes"),
+    }
+  );
 
   return (
     <article className={cn(!live && "mt-3 border-t border-hud-border pt-3 opacity-70")}>
@@ -305,6 +333,23 @@ function AnswerBlock({
         <p className="mt-1.5 animate-pulse text-[13px] leading-relaxed text-hud-muted">
           {answer.mode === "thinking" ? t("notes.meetingPanel.ask.searchingNotes") : "…"}
         </p>
+      ) : form === "say" ? (
+        /* Words to say: the say block first, the reasons under it as
+           markdown, then a second block when the model offered a firmer or
+           softer version under its lead-in. Streams straight into the
+           block; the open one carries the caret, else the reasons do. */
+        <div className="mt-1.5 space-y-2">
+          {shownBlocks.slice(0, 1).map((block) => renderSayBlock(block, 0))}
+          {body && (
+            <div className="text-[13px] leading-relaxed text-hud-foreground/90">
+              <Markdown components={ANSWER_MARKDOWN_COMPONENTS}>{body}</Markdown>
+              {answer.streaming && !blocks.some((block) => block.open) && (
+                <span className="ml-0.5 inline-block h-3 w-[2px] translate-y-[2px] animate-pulse bg-hud-accent" />
+              )}
+            </div>
+          )}
+          {shownBlocks.slice(1).map((block, index) => renderSayBlock(block, index + 1))}
+        </div>
       ) : (
         <>
           {body && (
@@ -357,7 +402,7 @@ function AnswerBlock({
           {!answer.errorKey && (
             <button
               type="button"
-              onClick={() => copy(answer.text)}
+              onClick={() => copy(copyText)}
               aria-label={copied ? t("common.copied") : t("common.copy")}
               title={copied ? t("common.copied") : t("common.copy")}
               className={cn(iconButtonClass, "size-6", copied && "text-hud-accent")}
@@ -788,10 +833,18 @@ export default function MeetingPanelOverlay() {
                 slightly old advice beats a blank when someone is waiting for
                 you to speak. */}
             {suggestion && (
-              <div className={cn("shrink-0", hasThread && "mb-3")}>
+              <div className={cn("shrink-0", hasThread && "mb-3 border-b border-hud-border pb-3")}>
+                {/* Its own heading and a quiet edge: beside an answer, the
+                    unprompted line and the reply to a question were
+                    indistinguishable (client, 2026-09-14) — the accent block
+                    now always means "what you asked". */}
+                <p className="mb-1 text-[12px] font-medium text-hud-muted">
+                  {t("notes.meetingPanel.suggestion.heading")}
+                </p>
                 <SayLine
                   text={suggestion.text}
                   icon={Lightbulb}
+                  tone="quiet"
                   dim={suggestion.stale}
                   label={t("notes.meetingPanel.suggestion.sayNext")}
                   title={
@@ -982,11 +1035,11 @@ export default function MeetingPanelOverlay() {
             <button
               type="button"
               onClick={() => void send("transcript")}
-              aria-label={transcriptLabel}
               title={transcriptLabel}
-              className={iconButtonClass}
+              className={ghostButtonClass}
             >
-              <LayoutDashboard size={13} />
+              <LayoutDashboard size={11} className="text-hud-accent/90" />
+              {t("notes.meetingPanel.transcript.button")}
             </button>
           </span>
         </div>

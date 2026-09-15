@@ -89,6 +89,7 @@ interface ResolvedAssistModel {
     disableThinking?: boolean;
     screenContext?: ScreenContextImage[];
     textOnlySystemPrompt?: string;
+    onScreenContextDropped?: () => void;
   };
 }
 
@@ -546,6 +547,9 @@ export function useMeetingAssist(): MeetingAssist {
       // exactly the "screen observe does nothing" bug.
       const screenImages = await screenPromise;
       if (!isCurrent()) return;
+      // What the card's source line will call "Viewed your screen" — set
+      // now, and taken back below if the route drops the images.
+      updateAnswer({ screens: screenImages.length });
 
       // screenCount folds the screen-source block into the base prompt — a
       // co-equal source the model is told to read every time, not a suffix
@@ -577,6 +581,12 @@ export function useMeetingAssist(): MeetingAssist {
         // For the text-only pass (route drop or rejected-image retry): the
         // promise of a screenshot must leave the prompt with the images.
         resolved.config.textOnlySystemPrompt = built.textOnlySystemPrompt;
+        // A local/LAN route drops the images, and a rejected image is
+        // retried text-only: either way the answer never saw the screen,
+        // and the card must not say it did.
+        resolved.config.onScreenContextDropped = () => {
+          if (isCurrent()) updateAnswer({ screens: 0 });
+        };
       }
 
       // A question that hangs is worthless — the moment it was asked for has

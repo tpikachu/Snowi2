@@ -65,7 +65,15 @@ export function startAnswer(question: string, mode: AssistMode): void {
   const settled = answer && !answer.streaming && !answer.errorKey && answer.text.trim();
   useMeetingAssistStore.setState({
     answerHistory: settled ? [...answerHistory, answer].slice(-MAX_ANSWER_HISTORY) : answerHistory,
-    answer: { question, mode, text: "", streaming: true, sources: [], errorKey: null },
+    answer: {
+      question,
+      mode,
+      text: "",
+      streaming: true,
+      sources: [],
+      screens: 0,
+      errorKey: null,
+    },
   });
 }
 

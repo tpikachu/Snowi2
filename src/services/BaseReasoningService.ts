@@ -23,6 +23,13 @@ export interface ReasoningConfig {
   screenContext?: ScreenContextImage | ScreenContextImage[];
   /** Suffix-free prompt used when a screenshot-carrying request is retried text-only. */
   textOnlySystemPrompt?: string;
+  /**
+   * Called when attached screenshots do not reach the model after all — a
+   * route that cannot carry images, or the text-only retry after a
+   * rejection — so a caller that told the user the screen was viewed can
+   * take it back.
+   */
+  onScreenContextDropped?: () => void;
   language?: string;
   requireCompleteOutput?: boolean;
   requiresAgent?: boolean;

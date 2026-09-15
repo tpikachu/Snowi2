@@ -2834,7 +2834,7 @@
         "systemOnly": "システム音声のみ"
       },
       "suggestion": {
-        "label": "提案",
+        "heading": "次のひと言の提案",
         "stale": "少し前の内容",
         "working": "考えています…",
         "empty": "相手が話し終えると提案が表示されます。",
@@ -2848,6 +2848,7 @@
         "earlier_one": "以前の {{count}} 行",
         "earlier_other": "以前の {{count}} 行",
         "show": "文字起こしを表示",
+        "button": "文字起こし",
         "hide": "文字起こしを非表示"
       },
       "mode": {
@@ -2889,7 +2890,9 @@
         "stillOpen": "まだ残っていることは？"
       },
       "answer": {
-        "fromMeeting": "この会議から",
+        "viewedScreen_one": "画面を確認済み",
+        "viewedScreen_other": "{{count}}台の画面を確認済み",
+        "altLine": "別の言い方",
         "checkedNotes": "ノートを確認済み",
         "sayLine": "言うセリフ",
         "copyLine": "このセリフをコピー"

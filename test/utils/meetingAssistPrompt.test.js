@@ -348,7 +348,7 @@ test("quotes around a line are stripped, the line is kept", () => {
   assert.equal(parseSuggestion("None of that is settled yet."), "None of that is settled yet.");
 });
 
-test("both answer prompts carry the one skeleton, with its example", () => {
+test("both answer prompts carry the two shapes, each taught by example", () => {
   const input = {
     meetingTitle: null,
     segments: [seg("hello", "system", NOW)],
@@ -358,11 +358,21 @@ test("both answer prompts carry the one skeleton, with its example", () => {
   for (const mode of ["fast", "thinking"]) {
     const prompt = buildAnswerMessages({ ...input, mode }).systemPrompt;
     assert.ok(prompt.includes(ANSWER_FORMAT_BLOCK), `${mode}: shares the format block`);
-    assert.match(prompt, /follows this skeleton/, `${mode}: the shape is a rule`);
-    assert.match(prompt, /Example of the shape:/, `${mode}: teaches by example`);
-    // The say-line is last, alone, backticked — what the cue card's renderer
-    // lifts into its own block.
-    assert.match(prompt, /LAST, alone on its own line, wrapped in backticks/);
+    assert.match(prompt, /follow that shape exactly/, `${mode}: the shape is a rule`);
+    assert.match(prompt, /Example — words to say:/, `${mode}: teaches the spoken shape`);
+    assert.match(prompt, /Example — facts:/, `${mode}: teaches the fact shape`);
+    // Words to say open with a fence — the first line is how the cue card
+    // tells the shapes apart — and respond to what was just said before
+    // making a point; a next step is never a made-up promise.
+    assert.match(prompt, /inside one fenced block/);
+    assert.match(prompt, /open by responding to the last thing the other side\s+said/);
+    assert.match(prompt, /never\s+promise a deadline, a number, or a deliverable/);
+    // The words are followed by grounded reasons — never generic tips.
+    assert.match(prompt, /Then the reasons, so the user can trust the line/);
+    assert.match(prompt, /never a generic tip/);
+    // The fact shape's say-line is last, alone, backticked — what the
+    // renderer lifts into its own block.
+    assert.match(prompt, /alone, LAST, wrapped in backticks/);
   }
   // The shared block must not smuggle the note library into the fast prompt.
   assert.ok(!ANSWER_FORMAT_BLOCK.includes("past notes"));
