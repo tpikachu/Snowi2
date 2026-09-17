@@ -244,7 +244,7 @@ jobs:
           # Not dist/ — that also holds win-unpacked/, the expanded app both
           # installers already contain. *.exe does not match *.exe.blockmap.
           path: dist/*.exe
-          retention-days: 30
+          retention-days: 3
 
   build-macos:
     needs: create-release
@@ -415,7 +415,7 @@ jobs:
           path: |
             dist/*.dmg
             dist/*.zip
-          retention-days: 30
+          retention-days: 3
 
       - name: Cleanup certificates
         if: always()

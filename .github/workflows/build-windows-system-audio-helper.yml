@@ -66,6 +66,7 @@ jobs:
         with:
           name: windows-system-audio-helper
           path: windows-system-audio-helper-win32-x64.zip
+          retention-days: 7
 
       - name: Create or update release
         uses: softprops/action-gh-release@v2

@@ -76,6 +76,7 @@ jobs:
         with:
           name: meeting-aec-helper-${{ matrix.platform }}-${{ matrix.arch }}
           path: meeting-aec-helper-${{ matrix.platform }}-${{ matrix.arch }}.*
+          retention-days: 7
 
       - name: Create or update release
         uses: softprops/action-gh-release@v2

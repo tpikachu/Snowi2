@@ -61,6 +61,7 @@ jobs:
         with:
           name: windows-fast-paste
           path: windows-fast-paste-win32-x64.zip
+          retention-days: 7
 
       - name: Create or update release
         uses: softprops/action-gh-release@v2

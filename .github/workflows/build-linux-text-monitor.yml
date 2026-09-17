@@ -50,6 +50,7 @@ jobs:
         with:
           name: linux-text-monitor
           path: linux-text-monitor-linux-x64.tar.gz
+          retention-days: 7
 
       - name: Create or update release
         uses: softprops/action-gh-release@v2
