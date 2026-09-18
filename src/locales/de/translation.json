@@ -3203,7 +3203,8 @@
         "altLine": "Eine andere Formulierung",
         "checkedNotes": "Mit deinen Notizen abgeglichen",
         "sayLine": "Satz zum Sagen",
-        "copyLine": "Diesen Satz kopieren"
+        "copyLine": "Diesen Satz kopieren",
+        "searchedWeb": "Im Web gesucht"
       },
       "thread": {
         "clear": "Leeren"
@@ -3218,6 +3219,12 @@
         "screen": "Bildschirm {{n}}",
         "primary": "Hauptbildschirm",
         "chooseScreen": "Welcher Bildschirm beobachtet wird"
+      },
+      "webSearch": {
+        "enable": "Im Web suchen — Antworten können aktuelle Fakten nutzen",
+        "disable": "Websuche ist für dieses Meeting an — zum Ausschalten klicken",
+        "unavailable": "Websuche ist mit diesem KI-Anbieter nicht verfügbar",
+        "sources": "Quellen"
       }
     },
     "transcript": {

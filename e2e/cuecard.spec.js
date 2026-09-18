@@ -56,6 +56,8 @@ const ASSIST = {
     errorKey: null,
   },
   answerHistory: [],
+  webSearch: false,
+  webSearchAvailable: true,
 };
 
 test("a published meeting renders the three-zone card, lifts the say-line, and captures every display", async () => {
@@ -142,6 +144,48 @@ test("a published meeting renders the three-zone card, lifts the say-line, and c
   await expect(bar.getByText("Viewed your screen · From Product roadmap sync")).toBeVisible();
   // No fence ever reaches the screen as code.
   await expect(bar.locator("pre")).toHaveCount(0);
+
+  // Web search: off with every meeting, offered on a route that can search;
+  // a searched answer names the search first and lists what it read as links.
+  const globe = bar.getByRole("button", { name: /Search the web/ });
+  await expect(globe).toBeVisible();
+  await expect(globe).toHaveAttribute("aria-pressed", "false");
+  await expect(globe).toBeEnabled();
+  await page.evaluate(
+    ({ assist }) => {
+      /** @type {any} */ (window).electronAPI.meetingPanelAssist(assist);
+    },
+    {
+      assist: {
+        ...ASSIST,
+        webSearch: true,
+        answer: {
+          ...ASSIST.answer,
+          question: "Is their pricing claim right?",
+          text: "Their business plan is **$20 per user per month** billed annually, per Notion's pricing page.",
+          sources: [],
+          searched: true,
+          webSources: [{ url: "https://www.notion.com/pricing", title: "Notion Pricing Plans" }],
+        },
+      },
+    }
+  );
+  await expect(bar.getByRole("button", { name: /Web search is on/ })).toHaveAttribute(
+    "aria-pressed",
+    "true"
+  );
+  await expect(bar.getByText("Searched the web")).toBeVisible();
+  await expect(
+    bar.getByRole("list", { name: "Sources" }).getByRole("button", { name: "Notion Pricing Plans" })
+  ).toBeVisible();
+  // A route without a search tool shows the toggle disabled, with the reason.
+  await page.evaluate(
+    ({ assist }) => {
+      /** @type {any} */ (window).electronAPI.meetingPanelAssist(assist);
+    },
+    { assist: { ...ASSIST, webSearchAvailable: false } }
+  );
+  await expect(bar.getByRole("button", { name: /Web search isn't available/ })).toBeDisabled();
 
   // Zone 3: the toolbar carries capture control and configuration.
   await expect(bar.getByRole("button", { name: "Stop" })).toBeVisible();

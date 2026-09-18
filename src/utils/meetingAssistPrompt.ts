@@ -352,6 +352,27 @@ export function screenSourceBlock(count: number): string {
   ].join("\n");
 }
 
+/**
+ * Appended while the cue card's web search is on. Search is for facts the
+ * meeting cannot settle, never for what was said — the transcript is the
+ * record — and it is capped, because every search is seconds the user waits
+ * through mid-call. The card lists the sources itself, so the answer names
+ * them in words and never pastes a URL. Phrased for the tool's absence too:
+ * a provider can refuse the tool and the request is retried without it, and
+ * a claimed search that never happened is the one thing worse than none.
+ */
+export const WEB_SEARCH_BLOCK = [
+  "A web search tool may be offered with this request. Use it — at most twice",
+  "— only for what the meeting and the material below cannot settle: a claim",
+  "to check, a company, product, person or event, a price, a figure, a date,",
+  "a rule. Never search for what was said in the meeting; the transcript is",
+  "the record. When you searched, ground the answer in what you found and",
+  "name where it came from in a few words (the site or publication), never a",
+  "URL. If nothing useful came back, say so in a few words and answer from",
+  "the meeting. If no search tool is offered, answer from the meeting and",
+  "never claim a search.",
+].join("\n");
+
 function buildContext(input: AssistMessagesInput): string {
   const transcript = formatAssistTranscript(input.segments, input.labels);
   const notes = formatAssistNotes(input.notes);
@@ -418,10 +439,17 @@ export function buildAnswerMessages(
      * is on. Zero (or absent) means none, and the prompt must not mention one.
      */
     screenCount?: number;
+    /** The cue card's web search is on: the prompt says when to search and how to cite. */
+    webSearch?: boolean;
   }
 ): AssistMessages {
-  const textOnlySystemPrompt =
+  const basePrompt =
     input.mode === "fast" ? FAST_ANSWER_SYSTEM_PROMPT : THINKING_ANSWER_SYSTEM_PROMPT;
+  // The search block belongs to both prompts: a text-only retry drops the
+  // screenshots, not the search tool.
+  const textOnlySystemPrompt = input.webSearch
+    ? `${basePrompt}\n\n${WEB_SEARCH_BLOCK}`
+    : basePrompt;
   const screenCount = Math.max(0, Math.floor(input.screenCount ?? 0));
   const systemPrompt =
     screenCount > 0

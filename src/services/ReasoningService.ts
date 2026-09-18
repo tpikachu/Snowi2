@@ -21,6 +21,12 @@ import { wrapCleanupTranscript } from "../config/prompts";
 import { stripThinkingTags } from "../helpers/stripThinking.js";
 import { streamText, stepCountIs } from "ai";
 import { getAIModel } from "./ai/providers";
+import {
+  WEB_SEARCH_MAX_OUTPUT_TOKENS,
+  WEB_SEARCH_MAX_USES,
+  webSearchToolsFor,
+} from "./ai/webSearchTools";
+import { openrouterOnlineModel } from "../utils/webSearchSupport";
 import { createEnterpriseChatModel } from "./ai/enterpriseChatModel";
 import { getManagedScopeResolution } from "../stores/enterpriseIdentityStore";
 import type { InferenceScope } from "../config/inferenceScopes";
@@ -76,6 +82,8 @@ export type AgentStreamChunk =
       displayText: string;
       failed?: boolean;
     }
+  /** A page the provider's web search read — the cue card's source links. */
+  | { type: "source"; url: string; title?: string }
   | { type: "done"; finishReason?: string };
 
 function resolveLlmDispatchMode(
@@ -726,13 +734,23 @@ class ReasoningService extends BaseReasoningService {
       ({ apiKey, baseURL } = await this.resolveByokAccess(provider, config));
     }
     const aiProvider = isLocalProvider || isLanChat ? "local" : provider;
+    // The meeting cue card's web search: the provider's own server tool rides
+    // the request (webSearchTools.ts), and OpenRouter grounds any model
+    // through the web option on its id. Routes without one get nothing —
+    // the card already shows the toggle disabled there.
+    let webTools =
+      config.webSearch && !isEnterprise && !isLocalProvider && !isLanChat
+        ? webSearchToolsFor(provider)
+        : null;
+    const searchingViaOpenrouter = config.webSearch === true && provider === "openrouter";
+    const requestModel = searchingViaOpenrouter ? openrouterOnlineModel(model) : model;
     // OpenRouter ids are never in the local registry, so the supportsThinking
     // exemption below can't apply — honor the toggle directly.
     const openrouterDisableThinking = provider === "openrouter" && config.disableThinking === true;
     // Resolving a Tinfoil model refreshes the registry, so read model config after it.
     const aiModel = isEnterprise
       ? createEnterpriseChatModel(provider as EnterpriseProvider, model, config.inferenceScope)
-      : await getAIModel(aiProvider, model, apiKey, baseURL, {
+      : await getAIModel(aiProvider, requestModel, apiKey, baseURL, {
           disableThinking: openrouterDisableThinking,
         });
 
@@ -749,23 +767,39 @@ class ReasoningService extends BaseReasoningService {
     // The effort value is a family fact (gpt-oss has no "none", #1611) that
     // the API can overrule: a 400 naming the enum the model takes is learned
     // per model, so the options are built per attempt — see the catch below.
+    // Web search and effort "minimal" are mutually exclusive on the Responses
+    // API (the 400 says so outright), and at the default effort a searched
+    // gpt-5-mini answer took 33 s against 8 s at "low" (probe, 2026-09-18):
+    // a searching request pins "low" in both lanes and caps its searches.
+    // Read per attempt — the retry below can drop the search tool.
+    const openaiSearchOptions = () =>
+      webTools && provider === "openai"
+        ? { reasoningEffort: "low", maxToolCalls: WEB_SEARCH_MAX_USES }
+        : null;
     const sentSuppressEffort = () =>
-      needsOpenAIMinimalReasoning
-        ? resolveSuppressEffort(model, "minimal")
-        : needsGroqDisableThinking
-          ? resolveSuppressEffort(model, "none")
-          : undefined;
-    const buildProviderOptions = () => ({
-      ...(needsGroqDisableThinking
-        ? { groq: { reasoningEffort: resolveSuppressEffort(model, "none") } }
-        : {}),
-      ...(needsGeminiMinimalThinking
-        ? { google: { thinkingConfig: { thinkingLevel: "minimal", includeThoughts: false } } }
-        : {}),
-      ...(needsOpenAIMinimalReasoning
-        ? { openai: { reasoningEffort: resolveSuppressEffort(model, "minimal") } }
-        : {}),
-    });
+      openaiSearchOptions()
+        ? undefined
+        : needsOpenAIMinimalReasoning
+          ? resolveSuppressEffort(model, "minimal")
+          : needsGroqDisableThinking
+            ? resolveSuppressEffort(model, "none")
+            : undefined;
+    const buildProviderOptions = () => {
+      const search = openaiSearchOptions();
+      return {
+        ...(needsGroqDisableThinking
+          ? { groq: { reasoningEffort: resolveSuppressEffort(model, "none") } }
+          : {}),
+        ...(needsGeminiMinimalThinking
+          ? { google: { thinkingConfig: { thinkingLevel: "minimal", includeThoughts: false } } }
+          : {}),
+        ...(search
+          ? { openai: search }
+          : needsOpenAIMinimalReasoning
+            ? { openai: { reasoningEffort: resolveSuppressEffort(model, "minimal") } }
+            : {}),
+      };
+    };
 
     // Screenshots ride only routes whose client can carry an image; local
     // and LAN paths drop them. One image (dictation) or one per display (the
@@ -813,6 +847,7 @@ class ReasoningService extends BaseReasoningService {
     logger.logReasoning("AGENT_AI_SDK_STREAM_REQUEST", {
       model,
       provider,
+      webSearch: !!webTools || searchingViaOpenrouter,
       hasTools: !!tools,
       toolCount: tools ? Object.keys(tools).length : 0,
       messageCount: messages.length,
@@ -828,6 +863,7 @@ class ReasoningService extends BaseReasoningService {
     // would duplicate the answer.
     const attempts = screenImages.length > 0 && lastUserIndex !== -1 ? [true, false] : [false];
     let effortCorrected = false;
+    let webSearchDropped = false;
     for (let attempt = 0; attempt < attempts.length; attempt++) {
       // cancelActiveStream() aborts this controller; streamText propagates it
       // into doStream, cancelling the enterprise IPC proxy's request in main.
@@ -836,14 +872,20 @@ class ReasoningService extends BaseReasoningService {
 
       const providerOptions = buildProviderOptions();
       const hasProviderOptions = Object.keys(providerOptions).length > 0;
+      // A provider-run search joins the function tools; it never adds a
+      // step of its own — the provider runs it inside the response.
+      const requestTools =
+        tools || webTools ? { ...(tools ?? {}), ...(webTools ?? {}) } : undefined;
       const result = streamText({
         model: aiModel,
         messages: buildMessages(attempts[attempt]),
-        tools: tools || undefined,
+        tools: requestTools,
         stopWhen: stepCountIs(tools ? ReasoningService.MAX_TOOL_STEPS : 1),
         abortSignal: abortController.signal,
         ...(useTemperature ? { temperature: config.temperature ?? 0.3 } : {}),
-        maxOutputTokens: config.maxTokens || 4096,
+        maxOutputTokens:
+          config.maxTokens ||
+          (webTools || searchingViaOpenrouter ? WEB_SEARCH_MAX_OUTPUT_TOKENS : 4096),
         ...(hasProviderOptions ? { providerOptions } : {}),
       });
 
@@ -889,6 +931,17 @@ class ReasoningService extends BaseReasoningService {
               displayText,
               failed: typeof output === "object" && output?.success === false,
             };
+          } else if (chunk.type === "source") {
+            // A page the provider's search read: the cue card lists it.
+            if (chunk.sourceType === "url") {
+              yield { type: "source", url: chunk.url, title: chunk.title };
+            }
+          } else if (chunk.type === "error") {
+            // The SDK reports a failed request as a chunk and ends the
+            // stream, never throwing — so the recovery in the catch below
+            // (effort learning, a dropped search tool, the text-only retry)
+            // could not run until the chunk became the throw.
+            throw chunk.error instanceof Error ? chunk.error : new Error(String(chunk.error));
           } else if (chunk.type === "finish") {
             yield { type: "done", finishReason: chunk.finishReason };
           }
@@ -917,6 +970,23 @@ class ReasoningService extends BaseReasoningService {
             attempt -= 1;
             continue;
           }
+        }
+        // A provider that refuses its search tool (an account without it, a
+        // model that cannot carry it) must not cost the user the question:
+        // one retry without it, and the caller is told, so the card never
+        // says "Searched the web" about an answer that could not.
+        if (
+          webTools &&
+          !yieldedAny &&
+          !webSearchDropped &&
+          /search|tool/i.test(apiErrorText(error))
+        ) {
+          webSearchDropped = true;
+          webTools = null;
+          logger.logReasoning("AGENT_WEB_SEARCH_RETRY_WITHOUT", { model, provider });
+          config.onWebSearchDropped?.();
+          attempt -= 1;
+          continue;
         }
         if (attempts[attempt] && !yieldedAny && attempt < attempts.length - 1) {
           logger.logReasoning("AGENT_SCREEN_CONTEXT_RETRY_TEXT_ONLY", { model, provider });

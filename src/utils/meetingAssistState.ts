@@ -42,6 +42,12 @@ export interface AssistSuggestion {
   stale: boolean;
 }
 
+/** A page the web search read: a link on the card. */
+export interface AssistWebSource {
+  url: string;
+  title: string;
+}
+
 export interface AssistAnswer {
   question: string;
   /**
@@ -59,6 +65,13 @@ export interface AssistAnswer {
    * main process that predates it forwards answers without the field.
    */
   screens?: number;
+  /**
+   * The provider's web search ran for this answer — the source line's
+   * "Searched the web". Optional on the wire, like `screens`.
+   */
+  searched?: boolean;
+  /** The pages that search read, as the card lists them under the answer. */
+  webSources?: AssistWebSource[];
   /** i18n key, resolved by whichever window renders it. */
   errorKey: string | null;
 }
@@ -104,6 +117,17 @@ export interface MeetingAssistState {
    * as a thread. Dies with the meeting, like everything else in this state.
    */
   answerHistory: AssistAnswer[];
+  /**
+   * The cue card's web search toggle — session state, never a setting: it
+   * starts off with every meeting (client direction, 2026-09-18), and while
+   * it is on the asks may search the web through the chat provider's tool.
+   */
+  webSearch: boolean;
+  /**
+   * Whether the chat scope's route can search at all (webSearchSupport.ts).
+   * Off, the card shows the toggle disabled with the reason.
+   */
+  webSearchAvailable: boolean;
 }
 
 export const IDLE_ASSIST: MeetingAssistState = {
@@ -113,10 +137,15 @@ export const IDLE_ASSIST: MeetingAssistState = {
   suggestionPending: false,
   answer: null,
   answerHistory: [],
+  webSearch: false,
+  webSearchAvailable: false,
 };
 
 const noteRefsEqual = (a: readonly AssistNoteRef[], b: readonly AssistNoteRef[]): boolean =>
   a.length === b.length && a.every((note, index) => note.noteId === b[index].noteId);
+
+const webSourcesEqual = (a: readonly AssistWebSource[], b: readonly AssistWebSource[]): boolean =>
+  a.length === b.length && a.every((source, index) => source.url === b[index].url);
 
 const answersEqual = (a: AssistAnswer, b: AssistAnswer): boolean =>
   a.question === b.question &&
@@ -125,6 +154,8 @@ const answersEqual = (a: AssistAnswer, b: AssistAnswer): boolean =>
   a.streaming === b.streaming &&
   a.errorKey === b.errorKey &&
   (a.screens ?? 0) === (b.screens ?? 0) &&
+  (a.searched ?? false) === (b.searched ?? false) &&
+  webSourcesEqual(a.webSources ?? [], b.webSources ?? []) &&
   noteRefsEqual(a.sources, b.sources);
 
 /**
@@ -142,6 +173,8 @@ export function assistStatesEqual(
   if (!a || !b) return false;
   if (a.configured !== b.configured) return false;
   if (a.suggestionPending !== b.suggestionPending) return false;
+  if (a.webSearch !== b.webSearch) return false;
+  if (a.webSearchAvailable !== b.webSearchAvailable) return false;
 
   if (!!a.lastTime !== !!b.lastTime) return false;
   if (a.lastTime && b.lastTime) {

@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const {
   ANSWER_FORMAT_BLOCK,
   screenSourceBlock,
+  WEB_SEARCH_BLOCK,
   formatAssistTranscript,
   buildAssistRetrievalQuery,
   formatAssistNotes,
@@ -422,5 +423,29 @@ test("without a screenshot the prompt never mentions one", () => {
     const built = buildAnswerMessages({ ...input, screenCount });
     assert.ok(!/screenshot/i.test(built.systemPrompt), `screenCount=${screenCount}`);
     assert.equal(built.systemPrompt, built.textOnlySystemPrompt);
+  }
+});
+
+test("with web search on, both prompts say when to search and how to cite; off, neither mentions it", () => {
+  const input = {
+    meetingTitle: null,
+    segments: [seg("hello", "system", NOW)],
+    notes: [],
+    question: "is their pricing claim right?",
+    mode: "fast",
+  };
+  const on = buildAnswerMessages({ ...input, webSearch: true, screenCount: 1 });
+  assert.match(on.systemPrompt, /web search tool may be offered/);
+  // A text-only retry drops the screenshots, never the search.
+  assert.match(on.textOnlySystemPrompt, /web search tool may be offered/);
+  assert.ok(!/screenshot/i.test(on.textOnlySystemPrompt));
+  assert.match(on.systemPrompt, /at most twice/);
+  assert.match(on.systemPrompt, /never a\s+URL/);
+  assert.match(on.systemPrompt, /never claim a search/);
+  assert.ok(on.systemPrompt.includes(WEB_SEARCH_BLOCK));
+  for (const mode of ["fast", "thinking"]) {
+    const off = buildAnswerMessages({ ...input, mode });
+    assert.ok(!/web search/i.test(off.systemPrompt), mode);
+    assert.ok(!/web search/i.test(off.textOnlySystemPrompt), mode);
   }
 });

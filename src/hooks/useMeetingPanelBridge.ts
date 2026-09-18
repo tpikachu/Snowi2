@@ -15,7 +15,11 @@ import {
   panelTranscriptsEqual,
   type PanelTranscript,
 } from "../utils/meetingPanelTranscript";
-import { clearAskThread, useMeetingAssistStore } from "../stores/meetingAssistStore";
+import {
+  clearAskThread,
+  setAssistWebSearch,
+  useMeetingAssistStore,
+} from "../stores/meetingAssistStore";
 import {
   assistStatesEqual,
   type AssistMode,
@@ -130,6 +134,10 @@ export function useMeetingPanelBridge(
             // The panel's Clear button: the ask thread lives in this
             // renderer's store, so the command comes home to be applied.
             else if (command === "clearAsks") clearAskThread();
+            // The card's web search toggle: session state in this renderer's
+            // assist store, published back to the card in the next snapshot.
+            else if (command === "webSearchOn") setAssistWebSearch(true);
+            else if (command === "webSearchOff") setAssistWebSearch(false);
             // "Show transcript": main surfaced this window; landing on the
             // recording note's transcript view is ControlPanel's and the
             // editor's job, reached through the navigation store.

@@ -30,6 +30,18 @@ export interface ReasoningConfig {
    * take it back.
    */
   onScreenContextDropped?: () => void;
+  /**
+   * The meeting cue card's web search: attach the provider's own search tool
+   * (services/ai/webSearchTools.ts) so the model may look facts up. Only the
+   * routes webSearchSupport.ts names can; elsewhere the flag is ignored.
+   */
+  webSearch?: boolean;
+  /**
+   * Called when a searching request had to go out without its search tool
+   * after all (the provider refused it), so a caller can stop saying the
+   * answer searched the web.
+   */
+  onWebSearchDropped?: () => void;
   language?: string;
   requireCompleteOutput?: boolean;
   requiresAgent?: boolean;

@@ -10,6 +10,8 @@ import {
   Eraser,
   Eye,
   EyeOff,
+  ExternalLink,
+  Globe,
   History,
   LayoutDashboard,
   Lightbulb,
@@ -35,6 +37,7 @@ import type {
 } from "../utils/meetingAssistState";
 import { parseAssistAnswer, sayAnswerText } from "../utils/assistAnswerFormat";
 import { describeAnswerSources } from "../utils/answerProvenance";
+import { MAX_WEB_SOURCES, sourceLabel } from "../utils/assistAnswerStream";
 import type {
   DisplayInfo,
   MeetingPanelCommand,
@@ -140,6 +143,50 @@ const ghostButtonClass = cn(
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hud-accent/70",
   "disabled:cursor-not-allowed disabled:opacity-40"
 );
+
+/**
+ * The cue card's web search toggle — session state that starts off with
+ * every meeting (client direction, 2026-09-18). On, asks may search the web
+ * through the chat provider's own search tool, and the answer names its
+ * sources. The state lives in the control panel's assist store (the
+ * renderer that asks), arrives here in the assist snapshot, and flips
+ * through the allow-listed command channel like Clear. On a route that
+ * cannot search it is disabled, with the reason as its tooltip.
+ */
+function WebSearchControl({
+  assist,
+  disabled,
+  onSend,
+}: {
+  assist: MeetingAssistState | null;
+  disabled: boolean;
+  onSend: (command: MeetingPanelCommand) => void;
+}) {
+  const { t } = useTranslation();
+  const on = assist?.webSearch === true;
+  const available = assist?.webSearchAvailable === true;
+  const hint = !available
+    ? t("notes.meetingPanel.webSearch.unavailable")
+    : on
+      ? t("notes.meetingPanel.webSearch.disable")
+      : t("notes.meetingPanel.webSearch.enable");
+  return (
+    <button
+      type="button"
+      onClick={() => onSend(on ? "webSearchOff" : "webSearchOn")}
+      disabled={disabled || !available}
+      aria-pressed={on}
+      aria-label={hint}
+      title={hint}
+      className={cn(
+        iconButtonClass,
+        on && available && "bg-hud-accent/20 text-hud-accent hover:bg-hud-accent/30"
+      )}
+    >
+      <Globe size={13} />
+    </button>
+  );
+}
 
 /** The dark popover the model chip already uses on the card. */
 const hudPopoverClass =
@@ -298,13 +345,20 @@ function AnswerBlock({
 
   // What the answer read beyond the meeting; nothing for a plain fast answer.
   const provenance = describeAnswerSources(
-    { screens: answer.screens ?? 0, sources: answer.sources, mode: answer.mode },
     {
+      searched: answer.searched === true,
+      screens: answer.screens ?? 0,
+      sources: answer.sources,
+      mode: answer.mode,
+    },
+    {
+      searchedWeb: t("notes.meetingPanel.answer.searchedWeb"),
       viewedScreens: (count) => t("notes.meetingPanel.answer.viewedScreen", { count }),
       from: t("notes.meetingPanel.sourcesLabel"),
       checkedNotes: t("notes.meetingPanel.answer.checkedNotes"),
     }
   );
+  const webSources = (answer.webSources ?? []).slice(0, MAX_WEB_SOURCES);
 
   return (
     <article className={cn(!live && "mt-3 border-t border-hud-border pt-3 opacity-70")}>
@@ -420,6 +474,29 @@ function AnswerBlock({
             <Eraser size={12} />
           </button>
         </div>
+      )}
+
+      {/* What the search read, as links: the text names the source in words
+          and never carries a URL, so this row is where the page itself is. */}
+      {live && !answer.streaming && !answer.errorKey && webSources.length > 0 && (
+        <ul
+          className="mt-1.5 flex flex-wrap items-center gap-1"
+          aria-label={t("notes.meetingPanel.webSearch.sources")}
+        >
+          {webSources.map((source) => (
+            <li key={source.url}>
+              <button
+                type="button"
+                onClick={() => void window.electronAPI?.openExternal(source.url)}
+                title={source.url}
+                className={cn(ghostButtonClass, "max-w-[200px]")}
+              >
+                <ExternalLink size={10} className="shrink-0 opacity-70" />
+                <span className="truncate">{sourceLabel(source)}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
     </article>
   );
@@ -1000,6 +1077,11 @@ export default function MeetingPanelOverlay() {
 
           <span style={noDrag} className="flex min-w-0 shrink items-center gap-0.5">
             <ObserveControls />
+            <WebSearchControl
+              assist={assist}
+              disabled={isBusy || !assistReady}
+              onSend={(command) => void send(command)}
+            />
             {/* Thinking: answers also search the past notes. An icon toggle,
                 not a segmented control — fast is the default and the
                 tooltip is where the trade is explained. */}

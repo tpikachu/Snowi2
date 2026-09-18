@@ -2996,7 +2996,8 @@
         "altLine": "Un altro modo per dirlo",
         "checkedNotes": "Note consultate",
         "sayLine": "Frase da dire",
-        "copyLine": "Copia questa frase"
+        "copyLine": "Copia questa frase",
+        "searchedWeb": "Ha cercato sul web"
       },
       "thread": {
         "clear": "Cancella"
@@ -3011,6 +3012,12 @@
         "screen": "Schermo {{n}}",
         "primary": "principale",
         "chooseScreen": "Quale schermo osservare"
+      },
+      "webSearch": {
+        "enable": "Cerca sul web — le risposte possono usare fatti aggiornati",
+        "disable": "La ricerca web è attiva per questa riunione — clicca per disattivarla",
+        "unavailable": "La ricerca web non è disponibile con questo provider di IA",
+        "sources": "Fonti"
       }
     },
     "transcript": {

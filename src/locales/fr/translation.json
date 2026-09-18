@@ -3203,7 +3203,8 @@
         "altLine": "Autre formulation",
         "checkedNotes": "Notes consultées",
         "sayLine": "Phrase à dire",
-        "copyLine": "Copier cette phrase"
+        "copyLine": "Copier cette phrase",
+        "searchedWeb": "A cherché sur le web"
       },
       "thread": {
         "clear": "Effacer"
@@ -3218,6 +3219,12 @@
         "screen": "Écran {{n}}",
         "primary": "principal",
         "chooseScreen": "Quel écran observer"
+      },
+      "webSearch": {
+        "enable": "Chercher sur le web — les réponses peuvent s'appuyer sur des faits à jour",
+        "disable": "La recherche web est activée pour cette réunion — cliquez pour la désactiver",
+        "unavailable": "La recherche web n'est pas disponible avec ce fournisseur d'IA",
+        "sources": "Sources"
       }
     },
     "transcript": {

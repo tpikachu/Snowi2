@@ -6,12 +6,15 @@
  * every answer anyway. What earns a mention is the extra: the screen(s) the
  * observe eye captured for this ask, the past notes it drew on, and — for a
  * thinking answer, which always searches — that the notes were checked even
- * when nothing matched. Parts join with a middle dot; note titles with
+ * when nothing matched — and, first of all, that the web was searched when
+ * the cue card's search ran. Parts join with a middle dot; note titles with
  * commas, capped, with a "+n" for the rest.
  *
  * Pure; the labels arrive localized, so this stays free of i18n.
  */
 export interface AnswerProvenanceInput {
+  /** The provider's web search ran for this answer. */
+  searched?: boolean;
   /** Screenshots that rode with the ask and reached the model. */
   screens: number;
   sources: readonly { title: string }[];
@@ -19,6 +22,8 @@ export interface AnswerProvenanceInput {
 }
 
 export interface AnswerProvenanceLabels {
+  /** "Searched the web" */
+  searchedWeb: string;
   /** "Viewed your screen" for one, "Viewed 2 screens" for more. */
   viewedScreens: (count: number) => string;
   /** "From" — precedes the note titles. */
@@ -45,6 +50,7 @@ export function describeAnswerSources(
   maxVisible = MAX_VISIBLE_SOURCES
 ): string {
   const parts: string[] = [];
+  if (input.searched) parts.push(labels.searchedWeb);
   if (input.screens > 0) parts.push(labels.viewedScreens(input.screens));
   if (input.sources.length > 0) {
     parts.push(`${labels.from} ${sourceNames(input.sources, maxVisible)}`);

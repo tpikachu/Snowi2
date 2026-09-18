@@ -116,6 +116,8 @@ const MEETING_PANEL_COMMANDS = new Set([
   "configureModels",
   "clearAsks",
   "transcript",
+  "webSearchOn",
+  "webSearchOff",
 ]);
 /** Long enough for any question worth asking mid-meeting; short enough not to be a paste channel. */
 const MEETING_PANEL_QUESTION_MAX = 2000;

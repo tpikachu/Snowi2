@@ -2996,7 +2996,8 @@
         "altLine": "另一种说法",
         "checkedNotes": "已查阅你的笔记",
         "sayLine": "可以这样说",
-        "copyLine": "复制这句话"
+        "copyLine": "复制这句话",
+        "searchedWeb": "已搜索网络"
       },
       "thread": {
         "clear": "清除"
@@ -3011,6 +3012,12 @@
         "screen": "屏幕 {{n}}",
         "primary": "主屏幕",
         "chooseScreen": "观察哪个屏幕"
+      },
+      "webSearch": {
+        "enable": "搜索网络 — 回答可以使用最新信息",
+        "disable": "本次会议已开启网络搜索 — 点击关闭",
+        "unavailable": "此 AI 服务商不支持网络搜索",
+        "sources": "来源"
       }
     },
     "transcript": {

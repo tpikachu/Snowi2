@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const { describeAnswerSources, sourceNames } = require("../../src/utils/answerProvenance.ts");
 
 const labels = {
+  searchedWeb: "Searched the web",
   viewedScreens: (n) => (n === 1 ? "Viewed your screen" : `Viewed ${n} screens`),
   from: "From",
   checkedNotes: "Checked your notes",
@@ -52,5 +53,24 @@ test("a thinking answer that searched and found nothing still says the notes wer
   assert.equal(
     describeAnswerSources({ screens: 1, sources: [], mode: "thinking" }, labels),
     "Viewed your screen · Checked your notes"
+  );
+});
+
+test("a web search is named first, before the screen and the notes", () => {
+  assert.equal(
+    describeAnswerSources({ searched: true, screens: 0, sources: [], mode: "fast" }, labels),
+    "Searched the web"
+  );
+  assert.equal(
+    describeAnswerSources(
+      { searched: true, screens: 1, sources: [note("Q3 planning")], mode: "thinking" },
+      labels
+    ),
+    "Searched the web · Viewed your screen · From Q3 planning"
+  );
+  // A request whose search tool was refused is not a search.
+  assert.equal(
+    describeAnswerSources({ searched: false, screens: 0, sources: [], mode: "fast" }, labels),
+    ""
   );
 });

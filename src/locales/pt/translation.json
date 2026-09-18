@@ -2996,7 +2996,8 @@
         "altLine": "Outra forma de dizer",
         "checkedNotes": "Consultou suas notas",
         "sayLine": "Frase para dizer",
-        "copyLine": "Copiar esta frase"
+        "copyLine": "Copiar esta frase",
+        "searchedWeb": "Pesquisou na web"
       },
       "thread": {
         "clear": "Limpar"
@@ -3011,6 +3012,12 @@
         "screen": "Tela {{n}}",
         "primary": "principal",
         "chooseScreen": "Qual tela observar"
+      },
+      "webSearch": {
+        "enable": "Pesquisar na web — as respostas podem usar fatos atuais",
+        "disable": "A pesquisa na web está ativa nesta reunião — clique para desativar",
+        "unavailable": "A pesquisa na web não está disponível com este provedor de IA",
+        "sources": "Fontes"
       }
     },
     "transcript": {

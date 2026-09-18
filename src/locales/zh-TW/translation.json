@@ -2996,7 +2996,8 @@
         "altLine": "另一種說法",
         "checkedNotes": "已查閱你的筆記",
         "sayLine": "可以這樣說",
-        "copyLine": "複製這句話"
+        "copyLine": "複製這句話",
+        "searchedWeb": "已搜尋網路"
       },
       "thread": {
         "clear": "清除"
@@ -3011,6 +3012,12 @@
         "screen": "螢幕 {{n}}",
         "primary": "主螢幕",
         "chooseScreen": "要觀察哪個螢幕"
+      },
+      "webSearch": {
+        "enable": "搜尋網路 — 回答可以使用最新資訊",
+        "disable": "本次會議已開啟網路搜尋 — 點擊關閉",
+        "unavailable": "此 AI 服務商不支援網路搜尋",
+        "sources": "來源"
       }
     },
     "transcript": {

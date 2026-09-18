@@ -44,6 +44,18 @@ export function setSuggestion(suggestion: AssistSuggestion | null): void {
   useMeetingAssistStore.setState({ suggestion, suggestionPending: false });
 }
 
+/** The cue card's web search toggle, flipped from the card through the command channel. */
+export function setAssistWebSearch(enabled: boolean): void {
+  if (useMeetingAssistStore.getState().webSearch === enabled) return;
+  useMeetingAssistStore.setState({ webSearch: enabled });
+}
+
+/** Whether the chat route can search at all; re-read on every assist tick. */
+export function setAssistWebSearchAvailable(available: boolean): void {
+  if (useMeetingAssistStore.getState().webSearchAvailable === available) return;
+  useMeetingAssistStore.setState({ webSearchAvailable: available });
+}
+
 /**
  * Ages the current suggestion without replacing it.
  *
@@ -72,6 +84,8 @@ export function startAnswer(question: string, mode: AssistMode): void {
       streaming: true,
       sources: [],
       screens: 0,
+      searched: false,
+      webSources: [],
       errorKey: null,
     },
   });

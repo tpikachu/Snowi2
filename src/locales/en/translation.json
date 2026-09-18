@@ -3203,7 +3203,8 @@
         "altLine": "Another way to say it",
         "checkedNotes": "Checked your notes",
         "sayLine": "Line to say",
-        "copyLine": "Copy this line"
+        "copyLine": "Copy this line",
+        "searchedWeb": "Searched the web"
       },
       "thread": {
         "clear": "Clear"
@@ -3218,6 +3219,12 @@
         "screen": "Screen {{n}}",
         "primary": "primary",
         "chooseScreen": "Which screen to watch"
+      },
+      "webSearch": {
+        "enable": "Search the web — answers can use live facts",
+        "disable": "Web search is on for this meeting — click to turn off",
+        "unavailable": "Web search isn't available with this AI provider",
+        "sources": "Sources"
       }
     },
     "transcript": {

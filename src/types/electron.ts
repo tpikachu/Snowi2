@@ -13,7 +13,10 @@ export type MeetingPanelCommand =
   | "configureModels"
   | "clearAsks"
   /** Surface the dashboard on the recording note's transcript view. */
-  | "transcript";
+  | "transcript"
+  /** The card's web search toggle — session state in the control panel's assist store. */
+  | "webSearchOn"
+  | "webSearchOff";
 
 /**
  * Setup readiness and download state for the assistant bar, published by the

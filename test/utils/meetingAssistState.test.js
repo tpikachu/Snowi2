@@ -114,3 +114,27 @@ test("the last-time strip appearing, and its open count moving, reach the panel"
     false
   );
 });
+
+test("the web search toggle and a searched answer's sources are worth a hop", () => {
+  assert.equal(assistStatesEqual(withAnswer(), { ...withAnswer(), webSearch: true }), false);
+  assert.equal(
+    assistStatesEqual(withAnswer(), { ...withAnswer(), webSearchAvailable: true }),
+    false
+  );
+  const page = { url: "https://www.notion.com/pricing", title: "Notion Pricing" };
+  assert.equal(
+    assistStatesEqual(
+      withAnswer({ searched: true, webSources: [page] }),
+      withAnswer({ searched: true, webSources: [{ ...page }] })
+    ),
+    true
+  );
+  assert.equal(
+    assistStatesEqual(
+      withAnswer({ searched: true, webSources: [page] }),
+      withAnswer({ searched: true, webSources: [] })
+    ),
+    false
+  );
+  assert.equal(assistStatesEqual(withAnswer(), withAnswer({ searched: true })), false);
+});

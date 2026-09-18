@@ -14,6 +14,7 @@ import {
   resetMeetingAssist,
   setAssistConfigured,
   setAssistLastTime,
+  setAssistWebSearchAvailable,
   setSuggestion,
   setSuggestionPending,
   startAnswer,
@@ -40,6 +41,8 @@ import {
 } from "../utils/meetingAssistPrompt";
 import { formatNoteClaims, formatOpenCommitments } from "../utils/memoryPrompt";
 import { resolveFastLaneLLMConfig } from "../utils/assistFastLane";
+import { collectAnswerStream } from "../utils/assistAnswerStream";
+import { webSearchAvailable } from "../utils/webSearchSupport";
 import { filterGrounding } from "../utils/chatRetrieval";
 import type { AssistLastTime, AssistMode, AssistNoteRef } from "../utils/meetingAssistState";
 import type { ScreenContextImage } from "../types/electron";
@@ -90,6 +93,8 @@ interface ResolvedAssistModel {
     screenContext?: ScreenContextImage[];
     textOnlySystemPrompt?: string;
     onScreenContextDropped?: () => void;
+    webSearch?: boolean;
+    onWebSearchDropped?: () => void;
   };
 }
 
@@ -473,6 +478,11 @@ export function useMeetingAssist(): MeetingAssist {
       const isCurrent = () => mountedRef.current && askSeqRef.current === seq;
       activityRef.current = "answer";
       startAnswer(trimmed, mode);
+      // The card's web search toggle: session state read at ask time, and
+      // honored only on a route that can search — the card shows it disabled
+      // elsewhere, but the state can outlive a provider switch mid-meeting.
+      const assistState = getMeetingAssist();
+      const webSearch = assistState.webSearch && assistState.webSearchAvailable;
 
       // The cue card's "observe my screen" opt-in: EVERY ask, fast or
       // thinking, carries a screenshot of every display (or the one the card
@@ -564,6 +574,7 @@ export function useMeetingAssist(): MeetingAssist {
         mode,
         draft,
         screenCount: screenImages.length,
+        webSearch,
       });
       const systemPrompt = built.systemPrompt;
       const messages = built.messages;
@@ -588,6 +599,14 @@ export function useMeetingAssist(): MeetingAssist {
           if (isCurrent()) updateAnswer({ screens: 0 });
         };
       }
+      if (webSearch) {
+        resolved.config.webSearch = true;
+        // The provider refused the tool and the question went out without
+        // it: the card must not say the answer searched.
+        resolved.config.onWebSearchDropped = () => {
+          if (isCurrent()) updateAnswer({ searched: false, webSources: [] });
+        };
+      }
 
       // A question that hangs is worthless — the moment it was asked for has
       // passed — so it is abandoned rather than left waiting on a provider.
@@ -595,23 +614,34 @@ export function useMeetingAssist(): MeetingAssist {
         () => {
           if (askSeqRef.current === seq) ReasoningService.cancelActiveStream();
         },
-        mode === "thinking" ? THINKING_TIMEOUT_MS : FAST_TIMEOUT_MS
+        // A search is seconds on its own, so a searched fast answer gets
+        // the thinking budget.
+        mode === "thinking" || webSearch ? THINKING_TIMEOUT_MS : FAST_TIMEOUT_MS
       );
       try {
-        const text = await collectStream(
+        const collected = await collectAnswerStream(
           ReasoningService.processTextStreamingAI(
             messages,
             resolved.model,
             resolved.provider,
             resolved.config
           ),
-          (full) => {
-            if (isCurrent()) updateAnswer({ text: full });
+          {
+            onText: (full) => {
+              if (isCurrent()) updateAnswer({ text: full });
+            },
+            // The search ran: said on the card at once, sources as they land.
+            onSearch: (sources) => {
+              if (isCurrent()) updateAnswer({ searched: true, webSources: sources });
+            },
           }
         );
         if (!isCurrent()) return;
+        const text = collected.text;
         updateAnswer({
           text,
+          searched: collected.searched,
+          webSources: collected.sources,
           streaming: false,
           errorKey: text.trim() ? null : "notes.meetingPanel.ask.noAnswer",
         });
@@ -740,9 +770,11 @@ export function useMeetingAssist(): MeetingAssist {
       // Settings while the meeting runs, and the panel should stop saying the
       // assistant is unavailable the moment they have.
       const settings = getSettings();
-      setAssistConfigured(
-        selectLLMConfigReady(settings, selectResolvedLLMConfig(settings, "chatIntelligence"))
-      );
+      const chat = selectResolvedLLMConfig(settings, "chatIntelligence");
+      setAssistConfigured(selectLLMConfigReady(settings, chat));
+      // Whether the route can search the web, for the card's toggle — a
+      // provider switch from Settings mid-meeting changes the answer.
+      setAssistWebSearchAvailable(webSearchAvailable(chat));
 
       const now = Date.now();
       const state = useMeetingRecordingStore.getState();

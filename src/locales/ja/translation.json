@@ -2924,7 +2924,8 @@
         "altLine": "別の言い方",
         "checkedNotes": "ノートを確認済み",
         "sayLine": "言うセリフ",
-        "copyLine": "このセリフをコピー"
+        "copyLine": "このセリフをコピー",
+        "searchedWeb": "ウェブを検索しました"
       },
       "thread": {
         "clear": "クリア"
@@ -2939,6 +2940,12 @@
         "screen": "画面 {{n}}",
         "primary": "メイン",
         "chooseScreen": "どの画面を見るか"
+      },
+      "webSearch": {
+        "enable": "ウェブを検索 — 回答に最新の情報を使えます",
+        "disable": "この会議ではウェブ検索がオンです — クリックでオフ",
+        "unavailable": "この AI プロバイダーではウェブ検索を使えません",
+        "sources": "出典"
       }
     },
     "transcript": {
