@@ -2288,6 +2288,21 @@
   "models": {
     "learnMore": "了解更多",
     "noneAvailable": "没有可用的模型",
+    "local": {
+      "note": "在本机运行。私密且免费；回答比云端更慢、更短，且不支持网页搜索。",
+      "tier": {
+        "best": "本地最佳回答",
+        "fast": "快速",
+        "light": "简单任务"
+      },
+      "memory": "约需 {{gb}} GB 内存",
+      "memoryTight": "约需 {{gb}} GB 内存 — 接近本机上限",
+      "memoryTooMuch": "约需 {{gb}} GB，超过本机内存",
+      "noWebSearch": "无网页搜索",
+      "noWebOrNotesSearch": "无网页搜索和笔记搜索",
+      "showMore": "显示另外 {{count}} 个模型",
+      "showLess": "收起更多模型"
+    },
     "descriptions": {
       "parakeet": {
         "parakeet_tdt_0_6b_v3": "快速多语言语音识别，自动语言检测（25 种语言）",
@@ -3017,6 +3032,7 @@
         "enable": "搜索网络 — 回答可以使用最新信息",
         "disable": "本次会议已开启网络搜索 — 点击关闭",
         "unavailable": "此 AI 服务商不支持网络搜索",
+        "unavailableLocal": "网页搜索需通过云端提供商 — 切换模型后即可使用",
         "sources": "来源"
       }
     },

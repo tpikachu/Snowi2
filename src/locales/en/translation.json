@@ -2376,6 +2376,21 @@
   "models": {
     "learnMore": "Learn more",
     "noneAvailable": "No models available",
+    "local": {
+      "note": "Runs on this computer. Private and free; answers are slower and shorter than cloud, and web search is off.",
+      "tier": {
+        "best": "Best local answers",
+        "fast": "Fast",
+        "light": "Quick tasks"
+      },
+      "memory": "About {{gb}} GB of memory",
+      "memoryTight": "About {{gb}} GB of memory — close to this computer's limit",
+      "memoryTooMuch": "Needs about {{gb}} GB, more than this computer has",
+      "noWebSearch": "No web search",
+      "noWebOrNotesSearch": "No web or notes search",
+      "showMore": "Show {{count}} more models",
+      "showLess": "Show fewer models"
+    },
     "descriptions": {
       "parakeet": {
         "parakeet_tdt_0_6b_v3": "Fast multilingual ASR with auto language detection (25 languages)",
@@ -3224,6 +3239,7 @@
         "enable": "Search the web — answers can use live facts",
         "disable": "Web search is on for this meeting — click to turn off",
         "unavailable": "Web search isn't available with this AI provider",
+        "unavailableLocal": "Web search runs through a cloud provider — switch the model to use it",
         "sources": "Sources"
       }
     },

@@ -8,6 +8,7 @@ import {
   type AssistSuggestion,
   type MeetingAssistState,
 } from "../utils/meetingAssistState";
+import type { WebSearchUnavailableReason } from "../utils/webSearchSupport";
 
 /**
  * What the meeting assistant currently has to say.
@@ -51,9 +52,19 @@ export function setAssistWebSearch(enabled: boolean): void {
 }
 
 /** Whether the chat route can search at all; re-read on every assist tick. */
-export function setAssistWebSearchAvailable(available: boolean): void {
-  if (useMeetingAssistStore.getState().webSearchAvailable === available) return;
-  useMeetingAssistStore.setState({ webSearchAvailable: available });
+export function setAssistWebSearchAvailable(
+  available: boolean,
+  reason: WebSearchUnavailableReason | null = null
+): void {
+  const state = useMeetingAssistStore.getState();
+  const nextReason = available ? null : reason;
+  if (state.webSearchAvailable === available && state.webSearchUnavailableReason === nextReason) {
+    return;
+  }
+  useMeetingAssistStore.setState({
+    webSearchAvailable: available,
+    webSearchUnavailableReason: nextReason,
+  });
 }
 
 /**

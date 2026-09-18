@@ -3174,6 +3174,20 @@ class IPCHandlers {
       }
     });
 
+    // The hardware snapshot alone: the local language model rows say whether
+    // a model fits this machine (utils/localModelLabels.ts). Cached like the
+    // recommendation above; null when the machine could not be measured, and
+    // the rows then show no fit rather than a guess.
+    ipcMain.handle("get-capability-snapshot", async () => {
+      try {
+        const { getCapabilities } = require("./capabilityProbe");
+        return await getCapabilities(path.join(app.getPath("userData"), "capability.json"));
+      } catch (error) {
+        debugLogger.warn("capability probe failed for the model picker", { error: error.message });
+        return null;
+      }
+    });
+
     ipcMain.handle("parakeet-server-start", async (event, modelName) => {
       const result = await this.parakeetManager.startServer(modelName);
       // Persisting a provider that failed to start would wedge every launch

@@ -2288,6 +2288,21 @@
   "models": {
     "learnMore": "Scopri di più",
     "noneAvailable": "Nessun modello disponibile",
+    "local": {
+      "note": "Funziona su questo computer. Privato e gratuito; le risposte sono più lente e più brevi rispetto al cloud, e la ricerca web è disattivata.",
+      "tier": {
+        "best": "Migliori risposte locali",
+        "fast": "Veloce",
+        "light": "Attività rapide"
+      },
+      "memory": "Circa {{gb}} GB di memoria",
+      "memoryTight": "Circa {{gb}} GB di memoria — vicino al limite di questo computer",
+      "memoryTooMuch": "Richiede circa {{gb}} GB, più di quanti ne abbia questo computer",
+      "noWebSearch": "Nessuna ricerca web",
+      "noWebOrNotesSearch": "Nessuna ricerca web o nelle note",
+      "showMore": "Mostra altri {{count}} modelli",
+      "showLess": "Mostra meno modelli"
+    },
     "descriptions": {
       "parakeet": {
         "parakeet_tdt_0_6b_v3": "ASR multilingue veloce con rilevamento automatico della lingua (25 lingue)",
@@ -3017,6 +3032,7 @@
         "enable": "Cerca sul web — le risposte possono usare fatti aggiornati",
         "disable": "La ricerca web è attiva per questa riunione — clicca per disattivarla",
         "unavailable": "La ricerca web non è disponibile con questo provider di IA",
+        "unavailableLocal": "La ricerca web passa da un provider cloud — cambia modello per usarla",
         "sources": "Fonti"
       }
     },

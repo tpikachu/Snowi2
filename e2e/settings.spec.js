@@ -21,16 +21,24 @@ test.afterEach(async () => {
 });
 
 test("the keymap reads as caps and records in place", async () => {
-  ({ app } = await launchApp(test.info()));
+  // Main seeds Ctrl+Shift+M and Ctrl+Shift+K on first launch whenever the OS
+  // grants them, and records the seed under these markers so a deliberate
+  // clear is never undone. The markers are read from the environment, so
+  // setting them here is the app's own way of saying "already decided" —
+  // without it this test only passed while another Snowy on the machine
+  // happened to own both accelerators.
+  ({ app } = await launchApp(test.info(), {
+    env: { MEETING_KEY_DEFAULTED: "1", CHAT_AGENT_KEY_DEFAULTED: "1" },
+  }));
   const page = await controlPanelPage(app);
   await skipOnboarding(page);
 
   await page.getByRole("button", { name: "Settings" }).first().click();
   await page.getByRole("button", { name: "Hotkeys" }).first().click();
 
-  // Nothing ships bound on a fresh profile: both rows show the unbound chip
-  // with a one-click suggestion, and the meeting row's layout select sits
-  // inline beneath it — no editor to open, nothing folded away.
+  // Nothing bound: both rows show the unbound chip with a one-click
+  // suggestion, and the meeting row's layout select sits inline beneath it —
+  // no editor to open, nothing folded away.
   await expect(page.getByText("Not set").first()).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole("button", { name: "Use Ctrl+Shift+M" })).toBeVisible();
   await expect(page.getByText("When triggered by hotkey, open in:")).toBeVisible();
@@ -68,18 +76,36 @@ test("models are picked at point of use; Settings is engine plus keys", async ()
   await page.screenshot({ path: test.info().outputPath("model-chip-popover.png") });
   await page.keyboard.press("Escape");
 
-  // Settings → Language Models is one page, and with local language models
-  // hidden (LOCAL_LLM_ENABLED false, client direction 2026-09-15) it is the
-  // provider grid over one key field: no Cloud | Local engine cards to flip.
+  // Settings → Language Models is one page: the Cloud | Local engine cards
+  // lead (local language models are back, labelled — client direction
+  // 2026-09-18), and a fresh install sits on Cloud: the provider grid over
+  // one key field.
   await page.getByRole("button", { name: "Settings" }).first().click();
   await page.getByRole("button", { name: "Language Models" }).first().click();
   await expect(page.getByRole("radiogroup", { name: "Provider" })).toBeVisible({
     timeout: 15_000,
   });
-  await expect(page.getByRole("button", { name: /Cloud Providers/ })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: /^Local/ })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Cloud Providers/ })).toHaveAttribute(
+    "aria-pressed",
+    "true"
+  );
   await expect(page.getByText("OpenAI").first()).toBeVisible();
   await page.screenshot({ path: test.info().outputPath("language-models-panel.png") });
+
+  // Local: one honest line about the trade, then rows labelled for their use
+  // case — a tier, the memory each needs, what it gives up — with the current
+  // generation first and the rest under one "more" row.
+  await page.getByRole("button", { name: /^Local/ }).click();
+  await expect(page.getByText("Runs on this computer.")).toBeVisible();
+  await expect(page.getByText("Best local answers").first()).toBeVisible();
+  await expect(page.getByText(/About \d+ GB of memory|Needs about \d+ GB/).first()).toBeVisible();
+  await expect(page.getByText("No web search").first()).toBeVisible();
+  await expect(page.getByRole("button", { name: /Show \d+ more models/ })).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("language-models-local.png") });
+
+  // And back, so the profile is left where it started.
+  await page.getByRole("button", { name: /Cloud Providers/ }).click();
+  await expect(page.getByRole("radiogroup", { name: "Provider" })).toBeVisible();
 });
 
 test("the provider card is the switch: a key saved on the chosen card moves chat and write-ups there", async () => {

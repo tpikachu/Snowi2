@@ -166,7 +166,11 @@ function WebSearchControl({
   const on = assist?.webSearch === true;
   const available = assist?.webSearchAvailable === true;
   const hint = !available
-    ? t("notes.meetingPanel.webSearch.unavailable")
+    ? t(
+        assist?.webSearchUnavailableReason === "local"
+          ? "notes.meetingPanel.webSearch.unavailableLocal"
+          : "notes.meetingPanel.webSearch.unavailable"
+      )
     : on
       ? t("notes.meetingPanel.webSearch.disable")
       : t("notes.meetingPanel.webSearch.enable");

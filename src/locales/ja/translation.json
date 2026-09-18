@@ -2288,6 +2288,21 @@
   "models": {
     "learnMore": "詳細を見る",
     "noneAvailable": "利用可能なモデルがありません",
+    "local": {
+      "note": "このコンピューターで動作します。プライベートで無料ですが、回答はクラウドより遅く短くなり、ウェブ検索は使えません。",
+      "tier": {
+        "best": "ローカル最高品質",
+        "fast": "高速",
+        "light": "簡単な作業向け"
+      },
+      "memory": "メモリ約 {{gb}} GB",
+      "memoryTight": "メモリ約 {{gb}} GB — このコンピューターの上限に近い",
+      "memoryTooMuch": "約 {{gb}} GB 必要 — このコンピューターの容量を超えています",
+      "noWebSearch": "ウェブ検索なし",
+      "noWebOrNotesSearch": "ウェブ検索・ノート検索なし",
+      "showMore": "さらに {{count}} 個のモデルを表示",
+      "showLess": "表示するモデルを減らす"
+    },
     "descriptions": {
       "parakeet": {
         "parakeet_tdt_0_6b_v3": "高速多言語 ASR、自動言語検出対応（25 言語）",
@@ -2945,6 +2960,7 @@
         "enable": "ウェブを検索 — 回答に最新の情報を使えます",
         "disable": "この会議ではウェブ検索がオンです — クリックでオフ",
         "unavailable": "この AI プロバイダーではウェブ検索を使えません",
+        "unavailableLocal": "ウェブ検索はクラウドプロバイダー経由で行われます — 使うにはモデルを切り替えてください",
         "sources": "出典"
       }
     },

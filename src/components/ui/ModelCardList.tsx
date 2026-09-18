@@ -19,6 +19,12 @@ export interface ModelCardOption {
   isDownloaded?: boolean;
   isDownloading?: boolean;
   recommended?: boolean;
+  /** A short use-case pill after the name ("Best local answers"). */
+  badge?: string;
+  /** A second line under the row: what the model needs and what it gives up. */
+  note?: string;
+  /** "warn" when the note says the model will not run well here. */
+  noteTone?: "muted" | "warn";
 }
 
 /**
@@ -160,6 +166,12 @@ export function ModelCard({
           </a>
         )}
 
+        {model.badge && (
+          <span className="micro-caps shrink-0 rounded-control border border-border-subtle bg-surface-3 px-1.5 py-0.5 text-muted-foreground">
+            {model.badge}
+          </span>
+        )}
+
         {model.recommended && (
           <span className="micro-caps shrink-0 rounded-control border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-primary">
             {t("common.recommended")}
@@ -219,6 +231,16 @@ export function ModelCard({
           )}
         </div>
       </div>
+      {model.note && (
+        <p
+          className={cn(
+            "mt-0.5 pl-[18px] text-[11px] leading-snug",
+            model.noteTone === "warn" ? "text-warning" : "text-muted-foreground"
+          )}
+        >
+          {model.note}
+        </p>
+      )}
     </div>
   );
 }

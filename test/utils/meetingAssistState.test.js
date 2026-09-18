@@ -121,6 +121,10 @@ test("the web search toggle and a searched answer's sources are worth a hop", ()
     assistStatesEqual(withAnswer(), { ...withAnswer(), webSearchAvailable: true }),
     false
   );
+  assert.equal(
+    assistStatesEqual(withAnswer(), { ...withAnswer(), webSearchUnavailableReason: "local" }),
+    false
+  );
   const page = { url: "https://www.notion.com/pricing", title: "Notion Pricing" };
   assert.equal(
     assistStatesEqual(

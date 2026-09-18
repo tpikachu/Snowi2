@@ -1657,6 +1657,8 @@ declare global {
       llamaServerStop: () => Promise<{ success: boolean; error?: string }>;
       llamaServerStatus: () => Promise<LlamaServerStatus>;
       llamaGpuReset: () => Promise<{ success: boolean; error?: string }>;
+      /** The cached hardware probe, or null when the machine could not be measured. */
+      getCapabilitySnapshot?: () => Promise<CapabilitySnapshot | null>;
       detectVulkanGpu?: () => Promise<VulkanGpuResult>;
       getLlamaVulkanStatus?: () => Promise<LlamaVulkanStatus>;
       downloadLlamaVulkanBinary?: () => Promise<{

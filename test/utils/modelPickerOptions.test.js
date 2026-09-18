@@ -27,6 +27,28 @@ test("keyed providers lead, local follows, keyless trail with no models", () => 
   );
 });
 
+test("a local row carries what its labels are computed from", () => {
+  const groups = buildModelPickerGroups({
+    cloudProviders: [],
+    keyedProviderIds: new Set(),
+    localModels: [
+      {
+        id: "qwen3.5-9b-q4_k_m",
+        label: "Qwen3.5 9B",
+        providerId: "qwen",
+        sizeBytes: 5889811552,
+        tier: "best",
+      },
+    ],
+    localGroupName: "On this computer",
+  });
+  assert.equal(groups.length, 1);
+  assert.equal(groups[0].kind, "local");
+  const [row] = groups[0].models;
+  assert.equal(row.sizeBytes, 5889811552);
+  assert.equal(row.tier, "best");
+});
+
 test("no local models means no local group", () => {
   const groups = buildModelPickerGroups({
     cloudProviders,

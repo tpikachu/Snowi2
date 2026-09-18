@@ -24,6 +24,11 @@ import {
 import type { InferenceScope } from "../config/inferenceScopes";
 import { openrouterModelLabel, openrouterPickerModels } from "../config/openrouterModels";
 import { LOCAL_LLM_ENABLED } from "../config/features";
+import {
+  describeLocalModel,
+  type LocalModelLabels,
+  type MachineMemory,
+} from "../utils/localModelLabels";
 import logger from "../utils/logger";
 
 /**
@@ -139,15 +144,23 @@ export default function ModelPickerChip({
   // Downloaded local models, fetched when the popover first opens: the main
   // process owns the on-disk truth, and a closed chip should cost nothing.
   // With local language models hidden the group is simply empty — a model on
-  // disk is not on offer.
+  // disk is not on offer. The machine's memory rides along so each local row
+  // can say whether the model fits (localModelLabels.ts).
   const [localModels, setLocalModels] = useState<PickerLocalModelInput[] | null>(null);
+  const [machine, setMachine] = useState<MachineMemory | null>(null);
   const loadLocalModels = useCallback(async () => {
     if (!LOCAL_LLM_ENABLED) {
       setLocalModels([]);
       return;
     }
     try {
-      const all = await window.electronAPI?.modelGetAll?.();
+      const [all, capability] = await Promise.all([
+        window.electronAPI?.modelGetAll?.(),
+        window.electronAPI?.getCapabilitySnapshot?.().catch(() => null),
+      ]);
+      if (capability) {
+        setMachine({ totalMemGb: capability.totalMemGb, vramGb: capability.gpu?.vramGb ?? null });
+      }
       const downloaded = new Set(
         (Array.isArray(all) ? all : [])
           .filter((m: { isDownloaded?: boolean }) => m.isDownloaded)
@@ -163,6 +176,8 @@ export default function ModelPickerChip({
               providerId: provider.id,
               descriptionKey: model.descriptionKey,
               description: model.description,
+              sizeBytes: model.sizeBytes,
+              tier: model.tier,
             });
           }
         }
@@ -256,6 +271,29 @@ export default function ModelPickerChip({
     "px-2 pb-0.5 pt-2 text-[10.5px] font-semibold uppercase tracking-[0.06em]",
     hud ? "text-hud-muted" : "text-muted-foreground"
   );
+  const noteClass = cn(
+    "px-2 pb-1 text-[10.5px] leading-snug",
+    hud ? "text-hud-muted" : "text-muted-foreground"
+  );
+  const tierClass = cn(
+    "shrink-0 rounded-[4px] border px-1 py-px text-[9px] font-semibold uppercase tracking-[0.06em]",
+    hud ? "border-white/15 text-hud-muted" : "border-border-subtle text-muted-foreground"
+  );
+  // A local row's helper is what the person needs at the moment of choice —
+  // the memory it takes against this machine and what it gives up — not the
+  // registry's one-liner, which is what left "Qwen3.5 9B" looking like an
+  // equal to a cloud model (client, 2026-09-15).
+  const localHelper = (labels: LocalModelLabels): { text: string; warn: boolean } => {
+    const gb = labels.memoryGb;
+    const memory =
+      labels.fit === "poor"
+        ? t("models.local.memoryTooMuch", { gb })
+        : labels.fit === "tight"
+          ? t("models.local.memoryTight", { gb })
+          : t("models.local.memory", { gb });
+    const off = t(labels.toolsOff ? "models.local.noWebOrNotesSearch" : "models.local.noWebSearch");
+    return { text: `${memory} · ${off}`, warn: labels.fit === "poor" };
+  };
 
   return (
     <Popover
@@ -316,18 +354,41 @@ export default function ModelPickerChip({
           group.hasKey ? (
             <div key={group.providerId}>
               <p className={headingClass}>{group.providerName}</p>
+              {group.kind === "local" && <p className={noteClass}>{t("models.local.note")}</p>}
               {group.models.map((model) => {
-                const helper = helperText(model);
+                const local =
+                  group.kind === "local" && model.sizeBytes !== undefined
+                    ? describeLocalModel(
+                        { id: model.id, sizeBytes: model.sizeBytes, tier: model.tier },
+                        machine
+                      )
+                    : null;
+                const helper = local
+                  ? localHelper(local)
+                  : (() => {
+                      const text = helperText(model);
+                      return text ? { text, warn: false } : null;
+                    })();
                 return (
                   <button
                     key={model.id}
                     type="button"
                     onClick={() => pick(group, model.id)}
-                    className={rowClass}
+                    title={helper?.text}
+                    className={cn(rowClass, local?.fit === "poor" && "opacity-60")}
                   >
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate leading-tight">{model.label}</span>
-                      {helper && <span className={helperClass}>{helper}</span>}
+                      <span className="flex items-center gap-1.5">
+                        <span className="min-w-0 truncate leading-tight">{model.label}</span>
+                        {local && (
+                          <span className={tierClass}>{t(`models.local.tier.${local.tier}`)}</span>
+                        )}
+                      </span>
+                      {helper && (
+                        <span className={cn(helperClass, helper.warn && "text-warning")}>
+                          {helper.text}
+                        </span>
+                      )}
                     </span>
                     {current?.model === model.id && (
                       <Check

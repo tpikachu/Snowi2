@@ -2288,6 +2288,21 @@
   "models": {
     "learnMore": "瞭解更多",
     "noneAvailable": "沒有可用的模型",
+    "local": {
+      "note": "在本機執行。私密且免費；回答比雲端更慢、更短，且不支援網頁搜尋。",
+      "tier": {
+        "best": "本機最佳回答",
+        "fast": "快速",
+        "light": "簡單任務"
+      },
+      "memory": "約需 {{gb}} GB 記憶體",
+      "memoryTight": "約需 {{gb}} GB 記憶體 — 接近本機上限",
+      "memoryTooMuch": "約需 {{gb}} GB，超過本機記憶體",
+      "noWebSearch": "無網頁搜尋",
+      "noWebOrNotesSearch": "無網頁搜尋和筆記搜尋",
+      "showMore": "顯示另外 {{count}} 個模型",
+      "showLess": "收起更多模型"
+    },
     "descriptions": {
       "parakeet": {
         "parakeet_tdt_0_6b_v3": "快速多語言 ASR，自動語言偵測（25 種語言）",
@@ -3017,6 +3032,7 @@
         "enable": "搜尋網路 — 回答可以使用最新資訊",
         "disable": "本次會議已開啟網路搜尋 — 點擊關閉",
         "unavailable": "此 AI 服務商不支援網路搜尋",
+        "unavailableLocal": "網頁搜尋需透過雲端供應商 — 切換模型後即可使用",
         "sources": "來源"
       }
     },

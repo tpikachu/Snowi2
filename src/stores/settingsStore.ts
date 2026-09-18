@@ -1640,10 +1640,11 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   uploadCloudTranscriptionBaseUrl: readString("uploadCloudTranscriptionBaseUrl", ""),
   uploadCloudTranscriptionMode: readString("uploadCloudTranscriptionMode", ""),
 
+  // Cloud is the recommended path; local is a deliberate flip in Settings.
   actionsMode: (() => {
-    const v = readString("actionsMode", "local");
+    const v = readString("actionsMode", "providers");
     if (v === "providers" || v === "local" || v === "self-hosted" || v === "enterprise") return v;
-    return "local" as InferenceMode;
+    return "providers" as InferenceMode;
   })(),
   actionsProvider: readString("actionsProvider", ""),
   actionsModel: readString("actionsModel", ""),
@@ -1753,10 +1754,11 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   chatAgentProvider: readString("chatAgentProvider", "openai"),
   chatAgentKey: readString("chatAgentKey", ""),
   chatAgentCloudMode: readString("chatAgentCloudMode", "byok"),
+  // Cloud is the recommended path; local is a deliberate flip in Settings.
   chatAgentMode: (() => {
-    const v = readString("chatAgentMode", "local");
+    const v = readString("chatAgentMode", "providers");
     if (v === "providers" || v === "local" || v === "self-hosted" || v === "enterprise") return v;
-    return "local" as InferenceMode;
+    return "providers" as InferenceMode;
   })(),
   chatAgentRemoteUrl: readString("chatAgentRemoteUrl", ""),
   chatAgentCloudBaseUrl: readString("chatAgentCloudBaseUrl", ""),
@@ -2745,7 +2747,7 @@ export const selectResolvedLLMConfig = (
   if (managed.kind === "error") {
     return { ...localConfig, mode: "enterprise", provider: "", model: "" };
   }
-  if (managed.kind !== "managed") return retireLocalMode(state, localConfig);
+  if (managed.kind !== "managed") return normalizeLocalMode(state, localConfig);
   return {
     ...localConfig,
     mode: "enterprise",
@@ -2876,22 +2878,34 @@ function firstKeyedDefaultableProvider(state: SettingsState): string | null {
 }
 
 /**
- * With local language models hidden (LOCAL_LLM_ENABLED false — client
- * direction 2026-09-15, after a side-by-side where Qwen3.5 9B produced the
- * thin answer), a scope stored in local mode resolves as cloud on the READ
- * path. No migration marker: every window agrees from its first render, keys
- * that hydrate later are seen the moment they land, and the stored selection
- * survives for the day the flag flips back.
+ * What a scope stored in local mode means on the READ path. No migration
+ * marker: every window agrees from its first render, keys that hydrate later
+ * are seen the moment they land, and the stored selection is never rewritten.
  *
- * What it resolves to, in order: the stored cloud provider when its key is
- * present (the former fresh-install default kept a cloud id under local
- * mode); else the first keyed provider's scope defaults; else the stored
- * cloud provider unkeyed — so Settings can say "save a key to move chat
- * here" about it — or, for a local family id, nothing: "needs setup" until a
- * key arrives, when applyDefaultModelsForNewKey writes the real routing.
+ * With local models on offer (LOCAL_LLM_ENABLED), only one correction: a
+ * CLOUD provider id under local mode — what the fresh-install default wrote
+ * until 2026-09-18, and what `actions` borrows from the cleanup scope through
+ * its fallback chain between an engine flip to local and the pick of a local
+ * model — is a contradiction, and it means cloud; that scope resolves at the
+ * stored provider, keyed or not, so Settings can ask for its key. A local
+ * family id stays local.
+ *
+ * With local models hidden (the 2026-09-15 state, kept for the next flip),
+ * every local scope resolves as cloud, in order: the stored cloud provider
+ * when its key is present; else the first keyed provider's scope defaults;
+ * else the stored cloud provider unkeyed — so Settings can say "save a key
+ * to move chat here" about it — or, for a local family id, nothing: "needs
+ * setup" until a key arrives, when applyDefaultModelsForNewKey writes the
+ * real routing.
+ *
+ * `enabled` is a parameter so the hidden branch stays unit-tested while the
+ * flag is on.
  */
-function retireLocalMode(state: SettingsState, config: ResolvedLLMConfig): ResolvedLLMConfig {
-  if (LOCAL_LLM_ENABLED) return config;
+export function normalizeLocalMode(
+  state: SettingsState,
+  config: ResolvedLLMConfig,
+  enabled: boolean = LOCAL_LLM_ENABLED
+): ResolvedLLMConfig {
   if ((config.mode || "local") !== "local") return config;
   const cloud: ResolvedLLMConfig = {
     ...config,
@@ -2899,6 +2913,7 @@ function retireLocalMode(state: SettingsState, config: ResolvedLLMConfig): Resol
     cloudMode: config.cloudMode || "byok",
   };
   const storedIsCloud = providerValidForCoreMode(cloud.provider, "providers");
+  if (enabled) return storedIsCloud ? cloud : config;
   if (storedIsCloud && selectLLMConfigReady(state, cloud)) return cloud;
   const provider = firstKeyedDefaultableProvider(state);
   const scope = config.scope as DefaultableScope;

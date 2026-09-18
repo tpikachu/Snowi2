@@ -99,24 +99,21 @@ export const TEAM_SPACES_ENABLED = false;
  * Local language models — GGUF models served by the bundled llama-server for
  * chat, meeting answers and write-ups.
  *
- * Off on client direction (2026-09-15). The cue card's answer was put beside a
- * competitor's for the same meeting, and the thin one had come from Qwen3.5 9B
- * at 4-bit — the best a laptop realistically runs — while a cloud model on the
- * same prompt read the meeting and took a position in seconds. A meeting
- * copilot cannot offer the thin path as an equal choice. With this false:
- *   - Settings → Language Models is the provider grid over one key field; the
- *     Cloud | Local engine cards are gone,
- *   - the model chip lists no downloaded local models,
- *   - a scope stored in local mode resolves as cloud on the READ path
- *     (retireLocalMode in settingsStore): a cloud model id kept under local
- *     (the former fresh-install default) keeps its provider once that key is
- *     present, a local family id is replaced by the first keyed provider's
- *     scope defaults, and with no key at all the scope reads as "needs setup",
- *   - the GPU banner's intelligence half and main's llama pre-warm are off.
+ * Hidden 2026-09-15 and back on 2026-09-18 (client direction both times). The
+ * hide followed a side-by-side where the cue card's thin answer had come from
+ * Qwen3.5 9B at 4-bit with nothing on the row saying what it was good for;
+ * the return came with the condition that every local row carries labels —
+ * a tier (best local answers / fast / quick tasks), the memory it needs
+ * against this machine, and what it gives up (web search, notes search below
+ * 4B) — so a person chooses a model for their use case rather than by name
+ * (utils/localModelLabels.ts). Cloud stays the recommended path: a fresh
+ * install defaults to providers mode, and local is a deliberate flip on
+ * Settings → Language Models.
  *
- * Nothing is deleted: the catalog, the downloads, llama-server and the local
- * inference provider stay built and tested, and stored local selections are
- * left in place so flipping this back restores them. Local SPEECH models are
- * a different flag entirely and are unaffected.
+ * With this false, everything folds away again without deleting anything:
+ * the engine cards, the chip's local group and main's llama pre-warm go, and
+ * a scope stored in local mode resolves as cloud on the READ path
+ * (normalizeLocalMode in settingsStore) while the stored selection survives
+ * for the next flip. Local SPEECH models are a different flag entirely.
  */
-export const LOCAL_LLM_ENABLED = false;
+export const LOCAL_LLM_ENABLED = true;

@@ -13,6 +13,8 @@
  * unlock, but it never offers a model that would 401 on first use.
  */
 
+import type { LocalModelTier } from "./localModelLabels";
+
 export interface PickerModel {
   id: string;
   label: string;
@@ -20,6 +22,9 @@ export interface PickerModel {
   descriptionKey?: string;
   /** English fallback for the helper, straight from the registry. */
   description?: string;
+  /** Local rows only: what the labels are computed from (utils/localModelLabels.ts). */
+  sizeBytes?: number;
+  tier?: LocalModelTier;
 }
 
 export interface PickerCloudProviderInput {
@@ -38,6 +43,8 @@ export interface PickerLocalModelInput {
   providerId: string;
   descriptionKey?: string;
   description?: string;
+  sizeBytes?: number;
+  tier?: LocalModelTier;
 }
 
 export interface ModelPickerGroup {
@@ -84,12 +91,16 @@ export function buildModelPickerGroups(input: {
             providerName: input.localGroupName,
             hasKey: true,
             acceptsAnyModelId: false,
-            models: input.localModels.map(({ id, label, descriptionKey, description }) => ({
-              id,
-              label,
-              descriptionKey,
-              description,
-            })),
+            models: input.localModels.map(
+              ({ id, label, descriptionKey, description, sizeBytes, tier }) => ({
+                id,
+                label,
+                descriptionKey,
+                description,
+                sizeBytes,
+                tier,
+              })
+            ),
           },
         ]
       : [];

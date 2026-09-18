@@ -15,6 +15,7 @@ import {
   type NoteAnchor,
 } from "../../services/chatContext";
 import { createToolRegistry } from "../../services/tools";
+import { localModelCanUseTools } from "../../utils/localModelLabels";
 import type { ToolRegistry } from "../../services/tools/ToolRegistry";
 import type { Message, AgentState, ToolCallInfo } from "./types";
 import type { ContainerScope } from "../../types/chat";
@@ -39,13 +40,6 @@ const RAG_NOTE_LIMIT = 8;
 // Only used for notes indexed before passage search existed, or when a hit
 // came from keyword search and carries no passage of its own.
 const RAG_NOTE_SNIPPET_LENGTH = 1200;
-
-const LOCAL_TOOL_MIN_PARAMS_B = 4;
-
-function estimateModelSizeB(modelId: string): number {
-  const match = modelId.match(/-([\d.]+)[bB]/);
-  return match ? parseFloat(match[1]) : 0;
-}
 
 /**
  * Retrieval for one turn, already filtered — not yet merged with earlier turns.
@@ -264,8 +258,9 @@ export function useChatStreaming({
           "openrouter",
           "corti",
         ].includes(chatConfig.provider);
-      const localModelCanUseTool =
-        isLocalProvider && estimateModelSizeB(chatConfig.model) >= LOCAL_TOOL_MIN_PARAMS_B;
+      // A small local model gets no tools; the picker's row says so
+      // ("No web or notes search") from the same predicate.
+      const localModelCanUseTool = isLocalProvider && localModelCanUseTools(chatConfig.model);
       const supportsTools = !isLocalProvider || localModelCanUseTool;
 
       const scope = searchScopeRef.current;

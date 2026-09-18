@@ -16,6 +16,13 @@ export interface ModelDefinition {
   hfRepo: string;
   recommended?: boolean;
   supportsThinking?: boolean;
+  /**
+   * Curated use-case tier shown on the model's row (utils/localModelLabels.ts
+   * derives one from the parameter count when this is absent).
+   */
+  tier?: "best" | "fast" | "light";
+  /** Listed by default in Settings; the rest sit under "more models". */
+  featured?: boolean;
   // Optional MTP speculative-decoding drafter downloaded alongside the main GGUF.
   draftHfRepo?: string;
   draftFileName?: string;

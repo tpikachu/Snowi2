@@ -42,7 +42,7 @@ import {
 import { formatNoteClaims, formatOpenCommitments } from "../utils/memoryPrompt";
 import { resolveFastLaneLLMConfig } from "../utils/assistFastLane";
 import { collectAnswerStream } from "../utils/assistAnswerStream";
-import { webSearchAvailable } from "../utils/webSearchSupport";
+import { webSearchAvailable, webSearchUnavailableReason } from "../utils/webSearchSupport";
 import { filterGrounding } from "../utils/chatRetrieval";
 import type { AssistLastTime, AssistMode, AssistNoteRef } from "../utils/meetingAssistState";
 import type { ScreenContextImage } from "../types/electron";
@@ -774,7 +774,7 @@ export function useMeetingAssist(): MeetingAssist {
       setAssistConfigured(selectLLMConfigReady(settings, chat));
       // Whether the route can search the web, for the card's toggle — a
       // provider switch from Settings mid-meeting changes the answer.
-      setAssistWebSearchAvailable(webSearchAvailable(chat));
+      setAssistWebSearchAvailable(webSearchAvailable(chat), webSearchUnavailableReason(chat));
 
       const now = Date.now();
       const state = useMeetingRecordingStore.getState();

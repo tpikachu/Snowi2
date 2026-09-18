@@ -55,8 +55,8 @@ test("the capabilities card deep-links into Settings, where upload stays retired
   await skipOnboarding(page);
 
   // "Set up" on the missing AI-model capability opens Settings on Language
-  // Models — one page: the provider grid over one key field (local language
-  // models are hidden behind LOCAL_LLM_ENABLED).
+  // Models — one page, and a fresh install sits on the Cloud engine: the
+  // provider grid over one key field.
   await page.getByRole("button", { name: "Set up" }).first().click();
   await expect(page.getByText("Language Models").first()).toBeVisible({ timeout: 15_000 });
   await expect(page.getByRole("radiogroup", { name: "Provider" })).toBeVisible();
@@ -83,9 +83,8 @@ test("once a key is in, the capabilities card leaves Home", async () => {
   // defaults, so both rows turn ready at once — and a card with nothing left
   // to set up has no reason to stay (client direction, 2026-09-11).
   await page.getByRole("button", { name: "Set up" }).first().click();
-  // Language Models is the provider grid over one key field (local language
-  // models are hidden), and the first provider card (OpenAI) is the selected
-  // one.
+  // A fresh install opens Language Models on the Cloud engine — the provider
+  // grid over one key field — with the first provider card (OpenAI) selected.
   await expect(page.getByRole("radiogroup", { name: "Provider" })).toBeVisible({
     timeout: 15_000,
   });

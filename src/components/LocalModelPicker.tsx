@@ -8,6 +8,12 @@ import { useDialogs } from "../hooks/useDialogs";
 import { useModelDownload, type ModelType } from "../hooks/useModelDownload";
 import { MODEL_PICKER_COLORS, type ColorScheme } from "../utils/modelPickerStyles";
 import { getProviderIcon, isMonochromeProvider } from "../utils/providerIcons";
+import {
+  describeLocalModel,
+  splitFeaturedModels,
+  type LocalModelTier,
+  type MachineMemory,
+} from "../utils/localModelLabels";
 
 export interface LocalModel {
   id: string;
@@ -20,6 +26,10 @@ export interface LocalModel {
   isDownloaded?: boolean;
   downloaded?: boolean;
   recommended?: boolean;
+  /** Language models only (localModelLabels.ts): the row's use-case tier … */
+  tier?: LocalModelTier;
+  /** … and whether it is listed by default or under "more models". */
+  featured?: boolean;
 }
 
 export interface LocalProvider {
@@ -54,6 +64,27 @@ export default function LocalModelPicker({
   const { t } = useTranslation();
   const [downloadedModels, setDownloadedModels] = useState<Set<string>>(new Set());
   const loadDownloadedModelsRequestRef = useRef(0);
+  // Language models carry labels a speech model does not: a use-case tier,
+  // the memory they need against this machine, what they give up. The
+  // machine comes from the cached hardware probe; without it the rows still
+  // say how much memory, just not whether it fits.
+  const isLanguageModel = modelType === "llm";
+  const [machine, setMachine] = useState<MachineMemory | null>(null);
+  const [showMore, setShowMore] = useState(false);
+  useEffect(() => {
+    if (!isLanguageModel) return;
+    let cancelled = false;
+    window.electronAPI
+      ?.getCapabilitySnapshot?.()
+      .then((capability) => {
+        if (cancelled || !capability) return;
+        setMachine({ totalMemGb: capability.totalMemGb, vramGb: capability.gpu?.vramGb ?? null });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isLanguageModel]);
 
   const { confirmDialog, showConfirmDialog, hideConfirmDialog } = useDialogs();
   const styles = useMemo(() => MODEL_PICKER_COLORS[colorScheme], [colorScheme]);
@@ -154,6 +185,42 @@ export default function LocalModelPicker({
   const currentProvider = providers.find((p) => p.id === selectedProvider);
   const models = useMemo(() => currentProvider?.models || [], [currentProvider?.models]);
 
+  // The current generation leads; older generations and alternate builds sit
+  // under one "more" row — twelve Qwen variants in a column read as noise,
+  // not choice. A model on disk or in use is always listed.
+  const split = useMemo(() => {
+    if (!isLanguageModel || !models.some((m) => m.featured)) return null;
+    const keep = new Set<string>(downloadedModels);
+    if (selectedModel) keep.add(selectedModel);
+    return splitFeaturedModels(models, keep);
+  }, [isLanguageModel, models, downloadedModels, selectedModel]);
+  const listedModels = split
+    ? showMore
+      ? [...split.featured, ...split.more]
+      : split.featured
+    : models;
+
+  const labelsFor = (model: LocalModel) => {
+    if (!isLanguageModel || model.sizeBytes === undefined) return {};
+    const labels = describeLocalModel(
+      { id: model.id, sizeBytes: model.sizeBytes, tier: model.tier },
+      machine
+    );
+    const gb = labels.memoryGb;
+    const memory =
+      labels.fit === "poor"
+        ? t("models.local.memoryTooMuch", { gb })
+        : labels.fit === "tight"
+          ? t("models.local.memoryTight", { gb })
+          : t("models.local.memory", { gb });
+    const off = t(labels.toolsOff ? "models.local.noWebOrNotesSearch" : "models.local.noWebSearch");
+    return {
+      badge: t(`models.local.tier.${labels.tier}`),
+      note: `${memory} · ${off}`,
+      noteTone: labels.fit === "poor" ? ("warn" as const) : ("muted" as const),
+    };
+  };
+
   const progressDisplay = useMemo(() => {
     if (!downloadingModel) return null;
 
@@ -184,7 +251,7 @@ export default function LocalModelPicker({
         <h5 className={`${styles.header} mb-2`}>{t("common.availableModels")}</h5>
 
         <ModelCardList
-          models={models.map((model): ModelCardOption => ({
+          models={listedModels.map((model): ModelCardOption => ({
             value: model.id,
             label: model.name,
             description: model.size,
@@ -194,6 +261,7 @@ export default function LocalModelPicker({
             recommended: model.recommended,
             isDownloaded: downloadedModels.has(model.id) || model.isDownloaded || model.downloaded,
             isDownloading: isDownloadingModel(model.id),
+            ...labelsFor(model),
           }))}
           selectedModel={selectedModel}
           onModelSelect={onModelSelect}
@@ -204,6 +272,17 @@ export default function LocalModelPicker({
           isInstalling={isInstalling}
           colorScheme={colorScheme}
         />
+        {split && split.more.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setShowMore((v) => !v)}
+            className="mt-1.5 text-[12px] text-primary transition-colors hover:text-primary-hover"
+          >
+            {showMore
+              ? t("models.local.showLess")
+              : t("models.local.showMore", { count: split.more.length })}
+          </button>
+        )}
       </div>
 
       <ConfirmDialog

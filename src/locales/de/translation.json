@@ -2376,6 +2376,21 @@
   "models": {
     "learnMore": "Mehr erfahren",
     "noneAvailable": "Keine Modelle verfügbar",
+    "local": {
+      "note": "Läuft auf diesem Computer. Privat und kostenlos; Antworten sind langsamer und kürzer als in der Cloud, und die Websuche ist aus.",
+      "tier": {
+        "best": "Beste lokale Antworten",
+        "fast": "Schnell",
+        "light": "Kleine Aufgaben"
+      },
+      "memory": "Etwa {{gb}} GB Arbeitsspeicher",
+      "memoryTight": "Etwa {{gb}} GB Arbeitsspeicher — nahe an der Grenze dieses Computers",
+      "memoryTooMuch": "Braucht etwa {{gb}} GB, mehr als dieser Computer hat",
+      "noWebSearch": "Keine Websuche",
+      "noWebOrNotesSearch": "Keine Web- oder Notizsuche",
+      "showMore": "{{count}} weitere Modelle anzeigen",
+      "showLess": "Weniger Modelle anzeigen"
+    },
     "descriptions": {
       "parakeet": {
         "parakeet_tdt_0_6b_v3": "Schnelle mehrsprachige ASR mit automatischer Spracherkennung (25 Sprachen)",
@@ -3224,6 +3239,7 @@
         "enable": "Im Web suchen — Antworten können aktuelle Fakten nutzen",
         "disable": "Websuche ist für dieses Meeting an — zum Ausschalten klicken",
         "unavailable": "Websuche ist mit diesem KI-Anbieter nicht verfügbar",
+        "unavailableLocal": "Die Websuche läuft über einen Cloud-Anbieter — wechseln Sie das Modell, um sie zu nutzen",
         "sources": "Quellen"
       }
     },

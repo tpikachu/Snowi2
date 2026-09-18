@@ -424,6 +424,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Which transcription models this machine should run, measured rather than guessed.
   getTranscriptionRecommendation: (options) =>
     ipcRenderer.invoke("get-transcription-recommendation", options),
+  // The cached hardware snapshot alone, for the local model rows' memory fit.
+  getCapabilitySnapshot: () => ipcRenderer.invoke("get-capability-snapshot"),
 
   // Parakeet server functions (faster repeated transcriptions)
   parakeetServerStart: (modelName) => ipcRenderer.invoke("parakeet-server-start", modelName),

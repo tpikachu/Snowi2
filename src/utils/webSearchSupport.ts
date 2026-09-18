@@ -29,6 +29,22 @@ export function webSearchAvailable(route: WebSearchRoute): boolean {
 }
 
 /** OpenRouter grounds any model when its id carries the web option. */
+export type WebSearchUnavailableReason = "local" | "provider";
+
+/**
+ * Why the toggle is disabled, for its tooltip: a model running on this
+ * computer (or a LAN server) has no search behind it — the fix is to switch
+ * the model — while a cloud provider without a search tool is a fact about
+ * that provider.
+ */
+export function webSearchUnavailableReason(
+  route: WebSearchRoute
+): WebSearchUnavailableReason | null {
+  if (webSearchAvailable(route)) return null;
+  const mode = route.mode || "";
+  return mode === "local" || mode === "self-hosted" || mode === "" ? "local" : "provider";
+}
+
 export function openrouterOnlineModel(model: string): string {
   return model.endsWith(":online") ? model : `${model}:online`;
 }

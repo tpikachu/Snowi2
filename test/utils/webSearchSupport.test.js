@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 
 const {
   webSearchAvailable,
+  webSearchUnavailableReason,
   openrouterOnlineModel,
   WEB_SEARCH_PROVIDERS,
 } = require("../../src/utils/webSearchSupport.ts");
@@ -34,6 +35,14 @@ test("only a cloud route counts: local, LAN and enterprise modes cannot search",
   assert.equal(webSearchAvailable({ mode: "enterprise", provider: "bedrock" }), false);
   assert.equal(webSearchAvailable({ mode: "", provider: "openai" }), false);
   assert.equal(webSearchAvailable({ provider: "openai" }), false);
+});
+
+test("why it cannot: a model on this computer or a LAN server says switch the model; a cloud route blames the provider", () => {
+  assert.equal(webSearchUnavailableReason({ mode: "providers", provider: "openai" }), null);
+  assert.equal(webSearchUnavailableReason({ mode: "local", provider: "qwen" }), "local");
+  assert.equal(webSearchUnavailableReason({ mode: "self-hosted", provider: "openai" }), "local");
+  assert.equal(webSearchUnavailableReason({ mode: "providers", provider: "groq" }), "provider");
+  assert.equal(webSearchUnavailableReason({ mode: "enterprise", provider: "bedrock" }), "provider");
 });
 
 test("OpenRouter's web option rides the model id, once", () => {

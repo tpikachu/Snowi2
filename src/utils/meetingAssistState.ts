@@ -1,3 +1,5 @@
+import type { WebSearchUnavailableReason } from "./webSearchSupport";
+
 /**
  * What the meeting assistant has to say, as it crosses into the panel's window.
  *
@@ -128,6 +130,12 @@ export interface MeetingAssistState {
    * Off, the card shows the toggle disabled with the reason.
    */
   webSearchAvailable: boolean;
+  /**
+   * Why it cannot, when it cannot: "local" for a model on this computer or a
+   * LAN server (switch the model), "provider" for a cloud provider without a
+   * search tool. The card picks the tooltip from it.
+   */
+  webSearchUnavailableReason: WebSearchUnavailableReason | null;
 }
 
 export const IDLE_ASSIST: MeetingAssistState = {
@@ -139,6 +147,7 @@ export const IDLE_ASSIST: MeetingAssistState = {
   answerHistory: [],
   webSearch: false,
   webSearchAvailable: false,
+  webSearchUnavailableReason: null,
 };
 
 const noteRefsEqual = (a: readonly AssistNoteRef[], b: readonly AssistNoteRef[]): boolean =>
@@ -175,6 +184,7 @@ export function assistStatesEqual(
   if (a.suggestionPending !== b.suggestionPending) return false;
   if (a.webSearch !== b.webSearch) return false;
   if (a.webSearchAvailable !== b.webSearchAvailable) return false;
+  if (a.webSearchUnavailableReason !== b.webSearchUnavailableReason) return false;
 
   if (!!a.lastTime !== !!b.lastTime) return false;
   if (a.lastTime && b.lastTime) {
