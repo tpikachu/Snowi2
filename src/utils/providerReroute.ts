@@ -1,52 +1,41 @@
-import { type DefaultableScope, defaultModelForScope } from "./scopeModelDefaults";
+import { defaultModelForProvider } from "./scopeModelDefaults";
 
 /**
- * What happens to the features a provider was serving when its key goes.
+ * What happens to the AI model when the key of the provider it runs on goes.
  *
- * Several providers can hold keys at once and every feature routes on its
- * own (chat on one, meeting write-ups on another), so removing a key must
- * only touch the scopes that pointed at that provider. Each of those moves
- * to the next provider that still has a key, on that provider's defaults —
- * the same defaults a first key applies — and when no keyed provider is
- * left the scope is cleared to "needs a model", which Home and the dot's
- * badge already know how to show. Before this a removed key left the route
- * in place, and every request after it failed with "<provider> API key not
- * configured" until someone worked out why (client, 2026-09-22).
+ * It moves to the next provider that still has a key, on that provider's
+ * default — the same default a first key applies — and when no keyed
+ * provider is left it is cleared to "needs a model", which Home's card, the
+ * dot's badge and the write-up's error already know how to show. Never to a
+ * local model: a removed key stops at "needs a model" (client decision,
+ * 2026-09-22). Before this a removed key left the route in place, and every
+ * request after it failed with "<provider> API key not configured" until
+ * someone worked out why (client, 2026-09-22).
  *
- * Pure: the store hands in what each scope resolves to and which keyed
- * provider comes next, and applies the moves it gets back.
+ * Pure: the store hands in what the model resolves to and which keyed
+ * provider comes next, and applies the move it gets back.
  */
 
-export interface ScopeRoute {
-  scope: DefaultableScope;
+export interface ModelRoute {
   /** The resolved mode: "providers", "local", "self-hosted", "enterprise"… */
   mode: string;
   provider: string;
 }
 
 export interface RerouteMove {
-  scope: DefaultableScope;
   from: string;
-  /** The provider the scope moves to, or null when none has a key. */
+  /** The provider the model moves to, or null when none has a key. */
   to: string | null;
   model: string | null;
 }
 
+/** The move to make, or null when the model did not run on that provider. */
 export function planRerouteOffProvider(
-  routes: readonly ScopeRoute[],
+  route: ModelRoute,
   removedProvider: string,
   nextProvider: string | null
-): RerouteMove[] {
-  const moves: RerouteMove[] = [];
-  for (const route of routes) {
-    if (route.mode !== "providers" || route.provider !== removedProvider) continue;
-    const model = nextProvider ? defaultModelForScope(nextProvider, route.scope) : null;
-    moves.push({
-      scope: route.scope,
-      from: removedProvider,
-      to: model ? nextProvider : null,
-      model,
-    });
-  }
-  return moves;
+): RerouteMove | null {
+  if (route.mode !== "providers" || route.provider !== removedProvider) return null;
+  const model = nextProvider ? defaultModelForProvider(nextProvider) : null;
+  return { from: removedProvider, to: model ? nextProvider : null, model };
 }

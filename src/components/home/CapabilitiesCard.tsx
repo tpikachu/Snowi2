@@ -14,7 +14,6 @@ import {
   selectMeetingSpeechReadiness,
   selectResolvedLLMConfig,
   selectResolvedMeetingTranscription,
-  selectResolvedActions,
   useSettingsStore,
 } from "../../stores/settingsStore";
 
@@ -97,18 +96,13 @@ export default function CapabilitiesCard() {
   // call, and Zustand compares by identity — without it this re-renders forever.
   const resolved = useSettingsStore(
     useShallow((state) => {
-      const actions = selectResolvedActions(state);
       const chat = selectResolvedLLMConfig(state, "chatIntelligence");
       const transcription = selectResolvedMeetingTranscription(state);
       return {
-        actionsModel: actions.model,
-        actionsProvider: actions.provider,
-        actionsMode: actions.mode,
         // Judged the way the request path will — per mode, credentials
         // included. A defaulted cloud model with no key, or a local-mode
         // scope holding a fallback cloud id, must read as "needs setup",
         // not as running on a model it cannot call.
-        actionsReady: selectLLMConfigReady(state, actions),
         chatModel: chat.model,
         chatProvider: chat.provider,
         chatMode: chat.mode,
@@ -163,11 +157,9 @@ export default function CapabilitiesCard() {
 
     const byId: Record<CapabilityId, Pick<CapabilityRow, "ready" | "model" | "where">> = {
       transcription,
-      // One shared LLM. Ready means BOTH consumers could serve (a per-action
-      // override on a dead key would otherwise hide behind a working chat),
-      // and the named model is the chat scope's — the canonical copy.
+      // One model for chat, the cue card and the write-up.
       intelligence: describe(
-        resolved.actionsReady && resolved.chatReady,
+        resolved.chatReady,
         resolved.chatModel,
         resolved.chatProvider,
         resolved.chatMode

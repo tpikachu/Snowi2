@@ -45,30 +45,15 @@ import logger from "../utils/logger";
  * that deep-link to Settings — never a model that would 401.
  */
 
-export interface ModelSelection {
+interface ModelSelection {
   mode: "providers" | "local";
   provider: string;
   model: string;
 }
 
 interface ModelPickerChipProps {
-  /** Reads and writes this scope's config. Ignored when `value` is given. */
+  /** Reads and writes this scope's config. */
   scope?: InferenceScope;
-  /** Controlled mode (the action editor's per-action override). */
-  value?: { provider: string; model: string } | null;
-  onSelect?: (selection: ModelSelection | null) => void;
-  /**
-   * Renders a leading "use the default" row (overrides only). Its label is
-   * also what the chip shows while no override is set; choosing it calls
-   * onSelect(null).
-   */
-  defaultLabel?: string;
-  /**
-   * The scope the default resolves from. When given, the default row and the
-   * unset chip name the model it currently means — "App default (GPT-5 Nano)"
-   * — because a default nobody can see is a mystery, not a default.
-   */
-  defaultScope?: InferenceScope;
   /** "hud" renders on the always-dark cue card; "app" follows the theme. */
   variant?: "app" | "hud";
   className?: string;
@@ -110,10 +95,6 @@ const shortModelLabel = (modelId: string): string => {
 
 export default function ModelPickerChip({
   scope = "chatIntelligence",
-  value,
-  onSelect,
-  defaultLabel,
-  defaultScope,
   variant = "app",
   className,
 }: ModelPickerChipProps) {
@@ -139,8 +120,8 @@ export default function ModelPickerChip({
     })
   );
 
-  const current = value === undefined ? resolved : value;
-  const isManaged = value === undefined && resolved.mode === "enterprise";
+  const current = resolved;
+  const isManaged = resolved.mode === "enterprise";
 
   // Downloaded local models, fetched when the popover first opens: the main
   // process owns the on-disk truth, and a closed chip should cost nothing.
@@ -215,10 +196,6 @@ export default function ModelPickerChip({
           : { mode: "providers", provider: group.providerId, model: modelId };
       setOpen(false);
       setCustomDraft(null);
-      if (onSelect) {
-        onSelect(selection);
-        return;
-      }
       const previousMode = selectResolvedLLMConfig(getSettings(), scope).mode || "local";
       setResolvedLLMConfig(scope, selection);
       // Leaving local frees the llama server's RAM; arriving starts on demand.
@@ -226,7 +203,7 @@ export default function ModelPickerChip({
         void window.electronAPI?.llamaServerStop?.();
       }
     },
-    [onSelect, scope, localProviderById]
+    [scope, localProviderById]
   );
 
   const openProviderKeys = useCallback(() => {
@@ -236,20 +213,9 @@ export default function ModelPickerChip({
     });
   }, []);
 
-  const defaultScopeModel = useSettingsStore((s) =>
-    defaultScope ? selectResolvedLLMConfig(s, defaultScope).model : ""
-  );
-  const resolvedDefaultLabel =
-    defaultLabel && defaultScopeModel
-      ? t("agentMode.modelPicker.defaultWithModel", {
-          label: defaultLabel,
-          model: shortModelLabel(defaultScopeModel),
-        })
-      : defaultLabel;
-
-  const chipLabel = current?.model
+  const chipLabel = current.model
     ? shortModelLabel(current.model)
-    : (resolvedDefaultLabel ?? t("agentMode.modelPicker.choose"));
+    : t("agentMode.modelPicker.choose");
 
   const rowClass = cn(
     "flex min-h-8 w-full items-center gap-2 rounded-lg px-2 py-1 text-left text-[12px] transition-colors duration-100",
@@ -333,24 +299,6 @@ export default function ModelPickerChip({
             "border-white/10 bg-[oklch(0.21_0.008_230)] text-hud-foreground shadow-[0_8px_24px_-8px_rgb(0_0_0/0.7)]"
         )}
       >
-        {defaultLabel && (
-          <button
-            type="button"
-            onClick={() => {
-              setOpen(false);
-              onSelect?.(null);
-            }}
-            className={rowClass}
-          >
-            <span className="min-w-0 flex-1 truncate">{resolvedDefaultLabel}</span>
-            {!current?.model && (
-              <Check
-                size={12}
-                className={cn("shrink-0", hud ? "text-hud-accent" : "text-primary")}
-              />
-            )}
-          </button>
-        )}
         {groups.map((group) =>
           group.hasKey ? (
             <div key={group.providerId}>

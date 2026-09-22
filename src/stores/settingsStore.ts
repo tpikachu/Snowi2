@@ -19,11 +19,7 @@ import type {
 import type { CalendarAccount } from "../types/calendar";
 import { PROMPT_KIND_LIST, type PromptKind } from "../config/prompts/registry";
 import { sweepRetiredPromptOverrides } from "../config/retiredPrompts";
-import {
-  deriveReasoningMode,
-  buildReasoningScopePatches,
-  inheritsFallbackEndpoint,
-} from "../helpers/reasoningRouting";
+import { deriveReasoningMode, buildReasoningScopePatches } from "../helpers/reasoningRouting";
 import { findStaleLocalModelKeys } from "../helpers/localModelSelections";
 import {
   INFERENCE_SCOPES,
@@ -33,11 +29,7 @@ import {
 } from "../config/inferenceScopes";
 import { normalizeChineseScriptPreference } from "../utils/chineseScript";
 import { adjustBedrockModelForRegion } from "../utils/bedrockRegions";
-import {
-  DEFAULTABLE_SCOPES,
-  defaultModelForScope,
-  type DefaultableScope,
-} from "../utils/scopeModelDefaults";
+import { defaultModelForProvider } from "../utils/scopeModelDefaults";
 import modelRegistryData from "../models/modelRegistryData.json";
 import type {
   TranscriptionSettings,
@@ -856,9 +848,6 @@ export interface SettingsState
 
   /** Follow-up email's model override; all three empty = the actions model.
    *  Picked in the follow-up dialog itself, like a per-action override. */
-  followUpModelMode: string;
-  followUpModelProvider: string;
-  followUpModelId: string;
 
   customPrompts: Record<PromptKind, string>;
   setCustomPrompt: (kind: PromptKind, value: string) => void;
@@ -979,9 +968,6 @@ export interface SettingsState
   applySnippetsFromExternal: (snippets: Snippet[]) => void;
   setAssemblyAiStreaming: (value: boolean) => void;
   setAutoGenerateNoteTitle: (value: boolean) => void;
-  setFollowUpModelOverride: (
-    override: { mode: string; provider: string; model: string } | null
-  ) => void;
   setUseCleanupModel: (value: boolean) => void;
   setUseDictationAgent: (value: boolean) => void;
   setCleanupModel: (value: string) => void;
@@ -1352,16 +1338,13 @@ function createSecretSetter(
  */
 export function applyDefaultModelsForNewKey(providerId: string): void {
   const state = useSettingsStore.getState();
-  for (const scope of DEFAULTABLE_SCOPES) {
-    const model = defaultModelForScope(providerId, scope);
-    if (!model) continue;
-    const resolved = selectResolvedLLMConfig(state, scope);
-    if ((resolved.mode || "") === "enterprise") continue;
-    if (selectLLMConfigReady(state, resolved)) continue;
-    setResolvedLLMConfig(scope, { mode: "providers", provider: providerId, model });
-  }
+  const model = defaultModelForProvider(providerId);
+  if (!model) return;
+  const resolved = selectResolvedLLMConfig(state, "chatIntelligence");
+  if ((resolved.mode || "") === "enterprise") return;
+  if (selectLLMConfigReady(state, resolved)) return;
+  setResolvedLLMConfig("chatIntelligence", { mode: "providers", provider: providerId, model });
 }
-
 /** A BYOK provider key setter that also applies the scope defaults above on
  *  the empty→set transition — the state write in createSecretSetter is
  *  synchronous, so the readiness check runs against the new key. */
@@ -1438,9 +1421,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   assemblyAiStreaming: readBoolean("assemblyAiStreaming", true),
 
   autoGenerateNoteTitle: readBoolean("autoGenerateNoteTitle", true),
-  followUpModelMode: readString("followUpModelMode", ""),
-  followUpModelProvider: readString("followUpModelProvider", ""),
-  followUpModelId: readString("followUpModelId", ""),
   useCleanupModel: readBoolean("useCleanupModel", true),
   useDictationAgent: readBoolean("useDictationAgent", true),
   cleanupModel: readString("cleanupModel", ""),
@@ -1959,19 +1939,6 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setCleanupCloudBaseUrl: createStringSetter("cleanupCloudBaseUrl"),
   setAssemblyAiStreaming: createBooleanSetter("assemblyAiStreaming"),
   setAutoGenerateNoteTitle: createBooleanSetter("autoGenerateNoteTitle"),
-  // Written as a unit so a half-cleared override can never survive a crash
-  // between three separate setter calls.
-  setFollowUpModelOverride: (override) => {
-    const values = {
-      followUpModelMode: override?.mode ?? "",
-      followUpModelProvider: override?.provider ?? "",
-      followUpModelId: override?.model ?? "",
-    };
-    if (isBrowser) {
-      for (const [key, value] of Object.entries(values)) localStorage.setItem(key, value);
-    }
-    set(values);
-  },
   setUseCleanupModel: createBooleanSetter("useCleanupModel"),
   setUseDictationAgent: createBooleanSetter("useDictationAgent"),
   setCleanupProvider: createStringSetter("cleanupProvider"),
@@ -2712,19 +2679,9 @@ export interface ResolvedActions {
   customApiKey: string;
 }
 
+/** The write-up's request shape: the one model, endpoint fields included. */
 export const selectResolvedActions = (state: SettingsState): ResolvedActions => {
   const cfg = selectResolvedLLMConfig(state, "actions");
-  const cleanup = selectResolvedLLMConfig(state, "dictationCleanup");
-  // The endpoint falls back to dictation cleanup, so the key that opens it must too,
-  // or an inherited endpoint gets called with no credential.
-  const borrowsEndpoint = inheritsFallbackEndpoint(
-    {
-      mode: cfg.mode,
-      cloudBaseUrl: state.actionsCloudBaseUrl,
-      remoteUrl: state.actionsRemoteUrl,
-    },
-    cleanup.mode
-  );
   return {
     provider: cfg.provider,
     model: cfg.model,
@@ -2732,7 +2689,7 @@ export const selectResolvedActions = (state: SettingsState): ResolvedActions => 
     cloudMode: cfg.cloudMode || "",
     cloudBaseUrl: cfg.cloudBaseUrl || "",
     remoteUrl: cfg.remoteUrl || "",
-    customApiKey: cfg.customApiKey || (borrowsEndpoint ? cleanup.customApiKey || "" : ""),
+    customApiKey: cfg.customApiKey || "",
   };
 };
 
@@ -2752,6 +2709,12 @@ export const selectResolvedLLMConfig = (
   state: SettingsState,
   scope: InferenceScope
 ): ResolvedLLMConfig => {
+  // One model (client, 2026-09-22): the meeting write-up, the note title,
+  // memory extraction and the follow-up email run on the chat pick. The
+  // actions columns stay in the store, unread, so nothing migrates.
+  if (scope === "actions") {
+    return { ...selectResolvedLLMConfig(state, "chatIntelligence"), scope };
+  }
   const def: InferenceScopeDefinition = INFERENCE_SCOPES[scope];
   const fallback = def.fallbackScope
     ? selectResolvedLLMConfig(state, def.fallbackScope as InferenceScope)
@@ -2908,7 +2871,7 @@ function providerValidForCoreMode(provider: string, mode: InferenceMode): boolea
 function firstKeyedDefaultableProvider(state: SettingsState): string | null {
   for (const [id, field] of Object.entries(BYOK_PROVIDER_KEY_FIELDS)) {
     if (!field) continue;
-    if (!defaultModelForScope(id, "chatIntelligence")) continue;
+    if (!defaultModelForProvider(id)) continue;
     if ((state[field] as string | undefined)?.trim()) return id;
   }
   return null;
@@ -2953,9 +2916,8 @@ export function normalizeLocalMode(
   if (enabled) return storedIsCloud ? cloud : config;
   if (storedIsCloud && selectLLMConfigReady(state, cloud)) return cloud;
   const provider = firstKeyedDefaultableProvider(state);
-  const scope = config.scope as DefaultableScope;
   const model =
-    provider && DEFAULTABLE_SCOPES.includes(scope) ? defaultModelForScope(provider, scope) : null;
+    provider && config.scope === "chatIntelligence" ? defaultModelForProvider(provider) : null;
   if (provider && model) return { ...cloud, provider, model };
   return storedIsCloud ? cloud : { ...cloud, provider: "", model: "" };
 }
@@ -2974,30 +2936,27 @@ export function setCoreLlmEngine(engine: "cloud" | "local"): void {
   // Local is not on offer while the flag is off; nothing routes there.
   if (engine === "local" && !LOCAL_LLM_ENABLED) return;
   const mode: InferenceMode = engine === "local" ? "local" : "providers";
-  for (const scope of DEFAULTABLE_SCOPES) {
-    const state = useSettingsStore.getState();
-    const resolved = selectResolvedLLMConfig(state, scope);
-    if ((resolved.mode || "") === "enterprise") continue;
-    const patch: Partial<Omit<ResolvedLLMConfig, "scope">> = { mode };
-    if (mode === "providers") patch.cloudMode = "byok";
-    if (!providerValidForCoreMode(resolved.provider, mode)) {
-      patch.provider = "";
-      patch.model = "";
-    }
-    setResolvedLLMConfig(scope, patch);
-    if (mode === "providers") {
-      const next = useSettingsStore.getState();
-      if (!selectLLMConfigReady(next, selectResolvedLLMConfig(next, scope))) {
-        const provider = firstKeyedDefaultableProvider(next);
-        const model = provider ? defaultModelForScope(provider, scope) : null;
-        if (provider && model) setResolvedLLMConfig(scope, { provider, model });
-      }
+  const state = useSettingsStore.getState();
+  const resolved = selectResolvedLLMConfig(state, "chatIntelligence");
+  if ((resolved.mode || "") === "enterprise") return;
+  const patch: Partial<Omit<ResolvedLLMConfig, "scope">> = { mode };
+  if (mode === "providers") patch.cloudMode = "byok";
+  if (!providerValidForCoreMode(resolved.provider, mode)) {
+    patch.provider = "";
+    patch.model = "";
+  }
+  setResolvedLLMConfig("chatIntelligence", patch);
+  if (mode === "providers") {
+    const next = useSettingsStore.getState();
+    if (!selectLLMConfigReady(next, selectResolvedLLMConfig(next, "chatIntelligence"))) {
+      const provider = firstKeyedDefaultableProvider(next);
+      const model = provider ? defaultModelForProvider(provider) : null;
+      if (provider && model) setResolvedLLMConfig("chatIntelligence", { provider, model });
     }
   }
   // Leaving local frees the llama server's RAM; arriving starts on demand.
   if (mode !== "local") void window.electronAPI?.llamaServerStop?.();
 }
-
 /**
  * The Language Models page's provider choice: the highlighted card is the
  * provider chat and meeting write-ups run on. Routes both scopes at it —
@@ -3016,48 +2975,42 @@ export function setCoreLlmEngine(engine: "cloud" | "local"): void {
  */
 function rerouteScopesOffProvider(providerId: string): void {
   const state = useSettingsStore.getState();
-  const routes = DEFAULTABLE_SCOPES.map((scope) => {
-    const resolved = selectResolvedLLMConfig(state, scope);
-    return { scope, mode: resolved.mode || "", provider: resolved.provider };
-  });
-  const moves = planRerouteOffProvider(routes, providerId, firstKeyedDefaultableProvider(state));
-  for (const move of moves) {
-    if (move.to && move.model) {
-      setResolvedLLMConfig(move.scope, {
-        mode: "providers",
-        cloudMode: "byok",
-        provider: move.to,
-        model: move.model,
-      });
-    } else {
-      setResolvedLLMConfig(move.scope, { provider: "", model: "" });
-    }
-  }
-  pushRouteNotices(moves);
-}
-
-export function setCoreCloudProvider(providerId: string): void {
-  if (!providerValidForCoreMode(providerId, "providers")) return;
-  let wasLocal = false;
-  for (const scope of DEFAULTABLE_SCOPES) {
-    const resolved = selectResolvedLLMConfig(useSettingsStore.getState(), scope);
-    if ((resolved.mode || "") === "enterprise") continue;
-    if (resolved.mode === "local") wasLocal = true;
-    const keepsModel =
-      resolved.mode === "providers" && resolved.provider === providerId && !!resolved.model;
-    const model = keepsModel ? resolved.model : defaultModelForScope(providerId, scope);
-    if (!model) continue;
-    setResolvedLLMConfig(scope, {
+  const resolved = selectResolvedLLMConfig(state, "chatIntelligence");
+  const move = planRerouteOffProvider(
+    { mode: resolved.mode || "", provider: resolved.provider },
+    providerId,
+    firstKeyedDefaultableProvider(state)
+  );
+  if (!move) return;
+  if (move.to && move.model) {
+    setResolvedLLMConfig("chatIntelligence", {
       mode: "providers",
       cloudMode: "byok",
-      provider: providerId,
-      model,
+      provider: move.to,
+      model: move.model,
     });
+  } else {
+    setResolvedLLMConfig("chatIntelligence", { provider: "", model: "" });
   }
-  // Leaving local frees the llama server's RAM.
-  if (wasLocal) void window.electronAPI?.llamaServerStop?.();
+  pushRouteNotices([move]);
 }
-
+export function setCoreCloudProvider(providerId: string): void {
+  if (!providerValidForCoreMode(providerId, "providers")) return;
+  const resolved = selectResolvedLLMConfig(useSettingsStore.getState(), "chatIntelligence");
+  if ((resolved.mode || "") === "enterprise") return;
+  const keepsModel =
+    resolved.mode === "providers" && resolved.provider === providerId && !!resolved.model;
+  const model = keepsModel ? resolved.model : defaultModelForProvider(providerId);
+  if (!model) return;
+  setResolvedLLMConfig("chatIntelligence", {
+    mode: "providers",
+    cloudMode: "byok",
+    provider: providerId,
+    model,
+  });
+  // Leaving local frees the llama server's RAM.
+  if (resolved.mode === "local") void window.electronAPI?.llamaServerStop?.();
+}
 // --- Convenience getters for non-React code ---
 
 interface TranscriptionContextKeys {

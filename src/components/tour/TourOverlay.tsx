@@ -45,10 +45,7 @@ export default function TourOverlay({
   // Whether a model is chosen at all decides which half of the setup step the
   // user reads, and whether it offers a button.
   const setupComplete = useSettingsStore((s) =>
-    isModelSetupComplete({
-      actionsModel: selectResolvedLLMConfig(s, "actions").model,
-      chatModel: selectResolvedLLMConfig(s, "chatIntelligence").model,
-    })
+    isModelSetupComplete({ model: selectResolvedLLMConfig(s, "chatIntelligence").model })
   );
 
   const popoverRef = useRef<HTMLDivElement | null>(null);

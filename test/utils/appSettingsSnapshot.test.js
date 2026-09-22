@@ -14,9 +14,7 @@ const baseInput = () => ({
   },
   dictationEnabled: false,
   appearance: { theme: "auto", uiLanguage: "en", uiTextScale: "1.1" },
-  aiModels: {
-    chatIntelligence: { mode: "byok", provider: "anthropic", model: "claude-sonnet-4-6" },
-  },
+  aiModel: { mode: "byok", provider: "anthropic", model: "claude-sonnet-4-6" },
   notifications: { meetingDetection: true },
 });
 
@@ -41,12 +39,12 @@ test("with dictation on, all five slots and the activation mode appear", () => {
   assert.equal(snapshot.hotkeys.voiceAgent, "not set");
 });
 
-test("model scopes pass through only mode, provider, and model", () => {
+test("the model passes through only mode, provider, and model", () => {
   const input = baseInput();
-  // Simulates a caller mistake: extra fields on a scope never survive.
-  input.aiModels.chatIntelligence.customApiKey = "sk-secret";
+  // Simulates a caller mistake: extra fields never survive.
+  input.aiModel.customApiKey = "sk-secret";
   const snapshot = buildAppSettingsSnapshot(input);
-  assert.deepEqual(snapshot.aiModels.chatIntelligence, {
+  assert.deepEqual(snapshot.aiModel, {
     mode: "byok",
     provider: "anthropic",
     model: "claude-sonnet-4-6",

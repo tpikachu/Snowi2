@@ -4,14 +4,15 @@ const { createRendererServer, installBrowserGlobals } = require("../lib/renderer
 
 /**
  * Entering a provider key IS the model setup: the moment a provider's first
- * key lands, chat and actions adopt that provider's defaults
- * (scopeModelDefaults.ts) — and only scopes that could not serve are touched,
- * so a later key or an explicit pick is never overridden. The deliberate
- * switch is the provider card in Settings (setCoreCloudProvider), which
- * moves both scopes — the missing piece behind "added the OpenRouter key,
- * it still uses OpenAI" (client, 2026-09-15).
+ * key lands, the one AI model adopts that provider's default
+ * (scopeModelDefaults.ts) — only when it could not serve, so a later key or
+ * an explicit pick is never overridden. The deliberate switch is the
+ * provider card in Settings (setCoreCloudProvider) — the missing piece
+ * behind "added the OpenRouter key, it still uses OpenAI" (client,
+ * 2026-09-15). One model serves chat and the write-up (client, 2026-09-22):
+ * the actions scope resolves to the chat pick.
  */
-test("a provider key arriving assigns scope defaults exactly once", async (t) => {
+test("a provider key arriving assigns the default model exactly once", async (t) => {
   installBrowserGlobals(t, {
     initialStorage: { _llmScopeKeysMigrated: "1" },
     // Unlike llmConfigReady's setState shortcuts, this test drives the real
@@ -19,112 +20,94 @@ test("a provider key arriving assigns scope defaults exactly once", async (t) =>
     window: { dispatchEvent: () => true },
   });
   const vite = await createRendererServer(t, { cachePrefix: "snowy-scope-defaults-test-" });
-  const { useSettingsStore, selectResolvedLLMConfig, setResolvedLLMConfig, setCoreCloudProvider } =
-    await vite.ssrLoadModule("/stores/settingsStore.ts");
+  const {
+    useSettingsStore,
+    selectResolvedLLMConfig,
+    selectResolvedActions,
+    setResolvedLLMConfig,
+    setCoreCloudProvider,
+  } = await vite.ssrLoadModule("/stores/settingsStore.ts");
   const { consumeRouteNotices } = await vite.ssrLoadModule("/stores/routeNoticeStore.ts");
   const state = () => useSettingsStore.getState();
+  const chat = () => selectResolvedLLMConfig(state(), "chatIntelligence");
 
-  await t.test("the first key sets the agreed defaults for chat and actions", () => {
+  await t.test("the first key sets the agreed default, and the write-up follows it", () => {
     state().setOpenaiApiKey("sk-test");
-    const chat = selectResolvedLLMConfig(state(), "chatIntelligence");
-    assert.equal(chat.mode, "providers");
-    assert.equal(chat.provider, "openai");
-    assert.equal(chat.model, "gpt-5-mini");
+    assert.equal(chat().mode, "providers");
+    assert.equal(chat().provider, "openai");
+    assert.equal(chat().model, "gpt-5-mini");
     const actions = selectResolvedLLMConfig(state(), "actions");
-    assert.equal(actions.mode, "providers");
     assert.equal(actions.provider, "openai");
-    assert.equal(actions.model, "gpt-5-nano");
+    assert.equal(actions.model, "gpt-5-mini");
+    assert.equal(selectResolvedActions(state()).model, "gpt-5-mini");
   });
 
-  await t.test("a second provider's key does not override a working scope", () => {
+  await t.test("a second provider's key does not override a working model", () => {
     state().setAnthropicApiKey("sk-ant-test");
-    assert.equal(selectResolvedLLMConfig(state(), "chatIntelligence").model, "gpt-5-mini");
-    assert.equal(selectResolvedLLMConfig(state(), "actions").model, "gpt-5-nano");
+    assert.equal(chat().model, "gpt-5-mini");
   });
 
-  await t.test("a removed key moves the scope that ran on it to the next keyed provider", () => {
+  await t.test("a removed key moves the model to the next keyed provider, and says so", () => {
     setResolvedLLMConfig("chatIntelligence", {
       mode: "providers",
       provider: "anthropic",
       model: "claude-fable-5",
     });
-    // Chat ran on Anthropic, write-ups on OpenAI: only chat moves, to
-    // OpenAI's chat default, and the move is queued for the toast.
+    assert.equal(selectResolvedLLMConfig(state(), "actions").model, "claude-fable-5");
     state().setAnthropicApiKey("");
-    const chat = selectResolvedLLMConfig(state(), "chatIntelligence");
-    assert.equal(chat.provider, "openai");
-    assert.equal(chat.model, "gpt-5-mini");
-    assert.equal(selectResolvedLLMConfig(state(), "actions").model, "gpt-5-nano");
+    assert.equal(chat().provider, "openai");
+    assert.equal(chat().model, "gpt-5-mini");
     assert.deepEqual(consumeRouteNotices(), [
-      { scope: "chatIntelligence", from: "anthropic", to: "openai", model: "gpt-5-mini" },
+      { from: "anthropic", to: "openai", model: "gpt-5-mini" },
     ]);
-    // Re-entering the key never overrides a working scope: chat stays where
-    // it moved; the chip is where a person picks Claude again.
+    // Re-entering the key never overrides a working model: the chip is
+    // where a person picks Claude again.
     state().setAnthropicApiKey("sk-ant-test-2");
-    assert.equal(selectResolvedLLMConfig(state(), "chatIntelligence").model, "gpt-5-mini");
+    assert.equal(chat().model, "gpt-5-mini");
     assert.deepEqual(consumeRouteNotices(), []);
-    // The person picks Claude again, as the tests below assume.
-    setResolvedLLMConfig("chatIntelligence", {
-      mode: "providers",
-      provider: "anthropic",
-      model: "claude-fable-5",
-    });
   });
 
   await t.test(
-    "choosing a provider card moves both scopes to it, keeping a model already picked there",
+    "choosing a provider card moves the model there, keeping a model already picked",
     () => {
-      // Chat was put on Anthropic's claude-fable-5 above; write-ups still ride OpenAI.
+      setResolvedLLMConfig("chatIntelligence", {
+        mode: "providers",
+        provider: "anthropic",
+        model: "claude-fable-5",
+      });
+      setCoreCloudProvider("openai");
+      assert.equal(chat().provider, "openai");
+      assert.equal(chat().model, "gpt-5-mini");
       setCoreCloudProvider("anthropic");
-      const chat = selectResolvedLLMConfig(state(), "chatIntelligence");
-      assert.equal(chat.provider, "anthropic");
-      assert.equal(chat.model, "claude-fable-5");
-      const actions = selectResolvedLLMConfig(state(), "actions");
-      assert.equal(actions.mode, "providers");
-      assert.equal(actions.provider, "anthropic");
-      assert.equal(actions.model, "claude-haiku-4-5");
+      assert.equal(chat().provider, "anthropic");
+      assert.equal(chat().model, "claude-sonnet-5");
     }
   );
 
   await t.test(
-    "an OpenRouter key alone moves nothing; choosing its card routes at the curated slugs",
+    "an OpenRouter key alone moves nothing; choosing its card routes at the curated slug",
     () => {
       state().setOpenrouterApiKey("sk-or-test");
-      assert.equal(selectResolvedLLMConfig(state(), "actions").provider, "anthropic");
+      assert.equal(chat().provider, "anthropic");
       setCoreCloudProvider("openrouter");
-      assert.equal(selectResolvedLLMConfig(state(), "chatIntelligence").model, "openai/gpt-5-mini");
-      assert.equal(selectResolvedLLMConfig(state(), "actions").model, "openai/gpt-5-nano");
+      assert.equal(chat().model, "openai/gpt-5-mini");
     }
   );
 
-  await t.test("an OpenRouter key seeds a scope that cannot serve, like any provider key", () => {
-    // Write-ups pointed at a provider with no key: unready, so the key adopts it.
-    setResolvedLLMConfig("actions", {
-      mode: "providers",
-      provider: "gemini",
-      model: "gemini-3.5-flash",
-    });
-    // Removing OpenRouter's key moves chat, which ran on it, to the first
-    // keyed provider in the table (OpenAI, keyed since the first test) at its
-    // chat default; write-ups on keyless Gemini were not OpenRouter's and
-    // stay put.
+  await t.test("the last key going stops at needs-a-model, never a local model", () => {
+    state().setOpenaiApiKey("");
+    state().setAnthropicApiKey("");
+    assert.deepEqual(consumeRouteNotices(), []);
     state().setOpenrouterApiKey("");
-    assert.equal(selectResolvedLLMConfig(state(), "chatIntelligence").provider, "openai");
-    assert.equal(selectResolvedLLMConfig(state(), "actions").provider, "gemini");
-    assert.deepEqual(consumeRouteNotices(), [
-      { scope: "chatIntelligence", from: "openrouter", to: "openai", model: "gpt-5-mini" },
-    ]);
-    state().setOpenrouterApiKey("sk-or-test-2");
-    const actions = selectResolvedLLMConfig(state(), "actions");
-    assert.equal(actions.provider, "openrouter");
-    assert.equal(actions.model, "openai/gpt-5-nano");
-    // Chat could serve (OpenAI, keyed) and keeps where it moved.
-    assert.equal(selectResolvedLLMConfig(state(), "chatIntelligence").model, "gpt-5-mini");
+    assert.equal(chat().provider, "");
+    assert.equal(chat().model, "");
+    assert.deepEqual(consumeRouteNotices(), [{ from: "openrouter", to: null, model: null }]);
   });
 
   await t.test("a provider outside the cloud catalog is refused", () => {
+    state().setOpenaiApiKey("sk-test-3");
     setCoreCloudProvider("qwen");
-    assert.equal(selectResolvedLLMConfig(state(), "actions").provider, "openrouter");
+    assert.equal(chat().provider, "openai");
   });
 
   // The real setters arm persistence debounces (250ms secret save, 1000ms env

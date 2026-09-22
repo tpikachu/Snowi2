@@ -32,7 +32,8 @@ export interface AppSettingsSnapshotInput {
     uiLanguage: string;
     uiTextScale: string;
   };
-  aiModels: Record<string, ModelScopeSnapshot>;
+  /** The one AI model: chat, the cue card and the meeting write-up. */
+  aiModel: ModelScopeSnapshot;
   notifications: {
     meetingDetection: boolean;
   };
@@ -60,12 +61,11 @@ export function buildAppSettingsSnapshot(input: AppSettingsSnapshotInput) {
       uiLanguage: input.appearance.uiLanguage,
       textSize: input.appearance.uiTextScale,
     },
-    aiModels: Object.fromEntries(
-      Object.entries(input.aiModels).map(([scope, config]) => [
-        scope,
-        { mode: config.mode, provider: config.provider, model: config.model },
-      ])
-    ),
+    aiModel: {
+      mode: input.aiModel.mode,
+      provider: input.aiModel.provider,
+      model: input.aiModel.model,
+    },
     notifications: { ...input.notifications },
   };
 }

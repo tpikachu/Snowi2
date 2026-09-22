@@ -99,17 +99,13 @@ test("a changed tour re-runs for someone who already finished it", async () => {
   assert.ok(TOUR_VERSION >= 2, "TOUR_VERSION must be bumped when the steps change");
 });
 
-test("setup counts as done only when both model-backed features have one", async () => {
+test("setup counts as done once the one AI model is chosen", async () => {
   const { isModelSetupComplete } = await loadSetup();
 
-  assert.equal(isModelSetupComplete({ actionsModel: "a", chatModel: "b" }), true);
-  // A write-up model with no chat model still lands the user on a chat that
-  // cannot answer — which is the confusion the step exists to prevent.
-  assert.equal(isModelSetupComplete({ actionsModel: "a" }), false);
-  assert.equal(isModelSetupComplete({ chatModel: "b" }), false);
+  assert.equal(isModelSetupComplete({ model: "a" }), true);
   assert.equal(isModelSetupComplete({}), false);
-  assert.equal(isModelSetupComplete({ actionsModel: "  ", chatModel: "b" }), false);
-  assert.equal(isModelSetupComplete({ actionsModel: null, chatModel: null }), false);
+  assert.equal(isModelSetupComplete({ model: "  " }), false);
+  assert.equal(isModelSetupComplete({ model: null }), false);
 });
 
 test("the setup step changes its copy and drops its button once configured", async () => {

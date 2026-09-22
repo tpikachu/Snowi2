@@ -2247,31 +2247,25 @@
         "dictationTranslation": "Übersetzung",
         "providers": "API-Schlüssel"
       },
-      "scopes": {
-        "chat": "Chat",
-        "writeups": "Zusammenfassungen"
-      },
       "reroute": {
         "title": "Modell verschoben",
-        "moved": "{{scope}} wurde zu {{model}} auf {{to}} verschoben, weil der {{from}}-Schlüssel entfernt wurde.",
+        "moved": "Dein KI-Modell wurde zu {{model}} auf {{to}} verschoben, weil der {{from}}-Schlüssel entfernt wurde.",
         "needsSetupTitle": "Modell nötig",
-        "needsSetup": "{{scope}} hat kein Modell: Der {{from}}-Schlüssel wurde entfernt und kein anderer Anbieter hat einen Schlüssel.",
+        "needsSetup": "Kein KI-Modell: Der {{from}}-Schlüssel wurde entfernt und kein anderer Anbieter hat einen Schlüssel.",
         "speechInUseTitle": "Schlüssel wird von diesem Meeting genutzt",
         "speechInUse": "Das laufende Meeting transkribiert über {{provider}}. Es behält seine aktuelle Sitzung; das nächste Meeting braucht einen Schlüssel."
       },
       "engine": {
         "title": "Engine",
-        "description": "Wo Chat und Meeting-Zusammenfassungen laufen. Eine Wahl treibt beides an – das Modell wählst du direkt dort, wo du es nutzt.",
-        "cloudInUse": "Chat und Meeting-Zusammenfassungen laufen über {{provider}}.",
-        "cloudServesChat": "Der Chat läuft auf {{provider}}.",
-        "cloudServesWriteups": "Meeting-Zusammenfassungen laufen auf {{provider}}.",
-        "useForBoth": "Chat und Zusammenfassungen auf {{provider}} ausführen",
-        "cloudChooseHint": "{{provider}} hat einen Schlüssel. Chat und Zusammenfassungen laufen woanders.",
-        "cloudSwitchHint": "Speichere einen Schlüssel, um Chat und Meeting-Zusammenfassungen zu {{provider}} zu verschieben."
+        "description": "Wo dein KI-Modell läuft. Das Modell wählst du direkt dort, wo du es nutzt: in der Chat-Leiste, auf der Meeting-Karte und bei „Notizen generieren“ in einer Notiz.",
+        "cloudInUse": "Dein KI-Modell läuft über {{provider}}.",
+        "cloudChooseHint": "{{provider}} hat einen Schlüssel. Dein KI-Modell läuft woanders.",
+        "cloudSwitchHint": "Speichere einen Schlüssel, um dein KI-Modell zu {{provider}} zu verschieben.",
+        "useProvider": "{{provider}} verwenden"
       },
       "provider": {
         "title": "Cloud-Anbieter",
-        "description": "Chat und Meeting-Zusammenfassungen laufen über den hier gewählten Anbieter mit deinem eigenen API-Schlüssel. Das Modell selbst wählst du direkt dort, wo du es verwendest."
+        "description": "Dein KI-Modell läuft über den hier gewählten Anbieter mit deinem eigenen API-Schlüssel. Das Modell selbst wählst du direkt dort, wo du es verwendest."
       }
     },
     "transcription": {
@@ -2747,8 +2741,7 @@
       "generic": "Die Änderung konnte nicht abgeschlossen werden. Bitte versuche es erneut."
     },
     "sidebar": {
-      "newNote": "Neue Notiz",
-      "actions": "Aktionen"
+      "newNote": "Neue Notiz"
     },
     "spaces": {
       "privateSpaces": "Private Bereiche",
@@ -3063,22 +3056,6 @@
     },
     "actions": {
       "done": "Fertig",
-      "manageTitle": "Benutzerdefinierte Aktionen",
-      "addAction": "Neue Aktion",
-      "editAction": "Aktion bearbeiten",
-      "namePlaceholder": "Name der Aktion",
-      "descriptionPlaceholder": "Kurzbeschreibung (optional)",
-      "promptPlaceholder": "Was soll die KI mit dem Notizeninhalt tun?",
-      "builtIn": "Integriert",
-      "save": "Speichern",
-      "update": "Aktualisieren",
-      "cancel": "Abbrechen",
-      "noActions": "Noch keine benutzerdefinierten Aktionen",
-      "promptLabel": "Anweisung",
-      "emptyEditorTitle": "Aktion auswählen",
-      "emptyEditorDescription": "Wählen Sie eine Aktion aus der Liste oder erstellen Sie eine neue",
-      "runAction": "{{name}} ausführen",
-      "selectAction": "Aktion auswählen",
       "builtin": {
         "generateNotes": {
           "name": "Notizen generieren",
@@ -3090,8 +3067,7 @@
         "actionFailed": "Aktion fehlgeschlagen",
         "noEndpoint": "Für Aktionen ist keine Server-URL hinterlegt.",
         "configure": "Einrichten"
-      },
-      "defaultModel": "Standard"
+      }
     },
     "realtimeBanner": {
       "message": "Echtzeit-Transkription mit Pro verfügbar",
@@ -3594,7 +3570,6 @@
       "addKey": "Schlüssel hinzufügen",
       "localGroup": "Auf diesem Computer",
       "choose": "Modell wählen",
-      "defaultWithModel": "{{label}} ({{model}})",
       "customModel": "Anderes Modell…",
       "customModelPlaceholder": "anbieter/modell-id",
       "useModel": "Verwenden"

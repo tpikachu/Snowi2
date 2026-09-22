@@ -2012,31 +2012,25 @@
         "dictationTranslation": "Traducción",
         "providers": "Claves API"
       },
-      "scopes": {
-        "chat": "Chat",
-        "writeups": "Resúmenes"
-      },
       "reroute": {
         "title": "Modelo movido",
-        "moved": "{{scope}} pasó a {{model}} en {{to}} porque se quitó la clave de {{from}}.",
+        "moved": "Tu modelo de IA pasó a {{model}} en {{to}} porque se quitó la clave de {{from}}.",
         "needsSetupTitle": "Falta un modelo",
-        "needsSetup": "{{scope}} no tiene modelo: se quitó la clave de {{from}} y ningún otro proveedor tiene clave.",
+        "needsSetup": "Sin modelo de IA: se quitó la clave de {{from}} y ningún otro proveedor tiene clave.",
         "speechInUseTitle": "Clave en uso por esta reunión",
         "speechInUse": "La reunión que se está grabando transcribe a través de {{provider}}. Mantiene su sesión actual; la próxima reunión necesita una clave."
       },
       "engine": {
         "title": "Motor",
-        "description": "Dónde se ejecutan el chat y los resúmenes de reuniones. Una sola elección impulsa ambos: el modelo se elige justo donde lo usas.",
-        "cloudInUse": "El chat y los resúmenes de reuniones se ejecutan en {{provider}}.",
-        "cloudServesChat": "El chat se ejecuta en {{provider}}.",
-        "cloudServesWriteups": "Los resúmenes de reuniones se ejecutan en {{provider}}.",
-        "useForBoth": "Ejecutar chat y resúmenes en {{provider}}",
-        "cloudChooseHint": "{{provider}} tiene clave. El chat y los resúmenes de reuniones se ejecutan en otro proveedor.",
-        "cloudSwitchHint": "Guarda una clave para mover el chat y los resúmenes de reuniones a {{provider}}."
+        "description": "Dónde se ejecuta tu modelo de IA. El modelo se elige justo donde lo usas: la barra de chat, la tarjeta de la reunión y Generar notas en una nota.",
+        "cloudInUse": "Tu modelo de IA se ejecuta en {{provider}}.",
+        "cloudChooseHint": "{{provider}} tiene clave. Tu modelo de IA se ejecuta en otro proveedor.",
+        "cloudSwitchHint": "Guarda una clave para mover tu modelo de IA a {{provider}}.",
+        "useProvider": "Usar {{provider}}"
       },
       "provider": {
         "title": "Proveedor en la nube",
-        "description": "El chat y los resúmenes de reuniones se ejecutan en el proveedor que elijas aquí, con tu propia clave de API. El modelo se elige justo donde lo usas."
+        "description": "Tu modelo de IA se ejecuta en el proveedor que elijas aquí, con tu propia clave de API. El modelo se elige justo donde lo usas."
       }
     },
     "transcription": {
@@ -2588,8 +2582,7 @@
       "generic": "No se pudo completar el cambio. Inténtalo de nuevo."
     },
     "sidebar": {
-      "newNote": "Nueva nota",
-      "actions": "Acciones"
+      "newNote": "Nueva nota"
     },
     "spaces": {
       "privateSpaces": "Espacios privados",
@@ -2888,22 +2881,6 @@
       "showInFileManager": "Mostrar en {{manager}}"
     },
     "actions": {
-      "manageTitle": "Acciones personalizadas",
-      "addAction": "Nueva acción",
-      "editAction": "Editar acción",
-      "namePlaceholder": "Nombre de la acción",
-      "descriptionPlaceholder": "Descripción breve (opcional)",
-      "promptPlaceholder": "¿Qué debe hacer la IA con el contenido de la nota?",
-      "builtIn": "Integrada",
-      "save": "Guardar",
-      "update": "Actualizar",
-      "cancel": "Cancelar",
-      "noActions": "Aún no hay acciones personalizadas",
-      "promptLabel": "Instrucción",
-      "emptyEditorTitle": "Seleccionar acción",
-      "emptyEditorDescription": "Elige una acción de la lista o crea una nueva",
-      "runAction": "Ejecutar {{name}}",
-      "selectAction": "Seleccionar acción",
       "done": "Listo",
       "builtin": {
         "generateNotes": {
@@ -2916,8 +2893,7 @@
         "actionFailed": "La acción falló",
         "noEndpoint": "No hay una URL de servidor propio configurada para las acciones.",
         "configure": "Configurar"
-      },
-      "defaultModel": "Predeterminado"
+      }
     },
     "empty": {
       "title": "Todavía no hay notas aquí",
@@ -3477,7 +3453,6 @@
       "addKey": "Añadir clave",
       "localGroup": "En este equipo",
       "choose": "Elegir modelo",
-      "defaultWithModel": "{{label}} ({{model}})",
       "customModel": "Otro modelo…",
       "customModelPlaceholder": "proveedor/id-de-modelo",
       "useModel": "Usar"

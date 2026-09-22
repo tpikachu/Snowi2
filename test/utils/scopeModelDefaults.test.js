@@ -1,21 +1,18 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const {
-  DEFAULTABLE_SCOPES,
-  defaultModelForScope,
-} = require("../../src/utils/scopeModelDefaults.ts");
+const { defaultModelForProvider } = require("../../src/utils/scopeModelDefaults.ts");
 const registry = require("../../src/models/modelRegistryData.json");
 
-test("the OpenAI defaults match the agreed setup contract", () => {
-  // The client's exact example: key entered -> chat gets Mini, actions Nano.
-  assert.equal(defaultModelForScope("openai", "chatIntelligence"), "gpt-5-mini");
-  assert.equal(defaultModelForScope("openai", "actions"), "gpt-5-nano");
+test("the OpenAI default is the balanced everyday model, not the cheapest", () => {
+  // One model serves chat and the write-up (client, 2026-09-22); the fast
+  // lane derives Nano on its own.
+  assert.equal(defaultModelForProvider("openai"), "gpt-5-mini");
 });
 
 test("a provider without a catalog defaults to nothing", () => {
-  assert.equal(defaultModelForScope("custom", "actions"), null);
-  assert.equal(defaultModelForScope("", "actions"), null);
+  assert.equal(defaultModelForProvider("custom"), null);
+  assert.equal(defaultModelForProvider(""), null);
 });
 
 test("every default names a model that exists in that provider's registry catalog", () => {
@@ -30,25 +27,21 @@ test("every default names a model that exists in that provider's registry catalo
   for (const providerId of ["openai", "anthropic", "gemini", "groq", "tinfoil", "corti"]) {
     const models = catalog.get(providerId);
     assert.ok(models, `provider ${providerId} missing from registry`);
-    for (const scope of DEFAULTABLE_SCOPES) {
-      const model = defaultModelForScope(providerId, scope);
-      assert.ok(model, `${providerId}/${scope} has no default`);
-      assert.ok(models.has(model), `${providerId}/${scope} default "${model}" not in registry`);
-    }
+    const model = defaultModelForProvider(providerId);
+    assert.ok(model, `${providerId} has no default`);
+    assert.ok(models.has(model), `${providerId} default "${model}" not in registry`);
   }
 });
 
-test("the OpenRouter defaults are curated slugs whose vendor models the registry knows", () => {
+test("the OpenRouter default is a curated slug whose vendor model the registry knows", () => {
   const {
     OPENROUTER_CURATED_MODELS,
     openrouterPickerModels,
     openrouterModelLabel,
   } = require("../../src/config/openrouterModels.ts");
   const curated = new Set(OPENROUTER_CURATED_MODELS.map((m) => m.id));
-  for (const scope of DEFAULTABLE_SCOPES) {
-    const model = defaultModelForScope("openrouter", scope);
-    assert.ok(curated.has(model), `openrouter/${scope} default "${model}" is not curated`);
-  }
+  const model = defaultModelForProvider("openrouter");
+  assert.ok(curated.has(model), `openrouter default "${model}" is not curated`);
   for (const entry of OPENROUTER_CURATED_MODELS) {
     // vendor/slug, as OpenRouter addresses them.
     assert.match(entry.id, /^[a-z0-9-]+\/[a-z0-9.-]+$/);

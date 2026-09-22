@@ -1964,31 +1964,25 @@
         "dictationTranslation": "翻译",
         "providers": "API 密钥"
       },
-      "scopes": {
-        "chat": "聊天",
-        "writeups": "会议纪要"
-      },
       "reroute": {
         "title": "模型已迁移",
-        "moved": "由于 {{from}} 密钥已移除，{{scope}}已迁移到 {{to}} 的 {{model}}。",
+        "moved": "由于 {{from}} 密钥已移除，你的 AI 模型已迁移到 {{to}} 的 {{model}}。",
         "needsSetupTitle": "需要模型",
-        "needsSetup": "{{scope}}没有模型：{{from}} 密钥已移除，且没有其他提供商配置了密钥。",
+        "needsSetup": "没有 AI 模型：{{from}} 密钥已移除，且没有其他提供商配置了密钥。",
         "speechInUseTitle": "此密钥正被当前会议使用",
         "speechInUse": "正在录制的会议通过 {{provider}} 转写。当前会话会继续；下一次会议需要密钥。"
       },
       "engine": {
         "title": "引擎",
-        "description": "聊天和会议纪要的运行位置。一次选择同时作用于两者——模型本身在使用处选择。",
-        "cloudInUse": "聊天和会议纪要通过 {{provider}} 运行。",
-        "cloudServesChat": "聊天运行在 {{provider}}。",
-        "cloudServesWriteups": "会议纪要运行在 {{provider}}。",
-        "useForBoth": "在 {{provider}} 上运行聊天和会议纪要",
-        "cloudChooseHint": "{{provider}} 已有密钥。聊天和会议纪要运行在其他提供商。",
-        "cloudSwitchHint": "保存密钥后，聊天和会议纪要将切换到 {{provider}}。"
+        "description": "你的 AI 模型的运行位置。模型本身在使用处选择：聊天栏、会议卡片，以及笔记中的“生成笔记”。",
+        "cloudInUse": "你的 AI 模型通过 {{provider}} 运行。",
+        "cloudChooseHint": "{{provider}} 已有密钥。你的 AI 模型运行在其他提供商。",
+        "cloudSwitchHint": "保存密钥后，你的 AI 模型将切换到 {{provider}}。",
+        "useProvider": "使用 {{provider}}"
       },
       "provider": {
         "title": "云服务商",
-        "description": "聊天和会议纪要在此处选择的服务商上运行，使用你自己的 API 密钥。模型本身在使用它的地方直接选择。"
+        "description": "你的 AI 模型在此处选择的服务商上运行，使用你自己的 API 密钥。模型本身在使用它的地方直接选择。"
       }
     },
     "transcription": {
@@ -2540,8 +2534,7 @@
       "generic": "无法完成更改，请重试。"
     },
     "sidebar": {
-      "newNote": "新建笔记",
-      "actions": "操作"
+      "newNote": "新建笔记"
     },
     "spaces": {
       "privateSpaces": "私人空间",
@@ -2840,22 +2833,6 @@
       "showInFileManager": "在{{manager}}中显示"
     },
     "actions": {
-      "manageTitle": "自定义操作",
-      "addAction": "新建操作",
-      "editAction": "编辑操作",
-      "namePlaceholder": "操作名称",
-      "descriptionPlaceholder": "简要描述（可选）",
-      "promptPlaceholder": "AI 应如何处理笔记内容？",
-      "builtIn": "内置",
-      "save": "保存",
-      "update": "更新",
-      "cancel": "取消",
-      "noActions": "暂无自定义操作",
-      "promptLabel": "提示词",
-      "emptyEditorTitle": "选择操作",
-      "emptyEditorDescription": "从列表中选择一个操作或创建新操作",
-      "runAction": "运行 {{name}}",
-      "selectAction": "选择操作",
       "done": "完成",
       "builtin": {
         "generateNotes": {
@@ -2868,8 +2845,7 @@
         "actionFailed": "操作失败",
         "noEndpoint": "没有为操作设置自托管服务器地址。",
         "configure": "去设置"
-      },
-      "defaultModel": "默认"
+      }
     },
     "empty": {
       "title": "这里还没有笔记",
@@ -3429,7 +3405,6 @@
       "addKey": "添加密钥",
       "localGroup": "本机模型",
       "choose": "选择模型",
-      "defaultWithModel": "{{label}}（{{model}}）",
       "customModel": "其他模型…",
       "customModelPlaceholder": "供应商/模型 ID",
       "useModel": "使用"

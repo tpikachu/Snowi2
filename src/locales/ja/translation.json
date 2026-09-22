@@ -1964,31 +1964,25 @@
         "dictationTranslation": "翻訳",
         "providers": "APIキー"
       },
-      "scopes": {
-        "chat": "チャット",
-        "writeups": "議事録"
-      },
       "reroute": {
         "title": "モデルを移動しました",
-        "moved": "{{from}} のキーが削除されたため、{{scope}}は {{to}} の {{model}} に移動しました。",
+        "moved": "{{from}} のキーが削除されたため、AI モデルは {{to}} の {{model}} に移動しました。",
         "needsSetupTitle": "モデルが必要です",
-        "needsSetup": "{{scope}}にモデルがありません。{{from}} のキーが削除され、他にキーのあるプロバイダーがありません。",
+        "needsSetup": "AI モデルがありません。{{from}} のキーが削除され、他にキーのあるプロバイダーがありません。",
         "speechInUseTitle": "この会議で使用中のキーです",
         "speechInUse": "録音中の会議は {{provider}} で文字起こししています。現在のセッションはそのまま続きますが、次の会議にはキーが必要です。"
       },
       "engine": {
         "title": "エンジン",
-        "description": "チャットと会議のまとめが動く場所。1 つの選択で両方に適用され、モデル自体は使う場所で選べます。",
-        "cloudInUse": "チャットと会議のまとめは {{provider}} で実行されます。",
-        "cloudServesChat": "チャットは {{provider}} で動作します。",
-        "cloudServesWriteups": "会議の議事録は {{provider}} で動作します。",
-        "useForBoth": "チャットと議事録を {{provider}} で実行",
-        "cloudChooseHint": "{{provider}} にはキーがあります。チャットと議事録は別のプロバイダーで動作しています。",
-        "cloudSwitchHint": "キーを保存すると、チャットと会議のまとめが {{provider}} に切り替わります。"
+        "description": "AI モデルが動く場所。モデル自体は使う場所で選べます：チャットバー、会議カード、ノートの「ノートを生成」。",
+        "cloudInUse": "AI モデルは {{provider}} で実行されます。",
+        "cloudChooseHint": "{{provider}} にはキーがあります。AI モデルは別のプロバイダーで動作しています。",
+        "cloudSwitchHint": "キーを保存すると、AI モデルが {{provider}} に切り替わります。",
+        "useProvider": "{{provider}} を使う"
       },
       "provider": {
         "title": "クラウドプロバイダー",
-        "description": "チャットと会議のまとめは、ここで選んだプロバイダーで自分の API キーを使って実行されます。モデル自体は使う場所でそのまま選べます。"
+        "description": "AI モデルは、ここで選んだプロバイダーで自分の API キーを使って実行されます。モデル自体は使う場所でそのまま選べます。"
       }
     },
     "transcription": {
@@ -2468,8 +2462,7 @@
       "generic": "変更を完了できませんでした。もう一度お試しください。"
     },
     "sidebar": {
-      "newNote": "新しいノート",
-      "actions": "アクション"
+      "newNote": "新しいノート"
     },
     "spaces": {
       "privateSpaces": "プライベートスペース",
@@ -2637,22 +2630,6 @@
       "showInFileManager": "{{manager}}で表示"
     },
     "actions": {
-      "manageTitle": "カスタムアクション",
-      "addAction": "新しいアクション",
-      "editAction": "アクションを編集",
-      "namePlaceholder": "アクション名",
-      "descriptionPlaceholder": "簡単な説明（任意）",
-      "promptPlaceholder": "AIにノートの内容をどう処理させますか？",
-      "builtIn": "組み込み",
-      "save": "保存",
-      "update": "更新",
-      "cancel": "キャンセル",
-      "noActions": "カスタムアクションはまだありません",
-      "promptLabel": "プロンプト",
-      "emptyEditorTitle": "アクションを選択",
-      "emptyEditorDescription": "リストからアクションを選択するか、新しく作成してください",
-      "runAction": "{{name}} を実行",
-      "selectAction": "アクションを選択",
       "done": "完了",
       "builtin": {
         "generateNotes": {
@@ -2665,8 +2642,7 @@
         "actionFailed": "アクションに失敗しました",
         "noEndpoint": "アクション用のセルフホストサーバー URL が設定されていません。",
         "configure": "設定する"
-      },
-      "defaultModel": "デフォルト"
+      }
     },
     "empty": {
       "title": "まだノートがありません",
@@ -3429,7 +3405,6 @@
       "addKey": "キーを追加",
       "localGroup": "このコンピューター上",
       "choose": "モデルを選択",
-      "defaultWithModel": "{{label}}（{{model}}）",
       "customModel": "その他のモデル…",
       "customModelPlaceholder": "ベンダー/モデルID",
       "useModel": "使用"

@@ -23,25 +23,21 @@ import { CLOUD_PROVIDER_KEY_LINKS } from "../../config/providerKeyLinks";
 import { LOCAL_LLM_ENABLED } from "../../config/features";
 
 /**
- * The whole Language Models setup, on one page — because chat and actions
- * share one LLM, and configuring it twice bought nothing anyone could
- * perceive (client direction, 2026-09).
+ * The whole Language Models setup, on one page — one AI model serves chat,
+ * the cue card and the meeting write-up (client direction, 2026-09-22), so
+ * this page is where it runs, never which model it is.
  *
  * The cloud | local engine cards the Speech-to-Text page uses lead. Cloud is
- * the provider grid and a key field: the highlighted card is the provider
- * chat and write-ups run on, a click on a keyed card switches, and on a card
- * without a key the switch happens the moment its key is saved
- * (setCoreCloudProvider) — the scope defaults (scopeModelDefaults.ts) pick
- * each feature's model. Local shows the model list with downloads under one
- * honest line (private and free, slower and shorter than cloud, no web
- * search), each row labelled for its use case (localModelLabels.ts); a
- * selection routes chat and actions to it together. With LOCAL_LLM_ENABLED
- * off (2026-09-15 to 2026-09-18) the page is the cloud half alone, no engine
- * cards. Everything else is handled by the app: models are changed
- * at point of use (chat bar, cue card, action editor), never here. The former
- * Advanced disclosure (per-scope editors, fast-lane override, chat prompt)
- * was removed on client direction, 2026-09 — the fast lane auto-derives
- * (assistFastLane.ts) and actions are managed from the notes sidebar.
+ * the provider grid and a key field: the "In use" card is the provider the
+ * model runs on, a click on a card only selects it (its key), saving a FIRST
+ * key on a card is the switch, and a keyed card that is not in use offers
+ * the "Use X" button (setCoreCloudProvider — the provider's default model,
+ * or the one already picked there). Local shows the model list with
+ * downloads under one honest line (private and free, slower and shorter
+ * than cloud, no web search), each row labelled for its use case
+ * (localModelLabels.ts). With LOCAL_LLM_ENABLED off the page is the cloud
+ * half alone, no engine cards. The model itself is changed at point of use
+ * — the chat bar, the cue card, a note's Generate Notes — never here.
  */
 
 const PROVIDER_ROWS: Array<{
@@ -80,76 +76,53 @@ const isProviderRow = (id: string) => PROVIDER_ROWS.some((row) => row.id === id)
 /**
  * Cloud: the provider cards and the selected provider's key.
  *
- * The highlighted card is derived from the store — the provider serving chat
- * (the canonical copy), else write-ups — so the page opens on what is in use
- * rather than always on the first card. A card clicked without a key is a
- * pending choice held here until its key lands; before this, the cards only
+ * The page opens on the provider the model runs on rather than always on
+ * the first card. A card clicked is a selection held here — its key box, its
+ * badge — never a switch by itself: saving its first key is the switch, and
+ * a keyed card offers the explicit button. Before 2026-09-15 the cards only
  * chose which key box was shown and nothing on the page switched providers
- * (client report, 2026-09-15).
+ * (client report: "added the key, it still uses the previous provider").
  */
 function CloudKeysSection() {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [pendingId, setPendingId] = useState<string | null>(null);
 
-  const chatProvider = useSettingsStore((s) => {
+  const routedProvider = useSettingsStore((s) => {
     const config = selectResolvedLLMConfig(s, "chatIntelligence");
-    return config.mode === "providers" ? config.provider : "";
-  });
-  const actionsProvider = useSettingsStore((s) => {
-    const config = selectResolvedLLMConfig(s, "actions");
     return config.mode === "providers" ? config.provider : "";
   });
   const configured = useSettingsStore(
     useShallow((s) => PROVIDER_ROWS.map((row) => !!(s[row.keyField] as string | undefined)?.trim()))
   );
 
-  const inUseId = isProviderRow(chatProvider)
-    ? chatProvider
-    : isProviderRow(actionsProvider)
-      ? actionsProvider
-      : null;
-  const selectedId = pendingId ?? inUseId ?? PROVIDER_ROWS[0].id;
+  const routedId = isProviderRow(routedProvider) ? routedProvider : null;
+  const selectedId = pendingId ?? routedId ?? PROVIDER_ROWS[0].id;
   const selected = PROVIDER_ROWS.find((row) => row.id === selectedId) ?? PROVIDER_ROWS[0];
   const selectedHasKey = configured[PROVIDER_ROWS.indexOf(selected)];
   // Serving, not merely routed: a fresh install's defaulted provider survives
   // the flip to cloud with no key, and "In use" over "No API key yet" would
   // read as a contradiction.
   const isServing = (id: string) =>
-    (id === chatProvider || id === actionsProvider) &&
-    configured[PROVIDER_ROWS.findIndex((row) => row.id === id)] === true;
-  // What a card serves, as badges: several providers can serve at once (chat
-  // on one, write-ups on another), so one "In use" badge misled the rest.
-  const rolesOf = (id: string): string[] => {
-    if (!isServing(id)) return [];
-    const roles: string[] = [];
-    if (id === chatProvider) roles.push(t("settingsPage.llms.scopes.chat"));
-    if (id === actionsProvider) roles.push(t("settingsPage.llms.scopes.writeups"));
-    return roles;
-  };
+    id === routedId && configured[PROVIDER_ROWS.findIndex((row) => row.id === id)] === true;
   const selectedInUse = isServing(selected.id);
   const value = useSettingsStore((s) => s[selected.keyField]);
   const storeSetter = useSettingsStore((s) => s[selected.setter]);
   const link = CLOUD_PROVIDER_KEY_LINKS[selected.id];
 
-  // A click selects the card — its key, its badges — and nothing more. With
-  // two providers serving (chat on one, write-ups on the other) a click that
-  // also switched both scopes made viewing the other key impossible without
-  // rerouting chat. The switch is saving a FIRST key here, or the button
-  // under the field.
   const choose = (id: string) => setPendingId(id);
   const providerLabel = providerName(selected.id);
-  const useForBoth = () => {
+  const useProvider = () => {
     setCoreCloudProvider(selected.id);
     setPendingId(null);
   };
   const setValue = (key: string) => {
     const hadKey = !!(value ?? "").trim();
     if (hadKey && !key.trim()) {
-      // The store moves chat and write-ups off this provider and says so.
-      // A meeting recording through it right now is the one thing that
-      // cannot move: its session keeps the token it already has, and the
-      // next meeting is what needs a key.
+      // The store moves the model off this provider and says so. A meeting
+      // recording through it right now is the one thing that cannot move:
+      // its session keeps the token it already has, and the next meeting is
+      // what needs a key.
       const speech = selectResolvedMeetingTranscription(useSettingsStore.getState());
       const liveOnThis =
         useMeetingRecordingStore.getState().isRecording &&
@@ -170,18 +143,11 @@ function CloudKeysSection() {
     }
   };
 
-  const servesChat = selectedInUse && selected.id === chatProvider;
-  const servesWriteups = selectedInUse && selected.id === actionsProvider;
-  const hint =
-    servesChat && servesWriteups
-      ? t("settingsPage.llms.engine.cloudInUse", { provider: providerLabel })
-      : servesChat
-        ? t("settingsPage.llms.engine.cloudServesChat", { provider: providerLabel })
-        : servesWriteups
-          ? t("settingsPage.llms.engine.cloudServesWriteups", { provider: providerLabel })
-          : selectedHasKey
-            ? t("settingsPage.llms.engine.cloudChooseHint", { provider: providerLabel })
-            : t("settingsPage.llms.engine.cloudSwitchHint", { provider: providerLabel });
+  const hint = selectedInUse
+    ? t("settingsPage.llms.engine.cloudInUse", { provider: providerLabel })
+    : selectedHasKey
+      ? t("settingsPage.llms.engine.cloudChooseHint", { provider: providerLabel })
+      : t("settingsPage.llms.engine.cloudSwitchHint", { provider: providerLabel });
 
   return (
     <div className="space-y-4">
@@ -192,7 +158,7 @@ function CloudKeysSection() {
             id: row.id,
             name: providerName(row.id),
             configured: configured[index],
-            roles: rolesOf(row.id),
+            roles: isServing(row.id) ? [t("reasoning.providerGrid.inUse")] : [],
             note: rowLink?.noteKey ? t(rowLink.noteKey) : undefined,
           };
         })}
@@ -206,13 +172,13 @@ function CloudKeysSection() {
           {link && <GetApiKeyLink url={link.url} />}
         </div>
         <ApiKeyInput apiKey={value ?? ""} setApiKey={setValue} label="" helpText={hint} />
-        {selectedHasKey && !(servesChat && servesWriteups) && (
+        {selectedHasKey && !selectedInUse && (
           <button
             type="button"
-            onClick={useForBoth}
+            onClick={useProvider}
             className="text-xs font-medium text-primary transition-colors hover:text-primary-hover"
           >
-            {t("settingsPage.llms.engine.useForBoth", { provider: providerLabel })}
+            {t("settingsPage.llms.engine.useProvider", { provider: providerLabel })}
           </button>
         )}
       </div>
@@ -220,23 +186,17 @@ function CloudKeysSection() {
   );
 }
 
-/**
- * Local: the shared model list. A pick routes chat AND actions at it — one
- * LLM, chosen once. Reads from the chat scope (the canonical copy) and
- * writes both.
- */
+/** Local: the model list. A pick is the one model. */
 function LocalModelSection() {
   const { t } = useTranslation();
-  const chat = useSettingsStore(
+  const current = useSettingsStore(
     useShallow((s) => {
       const config = selectResolvedLLMConfig(s, "chatIntelligence");
       return { provider: config.provider, model: config.model };
     })
   );
-  const setShared = (patch: { provider?: string; model?: string }) => {
+  const setLocal = (patch: { provider?: string; model?: string }) =>
     setResolvedLLMConfig("chatIntelligence", { mode: "local", ...patch });
-    setResolvedLLMConfig("actions", { mode: "local", ...patch });
-  };
 
   return (
     <div className="space-y-3">
@@ -244,10 +204,10 @@ function LocalModelSection() {
           then itemize per model. */}
       <p className="text-xs leading-snug text-muted-foreground">{t("models.local.note")}</p>
       <ReasoningModelSelector
-        reasoningModel={chat.model}
-        setReasoningModel={(model) => setShared({ model })}
-        localReasoningProvider={chat.provider}
-        setLocalReasoningProvider={(provider) => setShared({ provider })}
+        reasoningModel={current.model}
+        setReasoningModel={(model) => setLocal({ model })}
+        localReasoningProvider={current.provider}
+        setLocalReasoningProvider={(provider) => setLocal({ provider })}
         cloudReasoningBaseUrl=""
         setCloudReasoningBaseUrl={() => {}}
         mode="local"
@@ -259,9 +219,8 @@ function LocalModelSection() {
 export default function LanguageModelsPanel() {
   const { t } = useTranslation();
 
-  // The chat scope is the canonical copy of the shared engine choice; actions
-  // follow it through setCoreLlmEngine. A legacy LAN/enterprise setup leaves
-  // neither card active — an honest picture.
+  // A legacy LAN/enterprise setup leaves neither card active — an honest
+  // picture.
   const engineMode = useSettingsStore(
     (s) => selectResolvedLLMConfig(s, "chatIntelligence").mode || "local"
   );

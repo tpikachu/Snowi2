@@ -1964,31 +1964,25 @@
         "dictationTranslation": "翻譯",
         "providers": "API 金鑰"
       },
-      "scopes": {
-        "chat": "聊天",
-        "writeups": "會議紀要"
-      },
       "reroute": {
         "title": "模型已移動",
-        "moved": "由於 {{from}} 金鑰已移除，{{scope}}已移至 {{to}} 的 {{model}}。",
+        "moved": "由於 {{from}} 金鑰已移除，你的 AI 模型已移至 {{to}} 的 {{model}}。",
         "needsSetupTitle": "需要模型",
-        "needsSetup": "{{scope}}沒有模型：{{from}} 金鑰已移除，且沒有其他供應商設定金鑰。",
+        "needsSetup": "沒有 AI 模型：{{from}} 金鑰已移除，且沒有其他供應商設定金鑰。",
         "speechInUseTitle": "此金鑰正被目前會議使用",
         "speechInUse": "正在錄製的會議透過 {{provider}} 轉錄。目前的工作階段會繼續；下一次會議需要金鑰。"
       },
       "engine": {
         "title": "引擎",
-        "description": "聊天和會議紀要的執行位置。一次選擇同時作用於兩者——模型本身在使用處選擇。",
-        "cloudInUse": "聊天與會議摘要透過 {{provider}} 執行。",
-        "cloudServesChat": "聊天執行於 {{provider}}。",
-        "cloudServesWriteups": "會議紀要執行於 {{provider}}。",
-        "useForBoth": "在 {{provider}} 上執行聊天與會議紀要",
-        "cloudChooseHint": "{{provider}} 已有金鑰。聊天與會議紀要執行於其他供應商。",
-        "cloudSwitchHint": "儲存金鑰後，聊天與會議摘要將切換至 {{provider}}。"
+        "description": "你的 AI 模型的執行位置。模型本身在使用處選擇：聊天列、會議卡片，以及筆記中的「生成筆記」。",
+        "cloudInUse": "你的 AI 模型透過 {{provider}} 執行。",
+        "cloudChooseHint": "{{provider}} 已有金鑰。你的 AI 模型執行於其他供應商。",
+        "cloudSwitchHint": "儲存金鑰後，你的 AI 模型將切換至 {{provider}}。",
+        "useProvider": "使用 {{provider}}"
       },
       "provider": {
         "title": "雲端服務商",
-        "description": "聊天與會議摘要在此處選擇的服務商上執行，使用你自己的 API 金鑰。模型本身可在使用它的地方直接選擇。"
+        "description": "你的 AI 模型在此處選擇的服務商上執行，使用你自己的 API 金鑰。模型本身可在使用它的地方直接選擇。"
       }
     },
     "transcription": {
@@ -2540,8 +2534,7 @@
       "generic": "無法完成變更，請再試一次。"
     },
     "sidebar": {
-      "newNote": "新增筆記",
-      "actions": "操作"
+      "newNote": "新增筆記"
     },
     "spaces": {
       "privateSpaces": "私人空間",
@@ -2840,22 +2833,6 @@
       "showInFileManager": "在{{manager}}中顯示"
     },
     "actions": {
-      "manageTitle": "自訂動作",
-      "addAction": "新增動作",
-      "editAction": "編輯動作",
-      "namePlaceholder": "動作名稱",
-      "descriptionPlaceholder": "簡要描述（選填）",
-      "promptPlaceholder": "AI 應如何處理筆記內容？",
-      "builtIn": "內建",
-      "save": "儲存",
-      "update": "更新",
-      "cancel": "取消",
-      "noActions": "尚無自訂動作",
-      "promptLabel": "提示詞",
-      "emptyEditorTitle": "選擇動作",
-      "emptyEditorDescription": "從列表中選擇一個動作或建立新動作",
-      "runAction": "執行 {{name}}",
-      "selectAction": "選擇動作",
       "done": "完成",
       "builtin": {
         "generateNotes": {
@@ -2868,8 +2845,7 @@
         "actionFailed": "操作失敗",
         "noEndpoint": "沒有為操作設定自架伺服器位址。",
         "configure": "前往設定"
-      },
-      "defaultModel": "預設"
+      }
     },
     "empty": {
       "title": "這裡還沒有筆記",
@@ -3429,7 +3405,6 @@
       "addKey": "新增金鑰",
       "localGroup": "本機模型",
       "choose": "選擇模型",
-      "defaultWithModel": "{{label}}（{{model}}）",
       "customModel": "其他模型…",
       "customModelPlaceholder": "供應商/模型 ID",
       "useModel": "使用"

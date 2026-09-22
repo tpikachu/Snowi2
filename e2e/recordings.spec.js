@@ -125,6 +125,13 @@ test("a meeting leaves one playable recording on its note", async () => {
   await strip.getByRole("button", { name: "Pause" }).click();
   await expect(strip.getByRole("button", { name: "Play" })).toBeVisible();
 
+  // The note's chat bar: the one model chip first, the ask field, and a plain
+  // Generate Notes button — no actions dropdown (client direction, 2026-09-22).
+  await expect(page.getByRole("button", { name: "Model" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Generate Notes" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Select action" })).toHaveCount(0);
+  await page.screenshot({ path: test.info().outputPath("note-chat-bar.png") });
+
   // The raw mirrors go once everything that reads them is done: the MP3 is
   // encoded first, and on a machine with the archive model the pass follows.
   const leftovers = () =>

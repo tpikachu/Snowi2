@@ -86,7 +86,7 @@ export const getAppSettingsTool: ToolDefinition = {
   description:
     "Read Snowy's own current settings: hotkeys (with which slots exist), " +
     "appearance (theme, UI language, text size), which AI provider and model " +
-    "each feature uses, and notification preferences. Never contains API " +
+    "the app runs on, and notification preferences. Never contains API " +
     "keys or other credentials. Use it before answering questions about how " +
     "the app is configured or before changing a hotkey.",
   parameters: { type: "object", properties: {}, additionalProperties: false },
@@ -94,10 +94,7 @@ export const getAppSettingsTool: ToolDefinition = {
 
   async execute(): Promise<ToolResult> {
     const state = useSettingsStore.getState();
-    const pick = (scope: "chatIntelligence" | "actions") => {
-      const config = selectResolvedLLMConfig(state, scope);
-      return { mode: config.mode, provider: config.provider, model: config.model };
-    };
+    const model = selectResolvedLLMConfig(state, "chatIntelligence");
     const snapshot = buildAppSettingsSnapshot({
       hotkeys: {
         dictation: state.dictationKey,
@@ -113,7 +110,7 @@ export const getAppSettingsTool: ToolDefinition = {
         uiLanguage: state.uiLanguage,
         uiTextScale: state.uiTextScale,
       },
-      aiModels: { chatIntelligence: pick("chatIntelligence"), actions: pick("actions") },
+      aiModel: { mode: model.mode, provider: model.provider, model: model.model },
       notifications: { meetingDetection: state.notifyMeetingDetection },
     });
     return {

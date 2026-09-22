@@ -258,7 +258,7 @@ export function ModelCard({
         // The caveat badge rides the second line, not the title row: beside
         // the name, tier and Recommended it squeezed the name into an
         // ellipsis at ordinary window widths.
-        <p
+        <div
           className={cn(
             "mt-0.5 flex items-center gap-1.5 pl-[18px] text-[11px] leading-snug",
             model.noteTone === "warn" ? "text-warning" : "text-muted-foreground"
@@ -266,7 +266,7 @@ export function ModelCard({
         >
           {model.note && <span className="min-w-0 truncate">{model.note}</span>}
           {model.caveat && <LocalModelCaveat toolsOff={model.caveat.toolsOff} />}
-        </p>
+        </div>
       )}
     </div>
   );

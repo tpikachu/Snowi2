@@ -15,13 +15,8 @@ import { useSpeechModelDownloadStatus } from "./useSpeechModelDownloadStatus";
 const selectSpeechOk = (state: SettingsState): boolean =>
   selectMeetingSpeechReadiness(state) === "ready";
 
-// The two AI scopes are published separately so the bar can mirror the Home
-// card's capability rows exactly: actions writes the meeting note, and
-// chatIntelligence answers the bar's own questions (screen questions included
-// — they ride the chat model, there is no separate vision setup).
-const selectActionsOk = (state: SettingsState): boolean =>
-  selectLLMConfigReady(state, selectResolvedLLMConfig(state, "actions"));
-
+// One model answers the bar's questions and writes the meeting note; the
+// wire still carries both booleans, from the same answer.
 const selectChatOk = (state: SettingsState): boolean =>
   selectLLMConfigReady(state, selectResolvedLLMConfig(state, "chatIntelligence"));
 
@@ -34,8 +29,8 @@ const selectChatOk = (state: SettingsState): boolean =>
  */
 export function useBarStatusPublisher() {
   const speechOk = useSettingsStore(selectSpeechOk);
-  const actionsOk = useSettingsStore(selectActionsOk);
   const chatOk = useSettingsStore(selectChatOk);
+  const actionsOk = chatOk;
 
   // Download state rides the same channel, and for the same reason: the
   // download's progress events only reach the window that started it — this

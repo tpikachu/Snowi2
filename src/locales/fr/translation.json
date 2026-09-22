@@ -2247,31 +2247,25 @@
         "dictationTranslation": "Traduction",
         "providers": "Clés API"
       },
-      "scopes": {
-        "chat": "Chat",
-        "writeups": "Comptes rendus"
-      },
       "reroute": {
         "title": "Modèle déplacé",
-        "moved": "{{scope}} est passé à {{model}} sur {{to}} parce que la clé {{from}} a été retirée.",
+        "moved": "Votre modèle d'IA est passé à {{model}} sur {{to}} parce que la clé {{from}} a été retirée.",
         "needsSetupTitle": "Modèle requis",
-        "needsSetup": "{{scope}} n'a pas de modèle : la clé {{from}} a été retirée et aucun autre fournisseur n'a de clé.",
+        "needsSetup": "Aucun modèle d'IA : la clé {{from}} a été retirée et aucun autre fournisseur n'a de clé.",
         "speechInUseTitle": "Clé utilisée par cette réunion",
         "speechInUse": "La réunion en cours d'enregistrement transcrit via {{provider}}. Elle garde sa session actuelle ; la prochaine réunion aura besoin d'une clé."
       },
       "engine": {
         "title": "Moteur",
-        "description": "Où s'exécutent le chat et les comptes rendus de réunion. Un seul choix alimente les deux — le modèle se choisit là où vous l'utilisez.",
-        "cloudInUse": "Le chat et les comptes rendus de réunion s'exécutent sur {{provider}}.",
-        "cloudServesChat": "Le chat s'exécute sur {{provider}}.",
-        "cloudServesWriteups": "Les comptes rendus de réunion s'exécutent sur {{provider}}.",
-        "useForBoth": "Exécuter le chat et les comptes rendus sur {{provider}}",
-        "cloudChooseHint": "{{provider}} a une clé. Le chat et les comptes rendus s'exécutent ailleurs.",
-        "cloudSwitchHint": "Enregistrez une clé pour basculer le chat et les comptes rendus de réunion vers {{provider}}."
+        "description": "Où s'exécute votre modèle d'IA. Le modèle se choisit là où vous l'utilisez : la barre de chat, la carte de réunion et Générer des notes dans une note.",
+        "cloudInUse": "Votre modèle d'IA s'exécute sur {{provider}}.",
+        "cloudChooseHint": "{{provider}} a une clé. Votre modèle d'IA s'exécute ailleurs.",
+        "cloudSwitchHint": "Enregistrez une clé pour basculer votre modèle d'IA vers {{provider}}.",
+        "useProvider": "Utiliser {{provider}}"
       },
       "provider": {
         "title": "Fournisseur cloud",
-        "description": "Le chat et les comptes rendus de réunion s'exécutent chez le fournisseur choisi ici, avec votre propre clé API. Le modèle se choisit directement là où vous l'utilisez."
+        "description": "Votre modèle d'IA s'exécute chez le fournisseur choisi ici, avec votre propre clé API. Le modèle se choisit directement là où vous l'utilisez."
       }
     },
     "transcription": {
@@ -2747,8 +2741,7 @@
       "generic": "La modification n’a pas pu être effectuée. Réessayez."
     },
     "sidebar": {
-      "newNote": "Nouvelle note",
-      "actions": "Actions"
+      "newNote": "Nouvelle note"
     },
     "spaces": {
       "privateSpaces": "Espaces privés",
@@ -3063,22 +3056,6 @@
     },
     "actions": {
       "done": "Terminé",
-      "manageTitle": "Actions personnalisées",
-      "addAction": "Nouvelle action",
-      "editAction": "Modifier l'action",
-      "namePlaceholder": "Nom de l'action",
-      "descriptionPlaceholder": "Description brève (facultatif)",
-      "promptPlaceholder": "Que doit faire l'IA avec le contenu de la note ?",
-      "builtIn": "Intégrée",
-      "save": "Enregistrer",
-      "update": "Mettre à jour",
-      "cancel": "Annuler",
-      "noActions": "Aucune action personnalisée pour l'instant",
-      "promptLabel": "Instruction",
-      "emptyEditorTitle": "Sélectionner une action",
-      "emptyEditorDescription": "Choisissez une action dans la liste ou créez-en une nouvelle",
-      "runAction": "Exécuter {{name}}",
-      "selectAction": "Sélectionner l'action",
       "builtin": {
         "generateNotes": {
           "name": "Générer des notes",
@@ -3090,8 +3067,7 @@
         "actionFailed": "L'action a échoué",
         "noEndpoint": "Aucune URL de serveur auto-hébergé n'est définie pour les actions.",
         "configure": "Configurer"
-      },
-      "defaultModel": "Par défaut"
+      }
     },
     "realtimeBanner": {
       "message": "Transcription en temps réel disponible avec Pro",
@@ -3594,7 +3570,6 @@
       "addKey": "Ajouter une clé",
       "localGroup": "Sur cet ordinateur",
       "choose": "Choisir le modèle",
-      "defaultWithModel": "{{label}} ({{model}})",
       "customModel": "Autre modèle…",
       "customModelPlaceholder": "fournisseur/id-du-modèle",
       "useModel": "Utiliser"

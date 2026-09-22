@@ -35,6 +35,7 @@ import type { NoteItem } from "../../types/electron";
 import type { ActionProcessingState } from "../../hooks/useActionProcessing";
 import ActionProcessingOverlay from "./ActionProcessingOverlay";
 import NoteBottomBar from "./NoteBottomBar";
+import ModelPickerChip from "../ModelPickerChip";
 import EmbeddedChat, { type EmbeddedChatMode } from "./EmbeddedChat";
 import { useEmbeddedChat } from "../../hooks/useEmbeddedChat";
 import { normalizeDbDate, formatShortDate, formatDateTime } from "../../utils/dateFormatting";
@@ -136,7 +137,7 @@ interface NoteEditorProps {
   onExportNote?: (format: "md" | "txt") => void;
   onExportTranscript?: (format: "txt" | "srt" | "json" | "md") => void;
   enhancement?: Enhancement;
-  actionPicker?: React.ReactNode;
+  generateNotes?: React.ReactNode;
   actionProcessingState?: ActionProcessingState;
   actionName?: string | null;
   diarizationSessionId?: string | null;
@@ -161,7 +162,7 @@ export default function NoteEditor({
   onExportNote,
   onExportTranscript,
   enhancement,
-  actionPicker,
+  generateNotes,
   actionProcessingState,
   actionName,
   diarizationSessionId,
@@ -982,7 +983,10 @@ export default function NoteEditor({
             canRecord={isRecording || canResume}
             resumeLabel={canResume ? t("notes.editor.resumeMeeting") : undefined}
             resumeHint={canResume ? t("notes.editor.resumeMeetingHint") : undefined}
-            actionPicker={isRecording ? undefined : actionPicker}
+            // The chip is the one model — the same pick as the chat composer
+            // and the cue card — and Generate Notes runs on it.
+            modelPicker={isRecording ? undefined : <ModelPickerChip scope="chatIntelligence" />}
+            generateNotes={isRecording ? undefined : generateNotes}
             hideInput={chatMode !== "hidden"}
           />
           {chatMode === "floating" && (

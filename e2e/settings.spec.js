@@ -115,7 +115,7 @@ test("models are picked at point of use; Settings is engine plus keys", async ()
   await expect(page.getByRole("radiogroup", { name: "Provider" })).toBeVisible();
 });
 
-test("the provider card is the switch: a key saved on the chosen card moves chat and write-ups there", async () => {
+test("the provider card is the switch: a key saved on the chosen card moves the model there", async () => {
   ({ app } = await launchApp(test.info()));
   const page = await controlPanelPage(app);
   await skipOnboarding(page);
@@ -132,43 +132,47 @@ test("the provider card is the switch: a key saved on the chosen card moves chat
 
   // Nothing keyed yet: the first card is merely selected, and the hint says
   // what saving a key there would do.
-  await expect(
-    page.getByText("Save a key to move chat and meeting write-ups to OpenAI.")
-  ).toBeVisible();
+  await expect(page.getByText("Save a key to move your AI model to OpenAI.")).toBeVisible();
 
   // A keyless card clicked is a pending choice, not a switch.
   await card("Anthropic").click();
   await expect(card("Anthropic")).toHaveAttribute("aria-checked", "true");
-  await expect(
-    page.getByText("Save a key to move chat and meeting write-ups to Anthropic.")
-  ).toBeVisible();
+  await expect(page.getByText("Save a key to move your AI model to Anthropic.")).toBeVisible();
 
   // Saving its key is the switch (client, 2026-09-15: "added the key, it
   // still uses the previous provider, no obvious way to switch").
   await page.getByRole("button", { name: "Add API key" }).click();
   await page.getByRole("textbox", { name: "API Key" }).fill("sk-ant-e2e");
   await page.keyboard.press("Enter");
-  await expect(card("Anthropic")).toContainText("Chat");
-  await expect(card("Anthropic")).toContainText("Write-ups");
-  await expect(page.getByText("Chat and meeting write-ups run on Anthropic.")).toBeVisible();
+  await expect(card("Anthropic")).toContainText("In use");
+  await expect(page.getByText("Your AI model runs on Anthropic.")).toBeVisible();
   await page.screenshot({ path: test.info().outputPath("provider-in-use.png") });
 
   // Another keyless card is pending again; Anthropic keeps serving meanwhile.
   await card("OpenAI").click();
-  await expect(
-    page.getByText("Save a key to move chat and meeting write-ups to OpenAI.")
-  ).toBeVisible();
-  await expect(card("Anthropic")).toContainText("Chat");
+  await expect(page.getByText("Save a key to move your AI model to OpenAI.")).toBeVisible();
+  await expect(card("Anthropic")).toContainText("In use");
 
-  // OpenRouter is a provider like the others now: its key routes both scopes
-  // at the curated slugs…
+  // OpenRouter is a provider like the others now: its key routes the model
+  // at the curated slug…
   await card("OpenRouter").click();
   await page.getByRole("button", { name: "Add API key" }).click();
   await page.getByRole("textbox", { name: "API Key" }).fill("sk-or-e2e");
   await page.keyboard.press("Enter");
-  await expect(card("OpenRouter")).toContainText("Chat");
-  await expect(card("OpenRouter")).toContainText("Write-ups");
-  await expect(card("Anthropic")).not.toContainText("Chat");
+  await expect(card("OpenRouter")).toContainText("In use");
+  await expect(card("Anthropic")).not.toContainText("In use");
+
+  // …a keyed card that is not in use offers the explicit switch, and a
+  // click alone does not move anything…
+  await card("Anthropic").click();
+  await expect(page.getByText("Anthropic has a key. Your AI model runs elsewhere.")).toBeVisible();
+  await expect(card("OpenRouter")).toContainText("In use");
+  await page.getByRole("button", { name: "Use Anthropic" }).click();
+  await expect(card("Anthropic")).toContainText("In use");
+  await expect(card("OpenRouter")).not.toContainText("In use");
+  await card("OpenRouter").click();
+  await page.getByRole("button", { name: "Use OpenRouter" }).click();
+  await expect(card("OpenRouter")).toContainText("In use");
 
   // …and the chat chip shows the pick under the vendor's label, and takes an
   // id typed in for anything beyond the curated slice. Settings is a modal;
@@ -186,7 +190,7 @@ test("the provider card is the switch: a key saved on the chosen card moves chat
   await page.screenshot({ path: test.info().outputPath("provider-openrouter-chip.png") });
 });
 
-test("several providers serve at once, and a removed key moves what ran on it", async () => {
+test("a removed key moves the model to the next keyed provider, and the last one stops at needs-a-model", async () => {
   ({ app } = await launchApp(test.info()));
   const page = await controlPanelPage(app);
   await skipOnboarding(page);
@@ -203,19 +207,19 @@ test("several providers serve at once, and a removed key moves what ran on it", 
     await page.keyboard.press("Enter");
   };
 
-  // OpenAI keyed first serves both; Anthropic keyed second serves nothing yet.
+  // A key saved on the chosen card is the switch, each time.
   await saveKey("OpenAI", "sk-e2e-openai");
-  await expect(card("OpenAI")).toContainText("Write-ups");
+  await expect(card("OpenAI")).toContainText("In use");
   await saveKey("Anthropic", "sk-ant-e2e");
-  await expect(card("Anthropic")).toContainText("Chat");
-  await expect(card("Anthropic")).toContainText("Write-ups");
+  await expect(card("Anthropic")).toContainText("In use");
+  await expect(card("OpenAI")).not.toContainText("In use");
 
-  // The chat chip moves chat alone: two providers serve, each card says which.
+  // The chat chip is the one model: a pick there shows on the provider page.
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.locator('[data-tour="nav-chat"]').click();
   const chip = page.getByRole("button", { name: "Model" });
-  await expect(chip).toHaveText(/Claude/, { timeout: 15_000 });
+  await expect(chip).toHaveText(/Claude Sonnet 5/, { timeout: 15_000 });
   await chip.click();
   await page
     .getByRole("button", { name: /GPT-5 Mini/ })
@@ -224,42 +228,32 @@ test("several providers serve at once, and a removed key moves what ran on it", 
   await expect(chip).toHaveText(/GPT-5 Mini/);
   await page.getByRole("button", { name: "Settings" }).first().click();
   await page.getByRole("button", { name: "Language Models" }).first().click();
-  await expect(card("OpenAI")).toContainText("Chat");
-  await expect(card("OpenAI")).not.toContainText("Write-ups");
-  await expect(card("Anthropic")).toContainText("Write-ups");
-  await expect(card("Anthropic")).not.toContainText("Chat");
-  // Viewing the other card must not switch anything: the click selects, and
-  // the explicit button under the field is what would move chat here.
-  await card("Anthropic").click();
-  await expect(
-    page.getByText("Meeting write-ups run on Anthropic.", { exact: true })
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Run chat and write-ups on Anthropic" })
-  ).toBeVisible();
-  await expect(card("OpenAI")).toContainText("Chat");
-  await page.screenshot({ path: test.info().outputPath("provider-two-serving.png") });
+  await expect(card("OpenAI")).toContainText("In use");
+  await expect(card("Anthropic")).not.toContainText("In use");
+  await page.screenshot({ path: test.info().outputPath("provider-two-keys.png") });
 
-  // Removing Anthropic's key moves write-ups to OpenAI's default, and says so.
+  // Removing OpenAI's key moves the model to Anthropic's default, and says so.
   await page.getByRole("button", { name: "Edit API key" }).click();
   await page.getByRole("textbox", { name: "API Key" }).fill("");
   await page.keyboard.press("Enter");
   await expect(
-    page.getByText("Write-ups moved to GPT-5 Nano on OpenAI because the Anthropic key was removed.")
+    page.getByText(
+      "Your AI model moved to Claude Sonnet 5 on Anthropic because the OpenAI key was removed."
+    )
   ).toBeVisible({ timeout: 10_000 });
-  await expect(card("OpenAI")).toContainText("Write-ups");
-  await expect(card("Anthropic")).not.toContainText("Write-ups");
+  await expect(card("Anthropic")).toContainText("In use");
+  await expect(card("OpenAI")).not.toContainText("In use");
 
-  // Removing the last key leaves both without a model, with the trip to set one up.
-  await card("OpenAI").click();
+  // Removing the last key leaves no model, with the trip to set one up —
+  // never a local model (client decision, 2026-09-22).
+  await card("Anthropic").click();
   await page.getByRole("button", { name: "Edit API key" }).click();
   await page.getByRole("textbox", { name: "API Key" }).fill("");
   await page.keyboard.press("Enter");
-  await expect(page.getByText(/Chat has no model: the OpenAI key was removed/)).toBeVisible({
+  await expect(page.getByText(/No AI model: the Anthropic key was removed/)).toBeVisible({
     timeout: 10_000,
   });
-  await expect(page.getByText(/Write-ups has no model: the OpenAI key was removed/)).toBeVisible();
-  await expect(card("OpenAI")).not.toContainText("Chat");
+  await expect(card("Anthropic")).not.toContainText("In use");
 });
 
 test("the text-size preference zooms the control panel window", async () => {

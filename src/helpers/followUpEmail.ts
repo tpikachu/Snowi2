@@ -1,7 +1,6 @@
 import reasoningService from "../services/ReasoningService";
-import { getSettings, selectResolvedActions, selectLLMConfigReady } from "../stores/settingsStore";
+import { getSettings, selectResolvedActions } from "../stores/settingsStore";
 import { buildActionsOverrides } from "./actionsOverrides";
-import { readActionModelOverride, applyActionModelOverride } from "../utils/actionModelOverride";
 import { buildMeetingRecap } from "../utils/meetingRecap";
 
 /**
@@ -9,8 +8,8 @@ import { buildMeetingRecap } from "../utils/meetingRecap";
  *
  * The write-up already says what happened; the email is the same substance in
  * a different register — addressed to the people who were there, in prose, no
- * markdown headings. It runs on the same resolved "actions" model the write-up
- * used, so having notes at all implies having this.
+ * markdown headings. It runs on the one model the write-up used, so having
+ * notes at all implies having this.
  */
 
 /** Why a draft could not start; the dialog maps these to friendly copy. */
@@ -61,18 +60,7 @@ export async function draftFollowUpEmail(source: FollowUpEmailSource): Promise<s
   if (!recap) throw new FollowUpEmailError("noWriteUp");
 
   const settings = getSettings();
-  let actions = selectResolvedActions(settings);
-  // The dialog's own model pick, stored like a per-action override; a stale
-  // one (deleted key, removed local model) degrades to the actions default.
-  const override = readActionModelOverride({
-    model_mode: settings.followUpModelMode,
-    model_provider: settings.followUpModelProvider,
-    model_id: settings.followUpModelId,
-  });
-  if (override) {
-    const overridden = applyActionModelOverride(actions, override);
-    if (selectLLMConfigReady(settings, overridden)) actions = overridden;
-  }
+  const actions = selectResolvedActions(settings);
   if (!actions.model) throw new FollowUpEmailError("noModel");
   if (actions.mode === "self-hosted" && !actions.remoteUrl) {
     throw new FollowUpEmailError("noEndpoint");

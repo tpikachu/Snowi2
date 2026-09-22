@@ -4,7 +4,6 @@ import { getSettings, selectResolvedActions, selectLLMConfigReady } from "./sett
 import { appendDictionarySuffix } from "../config/prompts";
 import { generateNoteTitle } from "../utils/generateTitle";
 import { buildActionsOverrides } from "../helpers/actionsOverrides";
-import { readActionModelOverride, applyActionModelOverride } from "../utils/actionModelOverride";
 import type { ActionItem } from "../types/electron";
 import { llmRemedy, type SettingsRemedy } from "../config/settingsRemedies";
 import logger from "../utils/logger";
@@ -133,26 +132,8 @@ export function runBackgroundAction(
   if (processingFlags.get(noteId)) return;
 
   const settings = getSettings();
-  let actions = selectResolvedActions(settings);
-  // The action's own model wins over the default — but only when it would
-  // actually serve a request (key still present, local model still on disk).
-  // A stale override degrades to the default silently rather than failing a
-  // write-up over a deleted key.
-  const override = readActionModelOverride(action);
-  let modelId = options.modelId;
-  if (override) {
-    const overridden = applyActionModelOverride(actions, override);
-    if (selectLLMConfigReady(settings, overridden)) {
-      actions = overridden;
-      modelId = override.model;
-    } else {
-      logger.warn(
-        "Action model override not usable; falling back to default",
-        { actionId: action.id, provider: override.provider, model: override.model },
-        "actions"
-      );
-    }
-  }
+  const actions = selectResolvedActions(settings);
+  const modelId = options.modelId;
 
   if (!modelId) {
     pushErrorEvent({ noteId, message: labels.noModel, remedy: "configureActions" });

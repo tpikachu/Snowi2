@@ -14,7 +14,11 @@ interface NoteBottomBarProps {
   onAskSubmit: (text: string) => void;
   onInputFocus?: () => void;
   askDisabled?: boolean;
-  actionPicker?: React.ReactNode;
+  /** The model chip, first in the bar: the one pick chat, the cue card and
+   *  Generate Notes all run on. */
+  modelPicker?: React.ReactNode;
+  /** The Generate Notes button, at the end of the ask field. */
+  generateNotes?: React.ReactNode;
   hideInput?: boolean;
   /** False hides the record control. */
   canRecord?: boolean;
@@ -36,7 +40,8 @@ export default function NoteBottomBar({
   onAskSubmit,
   onInputFocus,
   askDisabled,
-  actionPicker,
+  modelPicker,
+  generateNotes,
   hideInput,
   canRecord = true,
   resumeLabel,
@@ -111,6 +116,9 @@ export default function NoteBottomBar({
       <div
         className={cn("flex items-end gap-2 pointer-events-auto", hideInput && "justify-center")}
       >
+        {modelPicker && !hideInput && (
+          <div className="flex h-10 shrink-0 items-center">{modelPicker}</div>
+        )}
         {canRecord && (
           <div
             className={cn(
@@ -234,7 +242,7 @@ export default function NoteBottomBar({
                 <ArrowUp size={13} strokeWidth={2.5} />
               </button>
             ) : !isExpanded ? (
-              <div className="shrink-0">{actionPicker}</div>
+              <div className="shrink-0">{generateNotes}</div>
             ) : null}
           </div>
         )}

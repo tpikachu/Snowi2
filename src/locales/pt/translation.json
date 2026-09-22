@@ -1943,31 +1943,25 @@
         "dictationTranslation": "Tradução",
         "providers": "Chaves de API"
       },
-      "scopes": {
-        "chat": "Chat",
-        "writeups": "Resumos"
-      },
       "reroute": {
         "title": "Modelo movido",
-        "moved": "{{scope}} passou para {{model}} em {{to}} porque a chave de {{from}} foi removida.",
+        "moved": "O seu modelo de IA passou para {{model}} em {{to}} porque a chave de {{from}} foi removida.",
         "needsSetupTitle": "Modelo necessário",
-        "needsSetup": "{{scope}} não tem modelo: a chave de {{from}} foi removida e nenhum outro fornecedor tem chave.",
+        "needsSetup": "Sem modelo de IA: a chave de {{from}} foi removida e nenhum outro fornecedor tem chave.",
         "speechInUseTitle": "Chave em uso por esta reunião",
         "speechInUse": "A reunião a ser gravada transcreve através de {{provider}}. Mantém a sessão atual; a próxima reunião precisa de uma chave."
       },
       "engine": {
         "title": "Motor",
-        "description": "Onde o chat e os resumos de reuniões são executados. Uma escolha alimenta os dois — o modelo é escolhido onde você o usa.",
-        "cloudInUse": "O chat e os resumos de reuniões são executados em {{provider}}.",
-        "cloudServesChat": "O chat corre em {{provider}}.",
-        "cloudServesWriteups": "Os resumos de reuniões correm em {{provider}}.",
-        "useForBoth": "Executar chat e resumos em {{provider}}",
-        "cloudChooseHint": "{{provider}} tem chave. O chat e os resumos correm noutro fornecedor.",
-        "cloudSwitchHint": "Salve uma chave para mover o chat e os resumos de reuniões para {{provider}}."
+        "description": "Onde o seu modelo de IA é executado. O modelo é escolhido onde você o usa: na barra de chat, no cartão da reunião e em Gerar notas numa nota.",
+        "cloudInUse": "O seu modelo de IA é executado em {{provider}}.",
+        "cloudChooseHint": "{{provider}} tem chave. O seu modelo de IA corre noutro fornecedor.",
+        "cloudSwitchHint": "Salve uma chave para mover o seu modelo de IA para {{provider}}.",
+        "useProvider": "Usar {{provider}}"
       },
       "provider": {
         "title": "Provedor na nuvem",
-        "description": "O chat e os resumos de reuniões são executados no provedor escolhido aqui, com a sua própria chave de API. O modelo em si é escolhido bem onde você o usa."
+        "description": "O seu modelo de IA é executado no provedor escolhido aqui, com a sua própria chave de API. O modelo em si é escolhido bem onde você o usa."
       }
     },
     "transcription": {
@@ -2540,8 +2534,7 @@
       "generic": "Não foi possível concluir a alteração. Tente novamente."
     },
     "sidebar": {
-      "newNote": "Nova nota",
-      "actions": "Ações"
+      "newNote": "Nova nota"
     },
     "spaces": {
       "privateSpaces": "Espaços privados",
@@ -2840,22 +2833,6 @@
       "showInFileManager": "Mostrar no {{manager}}"
     },
     "actions": {
-      "manageTitle": "Ações personalizadas",
-      "addAction": "Nova ação",
-      "editAction": "Editar ação",
-      "namePlaceholder": "Nome da ação",
-      "descriptionPlaceholder": "Descrição breve (opcional)",
-      "promptPlaceholder": "O que a IA deve fazer com o conteúdo da nota?",
-      "builtIn": "Integrada",
-      "save": "Salvar",
-      "update": "Atualizar",
-      "cancel": "Cancelar",
-      "noActions": "Nenhuma ação personalizada ainda",
-      "promptLabel": "Instrução",
-      "emptyEditorTitle": "Selecionar ação",
-      "emptyEditorDescription": "Escolha uma ação da lista ou crie uma nova",
-      "runAction": "Executar {{name}}",
-      "selectAction": "Selecionar ação",
       "done": "Concluído",
       "builtin": {
         "generateNotes": {
@@ -2868,8 +2845,7 @@
         "actionFailed": "A ação falhou",
         "noEndpoint": "Não há URL de servidor próprio definida para as ações.",
         "configure": "Configurar"
-      },
-      "defaultModel": "Padrão"
+      }
     },
     "empty": {
       "title": "Ainda não há notas aqui",
@@ -3429,7 +3405,6 @@
       "addKey": "Adicionar chave",
       "localGroup": "Neste computador",
       "choose": "Escolher modelo",
-      "defaultWithModel": "{{label}} ({{model}})",
       "customModel": "Outro modelo…",
       "customModelPlaceholder": "fornecedor/id-do-modelo",
       "useModel": "Usar"

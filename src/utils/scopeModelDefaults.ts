@@ -1,40 +1,38 @@
 /**
- * The model each feature starts on the moment a provider key arrives.
+ * The model the app starts on the moment a provider key arrives.
  *
- * The contract behind the keys-only Settings page: entering an API key IS the
- * whole setup — Settings never asks for a model. Chat (which also serves the
- * meeting assistant) gets the provider's balanced everyday model; actions
- * (meeting write-ups, follow-up emails) get its cheapest capable one, because
- * write-ups run in the background where latency is invisible and volume adds
- * up. The user changes either later from the chips, never from Settings.
+ * One model serves everything intelligent (client direction, 2026-09-22):
+ * chat, the cue card's answers, the meeting write-up, the note title and the
+ * follow-up email. Until then chat and write-ups were two scopes with two
+ * defaults, write-ups on the cheapest one — a split that showed nowhere but
+ * in write-up quality. Entering an API key IS the whole setup — Settings
+ * never asks for a model — so each provider names its balanced everyday
+ * model here; the meeting assistant's fast lane derives the small sibling on
+ * its own (assistFastLane.ts).
  *
- * A key arriving applies these only to a scope that cannot currently serve
- * (see `applyDefaultModelsForNewKey` in settingsStore): a model someone
+ * A key arriving applies the default only when the model cannot currently
+ * serve (`applyDefaultModelsForNewKey` in settingsStore): a model someone
  * picked, on any provider whose key is present, is never overridden by
  * adding another key. Choosing a provider card in Settings
- * (`setCoreCloudProvider`) is the deliberate switch, and applies them to both
- * scopes. OpenRouter's entry names slugs from the curated slice in
- * `src/config/openrouterModels.ts`; `custom` has no entry — there is nothing
- * safe to default to on someone else's model list.
+ * (`setCoreCloudProvider`) is the deliberate switch. OpenRouter's entry is a
+ * slug from the curated slice in `src/config/openrouterModels.ts`; `custom`
+ * has no entry — there is nothing safe to default to on someone else's model
+ * list.
  *
  * Pure — no store, no Electron — so the mapping is testable, and the test can
  * hold every id here against the model registry.
  */
 
-export type DefaultableScope = "chatIntelligence" | "actions";
-
-export const DEFAULTABLE_SCOPES: readonly DefaultableScope[] = ["chatIntelligence", "actions"];
-
-const SCOPE_DEFAULT_MODELS: Record<string, Record<DefaultableScope, string>> = {
-  openai: { chatIntelligence: "gpt-5-mini", actions: "gpt-5-nano" },
-  anthropic: { chatIntelligence: "claude-sonnet-5", actions: "claude-haiku-4-5" },
-  gemini: { chatIntelligence: "gemini-3.5-flash", actions: "gemini-2.5-flash-lite" },
-  groq: { chatIntelligence: "openai/gpt-oss-120b", actions: "openai/gpt-oss-20b" },
-  tinfoil: { chatIntelligence: "kimi-k2-6", actions: "gpt-oss-120b" },
-  corti: { chatIntelligence: "corti-s1", actions: "corti-s1-instant" },
-  openrouter: { chatIntelligence: "openai/gpt-5-mini", actions: "openai/gpt-5-nano" },
+const DEFAULT_MODELS: Record<string, string> = {
+  openai: "gpt-5-mini",
+  anthropic: "claude-sonnet-5",
+  gemini: "gemini-3.5-flash",
+  groq: "openai/gpt-oss-120b",
+  tinfoil: "kimi-k2-6",
+  corti: "corti-s1",
+  openrouter: "openai/gpt-5-mini",
 };
 
-export function defaultModelForScope(providerId: string, scope: DefaultableScope): string | null {
-  return SCOPE_DEFAULT_MODELS[providerId]?.[scope] ?? null;
+export function defaultModelForProvider(providerId: string): string | null {
+  return DEFAULT_MODELS[providerId] ?? null;
 }

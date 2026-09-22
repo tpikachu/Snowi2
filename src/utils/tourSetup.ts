@@ -10,21 +10,13 @@ import type { TourStep } from "../config/tourSteps";
  * diagnosis is `settingsRemedies`, which runs on an actual failure.
  */
 export interface TourSetupState {
-  /** Resolved model id for the actions scope, if any. */
-  actionsModel?: string | null;
-  /** Resolved model id for the chatIntelligence scope, if any. */
-  chatModel?: string | null;
+  /** The resolved id of the one AI model, if any. */
+  model?: string | null;
 }
 
-/**
- * Whether both model-backed features have something selected.
- *
- * Both, not either: a user with a write-up model but no chat model still lands
- * on a chat that cannot answer, which is exactly the confusion this step
- * exists to head off.
- */
+/** Whether a model is chosen at all. */
 export function isModelSetupComplete(state: TourSetupState): boolean {
-  return Boolean(state.actionsModel?.trim() && state.chatModel?.trim());
+  return Boolean(state.model?.trim());
 }
 
 /**

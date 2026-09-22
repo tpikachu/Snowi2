@@ -1,15 +1,14 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Sparkles } from "lucide-react";
 import { useToast } from "../ui/useToast";
 import NoteEditor from "./NoteEditor";
 import SpacesTree from "./SpacesTree";
 import ContextPaneSection from "../shell/ContextPaneSection";
 import { ContainerOverview } from "./overview/ContainerOverview";
-import ActionPicker from "./ActionPicker";
-import ActionManagerDialog from "./ActionManagerDialog";
+import GenerateNotesButton from "./GenerateNotesButton";
 import AddNotesToFolderDialog from "./AddNotesToFolderDialog";
 import { useActionProcessing } from "../../hooks/useActionProcessing";
+import { getGenerateNotesAction } from "../../helpers/meetingNoteGeneration";
 import type { NoteMoveTarget } from "../../hooks/useNoteDragAndDrop";
 import type { NoteItem } from "../../types/electron";
 import { useSettingsStore, selectResolvedActions } from "../../stores/settingsStore";
@@ -176,8 +175,6 @@ export default function PersonalNotesView({
     [commitDraft, persistPendingWrites, takePendingSnapshots]
   );
   const { toast } = useToast();
-  const [showActionManager, setShowActionManager] = useState(false);
-
   const effectiveModelId = useSettingsStore((settings) => selectResolvedActions(settings).model);
 
   const isTranscribing = useMeetingRecordingStore((s) => s.isRecording);
@@ -558,26 +555,6 @@ export default function PersonalNotesView({
       {/* Hoisted into the shell's context pane; the tree keeps its state here. */}
       <ContextPaneSection inlineClassName="w-52 shrink-0 border-r border-border-subtle">
         <div className="flex h-full min-h-0 flex-col">
-          <div className="px-2 pt-2 pb-1 shrink-0 space-y-0.5">
-            {/* Writing actions belongs next to the notes they run on — an
-                action is a prompt about your own writing, and you think of one
-                while reading a note, not while in Settings. What lives in
-                Settings is the *model* they run on, which is a different
-                question and a different screen. */}
-            <button
-              onClick={() => setShowActionManager(true)}
-              className={cn(
-                "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs",
-                "text-muted-foreground/80 hover:text-foreground hover:bg-foreground/5",
-                "transition-colors duration-150",
-                "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              )}
-            >
-              <Sparkles size={14} className="shrink-0" />
-              {t("notes.sidebar.actions")}
-            </button>
-          </div>
-
           <SpacesTree
             onDeleteNote={handleDelete}
             onMoveNote={handleMoveNote}
@@ -620,9 +597,9 @@ export default function PersonalNotesView({
               calendarEventName={calendarEventName}
               actionProcessingState={actionProcessingState}
               actionName={actionName}
-              actionPicker={
-                <ActionPicker
-                  onRunAction={(action) => {
+              generateNotes={
+                <GenerateNotesButton
+                  onClick={async () => {
                     if (!editorNote) return;
                     // Must come from the store's live segments: `transcript` is
                     // only populated once Stop returns, so reading it here would
@@ -634,6 +611,8 @@ export default function PersonalNotesView({
                       them: t("notes.speaker.them"),
                     });
                     if (!request) return;
+                    const action = await getGenerateNotesAction();
+                    if (!action) return;
 
                     runAction(action, request.input, request.contentHash, {
                       modelId: effectiveModelId,
@@ -805,8 +784,6 @@ export default function PersonalNotesView({
           onNotesAdded={handleNotesAdded}
         />
       )}
-
-      <ActionManagerDialog open={showActionManager} onOpenChange={setShowActionManager} />
     </div>
   );
 }

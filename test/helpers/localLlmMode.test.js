@@ -13,7 +13,7 @@ const { createRendererServer, installBrowserGlobals } = require("../lib/renderer
  */
 const MARKERS = { _llmScopeKeysMigrated: "1", _llmScopeRepair: "1" };
 
-test("a stored local selection resolves as local, and the engine switch routes both scopes", async (t) => {
+test("a stored local selection resolves as local, and the write-up follows the one model", async (t) => {
   installBrowserGlobals(t, {
     initialStorage: {
       ...MARKERS,
@@ -36,7 +36,7 @@ test("a stored local selection resolves as local, and the engine switch routes b
     assert.equal(LOCAL_LLM_ENABLED, true);
   });
 
-  await t.test("both scopes read exactly what was stored", () => {
+  await t.test("the model reads exactly what was stored, and the write-up resolves to it", () => {
     for (const scope of ["chatIntelligence", "actions"]) {
       const cfg = selectResolvedLLMConfig(state(), scope);
       assert.deepEqual(
@@ -49,7 +49,7 @@ test("a stored local selection resolves as local, and the engine switch routes b
   });
 
   await t.test(
-    "flipping to cloud seeds the first keyed provider's defaults into both scopes",
+    "flipping to cloud seeds the first keyed provider's default, and the write-up follows",
     () => {
       // Straight into the store: the typed-key setter's debounced disk write
       // would outlive this test's window (scopeDefaultsOnKey covers the setter).
@@ -63,7 +63,7 @@ test("a stored local selection resolves as local, and the engine switch routes b
       const actions = selectResolvedLLMConfig(state(), "actions");
       assert.deepEqual(
         [actions.mode, actions.provider, actions.model],
-        ["providers", "openai", "gpt-5-nano"]
+        ["providers", "openai", "gpt-5-mini"]
       );
     }
   );
@@ -74,29 +74,30 @@ test("a stored local selection resolves as local, and the engine switch routes b
       setCoreLlmEngine("local");
       const chat = selectResolvedLLMConfig(state(), "chatIntelligence");
       assert.deepEqual([chat.mode, chat.provider, chat.model], ["local", "", ""]);
-      // Actions borrows the cleanup scope's cloud id through its fallback chain
-      // until a local model is picked, and a cloud id under local mode means
-      // cloud — so write-ups keep a working route in between, never a cloud id
-      // handed to llama-server.
+      // The write-up is the same model, so it is cleared with it.
       const actions = selectResolvedLLMConfig(state(), "actions");
-      assert.equal(actions.mode, "providers");
-      assert.ok(actions.provider);
+      assert.deepEqual([actions.mode, actions.provider, actions.model], ["local", "", ""]);
     }
   );
 
-  await t.test("picking a local model in Settings routes chat and write-ups at it together", () => {
-    for (const scope of ["chatIntelligence", "actions"]) {
-      setResolvedLLMConfig(scope, { mode: "local", provider: "qwen", model: "qwen3.5-4b-q4_k_m" });
+  await t.test(
+    "picking a local model in Settings routes chat and the write-up at it together",
+    () => {
+      setResolvedLLMConfig("chatIntelligence", {
+        mode: "local",
+        provider: "qwen",
+        model: "qwen3.5-4b-q4_k_m",
+      });
+      for (const scope of ["chatIntelligence", "actions"]) {
+        const cfg = selectResolvedLLMConfig(state(), scope);
+        assert.deepEqual(
+          [cfg.mode, cfg.provider, cfg.model],
+          ["local", "qwen", "qwen3.5-4b-q4_k_m"],
+          scope
+        );
+      }
     }
-    for (const scope of ["chatIntelligence", "actions"]) {
-      const cfg = selectResolvedLLMConfig(state(), scope);
-      assert.deepEqual(
-        [cfg.mode, cfg.provider, cfg.model],
-        ["local", "qwen", "qwen3.5-4b-q4_k_m"],
-        scope
-      );
-    }
-  });
+  );
 });
 
 test("a fresh install starts on cloud, and a cloud id under local mode means cloud", async (t) => {

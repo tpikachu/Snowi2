@@ -12,8 +12,8 @@ const modelName = (id: string) => openrouterModelLabel(id) ?? getCloudModel(id)?
 
 /**
  * Headless. Mount once inside ToastProvider: when a provider key is removed
- * and a feature that ran on it moves elsewhere (or is left without a model),
- * this says so — one card per feature, each naming where it went and why.
+ * and the AI model moves elsewhere (or is left without a model), this says
+ * so — one card naming where it went and why.
  */
 export default function RouteNoticeToastListener() {
   const { t } = useTranslation();
@@ -23,16 +23,10 @@ export default function RouteNoticeToastListener() {
   useEffect(() => {
     if (count === 0) return;
     for (const move of consumeRouteNotices()) {
-      const scope = t(
-        move.scope === "actions"
-          ? "settingsPage.llms.scopes.writeups"
-          : "settingsPage.llms.scopes.chat"
-      );
       if (move.to && move.model) {
         toast({
           title: t("settingsPage.llms.reroute.title"),
           description: t("settingsPage.llms.reroute.moved", {
-            scope,
             model: modelName(move.model),
             to: providerName(move.to),
             from: providerName(move.from),
@@ -44,7 +38,6 @@ export default function RouteNoticeToastListener() {
         toastId = toast({
           title: t("settingsPage.llms.reroute.needsSetupTitle"),
           description: t("settingsPage.llms.reroute.needsSetup", {
-            scope,
             from: providerName(move.from),
           }),
           variant: "destructive",
