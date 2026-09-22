@@ -50,7 +50,10 @@
     "hideControlPanel": "Kontrollzentrum ausblenden",
     "quit": "Snowy beenden",
     "tooltip": "Snowy – Sprachdiktat",
-    "showAssistantBar": "Assistenten-Leiste anzeigen"
+    "showAssistantBar": "Assistenten-Leiste anzeigen",
+    "showDot": "Snowy anzeigen",
+    "hideDot": "Snowy-Punkt ausblenden",
+    "showCueCard": "Karte anzeigen"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -3241,7 +3244,8 @@
         "unavailable": "Websuche ist mit diesem KI-Anbieter nicht verfügbar",
         "unavailableLocal": "Die Websuche läuft über einen Cloud-Anbieter — wechseln Sie das Modell, um sie zu nutzen",
         "sources": "Quellen"
-      }
+      },
+      "hide": "Karte ausblenden"
     },
     "transcript": {
       "showEarlier_one": "{{count}} frühere Nachricht anzeigen",
@@ -3568,6 +3572,11 @@
       "customModel": "Anderes Modell…",
       "customModelPlaceholder": "anbieter/modell-id",
       "useModel": "Verwenden"
+    },
+    "dot": {
+      "endMeeting": "Aufnahme · {{time}} · Klick zum Beenden",
+      "paused": "Pausiert · {{time}} · Klick zum Beenden",
+      "menu": "Snowy-Menü"
     }
   },
   "integrations": {
@@ -4042,9 +4051,9 @@
         "title": "Einstellungen"
       },
       "bar": {
-        "title": "Deine Assistenten-Leiste",
-        "body": "Die kleine schwebende Leiste ist Snowys Haustür: Frag alles zu deinen Meetings, starte eine Aufnahme oder spring direkt in jede Einstellung. Esc blendet sie aus.",
-        "hotkeyHint": "Zeigt oder versteckt die Leiste von überall. Auch das Tray-Symbol holt sie zurück — die Tasten änderst du unter Einstellungen → Tastenkürzel."
+        "title": "Der Snowy-Punkt",
+        "body": "Der kleine Punkt schwebt über deinen Anrufen. Klicke, um die Aufnahme zu starten, klicke erneut, um das Meeting zu beenden, und öffne mit Rechtsklick das Menü. Er leuchtet, während Snowy zuhört.",
+        "hotkeyHint": "Zeigt oder versteckt den Punkt von überall. Das Tray-Symbol holt ihn ebenfalls zurück, und die Tasten änderst du unter Einstellungen → Tastenkürzel."
       }
     }
   },

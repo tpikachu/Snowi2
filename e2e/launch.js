@@ -1,4 +1,5 @@
 // @ts-check
+/* global window -- browser global used inside page.evaluate callbacks */
 const path = require("path");
 const { _electron: electron } = require("@playwright/test");
 
@@ -56,7 +57,8 @@ async function controlPanelPage(app) {
   const deadline = Date.now() + CONTROL_PANEL_TIMEOUT_MS;
   for (;;) {
     for (const page of app.windows()) {
-      if (page.url().includes("panel=true")) {
+      // "panel=true" is also a substring of the cue card's "meeting-panel=true".
+      if (page.url().includes("panel=true") && !page.url().includes("meeting-panel")) {
         await page.waitForLoadState("domcontentloaded");
         return page;
       }
@@ -94,6 +96,42 @@ async function agentBarPage(app) {
 }
 
 /**
+ * The cue card's own window (?meeting-panel=true, ASSISTANT_DOT). Main
+ * creates it when a meeting starts, so this polls until then.
+ *
+ * @param {import("playwright").ElectronApplication} app
+ * @returns {Promise<import("playwright").Page>}
+ */
+async function cueCardPage(app) {
+  const deadline = Date.now() + CONTROL_PANEL_TIMEOUT_MS;
+  for (;;) {
+    for (const page of app.windows()) {
+      // Asked of the live renderer, not page.url(): a window created a
+      // moment ago can still report its previous target's URL, and a match
+      // on that once handed back the dictation window (2026-09-21).
+      const search = await page.evaluate(() => window.location.search).catch(() => "");
+      if (search.includes("meeting-panel=true")) {
+        await page.waitForLoadState("domcontentloaded");
+        // And the card itself, mounted: only a page that actually renders it
+        // is the card, whatever its URL said.
+        const mounted = await page
+          .locator(".meeting-panel-window")
+          .first()
+          .waitFor({ state: "attached", timeout: 5_000 })
+          .then(() => true)
+          .catch(() => false);
+        if (mounted) return page;
+      }
+    }
+    if (Date.now() > deadline) {
+      const urls = app.windows().map((page) => page.url());
+      throw new Error(`Cue card window never appeared. Windows: ${JSON.stringify(urls)}`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+}
+
+/**
  * Marks the first-run flows — onboarding and the product tour — as already
  * done and reloads, landing the window on the control panel. Without the tour
  * flag its modal overlay swallows every click the tests try to make.
@@ -110,9 +148,16 @@ async function skipOnboarding(page) {
     // TOUR_STORAGE_KEY in src/config/tourSteps.ts; completion is
     // "stored version >= current", so a high number survives version bumps.
     localStorage.setItem("tourCompletedVersion", "999");
+    // No meeting starts by itself under test. Meeting detection reads the
+    // machine running the suite — a call open in another app, a microphone
+    // held by something — and its prompt auto-starts a recording ten seconds
+    // later (2026-09-21: every wait past ~16 s found the dot recording).
+    // The settings store reads these at init and syncs them to main.
+    localStorage.setItem("autoStartDetectedMeetings", "false");
+    localStorage.setItem("notifyMeetingDetection", "false");
   });
   await page.reload();
   await page.waitForLoadState("domcontentloaded");
 }
 
-module.exports = { launchApp, controlPanelPage, agentBarPage, skipOnboarding };
+module.exports = { launchApp, controlPanelPage, agentBarPage, cueCardPage, skipOnboarding };

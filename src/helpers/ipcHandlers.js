@@ -118,6 +118,8 @@ const MEETING_PANEL_COMMANDS = new Set([
   "transcript",
   "webSearchOn",
   "webSearchOff",
+  // The cue card's own X (ASSISTANT_DOT): handled in main, never forwarded.
+  "hide",
 ]);
 /** Long enough for any question worth asking mid-meeting; short enough not to be a paste channel. */
 const MEETING_PANEL_QUESTION_MAX = 2000;
@@ -8628,6 +8630,34 @@ class IPCHandlers {
 
     ipcMain.handle("set-agent-window-bounds", async (_event, x, y, width, height) => {
       this.windowManager.setAgentWindowBounds(x, y, width, height);
+      return { success: true };
+    });
+
+    // The assistant dot's right-click menu — the tray's, popped at the dot.
+    ipcMain.handle("agent-dot-menu", async () => {
+      this.getTrayManager?.()?.popupDotMenu?.();
+      return { success: true };
+    });
+
+    // "Show cue card" from the dot's menu, and the card's own hide is a
+    // panel command ("hide") so the card needs nothing new.
+    ipcMain.handle("show-meeting-panel-window", async () => {
+      await this.windowManager.showMeetingPanelWindow?.({ focus: true });
+      return { success: true };
+    });
+
+    // A window's own bounds, for overlays that move or resize themselves:
+    // the dot drags by hand, the cue card resizes by its grips. Scoped to
+    // the sender, so no renderer can move another window.
+    ipcMain.handle("get-own-window-bounds", (event) => {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      return win && !win.isDestroyed() ? win.getBounds() : null;
+    });
+
+    ipcMain.handle("set-own-window-bounds", (event, x, y, width, height) => {
+      const win = BrowserWindow.fromWebContents(event.sender);
+      if (!win || win.isDestroyed()) return { success: false };
+      this.windowManager.setOwnWindowBounds(win, x, y, width, height);
       return { success: true };
     });
 

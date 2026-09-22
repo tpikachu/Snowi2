@@ -2,7 +2,13 @@
 const fs = require("fs");
 const path = require("path");
 const { test, expect } = require("@playwright/test");
-const { launchApp, controlPanelPage, agentBarPage, skipOnboarding } = require("./launch");
+const {
+  launchApp,
+  controlPanelPage,
+  agentBarPage,
+  cueCardPage,
+  skipOnboarding,
+} = require("./launch");
 
 /**
  * A meeting's audio is kept with its note. The synthesized demo call plays as
@@ -37,14 +43,18 @@ test("a meeting leaves one playable recording on its note", async () => {
   const page = await controlPanelPage(app);
   await skipOnboarding(page);
 
-  const bar = await agentBarPage(app);
-  const start = bar.getByRole("button", { name: "Start meeting" });
+  // The dot starts the meeting, the cue card comes up beside it, and the
+  // dot's click ends the session — the flow the client asked for.
+  const dot = await agentBarPage(app);
+  const start = dot.getByRole("button", { name: "Start meeting" });
   await start.waitFor({ timeout: 60_000 });
   await start.click();
-  const stop = bar.getByRole("button", { name: "Stop", exact: true });
-  await stop.waitFor({ timeout: 30_000 });
+  const card = await cueCardPage(app);
+  await card.getByRole("button", { name: "Stop", exact: true }).waitFor({ timeout: 30_000 });
+  const end = dot.getByRole("button", { name: /click to end/ });
+  await end.waitFor({ timeout: 30_000 });
   await page.waitForTimeout(MEETING_SECONDS * 1000);
-  await stop.click();
+  await end.click();
 
   const save = page.getByRole("button", { name: /^Save/ });
   await save.waitFor({ timeout: 30_000 });

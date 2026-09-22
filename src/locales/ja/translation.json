@@ -50,7 +50,10 @@
     "hideControlPanel": "コントロールパネルを非表示",
     "quit": "Snowy を終了",
     "tooltip": "Snowy - 音声ディクテーション",
-    "showAssistantBar": "アシスタントバーを表示"
+    "showAssistantBar": "アシスタントバーを表示",
+    "showDot": "Snowyを表示",
+    "hideDot": "Snowyのドットを隠す",
+    "showCueCard": "キューカードを表示"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -2962,7 +2965,8 @@
         "unavailable": "この AI プロバイダーではウェブ検索を使えません",
         "unavailableLocal": "ウェブ検索はクラウドプロバイダー経由で行われます — 使うにはモデルを切り替えてください",
         "sources": "出典"
-      }
+      },
+      "hide": "キューカードを隠す"
     },
     "transcript": {
       "showEarlier_one": "以前のメッセージを{{count}}件表示",
@@ -3403,6 +3407,11 @@
       "customModel": "その他のモデル…",
       "customModelPlaceholder": "ベンダー/モデルID",
       "useModel": "使用"
+    },
+    "dot": {
+      "endMeeting": "録音中 · {{time}} · クリックで終了",
+      "paused": "一時停止中 · {{time}} · クリックで終了",
+      "menu": "Snowyメニュー"
     }
   },
   "integrations": {
@@ -4042,9 +4051,9 @@
         "title": "設定"
       },
       "bar": {
-        "title": "アシスタントバーの紹介",
-        "body": "この小さなフローティングバーが Snowy の入口です。会議について何でも質問したり、録音を始めたり、設定に直接ジャンプしたり。Esc で隠せます。",
-        "hotkeyHint": "どこからでもバーを表示・非表示にできます。トレイアイコンからも呼び出せます。キーは「設定 → ホットキー」で変更できます。"
+        "title": "Snowyのドット",
+        "body": "小さなドットが通話の上に浮かびます。クリックで録音を開始、もう一度クリックで会議を終了、右クリックでメニューを開きます。Snowyが聞いている間は光ります。",
+        "hotkeyHint": "どこからでもドットを表示・非表示にできます。トレイアイコンからも戻せます。キーは設定 → ホットキーで変更できます。"
       }
     }
   },

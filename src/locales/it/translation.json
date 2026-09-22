@@ -50,7 +50,10 @@
     "hideControlPanel": "Nascondi pannello di controllo",
     "quit": "Esci da Snowy",
     "tooltip": "Snowy - Dettatura vocale",
-    "showAssistantBar": "Mostra barra dell'assistente"
+    "showAssistantBar": "Mostra barra dell'assistente",
+    "showDot": "Mostra Snowy",
+    "hideDot": "Nascondi il punto di Snowy",
+    "showCueCard": "Mostra la scheda"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -3034,7 +3037,8 @@
         "unavailable": "La ricerca web non è disponibile con questo provider di IA",
         "unavailableLocal": "La ricerca web passa da un provider cloud — cambia modello per usarla",
         "sources": "Fonti"
-      }
+      },
+      "hide": "Nascondi la scheda"
     },
     "transcript": {
       "showEarlier_one": "Mostra {{count}} messaggio precedente",
@@ -3403,6 +3407,11 @@
       "customModel": "Altro modello…",
       "customModelPlaceholder": "fornitore/id-modello",
       "useModel": "Usa"
+    },
+    "dot": {
+      "endMeeting": "Registrazione · {{time}} · clic per terminare",
+      "paused": "In pausa · {{time}} · clic per terminare",
+      "menu": "Menu di Snowy"
     }
   },
   "integrations": {
@@ -4042,9 +4051,9 @@
         "title": "Impostazioni"
       },
       "bar": {
-        "title": "Ecco la tua barra assistente",
-        "body": "La piccola barra flottante è la porta d'ingresso di Snowy: chiedi qualsiasi cosa sulle tue riunioni, avvia una registrazione o apri direttamente qualsiasi impostazione. Esc la nasconde.",
-        "hotkeyHint": "Mostra o nasconde la barra da qualsiasi punto. Anche l'icona nella barra di sistema la fa tornare — e puoi cambiare i tasti in Impostazioni → Scorciatoie."
+        "title": "Ecco il punto di Snowy",
+        "body": "Il piccolo punto fluttua sopra le tue chiamate. Fai clic per iniziare a registrare, di nuovo clic per terminare la riunione e clic destro per il menu. Si illumina mentre Snowy ascolta.",
+        "hotkeyHint": "Mostra o nasconde il punto da qualsiasi punto. Anche l'icona nella barra lo riporta, e puoi cambiare i tasti in Impostazioni → Scorciatoie."
       }
     }
   },

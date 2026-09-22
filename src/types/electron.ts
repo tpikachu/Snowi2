@@ -16,7 +16,9 @@ export type MeetingPanelCommand =
   | "transcript"
   /** The card's web search toggle — session state in the control panel's assist store. */
   | "webSearchOn"
-  | "webSearchOff";
+  | "webSearchOff"
+  /** Hide the cue card's own window (ASSISTANT_DOT); main handles it, the control panel never sees it. */
+  | "hide";
 
 /**
  * Setup readiness and download state for the assistant bar, published by the
@@ -2114,6 +2116,23 @@ declare global {
         height: number;
       } | null>;
       setAgentWindowBounds?: (x: number, y: number, width: number, height: number) => Promise<void>;
+      /** The assistant dot's right-click menu — the tray's, popped at the dot. */
+      agentDotMenu?: () => Promise<{ success: boolean }>;
+      /** Brings the cue card's own window up, focused. */
+      showMeetingPanelWindow?: () => Promise<{ success: boolean }>;
+      /** This renderer's own window bounds — the dot drags itself, the cue card resizes itself. */
+      getOwnWindowBounds?: () => Promise<{
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      } | null>;
+      setOwnWindowBounds?: (
+        x: number,
+        y: number,
+        width: number,
+        height: number
+      ) => Promise<{ success: boolean }>;
       hideAgentOverlay?: () => Promise<void>;
       startManualMeeting?: () => Promise<{ success: boolean; error?: string }>;
       openControlPanel?: (

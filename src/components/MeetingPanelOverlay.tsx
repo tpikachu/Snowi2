@@ -24,6 +24,7 @@ import {
   Sparkles,
   Square,
   TriangleAlert,
+  X,
 } from "lucide-react";
 import ModelPickerChip from "./ModelPickerChip";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
@@ -87,6 +88,9 @@ const CLOCK_INTERVAL_MS = 250;
 
 /** Below this the window is a bar again: ask field over toolbar, no thread. */
 const COMPACT_HEIGHT_PX = 140;
+/** Rendered in the cue card's own window (ASSISTANT_DOT), not inside the bar's. */
+const inOwnWindow =
+  typeof window !== "undefined" && window.location.search.includes("meeting-panel=true");
 
 const computeBarHeight = (level: number, index: number) => {
   const scaled = Math.sqrt(level) * 2.4 * BAR_WEIGHTS[index];
@@ -1127,6 +1131,20 @@ export default function MeetingPanelOverlay() {
               <LayoutDashboard size={11} className="text-hud-accent/90" />
               {t("notes.meetingPanel.transcript.button")}
             </button>
+            {/* In its own window (ASSISTANT_DOT) the card can be put away:
+                the dot stays, glowing, and the menu brings the card back.
+                Stop is the meeting's end; this is only the card's. */}
+            {inOwnWindow && (
+              <button
+                type="button"
+                onClick={() => void send("hide")}
+                title={t("notes.meetingPanel.hide")}
+                aria-label={t("notes.meetingPanel.hide")}
+                className={iconButtonClass}
+              >
+                <X size={13} />
+              </button>
+            )}
           </span>
         </div>
       </div>

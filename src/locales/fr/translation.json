@@ -50,7 +50,10 @@
     "hideControlPanel": "Masquer le panneau de contrôle",
     "quit": "Quitter Snowy",
     "tooltip": "Snowy - Dictée vocale",
-    "showAssistantBar": "Afficher la barre de l'assistant"
+    "showAssistantBar": "Afficher la barre de l'assistant",
+    "showDot": "Afficher Snowy",
+    "hideDot": "Masquer le point Snowy",
+    "showCueCard": "Afficher la carte"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -3241,7 +3244,8 @@
         "unavailable": "La recherche web n'est pas disponible avec ce fournisseur d'IA",
         "unavailableLocal": "La recherche web passe par un fournisseur cloud — changez de modèle pour l'utiliser",
         "sources": "Sources"
-      }
+      },
+      "hide": "Masquer la carte"
     },
     "transcript": {
       "showEarlier_one": "Afficher {{count}} message précédent",
@@ -3568,6 +3572,11 @@
       "customModel": "Autre modèle…",
       "customModelPlaceholder": "fournisseur/id-du-modèle",
       "useModel": "Utiliser"
+    },
+    "dot": {
+      "endMeeting": "Enregistrement · {{time}} · cliquer pour terminer",
+      "paused": "En pause · {{time}} · cliquer pour terminer",
+      "menu": "Menu Snowy"
     }
   },
   "integrations": {
@@ -4042,9 +4051,9 @@
         "title": "Reglages"
       },
       "bar": {
-        "title": "Voici votre barre d'assistant",
-        "body": "La petite barre flottante est la porte d'entrée de Snowy : posez une question sur vos réunions, lancez un enregistrement ou ouvrez directement n'importe quel réglage. Échap la fait disparaître.",
-        "hotkeyHint": "Affiche ou masque la barre depuis n'importe où. L'icône de la barre système la fait aussi revenir — et vous pouvez changer les touches dans Réglages → Raccourcis."
+        "title": "Voici le point Snowy",
+        "body": "Le petit point flotte au-dessus de vos appels. Cliquez pour lancer l'enregistrement, cliquez à nouveau pour terminer la réunion, et faites un clic droit pour le menu. Il brille pendant que Snowy écoute.",
+        "hotkeyHint": "Affiche ou masque le point depuis n'importe où. L'icône de la barre d'état le ramène aussi, et vous pouvez changer les touches dans Réglages → Raccourcis."
       }
     }
   },

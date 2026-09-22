@@ -1,15 +1,22 @@
 // @ts-check
 /* global window -- browser global used inside page.evaluate callbacks */
 const { test, expect } = require("@playwright/test");
-const { launchApp, controlPanelPage, agentBarPage, skipOnboarding } = require("./launch");
+const {
+  launchApp,
+  controlPanelPage,
+  agentBarPage,
+  cueCardPage,
+  skipOnboarding,
+} = require("./launch");
 
 /**
- * The meeting cue card — the bar's other face.
+ * The meeting cue card — in its own window beside the assistant dot
+ * (ASSISTANT_DOT).
  *
  * A meeting needs no microphone to be rendered: the card is a view over state
  * the control panel publishes (useMeetingPanelBridge), so the test publishes
  * a snapshot and an assist thread through the same preload calls and reads
- * the card in the bar window. Assertions lean on user-visible copy from
+ * the card in the window main opens for it. Assertions lean on user-visible copy from
  * src/locales/en, like the other specs.
  */
 
@@ -64,8 +71,8 @@ test("a published meeting renders the three-zone card, lifts the say-line, and c
   ({ app } = await launchApp(test.info()));
   const page = await controlPanelPage(app);
   await skipOnboarding(page);
-  const bar = await agentBarPage(app);
-  await expect(bar.getByRole("button", { name: "Start meeting" })).toBeVisible({
+  const dot = await agentBarPage(app);
+  await expect(dot.getByRole("button", { name: "Start meeting" })).toBeVisible({
     timeout: 30_000,
   });
 
@@ -77,6 +84,9 @@ test("a published meeting renders the three-zone card, lifts the say-line, and c
     },
     { snapshot: SNAPSHOT, assist: ASSIST }
   );
+  // The publish is the start edge: main opens the card's window beside the
+  // dot. Everything below reads the card there.
+  const bar = await cueCardPage(app);
 
   // Zone 1: the ask bar on top, with the quick-action chips under it.
   const ask = bar.getByPlaceholder("Ask about this meeting…");
@@ -234,11 +244,20 @@ test("a published meeting renders the three-zone card, lifts the say-line, and c
     });
   }
 
-  // Ending the meeting hands the bar back.
+  // Ending the meeting puts the card away and the dot back to idle.
   await page.evaluate(() => {
     /** @type {any} */ (window).electronAPI.meetingPanelPublish(null);
   });
-  await expect(bar.getByRole("button", { name: "Start meeting" })).toBeVisible({
+  await expect(dot.getByRole("button", { name: "Start meeting" })).toBeVisible({
     timeout: 15_000,
   });
+  await expect(async () => {
+    const visible = await app.evaluate(({ BrowserWindow }) => {
+      const win = BrowserWindow.getAllWindows().find((w) =>
+        w.webContents.getURL().includes("meeting-panel=true")
+      );
+      return win ? win.isVisible() : null;
+    });
+    expect(visible).toBe(false);
+  }).toPass({ timeout: 10_000 });
 });

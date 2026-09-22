@@ -50,7 +50,10 @@
     "hideControlPanel": "隱藏控制面板",
     "quit": "結束 Snowy",
     "tooltip": "Snowy - 語音輸入",
-    "showAssistantBar": "顯示助理列"
+    "showAssistantBar": "顯示助理列",
+    "showDot": "顯示 Snowy",
+    "hideDot": "隱藏 Snowy 圓點",
+    "showCueCard": "顯示提示卡"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -3034,7 +3037,8 @@
         "unavailable": "此 AI 服務商不支援網路搜尋",
         "unavailableLocal": "網頁搜尋需透過雲端供應商 — 切換模型後即可使用",
         "sources": "來源"
-      }
+      },
+      "hide": "隱藏提示卡"
     },
     "transcript": {
       "showEarlier_one": "顯示 {{count}} 則較早的訊息",
@@ -3403,6 +3407,11 @@
       "customModel": "其他模型…",
       "customModelPlaceholder": "供應商/模型 ID",
       "useModel": "使用"
+    },
+    "dot": {
+      "endMeeting": "錄製中 · {{time}} · 點擊結束",
+      "paused": "已暫停 · {{time}} · 點擊結束",
+      "menu": "Snowy 選單"
     }
   },
   "integrations": {
@@ -4042,9 +4051,9 @@
         "title": "設定"
       },
       "bar": {
-        "title": "認識你的助理列",
-        "body": "這個小小的懸浮列是 Snowy 的大門:隨時詢問會議相關的任何問題、開始錄製會議,或直接跳到任何設定。按 Esc 即可隱藏。",
-        "hotkeyHint": "隨處顯示或隱藏助理列。點擊系統匣圖示也能喚回它——按鍵可在「設定 → 快速鍵」中修改。"
+        "title": "認識 Snowy 圓點",
+        "body": "這個小圓點浮在你的通話之上。點擊開始錄製，再次點擊結束會議，右鍵開啟選單。Snowy 聆聽時它會發光。",
+        "hotkeyHint": "隨時隨地顯示或隱藏圓點。系統匣圖示也能把它找回來，按鍵可在 設定 → 快捷鍵 中更改。"
       }
     }
   },

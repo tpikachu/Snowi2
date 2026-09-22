@@ -50,7 +50,10 @@
     "hideControlPanel": "隐藏控制面板",
     "quit": "退出 Snowy",
     "tooltip": "Snowy - 语音听写",
-    "showAssistantBar": "显示助手栏"
+    "showAssistantBar": "显示助手栏",
+    "showDot": "显示 Snowy",
+    "hideDot": "隐藏 Snowy 圆点",
+    "showCueCard": "显示提示卡"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -3034,7 +3037,8 @@
         "unavailable": "此 AI 服务商不支持网络搜索",
         "unavailableLocal": "网页搜索需通过云端提供商 — 切换模型后即可使用",
         "sources": "来源"
-      }
+      },
+      "hide": "隐藏提示卡"
     },
     "transcript": {
       "showEarlier_one": "显示 {{count}} 条更早的消息",
@@ -3403,6 +3407,11 @@
       "customModel": "其他模型…",
       "customModelPlaceholder": "供应商/模型 ID",
       "useModel": "使用"
+    },
+    "dot": {
+      "endMeeting": "录制中 · {{time}} · 点击结束",
+      "paused": "已暂停 · {{time}} · 点击结束",
+      "menu": "Snowy 菜单"
     }
   },
   "integrations": {
@@ -4042,9 +4051,9 @@
         "title": "设置"
       },
       "bar": {
-        "title": "认识你的助手栏",
-        "body": "这个小小的悬浮栏是 Snowy 的大门:随时询问会议相关的任何问题、开始录制会议,或直接跳到任何设置。按 Esc 即可隐藏。",
-        "hotkeyHint": "随处显示或隐藏助手栏。点击系统托盘图标也能唤回它——按键可在「设置 → 快捷键」中修改。"
+        "title": "认识 Snowy 圆点",
+        "body": "这个小圆点浮在你的通话之上。点击开始录制，再次点击结束会议，右键打开菜单。Snowy 聆听时它会发光。",
+        "hotkeyHint": "随时随地显示或隐藏圆点。托盘图标也能把它找回来，按键可在 设置 → 快捷键 中更改。"
       }
     }
   },

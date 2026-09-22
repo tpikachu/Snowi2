@@ -918,6 +918,12 @@ contextBridge.exposeInMainWorld("electronAPI", {
   getAgentWindowBounds: () => ipcRenderer.invoke("get-agent-window-bounds"),
   setAgentWindowBounds: (x, y, width, height) =>
     ipcRenderer.invoke("set-agent-window-bounds", x, y, width, height),
+  // The assistant dot and the cue card's own window (ASSISTANT_DOT).
+  agentDotMenu: () => ipcRenderer.invoke("agent-dot-menu"),
+  showMeetingPanelWindow: () => ipcRenderer.invoke("show-meeting-panel-window"),
+  getOwnWindowBounds: () => ipcRenderer.invoke("get-own-window-bounds"),
+  setOwnWindowBounds: (x, y, width, height) =>
+    ipcRenderer.invoke("set-own-window-bounds", x, y, width, height),
   onPreviewText: registerListener("preview-text", (callback) => (_event, text) => callback(text)),
   onPreviewAppend: registerListener(
     "preview-append",

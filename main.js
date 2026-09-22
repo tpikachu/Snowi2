@@ -857,6 +857,15 @@ async function startApp() {
   // Set up meeting mode hotkey
   const meetingHotkeyCallback = () => {
     if (hotkeyManager.isInListeningMode()) return;
+    // What a click on the assistant dot does: start a meeting, or end the
+    // one recording (the card's Stop — Keep or Discard follows in the
+    // control panel). Before the dot the key only ever started one.
+    const { ASSISTANT_DOT } = require("./src/config/features");
+    if (ASSISTANT_DOT && windowManager.getMeetingPanelState?.()?.isRecording) {
+      debugLogger.info("Meeting hotkey triggered: ending the session", {}, "meeting");
+      void windowManager.handleMeetingPanelCommand("stop");
+      return;
+    }
     debugLogger.info("Meeting hotkey triggered", {}, "meeting");
     meetingDetectionEngine?.startManualMeeting();
   };

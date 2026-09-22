@@ -221,6 +221,9 @@ const MEETING_PANEL_CONFIG = {
   type: FLOATING_OVERLAY_TYPE,
 };
 
+/** The visible circle inside the dot's window; the rest is room for its glow. */
+const DOT_SIZE = 48;
+
 class WindowPositionUtil {
   static getMainWindowPosition(display, customSize = null, position = "bottom-right") {
     const { width, height } = customSize || WINDOW_SIZES.BASE;
@@ -293,6 +296,35 @@ class WindowPositionUtil {
       height,
     };
     return { ...WindowPositionUtil.clampToWorkArea(bounds, display), width, height };
+  }
+
+  /**
+   * The cue card beside the dot: right edges aligned with the visible
+   * circle, under it when there is room, above it otherwise, and to its left
+   * when neither fits. Falls back to the docked position without a dot.
+   */
+  static getMeetingPanelPositionNearDot(display, dotBounds, size = {}) {
+    const width = size.width || MEETING_PANEL_SIZE_LIMITS.defaultWidth;
+    const height = size.height || MEETING_PANEL_SIZE_LIMITS.defaultHeight;
+    if (!dotBounds) return WindowPositionUtil.getMeetingPanelPosition(display, { width, height });
+    const GAP = 8;
+    const inset = Math.max(0, Math.round((dotBounds.width - DOT_SIZE) / 2));
+    const workArea = display.workArea || display.bounds;
+    const circleRight = dotBounds.x + dotBounds.width - inset;
+    const circleTop = dotBounds.y + inset;
+    const circleBottom = dotBounds.y + dotBounds.height - inset;
+    let x = circleRight - width;
+    let y = circleBottom + GAP;
+    if (y + height > workArea.y + workArea.height) y = circleTop - GAP - height;
+    if (y < workArea.y) {
+      y = workArea.y + 12;
+      x = dotBounds.x + inset - GAP - width;
+    }
+    return {
+      ...WindowPositionUtil.clampToWorkArea({ x, y, width, height }, display),
+      width,
+      height,
+    };
   }
 
   static getTranscriptionPreviewPosition(display, mainWindowBounds, size = {}) {
@@ -381,10 +413,27 @@ const AGENT_OVERLAY_CONFIG = {
   },
 };
 
+/**
+ * The assistant dot's window (ASSISTANT_DOT): square, transparent, never
+ * resized. The glow is a box-shadow that reaches past the circle, so the
+ * window is the circle plus a margin on every side.
+ */
+const DOT_WINDOW_CONFIG = {
+  ...AGENT_OVERLAY_CONFIG,
+  width: 96,
+  height: 96,
+  minWidth: 96,
+  minHeight: 96,
+  maxWidth: 96,
+  maxHeight: 96,
+};
+
 module.exports = {
   MAIN_WINDOW_CONFIG,
   CONTROL_PANEL_CONFIG,
   AGENT_OVERLAY_CONFIG,
+  DOT_WINDOW_CONFIG,
+  DOT_SIZE,
   NOTIFICATION_WINDOW_CONFIG,
   MEETING_PANEL_CONFIG,
   MEETING_PANEL_SIZE_LIMITS,

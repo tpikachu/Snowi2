@@ -7,13 +7,16 @@ const MenuManager = require("./menuManager");
 const DevServerManager = require("./devServerManager");
 const dockManager = require("./dockManager");
 const { i18nMain } = require("./i18nMain");
-const { DICTATION_ENABLED } = require("../config/features");
+const { DICTATION_ENABLED, ASSISTANT_DOT } = require("../config/features");
 const { NotificationDismissTimer, resolvePromptTimeout } = require("./notificationTimer");
 const { DEV_SERVER_PORT } = DevServerManager;
 const {
   MAIN_WINDOW_CONFIG,
   CONTROL_PANEL_CONFIG,
   AGENT_OVERLAY_CONFIG,
+  DOT_WINDOW_CONFIG,
+  MEETING_PANEL_CONFIG,
+  MEETING_PANEL_SIZE_LIMITS,
   NOTIFICATION_WINDOW_CONFIG,
   TRANSCRIPTION_PREVIEW_CONFIG,
   TRANSCRIPTION_PREVIEW_SIZE_LIMITS,
@@ -28,6 +31,10 @@ class WindowManager {
     this.mainWindow = null;
     this.controlPanelWindow = null;
     this.agentWindow = null;
+    // The cue card's own window (ASSISTANT_DOT): created at the first meeting
+    // start, hidden between meetings, placed beside the dot per meeting.
+    this.meetingPanelWindow = null;
+    this._meetingPanelPlaced = false;
     this.notificationWindow = null;
     /** Set while the visible prompt times out into recording, not dismissal. */
     this._notificationAutoStart = null;
@@ -853,7 +860,7 @@ class WindowManager {
       return;
     }
 
-    this.agentWindow = new BrowserWindow(AGENT_OVERLAY_CONFIG);
+    this.agentWindow = new BrowserWindow(ASSISTANT_DOT ? DOT_WINDOW_CONFIG : AGENT_OVERLAY_CONFIG);
 
     // Visible in screen shares by default; the stealth preference (Settings →
     // Startup) hides the bar and cue card from shares and screenshots for
@@ -916,8 +923,13 @@ class WindowManager {
       const current = this.agentWindow.getBounds();
       const width = current.width || AGENT_OVERLAY_CONFIG.width;
       const height = current.height || AGENT_OVERLAY_CONFIG.height;
-      const x = Math.round(workArea.x + (workArea.width - width) / 2);
-      const y = Math.round(workArea.y + workArea.height * 0.2);
+      // The dot lands in the top-right corner, out of the way of a call and
+      // where the cue card docks beside it; the bar is centred high, where a
+      // command bar is expected.
+      const x = ASSISTANT_DOT
+        ? workArea.x + workArea.width - width - 12
+        : Math.round(workArea.x + (workArea.width - width) / 2);
+      const y = ASSISTANT_DOT ? workArea.y + 12 : Math.round(workArea.y + workArea.height * 0.2);
 
       this.agentWindow.setBounds({
         ...WindowPositionUtil.clampToWorkArea({ x, y, width, height }, display),
@@ -1524,7 +1536,9 @@ class WindowManager {
       this._meetingPanelTranscript = null;
       this._meetingPanelAssist = null;
       this.sendToMeetingPanel("meeting-panel-state", null);
+      this._meetingPanelPlaced = false;
       if (wasRecording && !this.isQuitting) {
+        this.hideMeetingPanelWindow();
         this._restoreAfterMeeting();
         this.createControlPanelWindow().catch((error) => {
           debugLogger.error(
@@ -1544,6 +1558,12 @@ class WindowManager {
       // the recording indicator must be on screen regardless. Without focus,
       // so the meeting app keeps the keyboard.
       this.showAgentOverlay({ focus: false });
+      if (ASSISTANT_DOT) {
+        // The dot glows; the cue card opens beside it, without focus.
+        this.showMeetingPanelWindow({ focus: false }).catch((error) => {
+          debugLogger.error("Failed to open the cue card", { error: error.message }, "meeting");
+        });
+      }
       this._minimizeForMeeting();
     }
 
@@ -1627,7 +1647,9 @@ class WindowManager {
         download,
       };
     }
-    this.sendToMeetingPanel("bar-status", this._barStatus);
+    // The bar's (or the dot's) own channel: setup warnings and download
+    // progress are the agent window's to show, whichever face it wears.
+    this._sendWhenLoaded(this.agentWindow, "bar-status", this._barStatus);
   }
 
   getBarStatus() {
@@ -1641,8 +1663,8 @@ class WindowManager {
    */
   setOverlayStealth(enabled) {
     this._overlayStealth = Boolean(enabled);
-    if (this.agentWindow && !this.agentWindow.isDestroyed()) {
-      this.agentWindow.setContentProtection(this._overlayStealth);
+    for (const win of [this.agentWindow, this.meetingPanelWindow]) {
+      if (win && !win.isDestroyed()) win.setContentProtection(this._overlayStealth);
     }
   }
 
@@ -1655,19 +1677,29 @@ class WindowManager {
    * there is nothing to do. Returns the restore function.
    */
   hideAgentWindowFromCapture() {
-    const win = this.agentWindow;
-    if (!win || win.isDestroyed() || this._overlayStealth) return () => {};
-    try {
-      win.setContentProtection(true);
-    } catch {
-      return () => {};
+    if (this._overlayStealth) return () => {};
+    // Both faces: the dot and the cue card are two windows now, and either
+    // one over the meeting would be photographed.
+    const wins = [this.agentWindow, this.meetingPanelWindow].filter(
+      (win) => win && !win.isDestroyed()
+    );
+    const protectedWins = [];
+    for (const win of wins) {
+      try {
+        win.setContentProtection(true);
+        protectedWins.push(win);
+      } catch {
+        /* skip a window on its way out */
+      }
     }
     return () => {
-      if (!win.isDestroyed() && !this._overlayStealth) {
-        try {
-          win.setContentProtection(false);
-        } catch {
-          /* the window is on its way out */
+      for (const win of protectedWins) {
+        if (!win.isDestroyed() && !this._overlayStealth) {
+          try {
+            win.setContentProtection(false);
+          } catch {
+            /* the window is on its way out */
+          }
         }
       }
     };
@@ -1675,9 +1707,14 @@ class WindowManager {
 
   sendMeetingPanelLevel(level) {
     // Dropped rather than queued: a level is only meaningful when it arrives.
-    const win = this.agentWindow;
-    if (!win || win.isDestroyed() || win.webContents.isLoading()) return;
-    win.webContents.send("meeting-panel-level", level);
+    // The dot listens too: its bars move with the voice.
+    const targets = ASSISTANT_DOT
+      ? [this.meetingPanelWindow, this.agentWindow]
+      : [this.agentWindow];
+    for (const win of targets) {
+      if (!win || win.isDestroyed() || win.webContents.isLoading()) continue;
+      win.webContents.send("meeting-panel-level", level);
+    }
   }
 
   /**
@@ -1688,7 +1725,7 @@ class WindowManager {
    */
   sendMeetingPanelTranscript(transcript) {
     this._meetingPanelTranscript = transcript;
-    const win = this.agentWindow;
+    const win = this._meetingPanelTarget();
     if (!win || win.isDestroyed() || win.webContents.isLoading()) return;
     win.webContents.send("meeting-panel-transcript", transcript);
   }
@@ -1732,9 +1769,13 @@ class WindowManager {
     return this._meetingPanelState;
   }
 
-  /** Meeting state rides to the assistant bar's window — the cue card's home. */
-  sendToMeetingPanel(channel, data) {
-    const win = this.agentWindow;
+  /** The window the cue card renders in: its own under ASSISTANT_DOT, else the bar's. */
+  _meetingPanelTarget() {
+    return ASSISTANT_DOT ? this.meetingPanelWindow : this.agentWindow;
+  }
+
+  /** Sends now, or once the window's renderer has loaded. */
+  _sendWhenLoaded(win, channel, data) {
     if (!win || win.isDestroyed()) return;
     if (win.webContents.isLoading()) {
       win.webContents.once("did-finish-load", () => {
@@ -1746,6 +1787,119 @@ class WindowManager {
   }
 
   /**
+   * Meeting state rides to the cue card's window. Under ASSISTANT_DOT the
+   * recording snapshot also reaches the dot, which is what lights it up;
+   * the transcript and the assistant's answers are the card's alone.
+   */
+  sendToMeetingPanel(channel, data) {
+    this._sendWhenLoaded(this._meetingPanelTarget(), channel, data);
+    if (ASSISTANT_DOT && channel === "meeting-panel-state") {
+      this._sendWhenLoaded(this.agentWindow, channel, data);
+    }
+  }
+
+  /**
+   * The cue card's own window (ASSISTANT_DOT). Created once, hidden between
+   * meetings so the next one opens instantly with its state already cached.
+   */
+  async ensureMeetingPanelWindow() {
+    if (this.meetingPanelWindow && !this.meetingPanelWindow.isDestroyed()) return;
+    const win = new BrowserWindow(MEETING_PANEL_CONFIG);
+    this.meetingPanelWindow = win;
+    win.setContentProtection(this._overlayStealth);
+    win.once("ready-to-show", () => {
+      if (!win.isDestroyed()) WindowPositionUtil.setupAlwaysOnTop(win);
+    });
+    win.webContents.on("did-finish-load", () => {
+      if (!win.isDestroyed()) win.setTitle(i18nMain.t("window.agentChatTitle"));
+    });
+    win.on("closed", () => {
+      if (this.meetingPanelWindow === win) this.meetingPanelWindow = null;
+    });
+    if (process.env.NODE_ENV === "development") {
+      await DevServerManager.waitForDevServer();
+      await win.loadURL(`${DevServerManager.DEV_SERVER_URL}?meeting-panel=true`);
+    } else {
+      const fileInfo = DevServerManager.getAppFilePath(false);
+      await win.loadFile(fileInfo.path, {
+        query: { ...fileInfo.query, "meeting-panel": "true" },
+      });
+    }
+  }
+
+  /**
+   * Shows the cue card beside the dot. Placed once per meeting — a card the
+   * user dragged elsewhere and hid comes back where they left it — and never
+   * with focus unless asked, so the meeting app keeps the keyboard.
+   */
+  async showMeetingPanelWindow({ focus = false } = {}) {
+    await this.ensureMeetingPanelWindow();
+    const win = this.meetingPanelWindow;
+    if (!win || win.isDestroyed()) return;
+    if (!this._meetingPanelPlaced) {
+      this._meetingPanelPlaced = true;
+      const dot =
+        this.agentWindow && !this.agentWindow.isDestroyed() ? this.agentWindow.getBounds() : null;
+      const display = dot
+        ? screen.getDisplayMatching(dot)
+        : screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+      const current = win.getBounds();
+      const size = {
+        width: current.width || MEETING_PANEL_SIZE_LIMITS.defaultWidth,
+        height: current.height || MEETING_PANEL_SIZE_LIMITS.defaultHeight,
+      };
+      win.setBounds(WindowPositionUtil.getMeetingPanelPositionNearDot(display, dot, size));
+    }
+    WindowPositionUtil.setupAlwaysOnTop(win);
+    if (focus) {
+      win.show();
+      win.focus();
+    } else if (typeof win.showInactive === "function") {
+      win.showInactive();
+    } else {
+      win.show();
+    }
+    win.moveTop();
+  }
+
+  hideMeetingPanelWindow() {
+    const win = this.meetingPanelWindow;
+    if (!win || win.isDestroyed()) return;
+    win.hide();
+  }
+
+  isMeetingPanelWindowVisible() {
+    const win = this.meetingPanelWindow;
+    return Boolean(win && !win.isDestroyed() && win.isVisible());
+  }
+
+  /**
+   * Bounds set by a window on itself — the dot dragging, the cue card
+   * resizing by its grips. Floored at the window's own minimum size and kept
+   * on the work area of the display it is on.
+   */
+  setOwnWindowBounds(win, x, y, width, height) {
+    if (!win || win.isDestroyed()) return;
+    const [minWidth, minHeight] = win.getMinimumSize();
+    const w = Math.max(minWidth, Math.round(Number(width) || 0));
+    const h = Math.max(minHeight, Math.round(Number(height) || 0));
+    const nx = Math.round(Number(x) || 0);
+    const ny = Math.round(Number(y) || 0);
+    const display = screen.getDisplayNearestPoint({ x: nx + Math.round(w / 2), y: ny });
+    const workArea = display.workArea || display.bounds;
+    const bounds = {
+      x: Math.min(Math.max(nx, workArea.x), workArea.x + workArea.width - w),
+      y: Math.min(Math.max(ny, workArea.y), workArea.y + workArea.height - h),
+      width: w,
+      height: h,
+    };
+    win.setBounds(bounds);
+    // A dot that restored its remembered place has been placed: the first
+    // summon must not move it to the corner.
+    if (win === this.agentWindow) this._agentShownOnce = true;
+  }
+
+  /**
    * Routes a panel button back to the renderer that owns the capture graph.
    *
    * Stop surfaces the control panel as well as forwarding: it is followed by
@@ -1754,6 +1908,11 @@ class WindowManager {
    * the transcript lives in the dashboard, and the renderer lands on it.
    */
   async handleMeetingPanelCommand(command) {
+    // The card's own X: main's to handle, nothing for the control panel.
+    if (command === "hide") {
+      this.hideMeetingPanelWindow();
+      return { success: true };
+    }
     if (
       command === "open" ||
       command === "stop" ||

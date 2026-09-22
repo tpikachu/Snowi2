@@ -50,7 +50,10 @@
     "hideControlPanel": "Ocultar panel de control",
     "quit": "Salir de Snowy",
     "tooltip": "Snowy - Dictado por voz",
-    "showAssistantBar": "Mostrar barra del asistente"
+    "showAssistantBar": "Mostrar barra del asistente",
+    "showDot": "Mostrar Snowy",
+    "hideDot": "Ocultar el punto de Snowy",
+    "showCueCard": "Mostrar la tarjeta"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -3082,7 +3085,8 @@
         "unavailable": "La búsqueda web no está disponible con este proveedor de IA",
         "unavailableLocal": "La búsqueda web pasa por un proveedor en la nube — cambia de modelo para usarla",
         "sources": "Fuentes"
-      }
+      },
+      "hide": "Ocultar la tarjeta"
     },
     "transcript": {
       "showEarlier_one": "Mostrar {{count}} mensaje anterior",
@@ -3451,6 +3455,11 @@
       "customModel": "Otro modelo…",
       "customModelPlaceholder": "proveedor/id-de-modelo",
       "useModel": "Usar"
+    },
+    "dot": {
+      "endMeeting": "Grabando · {{time}} · clic para terminar",
+      "paused": "En pausa · {{time}} · clic para terminar",
+      "menu": "Menú de Snowy"
     }
   },
   "integrations": {
@@ -4042,9 +4051,9 @@
         "title": "Ajustes"
       },
       "bar": {
-        "title": "Conoce tu barra de asistente",
-        "body": "La pequeña barra flotante es la puerta de entrada de Snowy: pregunta lo que quieras sobre tus reuniones, empieza a grabar una o entra directamente en cualquier ajuste. Esc la oculta.",
-        "hotkeyHint": "Muestra u oculta la barra desde cualquier lugar. El icono de la bandeja del sistema también la trae de vuelta — y puedes cambiar las teclas en Ajustes → Atajos."
+        "title": "Conoce el punto de Snowy",
+        "body": "El pequeño punto flota sobre tus llamadas. Haz clic para empezar a grabar, otro clic para terminar la reunión y clic derecho para el menú. Brilla mientras Snowy escucha.",
+        "hotkeyHint": "Muestra u oculta el punto desde cualquier lugar. El icono de la bandeja también lo recupera, y puedes cambiar las teclas en Ajustes → Atajos."
       }
     }
   },

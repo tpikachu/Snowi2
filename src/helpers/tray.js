@@ -4,7 +4,7 @@ const fs = require("fs");
 const debugLogger = require("./debugLogger");
 const dockManager = require("./dockManager");
 const { i18nMain } = require("./i18nMain");
-const { DICTATION_ENABLED } = require("../config/features");
+const { DICTATION_ENABLED, ASSISTANT_DOT } = require("../config/features");
 
 class TrayManager {
   constructor() {
@@ -252,8 +252,15 @@ class TrayManager {
     }
   }
 
-  buildContextMenuTemplate() {
+  /**
+   * The tray's menu — and, with `forDot`, the assistant dot's right-click
+   * menu, which is the same list (client direction, 2026-09-21) with the
+   * items only the dot needs: "Show cue card" while a meeting records, and
+   * "Hide the dot" where the tray offers to show it.
+   */
+  buildContextMenuTemplate({ forDot = false } = {}) {
     const dictationVisible = this.windowManager?.isDictationPanelVisible?.() ?? false;
+    const recording = Boolean(this.windowManager?.getMeetingPanelState?.()?.isRecording);
 
     return [
       // Offered only when dictation is enabled — the tray is the last place it
@@ -276,15 +283,32 @@ class TrayManager {
             },
           ]
         : []),
-      {
-        // First because the bar is the product's daily face — and the
-        // recovery path for a closed one: Escape and the X hide it, and a
-        // user who did that without a hotkey configured needs a way back.
-        label: i18nMain.t("tray.showAssistantBar"),
-        click: () => {
-          this.windowManager?.showAgentOverlay?.({ focus: true });
-        },
-      },
+      ...(forDot && recording
+        ? [
+            {
+              label: i18nMain.t("tray.showCueCard"),
+              click: () => {
+                void this.windowManager?.showMeetingPanelWindow?.({ focus: true });
+              },
+            },
+          ]
+        : []),
+      forDot
+        ? {
+            label: i18nMain.t("tray.hideDot"),
+            click: () => {
+              this.windowManager?.hideAgentOverlay?.();
+            },
+          }
+        : {
+            // First because the bar is the product's daily face — and the
+            // recovery path for a closed one: Escape and the X hide it, and a
+            // user who did that without a hotkey configured needs a way back.
+            label: i18nMain.t(ASSISTANT_DOT ? "tray.showDot" : "tray.showAssistantBar"),
+            click: () => {
+              this.windowManager?.showAgentOverlay?.({ focus: true });
+            },
+          },
       {
         label: this.isControlPanelVisible()
           ? i18nMain.t("tray.hideControlPanel")
@@ -302,6 +326,13 @@ class TrayManager {
         },
       },
     ];
+  }
+
+  /** The dot's right-click menu, popped over the dot's window. */
+  popupDotMenu() {
+    const win = this.windowManager?.agentWindow;
+    if (!win || win.isDestroyed()) return;
+    Menu.buildFromTemplate(this.buildContextMenuTemplate({ forDot: true })).popup({ window: win });
   }
 
   updateTrayMenu() {

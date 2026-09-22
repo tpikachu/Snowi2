@@ -1580,3 +1580,99 @@ a:focus-visible {
     display: none;
   }
 }
+
+/* ---- The assistant dot (ASSISTANT_DOT) ---------------------------------
+   One 48px circle in a 96px transparent window. Idle: dark glass, grey
+   glyph, nothing moves. Recording: the glyph and edge take the app's cyan,
+   a light-blue ring breathes outward every 2.2s and the five bars move —
+   the state at a glance, from across the room. */
+.assistant-dot {
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-hud-border);
+  background: linear-gradient(180deg, var(--color-hud-surface-2), var(--color-hud-surface));
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.06),
+    0 0 0 0.5px oklch(0 0 0 / 0.55),
+    0 6px 18px -6px oklch(0 0 0 / 0.65);
+  color: var(--color-hud-muted);
+  transition:
+    transform 150ms ease,
+    color 250ms ease,
+    border-color 250ms ease;
+}
+.assistant-dot:hover {
+  transform: scale(1.04);
+}
+.assistant-dot__bar {
+  transform-origin: 12px 12px;
+}
+.assistant-dot--rec {
+  color: var(--color-hud-accent);
+  border-color: oklch(from var(--color-hud-accent) l c h / 0.75);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.06),
+    0 0 0 0 oklch(from var(--color-hud-accent) l c h / 0.6),
+    0 0 28px 7px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.3),
+    0 6px 18px -6px oklch(0 0 0 / 0.65);
+  animation: assistant-dot-ring 2.2s ease-out infinite;
+}
+.assistant-dot--rec .assistant-dot__bar {
+  animation: assistant-dot-wave 1.4s ease-in-out infinite;
+}
+.assistant-dot--rec .assistant-dot__bar:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.assistant-dot--rec .assistant-dot__bar:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.assistant-dot--rec .assistant-dot__bar:nth-child(4) {
+  animation-delay: 0.45s;
+}
+.assistant-dot--rec .assistant-dot__bar:nth-child(5) {
+  animation-delay: 0.6s;
+}
+/* Paused: the cyan stays, the motion stops — listening is what moves. */
+.assistant-dot--paused,
+.assistant-dot--paused .assistant-dot__bar {
+  animation: none;
+}
+@keyframes assistant-dot-ring {
+  0% {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.06),
+      0 0 0 0 oklch(from var(--color-hud-accent) l c h / 0.6),
+      0 0 28px 7px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.3),
+      0 6px 18px -6px oklch(0 0 0 / 0.65);
+  }
+  70% {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.06),
+      0 0 0 14px oklch(from var(--color-hud-accent) l c h / 0),
+      0 0 34px 9px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.36),
+      0 6px 18px -6px oklch(0 0 0 / 0.65);
+  }
+  100% {
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.06),
+      0 0 0 14px oklch(from var(--color-hud-accent) l c h / 0),
+      0 0 28px 7px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.3),
+      0 6px 18px -6px oklch(0 0 0 / 0.65);
+  }
+}
+@keyframes assistant-dot-wave {
+  0%,
+  100% {
+    transform: scaleY(0.55);
+  }
+  50% {
+    transform: scaleY(1.15);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .assistant-dot--rec,
+  .assistant-dot--rec .assistant-dot__bar {
+    animation: none;
+  }
+}

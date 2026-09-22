@@ -50,7 +50,10 @@
     "hideControlPanel": "Hide Control Panel",
     "quit": "Quit Snowy",
     "tooltip": "Snowy - Voice Dictation",
-    "showAssistantBar": "Show assistant bar"
+    "showAssistantBar": "Show assistant bar",
+    "showDot": "Show Snowy",
+    "hideDot": "Hide the Snowy dot",
+    "showCueCard": "Show cue card"
   },
   "menu": {
     "appLabel": "Snowy",
@@ -3241,7 +3244,8 @@
         "unavailable": "Web search isn't available with this AI provider",
         "unavailableLocal": "Web search runs through a cloud provider — switch the model to use it",
         "sources": "Sources"
-      }
+      },
+      "hide": "Hide the cue card"
     },
     "transcript": {
       "showEarlier_one": "Show {{count}} earlier message",
@@ -3568,6 +3572,11 @@
       "customModel": "Other model…",
       "customModelPlaceholder": "vendor/model id",
       "useModel": "Use"
+    },
+    "dot": {
+      "endMeeting": "Recording · {{time}} · click to end",
+      "paused": "Paused · {{time}} · click to end",
+      "menu": "Snowy menu"
     }
   },
   "integrations": {
@@ -4042,9 +4051,9 @@
         "title": "Settings"
       },
       "bar": {
-        "title": "Meet your assistant bar",
-        "body": "The little floating bar is Snowy's front door: ask anything about your meetings, start recording one, or jump straight into any setting. Esc tucks it away.",
-        "hotkeyHint": "Shows or hides the bar from anywhere. The tray icon brings it back too — and you can change the keys under Settings → Hotkeys."
+        "title": "Meet the Snowy dot",
+        "body": "The little dot floats over your calls. Click it to start recording, click again to end the meeting, and right-click for the menu. It glows while Snowy is listening.",
+        "hotkeyHint": "Shows or hides the dot from anywhere. The tray icon brings it back too — and you can change the keys under Settings → Hotkeys."
       }
     }
   },

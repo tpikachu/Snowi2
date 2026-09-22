@@ -6,11 +6,14 @@ import TranscriptionPreviewOverlay from "./components/TranscriptionPreviewOverla
 import UpdateNotificationOverlay from "./components/UpdateNotificationOverlay.tsx";
 import { useTheme } from "./hooks/useTheme";
 import { isControlPanelWindow } from "./utils/windowContext.ts";
+import { ASSISTANT_DOT } from "./config/features.js";
 import { SnowyAppIcon } from "./components/ui/BrandMark.tsx";
 
 const ControlPanel = React.lazy(() => import("./components/ControlPanel.tsx"));
 const OnboardingFlow = React.lazy(() => import("./components/OnboardingFlow.tsx"));
 const AgentOverlay = React.lazy(() => import("./components/AgentOverlay.tsx"));
+const AssistantDot = React.lazy(() => import("./components/AssistantDot.tsx"));
+const MeetingPanelWindow = React.lazy(() => import("./components/MeetingPanelWindow.tsx"));
 
 export default function AppRouter() {
   useTheme();
@@ -20,8 +23,16 @@ export default function AppRouter() {
     return <MeetingNotificationOverlay />;
   }
 
-  // The cue card no longer has its own window: the assistant bar's window
-  // (?agent=true) renders MeetingPanelOverlay while a meeting records.
+  // The cue card: its own window under ASSISTANT_DOT, opened beside the dot
+  // when a meeting starts. (With the flag off the assistant bar's window,
+  // ?agent=true, renders MeetingPanelOverlay in place while a meeting records.)
+  if (params.includes("meeting-panel=true")) {
+    return (
+      <Suspense fallback={null}>
+        <MeetingPanelWindow />
+      </Suspense>
+    );
+  }
 
   if (params.includes("update-notification=true")) {
     return <UpdateNotificationOverlay />;
@@ -45,7 +56,10 @@ function MainApp() {
 
   useEffect(() => {
     if (isAgentPanel) {
-      import("./components/AgentOverlay.tsx").catch(() => {});
+      (ASSISTANT_DOT
+        ? import("./components/AssistantDot.tsx")
+        : import("./components/AgentOverlay.tsx")
+      ).catch(() => {});
     } else if (isControlPanel) {
       import("./components/ControlPanel.tsx").catch(() => {});
 
@@ -80,7 +94,12 @@ function MainApp() {
   };
 
   if (isAgentPanel) {
-    return (
+    // The dot's window is 96px of glass: no loading card, it simply appears.
+    return ASSISTANT_DOT ? (
+      <Suspense fallback={null}>
+        <AssistantDot />
+      </Suspense>
+    ) : (
       <Suspense fallback={<LoadingFallback />}>
         <AgentOverlay />
       </Suspense>

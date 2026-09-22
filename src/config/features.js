@@ -117,3 +117,19 @@ export const TEAM_SPACES_ENABLED = false;
  * for the next flip. Local SPEECH models are a different flag entirely.
  */
 export const LOCAL_LLM_ENABLED = true;
+
+/**
+ * The assistant dot — the assistant bar reduced to one 48px circle.
+ *
+ * Client direction 2026-09-21, after a side-by-side against Kalypta's launch
+ * reel ("look at this user experience"): one button, and the state visible
+ * at a glance. With this true the `?agent=true` window is the dot
+ * (AssistantDot.tsx): grey and still when idle, glowing in the app's cyan
+ * while a meeting records; a click starts the meeting or ends the session;
+ * right-click is the tray menu; the cue card opens in its OWN window
+ * (`?meeting-panel=true`, MeetingPanelWindow.tsx) beside the dot when a
+ * meeting starts. With it false the window is the two-row assistant bar
+ * with its ask field and palette, morphing into the cue card in place —
+ * everything of it stays built and wired.
+ */
+export const ASSISTANT_DOT = true;
