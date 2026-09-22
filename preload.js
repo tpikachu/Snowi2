@@ -731,6 +731,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   publishBarStatus: (status) => ipcRenderer.send("bar-status-publish", status),
   getBarStatus: () => ipcRenderer.invoke("bar-status-get"),
   onBarStatus: registerListener("bar-status", (callback) => (_event, status) => callback(status)),
+  // "light" | "dark": the tone of the screen under the assistant dot.
+  onDotBackdrop: registerListener("dot-backdrop", (callback) => (_event, tone) => callback(tone)),
+  getDotBackdrop: () => ipcRenderer.invoke("dot-backdrop-get"),
   onMeetingPanelAsk: registerListener(
     "meeting-panel-ask",
     (callback) => (_event, question, mode) => callback(question, mode)

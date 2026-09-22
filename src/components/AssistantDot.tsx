@@ -123,6 +123,27 @@ export default function AssistantDot() {
     };
   }, []);
 
+  // What is behind the dot, from main's sampler: on a dark backdrop the dot
+  // goes light so it can be found (client, 2026-09-22).
+  const [backdrop, setBackdrop] = useState<"light" | "dark" | null>(null);
+  useEffect(() => {
+    const unsubscribe = window.electronAPI?.onDotBackdrop?.((tone) => setBackdrop(tone));
+    // Main sends a tone only when it changes, and the first one can land
+    // before this listener exists (the window is shown as it loads), so ask
+    // for what main already knows.
+    let cancelled = false;
+    window.electronAPI
+      ?.getDotBackdrop?.()
+      .then((tone) => {
+        if (!cancelled && tone) setBackdrop(tone);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+      unsubscribe?.();
+    };
+  }, []);
+
   const { missing, download, downloadBlocksMeetingStart } = useBarSetupStatus();
   // Only a missing speech model blocks the start: without one there is
   // nothing to record into. A microphone flag that reads as missing is not
@@ -264,13 +285,15 @@ export default function AssistantDot() {
         aria-label={label}
         title={title}
         data-recording={isRecording ? "true" : undefined}
+        data-backdrop={backdrop ?? undefined}
         onMouseDown={handleMouseDown}
         onClick={handleClick}
         onContextMenu={handleContextMenu}
         className={cn(
           "assistant-dot relative flex cursor-pointer items-center justify-center p-0",
           isRecording && "assistant-dot--rec",
-          isRecording && isPaused && "assistant-dot--paused"
+          isRecording && isPaused && "assistant-dot--paused",
+          backdrop === "dark" && "assistant-dot--on-dark"
         )}
       >
         <svg

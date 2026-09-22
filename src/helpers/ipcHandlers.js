@@ -7621,6 +7621,11 @@ class IPCHandlers {
       return this.windowManager?.getBarStatus() ?? null;
     });
 
+    // The tone of the screen under the assistant dot, as last sampled.
+    ipcMain.handle("dot-backdrop-get", () => {
+      return this.windowManager?.getDotBackdrop?.() ?? null;
+    });
+
     // Unlike the commands, this carries free text, so it is length-capped here
     // rather than checked against an allow-list. The mode IS allow-listed:
     // anything unrecognized becomes "fast", the cheapest thing this can do.

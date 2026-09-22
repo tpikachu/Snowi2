@@ -26,6 +26,12 @@
       }
     },
     "meeting": {
+      "idleStop": {
+        "title": "無音が続いたら会議を終了",
+        "description": "この時間だれも話さなかった場合、会議は自動的に終了し、保存するかどうかを確認します。",
+        "never": "しない",
+        "minutes": "{{count}}分"
+      },
       "archivePass": {
         "title": "会議のあとに文字起こしを精緻化",
         "description": "会議が終わると、時間はかかるがより高精度なモデルが録音を聞き直し、その文字起こしからノートを作成します。"
@@ -2773,6 +2779,7 @@
       "resume": "再開",
       "pausedWithTitle": "一時停止中 · {{title}}",
       "stopDialog": {
+        "idleReason": "{{minutes}}分間発話がなかったため終了しました。",
         "description": "「{{title}}」は文字起こしとともにノートに残ります。破棄すると完全に削除されます。",
         "descriptionEmpty": "この会議では文字起こしが作成されませんでした。保存すると空のノートが残ります。",
         "discard": "破棄",

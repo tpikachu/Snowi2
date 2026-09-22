@@ -10,6 +10,8 @@ import {
 } from "../ui/SettingsSection";
 import type { InferenceModeOption } from "../ui/SettingsSection";
 import { Toggle } from "../ui/toggle";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { IDLE_STOP_CHOICES, normalizeIdleStopMinutes } from "../../utils/meetingIdleStop";
 import { formatBytes } from "../../utils/formatBytes";
 import { SPEAKER_IDENTIFICATION_ENABLED } from "../../helpers/speakerIdentificationPolicy";
 import TranscriptionModelPicker from "../TranscriptionModelPicker";
@@ -52,6 +54,45 @@ export function MeetingArchivePassRow() {
       description={t("settings.meeting.archivePass.description")}
     >
       <Toggle checked={meetingArchivePass} onChange={setMeetingArchivePass} />
+    </SettingsRow>
+  );
+}
+
+/**
+ * The idle stop: a meeting ends by itself after this long without speech
+ * (client direction, 2026-09-22). Minutes, "Never" for 0; the store keeps
+ * the value to the listed choices.
+ */
+export function MeetingIdleStopRow() {
+  const { t } = useTranslation();
+  const minutes = useSettingsStore((s) => s.meetingIdleStopMinutes);
+  const setMinutes = useSettingsStore((s) => s.setMeetingIdleStopMinutes);
+
+  return (
+    <SettingsRow
+      label={t("settings.meeting.idleStop.title")}
+      description={t("settings.meeting.idleStop.description")}
+    >
+      <Select
+        value={String(minutes)}
+        onValueChange={(value) => setMinutes(normalizeIdleStopMinutes(value))}
+      >
+        <SelectTrigger
+          aria-label={t("settings.meeting.idleStop.title")}
+          className="h-7 w-36 rounded-lg px-2.5 text-xs [&>svg]:h-3 [&>svg]:w-3"
+        >
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {IDLE_STOP_CHOICES.map((choice) => (
+            <SelectItem key={choice} value={String(choice)}>
+              {choice === 0
+                ? t("settings.meeting.idleStop.never")
+                : t("settings.meeting.idleStop.minutes", { count: choice })}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </SettingsRow>
   );
 }
@@ -198,6 +239,9 @@ export function MeetingTranscriptionPanel() {
         )}
         <SettingsPanelRow>
           <MeetingRecordingsRow />
+        </SettingsPanelRow>
+        <SettingsPanelRow>
+          <MeetingIdleStopRow />
         </SettingsPanelRow>
         <SettingsPanelRow>
           <MeetingSpeakerDetectionRow />

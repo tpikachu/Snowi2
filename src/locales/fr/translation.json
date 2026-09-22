@@ -26,6 +26,12 @@
       }
     },
     "meeting": {
+      "idleStop": {
+        "title": "Terminer la réunion après un silence",
+        "description": "Quand personne n'a parlé pendant cette durée, la réunion se termine d'elle-même et demande s'il faut la conserver.",
+        "never": "Jamais",
+        "minutes": "{{count}} minutes"
+      },
       "archivePass": {
         "title": "Affiner la transcription après chaque réunion",
         "description": "À la fin de la réunion, un modèle plus lent et plus précis repasse sur l'enregistrement, et les notes sont rédigées à partir de cette transcription."
@@ -2996,6 +3002,7 @@
       "resume": "Reprendre",
       "pausedWithTitle": "En pause · {{title}}",
       "stopDialog": {
+        "idleReason": "Terminée après {{minutes}} minutes sans parole.",
         "description": "« {{title}} » restera dans vos notes avec sa transcription. Ignorer la supprime définitivement.",
         "descriptionEmpty": "Cette réunion n'a produit aucune transcription. La conserver laisse une note vide.",
         "discard": "Ignorer",

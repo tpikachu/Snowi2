@@ -2148,6 +2148,8 @@ declare global {
       publishBarStatus?: (status: BarStatusPayload) => void;
       getBarStatus?: () => Promise<BarStatusPayload | null>;
       onBarStatus?: (callback: (status: BarStatusPayload | null) => void) => () => void;
+      onDotBackdrop?: (callback: (tone: "light" | "dark") => void) => () => void;
+      getDotBackdrop?: () => Promise<"light" | "dark" | null>;
       onAgentStartRecording?: (callback: () => void) => () => void;
       onAgentStopRecording?: (callback: () => void) => () => void;
       onAgentToggleRecording?: (callback: () => void) => () => void;

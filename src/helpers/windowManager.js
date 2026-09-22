@@ -9,6 +9,7 @@ const dockManager = require("./dockManager");
 const { i18nMain } = require("./i18nMain");
 const { DICTATION_ENABLED, ASSISTANT_DOT } = require("../config/features");
 const { NotificationDismissTimer, resolvePromptTimeout } = require("./notificationTimer");
+const { sampleDotBackdrop } = require("./dotBackdrop");
 const { DEV_SERVER_PORT } = DevServerManager;
 const {
   MAIN_WINDOW_CONFIG,
@@ -35,6 +36,12 @@ class WindowManager {
     // start, hidden between meetings, placed beside the dot per meeting.
     this.meetingPanelWindow = null;
     this._meetingPanelPlaced = false;
+    // The tone of the screen under the dot ("light" | "dark" | null), sampled
+    // while the dot is on screen; the dot wears the opposite one.
+    this._dotBackdropTone = null;
+    this._dotBackdropTimer = null;
+    this._dotBackdropSoon = null;
+    this._dotBackdropBusy = false;
     this.notificationWindow = null;
     /** Set while the visible prompt times out into recording, not dismissal. */
     this._notificationAutoStart = null;
@@ -967,11 +974,13 @@ class WindowManager {
       this.agentWindow.focus();
       this.agentWindow.webContents.send("agent-focus-input");
     }
+    this._startDotBackdropSampling();
   }
 
   hideAgentOverlay() {
     if (!this.agentWindow || this.agentWindow.isDestroyed()) return;
 
+    this._stopDotBackdropSampling();
     this._clearAgentAnimation();
     this.agentWindow.webContents.send("agent-stop-recording");
     this.agentWindow.hide();
@@ -1676,6 +1685,63 @@ class WindowManager {
    * is flipped on for the capture and back off after; while stealth is on
    * there is nothing to do. Returns the restore function.
    */
+  /**
+   * The dot's backdrop (client, 2026-09-22: on a dark desktop the dark dot
+   * all but vanished). While the dot is on screen, main samples the display
+   * under its window every few seconds — the dot excluded from the grab the
+   * way the observe capture excludes it — and sends "light" or "dark"; the
+   * renderer wears the opposite tone. Nothing is sent until the tone changes,
+   * and nothing at all where a screen grab is not allowed (macOS without the
+   * Screen Recording permission), where the dot keeps its default.
+   */
+  _startDotBackdropSampling() {
+    if (!ASSISTANT_DOT || this._dotBackdropTimer) return;
+    this._dotBackdropTimer = setInterval(() => void this._sampleDotBackdrop(), 4000);
+    this._scheduleDotBackdropSample(150);
+  }
+
+  getDotBackdrop() {
+    return this._dotBackdropTone;
+  }
+
+  _stopDotBackdropSampling() {
+    if (this._dotBackdropTimer) {
+      clearInterval(this._dotBackdropTimer);
+      this._dotBackdropTimer = null;
+    }
+    if (this._dotBackdropSoon) {
+      clearTimeout(this._dotBackdropSoon);
+      this._dotBackdropSoon = null;
+    }
+  }
+
+  _scheduleDotBackdropSample(delayMs) {
+    if (!ASSISTANT_DOT || !this._dotBackdropTimer) return;
+    if (this._dotBackdropSoon) clearTimeout(this._dotBackdropSoon);
+    this._dotBackdropSoon = setTimeout(() => {
+      this._dotBackdropSoon = null;
+      void this._sampleDotBackdrop();
+    }, delayMs);
+  }
+
+  async _sampleDotBackdrop() {
+    const win = this.agentWindow;
+    if (!win || win.isDestroyed() || !win.isVisible() || this._dotBackdropBusy) return;
+    this._dotBackdropBusy = true;
+    try {
+      const tone = await sampleDotBackdrop(win.getBounds(), {
+        previous: this._dotBackdropTone,
+        hideFromCapture: () => this.hideAgentWindowFromCapture(),
+      });
+      if (tone && tone !== this._dotBackdropTone) {
+        this._dotBackdropTone = tone;
+        this._sendWhenLoaded(win, "dot-backdrop", tone);
+      }
+    } finally {
+      this._dotBackdropBusy = false;
+    }
+  }
+
   hideAgentWindowFromCapture() {
     if (this._overlayStealth) return () => {};
     // Both faces: the dot and the cue card are two windows now, and either
@@ -1896,7 +1962,11 @@ class WindowManager {
     win.setBounds(bounds);
     // A dot that restored its remembered place has been placed: the first
     // summon must not move it to the corner.
-    if (win === this.agentWindow) this._agentShownOnce = true;
+    if (win === this.agentWindow) {
+      this._agentShownOnce = true;
+      // Dragged somewhere new: what is behind it may have changed.
+      this._scheduleDotBackdropSample(250);
+    }
   }
 
   /**

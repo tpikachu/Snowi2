@@ -26,6 +26,12 @@
       }
     },
     "meeting": {
+      "idleStop": {
+        "title": "靜默後結束會議",
+        "description": "在這段時間內無人說話時，會議將自動結束並詢問是否保留。",
+        "never": "從不",
+        "minutes": "{{count}} 分鐘"
+      },
       "archivePass": {
         "title": "會議結束後精修轉錄",
         "description": "會議結束後，較慢但更準確的模型會重新處理錄音，筆記將依據該轉錄產生。"
@@ -2789,6 +2795,7 @@
       "resume": "繼續",
       "pausedWithTitle": "已暫停 · {{title}}",
       "stopDialog": {
+        "idleReason": "已在 {{minutes}} 分鐘無人說話後結束。",
         "description": "「{{title}}」會連同逐字稿保留在筆記中。捨棄將永久刪除。",
         "descriptionEmpty": "這場會議沒有產生逐字稿。保留會留下一則空筆記。",
         "discard": "捨棄",

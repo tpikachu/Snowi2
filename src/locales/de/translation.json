@@ -26,6 +26,12 @@
       }
     },
     "meeting": {
+      "idleStop": {
+        "title": "Meeting nach Stille beenden",
+        "description": "Wenn so lange niemand gesprochen hat, endet das Meeting von selbst und fragt, ob es behalten werden soll.",
+        "never": "Nie",
+        "minutes": "{{count}} Minuten"
+      },
       "archivePass": {
         "title": "Transkript nach jedem Meeting verfeinern",
         "description": "Nach dem Meeting geht ein langsameres, genaueres Modell die Aufnahme noch einmal durch, und die Notizen entstehen aus diesem Transkript."
@@ -2996,6 +3002,7 @@
       "resume": "Fortsetzen",
       "pausedWithTitle": "Pausiert · {{title}}",
       "stopDialog": {
+        "idleReason": "Beendet nach {{minutes}} Minuten ohne Sprache.",
         "description": "„{{title}}“ bleibt mit Transkript in Ihren Notizen. Verwerfen entfernt es endgültig.",
         "descriptionEmpty": "Dieses Meeting hat kein Transkript erzeugt. Beim Behalten bleibt eine leere Notiz zurück.",
         "discard": "Verwerfen",

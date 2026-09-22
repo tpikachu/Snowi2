@@ -3,6 +3,11 @@ import { closeGap, openGap, type MeetingGap } from "../utils/meetingGaps";
 import { PcmRingBuffer } from "../utils/pcmRingBuffer";
 import { cancelAction } from "./actionProcessingStore";
 import { getSettings, selectResolvedMeetingTranscription } from "./settingsStore";
+import {
+  IDLE_CHECK_INTERVAL_MS,
+  idleStopDue,
+  normalizeIdleStopMinutes,
+} from "../utils/meetingIdleStop";
 import { getStreamingTranscriptionProviders } from "../models/ModelRegistry";
 import { resolveMeetingTranscriptionOptions } from "../helpers/meetingTranscriptionRouting";
 import { isBuiltInMicrophone } from "../utils/audioDeviceUtils";
@@ -103,6 +108,8 @@ export interface PendingStopDecision {
    * drop only what follows them, never the note.
    */
   seedSegmentCount: number;
+  /** Set when the meeting ended itself after silence (meetingIdleStop.ts). */
+  endedAfterIdleMinutes?: number;
 }
 
 interface MeetingRecordingState {
@@ -643,6 +650,58 @@ let isRecordingFlag = false;
 // variable rather than store state: a React subscription would let chunks
 // through for however long the re-render took.
 let isPausedFlag = false;
+
+// The idle stop (client direction, 2026-09-22): speech — a transcribed line
+// from either side, or the microphone reading a voice — stamps
+// `lastActivityAt`; a timer armed with the recording ends the meeting once
+// the silence outlasts the Settings → Meetings limit, through the card's own
+// Stop so main surfaces the control panel for Keep or Discard.
+let lastActivityAt = 0;
+let idleStopTimer: ReturnType<typeof setInterval> | null = null;
+let pendingIdleMinutes: number | null = null;
+
+/** Speech was heard: the silence clock restarts. */
+export function noteMeetingActivity(): void {
+  lastActivityAt = Date.now();
+}
+
+function clearIdleStop(): void {
+  if (idleStopTimer) {
+    clearInterval(idleStopTimer);
+    idleStopTimer = null;
+  }
+}
+
+function armIdleStop(): void {
+  clearIdleStop();
+  lastActivityAt = Date.now();
+  idleStopTimer = setInterval(() => {
+    const idleMinutes = normalizeIdleStopMinutes(getSettings().meetingIdleStopMinutes);
+    const due = idleStopDue({
+      now: Date.now(),
+      lastActivityAt,
+      idleMinutes,
+      isRecording: isRecordingFlag,
+      isPaused: isPausedFlag,
+    });
+    if (!due) return;
+    clearIdleStop();
+    logger.info("Meeting ended after silence", { idleMinutes }, "meeting");
+    pendingIdleMinutes = idleMinutes;
+    // The card's Stop: main surfaces the control panel and the bridge calls
+    // requestStopRecording. Without that path, stop here directly.
+    const viaMain = window.electronAPI?.meetingPanelCommand?.("stop");
+    if (!viaMain) {
+      void requestStopRecording();
+    } else {
+      viaMain
+        .then((result) => {
+          if (!result?.success) void requestStopRecording();
+        })
+        .catch(() => void requestStopRecording());
+    }
+  }, IDLE_CHECK_INTERVAL_MS);
+}
 let isStartingFlag = false;
 let isPrepared = false;
 let segmentsRefValue: TranscriptSegment[] = [];
@@ -898,6 +957,7 @@ function assignProvisionalSpeaker(segment: TranscriptSegment): TranscriptSegment
 }
 
 async function cleanup(): Promise<void> {
+  clearIdleStop();
   micRecovery?.stop();
   micRecovery = null;
   await flushAndDisconnectProcessor(micProcessor);
@@ -1069,6 +1129,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
   });
 
   isRecordingFlag = true;
+  armIdleStop();
 
   if (preparePromise) {
     logger.debug("Waiting for in-flight prepare to finish...", {}, "meeting");
@@ -1294,6 +1355,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
         const next =
           i === prev.length ? [...prev, seg] : [...prev.slice(0, i), seg, ...prev.slice(i)];
         segmentsRefValue = next;
+        if (seg.text.trim().length > 0) noteMeetingActivity();
 
         // The final replaces its own in-flight caption. Providers that name
         // their utterances retire exactly that one, so a second speaker still
@@ -1747,6 +1809,8 @@ export async function resumeRecording(): Promise<boolean> {
   }
 
   isPausedFlag = false;
+  // A resume restarts the silence clock: the pause was on purpose.
+  noteMeetingActivity();
   useMeetingRecordingStore.setState((state) => ({
     isPaused: false,
     gaps: closeGap(state.gaps, Date.now()),
@@ -1791,6 +1855,8 @@ export async function requestStopRecording(): Promise<StopRecordingResult> {
 
   const result = await stopRecording();
 
+  const endedAfterIdleMinutes = pendingIdleMinutes ?? undefined;
+  pendingIdleMinutes = null;
   useMeetingRecordingStore.setState({
     pendingStop: {
       noteId: recordingNoteId,
@@ -1798,6 +1864,7 @@ export async function requestStopRecording(): Promise<StopRecordingResult> {
       hasContent,
       segments,
       seedSegmentCount: seedSegmentCountValue,
+      ...(endedAfterIdleMinutes !== undefined ? { endedAfterIdleMinutes } : {}),
     },
   });
 

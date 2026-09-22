@@ -1614,7 +1614,7 @@ a:focus-visible {
   box-shadow:
     inset 0 1px 0 oklch(1 0 0 / 0.06),
     0 0 0 0 oklch(from var(--color-hud-accent) l c h / 0.6),
-    0 0 28px 7px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.3),
+    0 0 14px 4px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.42),
     0 6px 18px -6px oklch(0 0 0 / 0.65);
   animation: assistant-dot-ring 2.2s ease-out infinite;
 }
@@ -1643,21 +1643,21 @@ a:focus-visible {
     box-shadow:
       inset 0 1px 0 oklch(1 0 0 / 0.06),
       0 0 0 0 oklch(from var(--color-hud-accent) l c h / 0.6),
-      0 0 28px 7px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.3),
+      0 0 14px 4px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.42),
       0 6px 18px -6px oklch(0 0 0 / 0.65);
   }
   70% {
     box-shadow:
       inset 0 1px 0 oklch(1 0 0 / 0.06),
       0 0 0 14px oklch(from var(--color-hud-accent) l c h / 0),
-      0 0 34px 9px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.36),
+      0 0 18px 5px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.5),
       0 6px 18px -6px oklch(0 0 0 / 0.65);
   }
   100% {
     box-shadow:
       inset 0 1px 0 oklch(1 0 0 / 0.06),
       0 0 0 14px oklch(from var(--color-hud-accent) l c h / 0),
-      0 0 28px 7px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.3),
+      0 0 14px 4px oklch(from var(--color-hud-accent) calc(l + 0.12) calc(c - 0.03) h / 0.42),
       0 6px 18px -6px oklch(0 0 0 / 0.65);
   }
 }
@@ -1675,4 +1675,21 @@ a:focus-visible {
   .assistant-dot--rec .assistant-dot__bar {
     animation: none;
   }
+}
+/* On a dark backdrop the dot goes light (main samples the screen under the
+   window — dotBackdrop.js — and the renderer wears the opposite tone). The
+   recording glow outside the disc stays the bright cyan, which reads on
+   dark; the glyph inside takes a deeper cyan that reads on the light disc.
+   Every shadow here also stays inside the 96px window. */
+.assistant-dot--on-dark {
+  border-color: oklch(1 0 0 / 0.55);
+  background: linear-gradient(180deg, oklch(0.985 0.003 230), oklch(0.9 0.008 230));
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.9),
+    0 0 0 0.5px oklch(0 0 0 / 0.35),
+    0 6px 18px -6px oklch(0 0 0 / 0.55);
+  color: oklch(0.42 0.01 230);
+}
+.assistant-dot--on-dark.assistant-dot--rec {
+  color: oklch(0.5 0.12 200.6);
 }

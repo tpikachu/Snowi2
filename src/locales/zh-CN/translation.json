@@ -26,6 +26,12 @@
       }
     },
     "meeting": {
+      "idleStop": {
+        "title": "静默后结束会议",
+        "description": "在这段时间内无人说话时，会议将自动结束并询问是否保留。",
+        "never": "从不",
+        "minutes": "{{count}} 分钟"
+      },
       "archivePass": {
         "title": "会议结束后精修转录",
         "description": "会议结束后，更慢但更准确的模型会重新处理录音，笔记将基于该转录生成。"
@@ -2789,6 +2795,7 @@
       "resume": "继续",
       "pausedWithTitle": "已暂停 · {{title}}",
       "stopDialog": {
+        "idleReason": "已在 {{minutes}} 分钟无人说话后结束。",
         "description": "“{{title}}”会连同转录保留在笔记中。丢弃将永久删除。",
         "descriptionEmpty": "这次会议没有产生转录。保留会留下一条空笔记。",
         "discard": "丢弃",

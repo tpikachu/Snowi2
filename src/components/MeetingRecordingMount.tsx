@@ -9,8 +9,10 @@ import {
   startMeetingPreRoll,
   useMeetingRecordingStore,
   waitForPostStopPass,
+  noteMeetingActivity,
 } from "../stores/meetingRecordingStore";
 import logger from "../utils/logger";
+import { MIC_ACTIVITY_LEVEL } from "../utils/meetingIdleStop";
 import { ConfirmDialog } from "./ui/dialog";
 import { useMeetingPanelBridge } from "../hooks/useMeetingPanelBridge";
 import { useMeetingAssist } from "../hooks/useMeetingAssist";
@@ -196,6 +198,14 @@ function MeetingStopDialog() {
       onConfirm={keepMeeting}
       onCancel={() => void resolvePendingStop(false)}
     >
+      {pendingStop.endedAfterIdleMinutes !== undefined && (
+        <p
+          className="text-xs text-muted-foreground"
+          data-idle-stop={pendingStop.endedAfterIdleMinutes}
+        >
+          {t("notes.meeting.stopDialog.idleReason", { minutes: pendingStop.endedAfterIdleMinutes })}
+        </p>
+      )}
       {autoSaveLeft !== null && (
         <p className="text-xs text-muted-foreground">
           {t("notes.meeting.stopDialog.autoSaveHint", { seconds: autoSaveLeft })}
@@ -303,6 +313,9 @@ export default function MeetingRecordingMount() {
         if (now - lastPanelLevelAt >= PANEL_LEVEL_INTERVAL_MS) {
           lastPanelLevelAt = now;
           window.electronAPI?.meetingPanelLevel?.(clamped);
+          // A voice on the microphone counts as activity for the idle stop
+          // even when the transcriber has nothing to say about it.
+          if (clamped >= MIC_ACTIVITY_LEVEL) noteMeetingActivity();
         }
       }
       rafId = requestAnimationFrame(tick);

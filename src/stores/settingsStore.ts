@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { API_ENDPOINTS } from "../config/constants";
+import { DEFAULT_IDLE_STOP_MINUTES, normalizeIdleStopMinutes } from "../utils/meetingIdleStop";
 import i18n, { normalizeUiLanguage } from "../i18n";
 import { ensureAgentNameInDictionary } from "../utils/agentName";
 import { chooseDictionaryStartupAction } from "../helpers/dictionaryStartup";
@@ -276,6 +277,7 @@ const BOOLEAN_SETTINGS = new Set([
   "speakerDiarizationEnabled",
   "meetingArchivePass",
   "meetingKeepRecordings",
+  "meetingIdleStopMinutes",
   "dictationSileroEnabled",
   "noteRecordingSileroEnabled",
   "meetingSileroEnabled",
@@ -314,6 +316,7 @@ const ARRAY_SETTINGS = new Set([
 const NUMERIC_SETTINGS = new Set([
   "micWarmHoldSeconds",
   "audioRetentionDays",
+  "meetingIdleStopMinutes",
   "transcriptRetentionDays",
   "whisperVadThreshold",
   "whisperVadMinSpeechDurationMs",
@@ -723,6 +726,8 @@ export interface SettingsState
   /** Re-transcribe each meeting with the tier's archive model after Stop (local engines). */
   meetingArchivePass: boolean;
   meetingKeepRecordings: boolean;
+  /** End a meeting after this many minutes without speech; 0 = never. */
+  meetingIdleStopMinutes: number;
   dictationSileroEnabled: boolean;
   noteRecordingSileroEnabled: boolean;
   meetingSileroEnabled: boolean;
@@ -1072,6 +1077,7 @@ export interface SettingsState
   setSpeakerDiarizationEnabled: (value: boolean) => void;
   setMeetingArchivePass: (value: boolean) => void;
   setMeetingKeepRecordings: (value: boolean) => void;
+  setMeetingIdleStopMinutes: (minutes: number) => void;
   setDictationSileroEnabled: (value: boolean) => void;
   setNoteRecordingSileroEnabled: (value: boolean) => void;
   setMeetingSileroEnabled: (value: boolean) => void;
@@ -1545,6 +1551,9 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   speakerDiarizationEnabled: readBoolean("speakerDiarizationEnabled", true),
   meetingArchivePass: readBoolean("meetingArchivePass", true),
   meetingKeepRecordings: readBoolean("meetingKeepRecordings", true),
+  meetingIdleStopMinutes: normalizeIdleStopMinutes(
+    readNumber("meetingIdleStopMinutes", DEFAULT_IDLE_STOP_MINUTES)
+  ),
   // Off by default: VAD on pause-heavy dictations can strip the speech and make
   // Whisper hallucinate the dictionary prompt as the transcript (#1454).
   dictationSileroEnabled: readBoolean("dictationSileroEnabled", false),
@@ -2328,6 +2337,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setMeetingPreRollEnabled: createBooleanSetter("meetingPreRollEnabled"),
   setMeetingArchivePass: createBooleanSetter("meetingArchivePass"),
   setMeetingKeepRecordings: createBooleanSetter("meetingKeepRecordings"),
+  setMeetingIdleStopMinutes: (minutes: number) =>
+    createNumberSetter("meetingIdleStopMinutes")(normalizeIdleStopMinutes(minutes)),
   setSpeakerDiarizationEnabled: (value: boolean) => {
     if (isBrowser) localStorage.setItem("speakerDiarizationEnabled", String(value));
     useSettingsStore.setState({ speakerDiarizationEnabled: value });
@@ -3624,6 +3635,8 @@ export async function initializeSettings(): Promise<void> {
           key === "audioRetentionDays" ? 30 : (state as unknown as Record<string, unknown>)[key];
       } else if (key === "audioRetentionDays") {
         value = Math.round(parsed);
+      } else if (key === "meetingIdleStopMinutes") {
+        value = normalizeIdleStopMinutes(parsed);
       } else if (key === "micWarmHoldSeconds") {
         // Same whitelist as the setter — a hand-edited localStorage value
         // synced from another window must not exceed the offered durations.
