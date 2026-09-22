@@ -2391,6 +2391,8 @@
       "memoryTooMuch": "Needs about {{gb}} GB, more than this computer has",
       "noWebSearch": "No web search",
       "noWebOrNotesSearch": "No web or notes search",
+      "webSearchHint": "Web search lets Snowy look things up online during a meeting when the transcript and your notes can't answer — a company, a price, a term. A model on this computer answers only from the meeting, your notes and what it already knows.",
+      "webAndNotesSearchHint": "Web search lets Snowy look things up online during a meeting when the transcript and your notes can't answer. A model this small can't use tools at all, so it can't search the web or read your other notes; it answers from the meeting and what it already knows.",
       "showMore": "Show {{count}} more models",
       "showLess": "Show fewer models"
     },

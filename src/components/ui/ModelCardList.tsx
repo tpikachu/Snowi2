@@ -1,4 +1,5 @@
 import { Globe, Download, Trash2, X, ExternalLink } from "lucide-react";
+import { LocalModelCaveat } from "./LocalModelCaveat";
 import { useTranslation } from "react-i18next";
 import { Button } from "./button";
 import { cn } from "../lib/utils";
@@ -21,6 +22,8 @@ export interface ModelCardOption {
   recommended?: boolean;
   /** A short use-case pill after the name ("Best local answers"). */
   badge?: string;
+  /** What a model on this computer gives up: web search, or every tool. */
+  caveat?: { toolsOff: boolean };
   /** A second line under the row: what the model needs and what it gives up. */
   note?: string;
   /** "warn" when the note says the model will not run well here. */
@@ -231,14 +234,18 @@ export function ModelCard({
           )}
         </div>
       </div>
-      {model.note && (
+      {(model.note || model.caveat) && (
+        // The caveat badge rides the second line, not the title row: beside
+        // the name, tier and Recommended it squeezed the name into an
+        // ellipsis at ordinary window widths.
         <p
           className={cn(
-            "mt-0.5 pl-[18px] text-[11px] leading-snug",
+            "mt-0.5 flex items-center gap-1.5 pl-[18px] text-[11px] leading-snug",
             model.noteTone === "warn" ? "text-warning" : "text-muted-foreground"
           )}
         >
-          {model.note}
+          {model.note && <span className="min-w-0 truncate">{model.note}</span>}
+          {model.caveat && <LocalModelCaveat toolsOff={model.caveat.toolsOff} />}
         </p>
       )}
     </div>

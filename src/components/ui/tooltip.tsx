@@ -21,9 +21,14 @@ interface TooltipProps {
    * a tooltip that lingers after a click leaves the button focused.
    */
   showOnFocus?: boolean;
+  /**
+   * Let the text wrap at a readable measure. The default is one line, which
+   * is right for a label; an explanation (what web search is) needs a plate.
+   */
+  wrap?: boolean;
 }
 
-export const Tooltip = ({ children, content, side = "top", showOnFocus }: TooltipProps) => {
+export const Tooltip = ({ children, content, side = "top", showOnFocus, wrap }: TooltipProps) => {
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<{ top: number; left: number } | null>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -83,7 +88,12 @@ export const Tooltip = ({ children, content, side = "top", showOnFocus }: Toolti
           <div
             ref={tooltipRef}
             role="tooltip"
-            className="fixed z-[9999] whitespace-nowrap rounded-control border border-border-control bg-popover px-2 py-1 text-[11px] font-medium leading-tight tracking-[0.004em] text-foreground shadow-(--shadow-overlay) pointer-events-none animate-in fade-in-0 duration-100"
+            className={
+              "fixed z-[9999] rounded-control border border-border-control bg-popover px-2 py-1 text-[11px] font-medium leading-tight tracking-[0.004em] text-foreground shadow-(--shadow-overlay) pointer-events-none animate-in fade-in-0 duration-100 " +
+              (wrap
+                ? "max-w-[260px] whitespace-normal text-left leading-snug"
+                : "whitespace-nowrap")
+            }
             style={{
               top: position.top,
               left: position.left,

@@ -102,6 +102,13 @@ test("models are picked at point of use; Settings is engine plus keys", async ()
   await expect(page.getByText("No web search").first()).toBeVisible();
   await expect(page.getByRole("button", { name: /Show \d+ more models/ })).toBeVisible();
   await page.screenshot({ path: test.info().outputPath("language-models-local.png") });
+  // What it gives up is a warning badge, and its tooltip explains the feature
+  // rather than the badge (client direction, 2026-09-22).
+  await page.locator('[data-local-caveat="web"]').first().hover();
+  await expect(page.getByRole("tooltip")).toContainText("Web search lets Snowy look things up");
+  await page.screenshot({ path: test.info().outputPath("language-models-local-caveat.png") });
+  await page.locator('[data-local-caveat="tools"]').first().hover();
+  await expect(page.getByRole("tooltip")).toContainText("can't use tools at all");
 
   // And back, so the profile is left where it started.
   await page.getByRole("button", { name: /Cloud Providers/ }).click();

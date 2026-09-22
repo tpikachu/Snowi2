@@ -2391,6 +2391,8 @@
       "memoryTooMuch": "Nécessite environ {{gb}} Go, plus que n'en a cet ordinateur",
       "noWebSearch": "Pas de recherche web",
       "noWebOrNotesSearch": "Pas de recherche web ni dans les notes",
+      "webSearchHint": "La recherche web permet à Snowy de chercher en ligne pendant une réunion quand la transcription et vos notes ne suffisent pas : une entreprise, un prix, un terme. Un modèle sur cet ordinateur répond uniquement à partir de la réunion, de vos notes et de ce qu'il sait déjà.",
+      "webAndNotesSearchHint": "La recherche web permet à Snowy de chercher en ligne pendant une réunion quand la transcription et vos notes ne suffisent pas. Un modèle aussi petit ne peut pas utiliser d'outils : il ne cherche pas sur le web et ne lit pas vos autres notes ; il répond à partir de la réunion et de ce qu'il sait déjà.",
       "showMore": "Afficher {{count}} modèles de plus",
       "showLess": "Afficher moins de modèles"
     },

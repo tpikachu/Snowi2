@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import { Check, ChevronDown, KeyRound } from "lucide-react";
 import { Popover, PopoverTrigger, PopoverContent } from "./ui/popover";
+import { LocalModelCaveat } from "./ui/LocalModelCaveat";
 import { cn } from "./lib/utils";
 import {
   useSettingsStore,
@@ -264,7 +265,7 @@ export default function ModelPickerChip({
     return model.description ?? null;
   };
   const helperClass = cn(
-    "block truncate text-[10.5px] leading-tight",
+    "flex items-center gap-1.5 text-[10.5px] leading-tight",
     hud ? "text-hud-muted" : "text-muted-foreground"
   );
   const headingClass = cn(
@@ -280,9 +281,10 @@ export default function ModelPickerChip({
     hud ? "border-white/15 text-hud-muted" : "border-border-subtle text-muted-foreground"
   );
   // A local row's helper is what the person needs at the moment of choice —
-  // the memory it takes against this machine and what it gives up — not the
-  // registry's one-liner, which is what left "Qwen3.5 9B" looking like an
-  // equal to a cloud model (client, 2026-09-15).
+  // the memory it takes against this machine — not the registry's one-liner,
+  // which is what left "Qwen3.5 9B" looking like an equal to a cloud model
+  // (client, 2026-09-15). What it gives up is the badge beside the tier
+  // (LocalModelCaveat), with the explanation as its tooltip.
   const localHelper = (labels: LocalModelLabels): { text: string; warn: boolean } => {
     const gb = labels.memoryGb;
     const memory =
@@ -291,8 +293,7 @@ export default function ModelPickerChip({
         : labels.fit === "tight"
           ? t("models.local.memoryTight", { gb })
           : t("models.local.memory", { gb });
-    const off = t(labels.toolsOff ? "models.local.noWebOrNotesSearch" : "models.local.noWebSearch");
-    return { text: `${memory} · ${off}`, warn: labels.fit === "poor" };
+    return { text: memory, warn: labels.fit === "poor" };
   };
 
   return (
@@ -384,9 +385,12 @@ export default function ModelPickerChip({
                           <span className={tierClass}>{t(`models.local.tier.${local.tier}`)}</span>
                         )}
                       </span>
-                      {helper && (
-                        <span className={cn(helperClass, helper.warn && "text-warning")}>
-                          {helper.text}
+                      {(helper || local) && (
+                        // The caveat badge sits on the helper line, after the
+                        // memory figure, so a long model name keeps its row.
+                        <span className={cn(helperClass, helper?.warn && "text-warning")}>
+                          {helper && <span className="min-w-0 truncate">{helper.text}</span>}
+                          {local && <LocalModelCaveat toolsOff={local.toolsOff} hud={hud} />}
                         </span>
                       )}
                     </span>

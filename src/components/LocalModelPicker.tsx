@@ -213,10 +213,10 @@ export default function LocalModelPicker({
         : labels.fit === "tight"
           ? t("models.local.memoryTight", { gb })
           : t("models.local.memory", { gb });
-    const off = t(labels.toolsOff ? "models.local.noWebOrNotesSearch" : "models.local.noWebSearch");
     return {
       badge: t(`models.local.tier.${labels.tier}`),
-      note: `${memory} · ${off}`,
+      caveat: { toolsOff: labels.toolsOff },
+      note: memory,
       noteTone: labels.fit === "poor" ? ("warn" as const) : ("muted" as const),
     };
   };

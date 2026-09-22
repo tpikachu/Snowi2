@@ -2391,6 +2391,8 @@
       "memoryTooMuch": "Braucht etwa {{gb}} GB, mehr als dieser Computer hat",
       "noWebSearch": "Keine Websuche",
       "noWebOrNotesSearch": "Keine Web- oder Notizsuche",
+      "webSearchHint": "Mit der Websuche kann Snowy während eines Meetings online nachschlagen, wenn Transkript und Notizen nicht weiterhelfen – ein Unternehmen, ein Preis, ein Begriff. Ein Modell auf diesem Computer antwortet nur aus dem Meeting, deinen Notizen und dem, was es bereits weiß.",
+      "webAndNotesSearchHint": "Mit der Websuche kann Snowy während eines Meetings online nachschlagen, wenn Transkript und Notizen nicht weiterhelfen. Ein so kleines Modell kann keine Werkzeuge nutzen: Es durchsucht weder das Web noch deine anderen Notizen und antwortet nur aus dem Meeting und dem, was es bereits weiß.",
       "showMore": "{{count}} weitere Modelle anzeigen",
       "showLess": "Weniger Modelle anzeigen"
     },
