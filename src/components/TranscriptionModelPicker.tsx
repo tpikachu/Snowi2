@@ -1000,6 +1000,17 @@ export default function TranscriptionModelPicker({
     }));
   }, [currentCloudProvider, displayedCloudProvider, t]);
 
+  // The chosen cloud model wears "Active" only when the provider could
+  // transcribe with it; without its key the badge says so instead.
+  const cloudSelectedBadge = useMemo(() => {
+    const configured = cloudProviderGridItems.find(
+      (provider) => provider.id === displayedCloudProvider
+    )?.configured;
+    return configured
+      ? undefined
+      : { label: t("transcription.needsKey"), tone: "warning" as const };
+  }, [cloudProviderGridItems, displayedCloudProvider, t]);
+
   const progressDisplay = useMemo(() => {
     // Onboarding shows progress inline in the model row it belongs to.
     if (!effectiveLocal || isOnboarding) return null;
@@ -1301,6 +1312,7 @@ export default function TranscriptionModelPicker({
                     selectedModel={displayedCloudModel}
                     onModelSelect={onCloudModelSelect}
                     colorScheme="purple"
+                    selectedBadge={cloudSelectedBadge}
                   />
                   {displayedCloudProvider === "tinfoil" && (
                     <p className="text-xs text-muted-foreground/70">

@@ -633,6 +633,8 @@
       "whisperModelDescription": "Modèle",
       "parakeetModelDescription": "Modèle NVIDIA Parakeet"
     },
+    "needsKey": "Clé manquante",
+    "needsModel": "Choisir un modèle",
     "whisperModels": "Modèles Whisper",
     "corti": {
       "clientId": "ID client",
@@ -3998,6 +4000,9 @@
       "description": "L'enregistrement et la transcription fonctionnent seuls. Ceci a besoin d'un modèle de langage.",
       "collapsedSummary_one": "{{count}} fonction attend encore un modèle de langage.",
       "collapsedSummary_other": "{{count}} fonctions attendent encore un modèle de langage.",
+      "descriptionSetup": "Les réunions ont besoin d'un moteur de transcription et d'un modèle de langage. Configurez ce qui manque ci-dessous.",
+      "collapsedSummarySetup_one": "{{count}} fonction reste à configurer.",
+      "collapsedSummarySetup_other": "{{count}} fonctions restent à configurer.",
       "ready": "Actif",
       "needsSetup": "À configurer",
       "configure": "Configurer",
@@ -4007,7 +4012,8 @@
       "items": {
         "transcription": {
           "title": "Enregistrement et transcription",
-          "ready": "Les réunions sont captées et transformées en texte sur cette machine."
+          "ready": "Les réunions sont captées et transformées en texte sur cette machine.",
+          "missing": "Les réunions seraient enregistrées sans transcription. Ajoutez la clé du fournisseur et choisissez un modèle, ou transcrivez sur cette machine."
         },
         "intelligence": {
           "title": "Modèle d'IA",

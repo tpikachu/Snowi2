@@ -633,6 +633,8 @@
       "whisperModelDescription": "モデル",
       "parakeetModelDescription": "NVIDIA Parakeet モデル"
     },
+    "needsKey": "キーが必要",
+    "needsModel": "モデルを選択",
     "whisperModels": "Whisper モデル",
     "corti": {
       "clientId": "クライアントID",
@@ -3998,6 +4000,9 @@
       "description": "録音と文字起こしはそのまま使えます。以下には言語モデルの設定が必要です。",
       "collapsedSummary_one": "{{count}} 件の機能が言語モデルの設定を待っています。",
       "collapsedSummary_other": "{{count}} 件の機能が言語モデルの設定を待っています。",
+      "descriptionSetup": "会議には文字起こしエンジンと言語モデルが必要です。不足しているものを下で設定してください。",
+      "collapsedSummarySetup_one": "{{count}} 件の機能が設定待ちです。",
+      "collapsedSummarySetup_other": "{{count}} 件の機能が設定待ちです。",
       "ready": "利用中",
       "needsSetup": "設定が必要",
       "configure": "設定する",
@@ -4007,7 +4012,8 @@
       "items": {
         "transcription": {
           "title": "録音と文字起こし",
-          "ready": "会議はこの端末で記録され、テキストになります。"
+          "ready": "会議はこの端末で記録され、テキストになります。",
+          "missing": "このままでは会議は文字起こしなしで録音されます。プロバイダーのキーを追加してモデルを選ぶか、この端末で文字起こししてください。"
         },
         "intelligence": {
           "title": "AI モデル",

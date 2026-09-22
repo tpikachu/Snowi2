@@ -633,6 +633,8 @@
       "whisperModelDescription": "Model",
       "parakeetModelDescription": "NVIDIA Parakeet Model"
     },
+    "needsKey": "Needs key",
+    "needsModel": "Pick a model",
     "whisperModels": "Whisper Models",
     "corti": {
       "clientId": "Client ID",
@@ -3998,6 +4000,9 @@
       "description": "Recording and transcription work on their own. These need a language model before they can run.",
       "collapsedSummary_one": "{{count}} feature is still waiting on a language model.",
       "collapsedSummary_other": "{{count}} features are still waiting on a language model.",
+      "descriptionSetup": "Meetings need a transcription engine and a language model. Set up what's missing below.",
+      "collapsedSummarySetup_one": "{{count}} feature still needs setting up.",
+      "collapsedSummarySetup_other": "{{count}} features still need setting up.",
       "ready": "Working",
       "needsSetup": "Needs setup",
       "configure": "Set up",
@@ -4007,7 +4012,8 @@
       "items": {
         "transcription": {
           "title": "Recording and transcription",
-          "ready": "Meetings are captured and turned into text on this machine."
+          "ready": "Meetings are captured and turned into text on this machine.",
+          "missing": "Meetings would record with no transcript. Add the provider's key and pick a model, or transcribe on this machine."
         },
         "intelligence": {
           "title": "AI model",

@@ -633,6 +633,8 @@
       "whisperModelDescription": "Modell",
       "parakeetModelDescription": "NVIDIA-Parakeet-Modell"
     },
+    "needsKey": "Schlüssel fehlt",
+    "needsModel": "Modell wählen",
     "whisperModels": "Whisper-Modelle",
     "corti": {
       "clientId": "Client-ID",
@@ -3998,6 +4000,9 @@
       "description": "Aufnahme und Transkription laufen von allein. Dafür wird ein Sprachmodell benötigt.",
       "collapsedSummary_one": "{{count}} Funktion wartet noch auf ein Sprachmodell.",
       "collapsedSummary_other": "{{count}} Funktionen warten noch auf ein Sprachmodell.",
+      "descriptionSetup": "Meetings brauchen eine Transkriptions-Engine und ein Sprachmodell. Richte unten ein, was fehlt.",
+      "collapsedSummarySetup_one": "{{count}} Funktion muss noch eingerichtet werden.",
+      "collapsedSummarySetup_other": "{{count}} Funktionen müssen noch eingerichtet werden.",
       "ready": "Aktiv",
       "needsSetup": "Einrichtung nötig",
       "configure": "Einrichten",
@@ -4007,7 +4012,8 @@
       "items": {
         "transcription": {
           "title": "Aufnahme und Transkription",
-          "ready": "Meetings werden auf diesem Rechner aufgezeichnet und in Text umgewandelt."
+          "ready": "Meetings werden auf diesem Rechner aufgezeichnet und in Text umgewandelt.",
+          "missing": "Meetings würden ohne Transkript aufgezeichnet. Füge den Schlüssel des Anbieters hinzu und wähle ein Modell, oder transkribiere auf diesem Rechner."
         },
         "intelligence": {
           "title": "KI-Modell",

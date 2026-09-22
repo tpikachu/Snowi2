@@ -297,3 +297,40 @@ test("the text-size preference zooms the control panel window", async () => {
     expect(zoom).toBeCloseTo(1, 2);
   }).toPass({ timeout: 10_000 });
 });
+
+test("a cloud speech provider without a key is not Active, and Home asks for the setup", async () => {
+  ({ app } = await launchApp(test.info()));
+  const page = await controlPanelPage(app);
+  await skipOnboarding(page);
+
+  // Speech-to-Text on the Cloud engine with no key on OpenAI: neither the
+  // engine card nor the chosen model may say "Active" — that badge over a
+  // missing key promised a transcription the first meeting could not
+  // deliver (client, 2026-09-22).
+  await page.getByRole("button", { name: "Settings" }).first().click();
+  await page.getByText("Speech-to-Text").first().click();
+  const engine = page.getByRole("region", { name: "Engine" });
+  await expect(engine).toBeVisible({ timeout: 15_000 });
+  await page.getByRole("button", { name: /Cloud Providers/ }).click();
+  await expect(page.getByRole("button", { name: /Cloud Providers/ })).toHaveAttribute(
+    "aria-pressed",
+    "true"
+  );
+  await expect(page.locator("[data-mode-status]")).toHaveText("Needs key");
+  await expect(page.locator('[data-selected-badge="warning"]')).toHaveText("Needs key");
+  await expect(engine.getByText("Active", { exact: true })).toHaveCount(0);
+  await page.screenshot({ path: test.info().outputPath("speech-cloud-no-key.png") });
+
+  // Home: the transcription row needs setup, says why, and Set up lands
+  // back on this page.
+  await page.keyboard.press("Escape");
+  await expect(page.getByText("What Snowy can do right now")).toBeVisible({ timeout: 15_000 });
+  const row = page.locator("li", { hasText: "Recording and transcription" });
+  await expect(row.getByText("Needs setup", { exact: true })).toBeVisible();
+  await expect(row.getByText(/Meetings would record with no transcript/)).toBeVisible();
+  await expect(page.getByText(/Meetings need a transcription engine/)).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("home-speech-needs-setup.png") });
+  await page.getByRole("button", { name: "Set up" }).first().click();
+  await expect(page.getByRole("region", { name: "Engine" })).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator("[data-mode-status]")).toHaveText("Needs key");
+});

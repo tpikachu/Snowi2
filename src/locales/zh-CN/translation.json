@@ -633,6 +633,8 @@
       "whisperModelDescription": "模型",
       "parakeetModelDescription": "NVIDIA Parakeet 模型"
     },
+    "needsKey": "缺少密钥",
+    "needsModel": "选择模型",
     "whisperModels": "Whisper 模型",
     "corti": {
       "clientId": "客户端 ID",
@@ -3998,6 +4000,9 @@
       "description": "录音和转写本身就能用。下面这些需要先配置语言模型。",
       "collapsedSummary_one": "还有 {{count}} 项功能在等待语言模型。",
       "collapsedSummary_other": "还有 {{count}} 项功能在等待语言模型。",
+      "descriptionSetup": "会议需要转写引擎和语言模型。请在下方配置缺少的部分。",
+      "collapsedSummarySetup_one": "还有 {{count}} 项功能需要配置。",
+      "collapsedSummarySetup_other": "还有 {{count}} 项功能需要配置。",
       "ready": "已启用",
       "needsSetup": "待设置",
       "configure": "去设置",
@@ -4007,7 +4012,8 @@
       "items": {
         "transcription": {
           "title": "录音与转写",
-          "ready": "会议在这台机器上被录下并转成文字。"
+          "ready": "会议在这台机器上被录下并转成文字。",
+          "missing": "会议将只录音而没有转写。请添加提供商的密钥并选择模型，或在这台机器上转写。"
         },
         "intelligence": {
           "title": "AI 模型",

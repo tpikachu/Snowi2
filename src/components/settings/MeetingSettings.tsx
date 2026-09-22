@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Key, Cpu } from "lucide-react";
-import { useSettingsStore } from "../../stores/settingsStore";
+import { selectMeetingSpeechReadiness, useSettingsStore } from "../../stores/settingsStore";
 import {
   InferenceModeSelector,
   SettingsPanel,
@@ -164,12 +164,16 @@ export function MeetingTranscriptionPanel() {
     setMeetingCloudTranscriptionBaseUrl,
     setMeetingCloudTranscriptionMode,
   } = useSettingsStore();
+  // The Cloud Providers card is "Active" only when it could transcribe:
+  // chosen without its key or a model, the badge says which is missing.
+  const speechReadiness = useSettingsStore(selectMeetingSpeechReadiness);
   const transcriptionModes: InferenceModeOption[] = [
     {
       id: "providers",
       label: t("settingsPage.transcription.modes.providers"),
       description: t("settingsPage.transcription.modes.providersDesc"),
       icon: <Key className="w-4 h-4" />,
+      status: speechReadiness === "ready" ? undefined : t(`transcription.${speechReadiness}`),
     },
     {
       id: "local",

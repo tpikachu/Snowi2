@@ -633,6 +633,8 @@
       "whisperModelDescription": "Modello",
       "parakeetModelDescription": "Modello NVIDIA Parakeet"
     },
+    "needsKey": "Manca la chiave",
+    "needsModel": "Scegli un modello",
     "whisperModels": "Modelli Whisper",
     "corti": {
       "clientId": "ID client",
@@ -3998,6 +4000,9 @@
       "description": "Registrazione e trascrizione funzionano da sole. Questo richiede un modello linguistico.",
       "collapsedSummary_one": "{{count}} funzione aspetta ancora un modello linguistico.",
       "collapsedSummary_other": "{{count}} funzioni aspettano ancora un modello linguistico.",
+      "descriptionSetup": "Le riunioni hanno bisogno di un motore di trascrizione e di un modello linguistico. Configura ciò che manca qui sotto.",
+      "collapsedSummarySetup_one": "{{count}} funzione è ancora da configurare.",
+      "collapsedSummarySetup_other": "{{count}} funzioni sono ancora da configurare.",
       "ready": "Attivo",
       "needsSetup": "Da configurare",
       "configure": "Configura",
@@ -4007,7 +4012,8 @@
       "items": {
         "transcription": {
           "title": "Registrazione e trascrizione",
-          "ready": "Le riunioni vengono catturate e trasformate in testo su questo computer."
+          "ready": "Le riunioni vengono catturate e trasformate in testo su questo computer.",
+          "missing": "Le riunioni verrebbero registrate senza trascrizione. Aggiungi la chiave del provider e scegli un modello, oppure trascrivi su questo computer."
         },
         "intelligence": {
           "title": "Modello IA",

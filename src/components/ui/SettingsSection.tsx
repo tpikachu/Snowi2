@@ -158,6 +158,13 @@ export interface InferenceModeOption {
   id: InferenceMode;
   disabled?: boolean;
   badge?: string;
+  /**
+   * Why the mode, though chosen, cannot serve yet ("Needs key"). Worn as a
+   * warning badge in place of "Active": a Cloud Providers card that said
+   * Active with no key on it promised a transcription the first meeting
+   * could not deliver (client, 2026-09-22).
+   */
+  status?: string;
   label: string;
   description: string;
   icon: React.ReactNode;
@@ -209,7 +216,15 @@ export function InferenceModeSelector({
                   <span className="text-[13px] font-semibold leading-tight text-foreground">
                     {mode.label}
                   </span>
-                  {isActive && !isDisabled && (
+                  {isActive && !isDisabled && mode.status && (
+                    <span
+                      data-mode-status=""
+                      className="micro-caps rounded-control border border-warning/40 bg-warning-subtle px-1 py-px text-warning"
+                    >
+                      {mode.status}
+                    </span>
+                  )}
+                  {isActive && !isDisabled && !mode.status && (
                     <span className="micro-caps rounded-control border border-primary/25 bg-primary/10 px-1 py-px text-primary">
                       {t("common.active")}
                     </span>

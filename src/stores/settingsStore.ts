@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { API_ENDPOINTS } from "../config/constants";
 import { DEFAULT_IDLE_STOP_MINUTES, normalizeIdleStopMinutes } from "../utils/meetingIdleStop";
 import { planRerouteOffProvider } from "../utils/providerReroute";
+import { speechRouteReadiness, type SpeechRouteReadiness } from "../utils/speechRouteReady";
 import { pushRouteNotices } from "./routeNoticeStore";
 import i18n, { normalizeUiLanguage } from "../i18n";
 import { ensureAgentNameInDictionary } from "../utils/agentName";
@@ -2651,6 +2652,25 @@ export const selectResolvedMeetingTranscription = (
   remoteTranscriptionType: state.meetingRemoteTranscriptionType,
   remoteTranscriptionUrl: state.meetingRemoteTranscriptionUrl || state.remoteTranscriptionUrl,
 });
+
+/**
+ * Whether the meeting's speech route could transcribe right now — judged
+ * the way the request path will (utils/speechRouteReady.ts). Home's
+ * transcription row, the dot's setup warning and the Speech-to-Text page's
+ * "Active" badges all read this one answer.
+ */
+export const selectMeetingSpeechReadiness = (state: SettingsState): SpeechRouteReadiness => {
+  const cfg = selectResolvedMeetingTranscription(state);
+  return speechRouteReadiness({
+    transcriptionMode: cfg.transcriptionMode,
+    provider: cfg.cloudTranscriptionProvider,
+    model: cfg.cloudTranscriptionModel,
+    secret: (field) => {
+      const value = (state as unknown as Record<string, unknown>)[field];
+      return typeof value === "string" ? value : "";
+    },
+  });
+};
 
 export interface ResolvedUploadTranscription {
   useLocalWhisper: boolean;

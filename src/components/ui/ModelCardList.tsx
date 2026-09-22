@@ -54,11 +54,22 @@ const COLOR_CONFIG: Record<
   blue: { selected: ROW_SELECTED, default: ROW_DEFAULT },
 };
 
+/**
+ * What the selected row's badge says. Default: "Active". A route that cannot
+ * serve yet (a cloud speech provider without its key) passes a warning label
+ * instead — a model marked Active over a missing key read as working.
+ */
+export interface SelectedBadge {
+  label: string;
+  tone?: "primary" | "warning";
+}
+
 interface ModelCardProps {
   model: ModelCardOption;
   isSelected: boolean;
   onSelect: (modelId: string) => void;
   colorScheme?: ColorScheme;
+  selectedBadge?: SelectedBadge;
   // Long-form descriptions (e.g. OpenRouter) fill the row and ellipsize
   // instead of sitting flush-right like short metadata.
   truncateDescription?: boolean;
@@ -81,6 +92,7 @@ export function ModelCard({
   onCancelDownload,
   isCancelling = false,
   isInstalling = false,
+  selectedBadge,
 }: ModelCardProps) {
   const { t } = useTranslation();
   const styles = COLOR_CONFIG[colorScheme];
@@ -183,8 +195,16 @@ export function ModelCard({
 
         <div className="ml-auto flex items-center gap-1.5 shrink-0">
           {isSelected && (
-            <span className="micro-caps rounded-control border border-primary/25 bg-primary/10 px-1.5 py-0.5 text-primary">
-              {t("common.active")}
+            <span
+              data-selected-badge={selectedBadge?.tone === "warning" ? "warning" : "active"}
+              className={cn(
+                "micro-caps rounded-control border px-1.5 py-0.5",
+                selectedBadge?.tone === "warning"
+                  ? "border-warning/40 bg-warning-subtle text-warning"
+                  : "border-primary/25 bg-primary/10 text-primary"
+              )}
+            >
+              {selectedBadge?.label ?? t("common.active")}
             </span>
           )}
 
@@ -265,6 +285,7 @@ interface ModelCardListProps {
   onCancelDownload?: () => void;
   isCancelling?: boolean;
   isInstalling?: boolean;
+  selectedBadge?: SelectedBadge;
 }
 
 export default function ModelCardList({
@@ -279,6 +300,7 @@ export default function ModelCardList({
   onCancelDownload,
   isCancelling = false,
   isInstalling = false,
+  selectedBadge,
 }: ModelCardListProps) {
   const { t } = useTranslation();
 
@@ -301,6 +323,7 @@ export default function ModelCardList({
           onCancelDownload={onCancelDownload}
           isCancelling={isCancelling}
           isInstalling={isInstalling}
+          selectedBadge={selectedBadge}
         />
       ))}
     </div>

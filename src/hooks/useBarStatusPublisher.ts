@@ -3,26 +3,17 @@ import {
   useSettingsStore,
   selectResolvedLLMConfig,
   selectLLMConfigReady,
-  selectResolvedMeetingTranscription,
-  BYOK_PROVIDER_KEY_FIELDS,
+  selectMeetingSpeechReadiness,
   type SettingsState,
 } from "../stores/settingsStore";
 import { useSpeechModelDownloadStatus } from "./useSpeechModelDownloadStatus";
 
-const selectSpeechOk = (state: SettingsState): boolean => {
-  const cfg = selectResolvedMeetingTranscription(state);
-  // Local and self-hosted setups are covered elsewhere (the download gate on
-  // the bar's start button); the one gap a finished onboarding can quietly
-  // develop is a cloud provider whose key was later removed.
-  if (cfg.transcriptionMode !== "providers") return true;
-  if (cfg.cloudTranscriptionProvider === "corti") {
-    return state.cortiClientId.trim().length > 0 && state.cortiClientSecret.trim().length > 0;
-  }
-  const field = BYOK_PROVIDER_KEY_FIELDS[cfg.cloudTranscriptionProvider];
-  if (!field) return true;
-  const value = state[field];
-  return typeof value === "string" ? value.trim().length > 0 : true;
-};
+// Local and self-hosted setups are covered elsewhere (the download gate on
+// the bar's start button); the gap a finished onboarding can quietly develop
+// is a cloud provider whose key was never entered or later removed. One
+// predicate with Home's transcription row, so the two never disagree.
+const selectSpeechOk = (state: SettingsState): boolean =>
+  selectMeetingSpeechReadiness(state) === "ready";
 
 // The two AI scopes are published separately so the bar can mirror the Home
 // card's capability rows exactly: actions writes the meeting note, and

@@ -11,6 +11,7 @@ import { SETTINGS_REMEDIES, type SettingsRemedy } from "../../config/settingsRem
 import { getProviderDisplayName, getReasoningModelLabel } from "../../models/ModelRegistry";
 import {
   selectLLMConfigReady,
+  selectMeetingSpeechReadiness,
   selectResolvedLLMConfig,
   selectResolvedMeetingTranscription,
   selectResolvedActions,
@@ -119,6 +120,10 @@ export default function CapabilitiesCard() {
             : transcription.whisperModel,
         cloudTranscriptionModel: transcription.cloudTranscriptionModel,
         cloudTranscriptionProvider: transcription.cloudTranscriptionProvider,
+        // A cloud speech provider is only as ready as its key: selected with
+        // no key, the first meeting failed with "No OpenAI API key
+        // configured" while this row said it was working (client, 2026-09-22).
+        speechReady: selectMeetingSpeechReadiness(state) === "ready",
       };
     })
   );
@@ -136,10 +141,11 @@ export default function CapabilitiesCard() {
             : null,
     });
 
-    // Transcription is never "unconfigured" the way a model scope is — a
-    // meeting always has an engine — so it reports which one rather than
-    // whether. Local says so instead of naming a provider: "on this machine"
-    // is the part someone checking on their transcript wants to read.
+    // A local engine always has something to transcribe with (a missing
+    // download is the dot's gate), so it reports which one rather than
+    // whether — "on this machine" is the part someone checking on their
+    // transcript wants to read. A cloud engine is ready only with its key
+    // and a model; otherwise the row asks for them.
     const transcription: Pick<CapabilityRow, "ready" | "model" | "where"> =
       resolved.isLocalTranscription
         ? {
@@ -148,7 +154,7 @@ export default function CapabilitiesCard() {
             where: t("home.capabilities.onThisMachine"),
           }
         : {
-            ready: true,
+            ready: resolved.speechReady,
             model: resolved.cloudTranscriptionModel || t("home.status.transcriptionUnset"),
             where: resolved.cloudTranscriptionProvider
               ? getProviderDisplayName(resolved.cloudTranscriptionProvider)
@@ -173,6 +179,9 @@ export default function CapabilitiesCard() {
 
   const missing = rows.filter((row) => !row.ready);
   if (missing.length === 0) return null;
+  // The lead copy assumes recording works; when transcription is what is
+  // missing, it says what a meeting needs instead.
+  const speechMissing = missing.some((row) => row.id === "transcription");
 
   const toggleLabel = collapsed ? t("home.capabilities.expand") : t("home.capabilities.collapse");
 
@@ -183,8 +192,17 @@ export default function CapabilitiesCard() {
           <h2 className="text-sm font-semibold text-foreground">{t("home.capabilities.title")}</h2>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
             {collapsed
-              ? t("home.capabilities.collapsedSummary", { count: missing.length })
-              : t("home.capabilities.description")}
+              ? t(
+                  speechMissing
+                    ? "home.capabilities.collapsedSummarySetup"
+                    : "home.capabilities.collapsedSummary",
+                  { count: missing.length }
+                )
+              : t(
+                  speechMissing
+                    ? "home.capabilities.descriptionSetup"
+                    : "home.capabilities.description"
+                )}
           </p>
         </div>
         <button
