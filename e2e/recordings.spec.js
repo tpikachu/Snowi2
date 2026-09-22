@@ -53,6 +53,28 @@ test("a meeting leaves one playable recording on its note", async () => {
   await card.getByRole("button", { name: "Stop", exact: true }).waitFor({ timeout: 30_000 });
   const end = dot.getByRole("button", { name: /click to end/ });
   await end.waitFor({ timeout: 30_000 });
+
+  // A fault main reports on every audio chunk is one card, not a flood: five
+  // identical errors in a row show once, a different one shows once more.
+  const sendError = (message) =>
+    app.evaluate(({ BrowserWindow }, text) => {
+      for (const win of BrowserWindow.getAllWindows()) {
+        const url = win.webContents.getURL();
+        if (url.includes("panel=true") && !url.includes("meeting-panel")) {
+          win.webContents.send("meeting-transcription-error", text);
+        }
+      }
+    }, message);
+  const flood = "No OpenAI API key configured. Add your key in Settings.";
+  for (let i = 0; i < 5; i++) await sendError(flood);
+  await expect(page.getByText(flood)).toHaveCount(1, { timeout: 10_000 });
+  await sendError("The transcription service is unreachable.");
+  await expect(page.getByText("The transcription service is unreachable.")).toHaveCount(1, {
+    timeout: 10_000,
+  });
+  await page.waitForTimeout(1000);
+  await expect(page.getByText(flood)).toHaveCount(1);
+
   await page.waitForTimeout(MEETING_SECONDS * 1000);
   await end.click();
 

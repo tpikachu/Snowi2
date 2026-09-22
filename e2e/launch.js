@@ -57,8 +57,12 @@ async function controlPanelPage(app) {
   const deadline = Date.now() + CONTROL_PANEL_TIMEOUT_MS;
   for (;;) {
     for (const page of app.windows()) {
+      // Asked of the live renderer, not page.url(): a window created a moment
+      // ago can still report its previous target's URL, and a match on that
+      // once handed the recordings spec the dictation window (2026-09-22).
       // "panel=true" is also a substring of the cue card's "meeting-panel=true".
-      if (page.url().includes("panel=true") && !page.url().includes("meeting-panel")) {
+      const search = await page.evaluate(() => window.location.search).catch(() => "");
+      if (search.includes("panel=true") && !search.includes("meeting-panel")) {
         await page.waitForLoadState("domcontentloaded");
         return page;
       }

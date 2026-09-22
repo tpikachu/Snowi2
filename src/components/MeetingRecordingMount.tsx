@@ -247,22 +247,36 @@ export default function MeetingRecordingMount() {
     };
   }, []);
 
+  // The fault this meeting has already been told about. Main reports a
+  // transcription error once per failed audio chunk or reconnect attempt, and
+  // each report used to be a new card: a missing key read as an endless
+  // stream of "Meeting notes" toasts (client, 2026-09-22, rc9). One card per
+  // fault per meeting; a different message still gets its own.
+  const shownErrorRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isRecording) shownErrorRef.current = null;
+  }, [isRecording]);
+
   useEffect(() => {
     if (!error) return;
+    const description = MEETING_ERROR_KEYS[error] ? t(MEETING_ERROR_KEYS[error]) : error;
+    if (shownErrorRef.current === description) return;
+    shownErrorRef.current = description;
     // A meeting that failed because transcription was never set up cannot be
     // retried into working, so that toast carries the trip to the setting.
     const remedy = transcriptionRemedy("meeting", { message: error });
     let toastId = "";
     toastId = toast({
       title: t("notes.meeting.title"),
-      description: MEETING_ERROR_KEYS[error] ? t(MEETING_ERROR_KEYS[error]) : error,
+      description,
       variant: "destructive",
       ...configureToastProps(remedy, () => {
         if (toastId) dismiss(toastId);
       }),
     });
-    // errorNonce re-fires this toast when the same error repeats back-to-back.
-  }, [error, errorNonce, toast, dismiss, t]);
+    // errorNonce re-runs this for a repeat of the same message — which the
+    // guard above then swallows — and for the next different one.
+  }, [error, errorNonce, isRecording, toast, dismiss, t]);
 
   useEffect(() => {
     if (micCaptureStatus === "unavailable" && !wasMicUnavailable.current) {
