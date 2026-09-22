@@ -8,11 +8,14 @@ import {
   setResolvedLLMConfig,
   setCoreLlmEngine,
   setCoreCloudProvider,
+  selectResolvedMeetingTranscription,
 } from "../../stores/settingsStore";
 import SettingsGroup, { SettingsPanelBody } from "./SettingsGroup";
 import { InferenceModeSelector, type InferenceModeOption } from "../ui/SettingsSection";
 import ApiKeyInput from "../ui/ApiKeyInput";
 import { GetApiKeyLink } from "../ui/GetApiKeyLink";
+import { useToast } from "../ui/useToast";
+import { useMeetingRecordingStore } from "../../stores/meetingRecordingStore";
 import { ProviderGrid } from "../ui/ProviderGrid";
 import ReasoningModelSelector from "../ReasoningModelSelector";
 import { getProviderDisplayName } from "../../models/ModelRegistry";
@@ -86,6 +89,7 @@ const isProviderRow = (id: string) => PROVIDER_ROWS.some((row) => row.id === id)
  */
 function CloudKeysSection() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [pendingId, setPendingId] = useState<string | null>(null);
 
   const chatProvider = useSettingsStore((s) => {
@@ -114,23 +118,51 @@ function CloudKeysSection() {
   const isServing = (id: string) =>
     (id === chatProvider || id === actionsProvider) &&
     configured[PROVIDER_ROWS.findIndex((row) => row.id === id)] === true;
+  // What a card serves, as badges: several providers can serve at once (chat
+  // on one, write-ups on another), so one "In use" badge misled the rest.
+  const rolesOf = (id: string): string[] => {
+    if (!isServing(id)) return [];
+    const roles: string[] = [];
+    if (id === chatProvider) roles.push(t("settingsPage.llms.scopes.chat"));
+    if (id === actionsProvider) roles.push(t("settingsPage.llms.scopes.writeups"));
+    return roles;
+  };
   const selectedInUse = isServing(selected.id);
   const value = useSettingsStore((s) => s[selected.keyField]);
   const storeSetter = useSettingsStore((s) => s[selected.setter]);
   const link = CLOUD_PROVIDER_KEY_LINKS[selected.id];
 
-  const choose = (id: string) => {
-    const index = PROVIDER_ROWS.findIndex((row) => row.id === id);
-    if (index >= 0 && configured[index]) {
-      setCoreCloudProvider(id);
-      setPendingId(null);
-    } else {
-      setPendingId(id);
-    }
+  // A click selects the card — its key, its badges — and nothing more. With
+  // two providers serving (chat on one, write-ups on the other) a click that
+  // also switched both scopes made viewing the other key impossible without
+  // rerouting chat. The switch is saving a FIRST key here, or the button
+  // under the field.
+  const choose = (id: string) => setPendingId(id);
+  const providerLabel = providerName(selected.id);
+  const useForBoth = () => {
+    setCoreCloudProvider(selected.id);
+    setPendingId(null);
   };
-  // Saving the first key on the selected card is the switch the click promised.
   const setValue = (key: string) => {
     const hadKey = !!(value ?? "").trim();
+    if (hadKey && !key.trim()) {
+      // The store moves chat and write-ups off this provider and says so.
+      // A meeting recording through it right now is the one thing that
+      // cannot move: its session keeps the token it already has, and the
+      // next meeting is what needs a key.
+      const speech = selectResolvedMeetingTranscription(useSettingsStore.getState());
+      const liveOnThis =
+        useMeetingRecordingStore.getState().isRecording &&
+        speech.transcriptionMode === "providers" &&
+        speech.cloudTranscriptionProvider === selected.id;
+      if (liveOnThis) {
+        toast({
+          title: t("settingsPage.llms.reroute.speechInUseTitle"),
+          description: t("settingsPage.llms.reroute.speechInUse", { provider: providerLabel }),
+          variant: "default",
+        });
+      }
+    }
     storeSetter(key);
     if (!hadKey && key.trim()) {
       setCoreCloudProvider(selected.id);
@@ -138,12 +170,18 @@ function CloudKeysSection() {
     }
   };
 
-  const providerLabel = providerName(selected.id);
-  const hint = selectedInUse
-    ? t("settingsPage.llms.engine.cloudInUse", { provider: providerLabel })
-    : selectedHasKey
-      ? t("settingsPage.llms.engine.cloudChooseHint", { provider: providerLabel })
-      : t("settingsPage.llms.engine.cloudSwitchHint", { provider: providerLabel });
+  const servesChat = selectedInUse && selected.id === chatProvider;
+  const servesWriteups = selectedInUse && selected.id === actionsProvider;
+  const hint =
+    servesChat && servesWriteups
+      ? t("settingsPage.llms.engine.cloudInUse", { provider: providerLabel })
+      : servesChat
+        ? t("settingsPage.llms.engine.cloudServesChat", { provider: providerLabel })
+        : servesWriteups
+          ? t("settingsPage.llms.engine.cloudServesWriteups", { provider: providerLabel })
+          : selectedHasKey
+            ? t("settingsPage.llms.engine.cloudChooseHint", { provider: providerLabel })
+            : t("settingsPage.llms.engine.cloudSwitchHint", { provider: providerLabel });
 
   return (
     <div className="space-y-4">
@@ -154,7 +192,7 @@ function CloudKeysSection() {
             id: row.id,
             name: providerName(row.id),
             configured: configured[index],
-            active: isServing(row.id),
+            roles: rolesOf(row.id),
             note: rowLink?.noteKey ? t(rowLink.noteKey) : undefined,
           };
         })}
@@ -168,6 +206,15 @@ function CloudKeysSection() {
           {link && <GetApiKeyLink url={link.url} />}
         </div>
         <ApiKeyInput apiKey={value ?? ""} setApiKey={setValue} label="" helpText={hint} />
+        {selectedHasKey && !(servesChat && servesWriteups) && (
+          <button
+            type="button"
+            onClick={useForBoth}
+            className="text-xs font-medium text-primary transition-colors hover:text-primary-hover"
+          >
+            {t("settingsPage.llms.engine.useForBoth", { provider: providerLabel })}
+          </button>
+        )}
       </div>
     </div>
   );

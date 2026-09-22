@@ -7,8 +7,12 @@ export interface ProviderGridItem {
   name: string;
   /** A key/credential is stored for this provider. */
   configured?: boolean;
-  /** The provider currently serving — worn as an "In use" badge. */
-  active?: boolean;
+  /**
+   * The features this provider serves ("Chat", "Write-ups"), each worn as a
+   * badge. Several providers can serve at once — chat on one, write-ups on
+   * another — so one "In use" badge on one card was a lie for the rest.
+   */
+  roles?: string[];
   /** One short qualifier under the name — region limits, "no key needed", etc. */
   note?: string;
 }
@@ -75,12 +79,19 @@ export function ProviderGrid({ providers, selectedId, onSelect, className }: Pro
               )}
             </span>
 
-            {/* The badge says which provider is serving; otherwise readiness,
+            {/* The badges say what this provider serves; otherwise readiness,
                 not selection: a filled dot means a key is stored. Titled
                 rather than icon-only so it survives greyscale. */}
-            {provider.active ? (
-              <span className="shrink-0 rounded-full bg-primary/12 px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary">
-                {t("reasoning.providerGrid.inUse")}
+            {provider.roles && provider.roles.length > 0 ? (
+              <span className="flex shrink-0 flex-col items-end gap-0.5" data-provider-roles="">
+                {provider.roles.map((role) => (
+                  <span
+                    key={role}
+                    className="rounded-full bg-primary/12 px-1.5 py-0.5 text-[10px] font-medium leading-none text-primary"
+                  >
+                    {role}
+                  </span>
+                ))}
               </span>
             ) : (
               <span

@@ -2245,11 +2245,26 @@
         "dictationTranslation": "Traduction",
         "providers": "Clés API"
       },
+      "scopes": {
+        "chat": "Chat",
+        "writeups": "Comptes rendus"
+      },
+      "reroute": {
+        "title": "Modèle déplacé",
+        "moved": "{{scope}} est passé à {{model}} sur {{to}} parce que la clé {{from}} a été retirée.",
+        "needsSetupTitle": "Modèle requis",
+        "needsSetup": "{{scope}} n'a pas de modèle : la clé {{from}} a été retirée et aucun autre fournisseur n'a de clé.",
+        "speechInUseTitle": "Clé utilisée par cette réunion",
+        "speechInUse": "La réunion en cours d'enregistrement transcrit via {{provider}}. Elle garde sa session actuelle ; la prochaine réunion aura besoin d'une clé."
+      },
       "engine": {
         "title": "Moteur",
         "description": "Où s'exécutent le chat et les comptes rendus de réunion. Un seul choix alimente les deux — le modèle se choisit là où vous l'utilisez.",
         "cloudInUse": "Le chat et les comptes rendus de réunion s'exécutent sur {{provider}}.",
-        "cloudChooseHint": "Cliquez sur {{provider}} pour y exécuter le chat et les comptes rendus de réunion.",
+        "cloudServesChat": "Le chat s'exécute sur {{provider}}.",
+        "cloudServesWriteups": "Les comptes rendus de réunion s'exécutent sur {{provider}}.",
+        "useForBoth": "Exécuter le chat et les comptes rendus sur {{provider}}",
+        "cloudChooseHint": "{{provider}} a une clé. Le chat et les comptes rendus s'exécutent ailleurs.",
         "cloudSwitchHint": "Enregistrez une clé pour basculer le chat et les comptes rendus de réunion vers {{provider}}."
       },
       "provider": {

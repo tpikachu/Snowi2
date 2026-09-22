@@ -1941,11 +1941,26 @@
         "dictationTranslation": "Tradução",
         "providers": "Chaves de API"
       },
+      "scopes": {
+        "chat": "Chat",
+        "writeups": "Resumos"
+      },
+      "reroute": {
+        "title": "Modelo movido",
+        "moved": "{{scope}} passou para {{model}} em {{to}} porque a chave de {{from}} foi removida.",
+        "needsSetupTitle": "Modelo necessário",
+        "needsSetup": "{{scope}} não tem modelo: a chave de {{from}} foi removida e nenhum outro fornecedor tem chave.",
+        "speechInUseTitle": "Chave em uso por esta reunião",
+        "speechInUse": "A reunião a ser gravada transcreve através de {{provider}}. Mantém a sessão atual; a próxima reunião precisa de uma chave."
+      },
       "engine": {
         "title": "Motor",
         "description": "Onde o chat e os resumos de reuniões são executados. Uma escolha alimenta os dois — o modelo é escolhido onde você o usa.",
         "cloudInUse": "O chat e os resumos de reuniões são executados em {{provider}}.",
-        "cloudChooseHint": "Clique em {{provider}} para executar nele o chat e os resumos de reuniões.",
+        "cloudServesChat": "O chat corre em {{provider}}.",
+        "cloudServesWriteups": "Os resumos de reuniões correm em {{provider}}.",
+        "useForBoth": "Executar chat e resumos em {{provider}}",
+        "cloudChooseHint": "{{provider}} tem chave. O chat e os resumos correm noutro fornecedor.",
         "cloudSwitchHint": "Salve uma chave para mover o chat e os resumos de reuniões para {{provider}}."
       },
       "provider": {

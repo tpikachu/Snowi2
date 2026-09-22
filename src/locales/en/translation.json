@@ -2245,11 +2245,26 @@
         "dictationTranslation": "Translation",
         "providers": "API keys"
       },
+      "scopes": {
+        "chat": "Chat",
+        "writeups": "Write-ups"
+      },
+      "reroute": {
+        "title": "Model moved",
+        "moved": "{{scope}} moved to {{model}} on {{to}} because the {{from}} key was removed.",
+        "needsSetupTitle": "Model needed",
+        "needsSetup": "{{scope}} has no model: the {{from}} key was removed and no other provider has a key.",
+        "speechInUseTitle": "Key in use by this meeting",
+        "speechInUse": "The meeting being recorded transcribes through {{provider}}. It keeps its current session; the next meeting needs a key."
+      },
       "engine": {
         "title": "Engine",
         "description": "Where chat and meeting write-ups run. One choice powers both — the model itself is picked right where you use it.",
         "cloudInUse": "Chat and meeting write-ups run on {{provider}}.",
-        "cloudChooseHint": "Click {{provider}} to run chat and meeting write-ups on it.",
+        "cloudServesChat": "Chat runs on {{provider}}.",
+        "cloudServesWriteups": "Meeting write-ups run on {{provider}}.",
+        "useForBoth": "Run chat and write-ups on {{provider}}",
+        "cloudChooseHint": "{{provider}} has a key. Chat and meeting write-ups run elsewhere.",
         "cloudSwitchHint": "Save a key to move chat and meeting write-ups to {{provider}}."
       },
       "provider": {

@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { API_ENDPOINTS } from "../config/constants";
 import { DEFAULT_IDLE_STOP_MINUTES, normalizeIdleStopMinutes } from "../utils/meetingIdleStop";
+import { planRerouteOffProvider } from "../utils/providerReroute";
+import { pushRouteNotices } from "./routeNoticeStore";
 import i18n, { normalizeUiLanguage } from "../i18n";
 import { ensureAgentNameInDictionary } from "../utils/agentName";
 import { chooseDictionaryStartupAction } from "../helpers/dictionaryStartup";
@@ -1374,6 +1376,10 @@ function createProviderKeySetter(
     const hadKey = typeof previous === "string" && !!previous.trim();
     base(key);
     if (!hadKey && key.trim()) applyDefaultModelsForNewKey(providerId);
+    // The key going: whatever ran on it moves on (providerReroute.ts) — a
+    // route left pointing at a keyless provider failed every request with
+    // "<provider> API key not configured" until someone worked out why.
+    else if (hadKey && !key.trim()) rerouteScopesOffProvider(providerId);
   };
 }
 
@@ -2981,6 +2987,35 @@ export function setCoreLlmEngine(engine: "cloud" | "local"): void {
  * moved nothing (client report, 2026-09-15: added the OpenRouter key, the
  * write-ups kept using OpenAI, "no obvious way to switch").
  */
+/**
+ * The scopes a provider was serving, after its key is removed: each to the
+ * next provider that still has a key, on that provider's defaults, or —
+ * with none left — cleared to "needs a model". Runs after the store already
+ * holds the empty key, so the removed provider is never the "next" one. The
+ * moves are queued for the toast listener (routeNoticeStore).
+ */
+function rerouteScopesOffProvider(providerId: string): void {
+  const state = useSettingsStore.getState();
+  const routes = DEFAULTABLE_SCOPES.map((scope) => {
+    const resolved = selectResolvedLLMConfig(state, scope);
+    return { scope, mode: resolved.mode || "", provider: resolved.provider };
+  });
+  const moves = planRerouteOffProvider(routes, providerId, firstKeyedDefaultableProvider(state));
+  for (const move of moves) {
+    if (move.to && move.model) {
+      setResolvedLLMConfig(move.scope, {
+        mode: "providers",
+        cloudMode: "byok",
+        provider: move.to,
+        model: move.model,
+      });
+    } else {
+      setResolvedLLMConfig(move.scope, { provider: "", model: "" });
+    }
+  }
+  pushRouteNotices(moves);
+}
+
 export function setCoreCloudProvider(providerId: string): void {
   if (!providerValidForCoreMode(providerId, "providers")) return;
   let wasLocal = false;

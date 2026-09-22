@@ -68,6 +68,7 @@ import {
 import { executeTranslationChain, shouldRunTranslateStep } from "../helpers/translationChain";
 import { applyChineseScript, resolveChineseScriptTarget } from "../utils/chineseScript";
 import BackgroundActionToastListener from "./notes/BackgroundActionToastListener";
+import RouteNoticeToastListener from "./RouteNoticeToastListener";
 import TourOverlay from "./tour/TourOverlay";
 import { startTourIfUnseen } from "../stores/tourStore";
 import { requestHomeSetup } from "../stores/homeSetupStore";
@@ -1268,6 +1269,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         </div>
       </ContextPaneSlotContext.Provider>
       <BackgroundActionToastListener />
+      <RouteNoticeToastListener />
       <TourOverlay
         onNavigate={(view) => setActiveView(view)}
         onOpenSettings={(section, panel) => {

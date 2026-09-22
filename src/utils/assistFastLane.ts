@@ -29,6 +29,9 @@ export const FAST_LANE_MODELS: Record<string, string> = {
   anthropic: "claude-haiku-4-5",
   gemini: "gemini-2.5-flash-lite",
   groq: "llama-3.1-8b-instant",
+  // The curated slice's cheapest capable model (openrouterModels.ts): a
+  // Claude chat on OpenRouter still gets a fast lane.
+  openrouter: "openai/gpt-5-nano",
 };
 
 /**

@@ -1962,11 +1962,26 @@
         "dictationTranslation": "翻訳",
         "providers": "APIキー"
       },
+      "scopes": {
+        "chat": "チャット",
+        "writeups": "議事録"
+      },
+      "reroute": {
+        "title": "モデルを移動しました",
+        "moved": "{{from}} のキーが削除されたため、{{scope}}は {{to}} の {{model}} に移動しました。",
+        "needsSetupTitle": "モデルが必要です",
+        "needsSetup": "{{scope}}にモデルがありません。{{from}} のキーが削除され、他にキーのあるプロバイダーがありません。",
+        "speechInUseTitle": "この会議で使用中のキーです",
+        "speechInUse": "録音中の会議は {{provider}} で文字起こししています。現在のセッションはそのまま続きますが、次の会議にはキーが必要です。"
+      },
       "engine": {
         "title": "エンジン",
         "description": "チャットと会議のまとめが動く場所。1 つの選択で両方に適用され、モデル自体は使う場所で選べます。",
         "cloudInUse": "チャットと会議のまとめは {{provider}} で実行されます。",
-        "cloudChooseHint": "{{provider}} をクリックすると、チャットと会議のまとめをそこで実行します。",
+        "cloudServesChat": "チャットは {{provider}} で動作します。",
+        "cloudServesWriteups": "会議の議事録は {{provider}} で動作します。",
+        "useForBoth": "チャットと議事録を {{provider}} で実行",
+        "cloudChooseHint": "{{provider}} にはキーがあります。チャットと議事録は別のプロバイダーで動作しています。",
         "cloudSwitchHint": "キーを保存すると、チャットと会議のまとめが {{provider}} に切り替わります。"
       },
       "provider": {

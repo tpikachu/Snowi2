@@ -1962,11 +1962,26 @@
         "dictationTranslation": "翻譯",
         "providers": "API 金鑰"
       },
+      "scopes": {
+        "chat": "聊天",
+        "writeups": "會議紀要"
+      },
+      "reroute": {
+        "title": "模型已移動",
+        "moved": "由於 {{from}} 金鑰已移除，{{scope}}已移至 {{to}} 的 {{model}}。",
+        "needsSetupTitle": "需要模型",
+        "needsSetup": "{{scope}}沒有模型：{{from}} 金鑰已移除，且沒有其他供應商設定金鑰。",
+        "speechInUseTitle": "此金鑰正被目前會議使用",
+        "speechInUse": "正在錄製的會議透過 {{provider}} 轉錄。目前的工作階段會繼續；下一次會議需要金鑰。"
+      },
       "engine": {
         "title": "引擎",
         "description": "聊天和會議紀要的執行位置。一次選擇同時作用於兩者——模型本身在使用處選擇。",
         "cloudInUse": "聊天與會議摘要透過 {{provider}} 執行。",
-        "cloudChooseHint": "點選 {{provider}} 以在其上執行聊天與會議摘要。",
+        "cloudServesChat": "聊天執行於 {{provider}}。",
+        "cloudServesWriteups": "會議紀要執行於 {{provider}}。",
+        "useForBoth": "在 {{provider}} 上執行聊天與會議紀要",
+        "cloudChooseHint": "{{provider}} 已有金鑰。聊天與會議紀要執行於其他供應商。",
         "cloudSwitchHint": "儲存金鑰後，聊天與會議摘要將切換至 {{provider}}。"
       },
       "provider": {

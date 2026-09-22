@@ -1962,11 +1962,26 @@
         "dictationTranslation": "Traduzione",
         "providers": "Chiavi API"
       },
+      "scopes": {
+        "chat": "Chat",
+        "writeups": "Riepiloghi"
+      },
+      "reroute": {
+        "title": "Modello spostato",
+        "moved": "{{scope}} è passato a {{model}} su {{to}} perché la chiave {{from}} è stata rimossa.",
+        "needsSetupTitle": "Serve un modello",
+        "needsSetup": "{{scope}} non ha un modello: la chiave {{from}} è stata rimossa e nessun altro provider ha una chiave.",
+        "speechInUseTitle": "Chiave in uso da questa riunione",
+        "speechInUse": "La riunione in registrazione trascrive tramite {{provider}}. Mantiene la sessione attuale; la prossima riunione avrà bisogno di una chiave."
+      },
       "engine": {
         "title": "Motore",
         "description": "Dove vengono eseguiti la chat e i riepiloghi delle riunioni. Una sola scelta alimenta entrambi: il modello si sceglie dove lo usi.",
         "cloudInUse": "La chat e i riepiloghi delle riunioni girano su {{provider}}.",
-        "cloudChooseHint": "Fai clic su {{provider}} per far girare lì la chat e i riepiloghi delle riunioni.",
+        "cloudServesChat": "La chat gira su {{provider}}.",
+        "cloudServesWriteups": "I riepiloghi delle riunioni girano su {{provider}}.",
+        "useForBoth": "Esegui chat e riepiloghi su {{provider}}",
+        "cloudChooseHint": "{{provider}} ha una chiave. La chat e i riepiloghi girano altrove.",
         "cloudSwitchHint": "Salva una chiave per spostare la chat e i riepiloghi delle riunioni su {{provider}}."
       },
       "provider": {

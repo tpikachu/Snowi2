@@ -2245,11 +2245,26 @@
         "dictationTranslation": "Übersetzung",
         "providers": "API-Schlüssel"
       },
+      "scopes": {
+        "chat": "Chat",
+        "writeups": "Zusammenfassungen"
+      },
+      "reroute": {
+        "title": "Modell verschoben",
+        "moved": "{{scope}} wurde zu {{model}} auf {{to}} verschoben, weil der {{from}}-Schlüssel entfernt wurde.",
+        "needsSetupTitle": "Modell nötig",
+        "needsSetup": "{{scope}} hat kein Modell: Der {{from}}-Schlüssel wurde entfernt und kein anderer Anbieter hat einen Schlüssel.",
+        "speechInUseTitle": "Schlüssel wird von diesem Meeting genutzt",
+        "speechInUse": "Das laufende Meeting transkribiert über {{provider}}. Es behält seine aktuelle Sitzung; das nächste Meeting braucht einen Schlüssel."
+      },
       "engine": {
         "title": "Engine",
         "description": "Wo Chat und Meeting-Zusammenfassungen laufen. Eine Wahl treibt beides an – das Modell wählst du direkt dort, wo du es nutzt.",
         "cloudInUse": "Chat und Meeting-Zusammenfassungen laufen über {{provider}}.",
-        "cloudChooseHint": "Klicke auf {{provider}}, um Chat und Meeting-Zusammenfassungen darüber laufen zu lassen.",
+        "cloudServesChat": "Der Chat läuft auf {{provider}}.",
+        "cloudServesWriteups": "Meeting-Zusammenfassungen laufen auf {{provider}}.",
+        "useForBoth": "Chat und Zusammenfassungen auf {{provider}} ausführen",
+        "cloudChooseHint": "{{provider}} hat einen Schlüssel. Chat und Zusammenfassungen laufen woanders.",
         "cloudSwitchHint": "Speichere einen Schlüssel, um Chat und Meeting-Zusammenfassungen zu {{provider}} zu verschieben."
       },
       "provider": {
