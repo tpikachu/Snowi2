@@ -27,6 +27,7 @@ import {
   webSearchToolsFor,
 } from "./ai/webSearchTools";
 import { openrouterOnlineModel } from "../utils/webSearchSupport";
+import { learnMandatoryReasoningFromError } from "./ai/reasoningEffortRecovery";
 import { createEnterpriseChatModel } from "./ai/enterpriseChatModel";
 import { getManagedScopeResolution } from "../stores/enterpriseIdentityStore";
 import type { InferenceScope } from "../config/inferenceScopes";
@@ -970,6 +971,19 @@ class ReasoningService extends BaseReasoningService {
             attempt -= 1;
             continue;
           }
+        }
+        // OpenRouter refusing the disable ("Reasoning is mandatory for this
+        // endpoint and cannot be disabled" — GPT-5 Mini, client report
+        // 2026-09-22): remember it for the model and send the same messages
+        // once more; the fetch wrapper now asks for the floor effort instead.
+        if (
+          openrouterDisableThinking &&
+          !yieldedAny &&
+          learnMandatoryReasoningFromError(model, apiErrorText(error))
+        ) {
+          logger.logReasoning("AGENT_OPENROUTER_REASONING_MANDATORY", { model, provider });
+          attempt -= 1;
+          continue;
         }
         // A provider that refuses its search tool (an account without it, a
         // model that cannot carry it) must not cost the user the question:

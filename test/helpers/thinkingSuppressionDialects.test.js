@@ -74,6 +74,26 @@ test("openrouter gets its native reasoning toggle and nothing else", async () =>
   assert.deepEqual(body, { reasoning: { enabled: false } });
 });
 
+test("openrouter sends the floor effort for a model that refused the disable", async () => {
+  const { suppressThinking } = await load();
+  const { forgetMandatoryReasoning, learnMandatoryReasoningFromError } =
+    await import("../../src/services/ai/reasoningEffortRecovery.ts");
+  forgetMandatoryReasoning();
+  learnMandatoryReasoningFromError(
+    "openai/gpt-5-mini",
+    "Reasoning is mandatory for this endpoint and cannot be disabled."
+  );
+
+  const body = {};
+  suppressThinking(body, "openrouter", "openai/gpt-5-mini");
+  assert.deepEqual(body, { reasoning: { effort: "low" } });
+
+  const other = {};
+  suppressThinking(other, "openrouter", "qwen/qwen3-32b");
+  assert.deepEqual(other, { reasoning: { enabled: false } });
+  forgetMandatoryReasoning();
+});
+
 test("local gets think false plus chat_template_kwargs", async () => {
   const { suppressThinking } = await load();
 

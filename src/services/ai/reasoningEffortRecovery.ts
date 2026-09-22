@@ -105,3 +105,57 @@ export function learnSuppressEffortFromError(
   rememberSuppressEffort(model, pick);
   return pick;
 }
+
+/**
+ * OpenRouter's "thinking off" is its own request field, and for some models
+ * it is refused outright:
+ *
+ *   Reasoning is mandatory for this endpoint and cannot be disabled.
+ *
+ * (GPT-5 Mini through OpenRouter — client report, 2026-09-22.) The disable
+ * is right for the models that take it (Qwen, DeepSeek), so it stays the
+ * first thing sent; a model that refuses it is remembered for the session
+ * and asked for the lowest effort instead — the retry and every request
+ * after it are right first time.
+ */
+const MANDATORY_REASONING = /reasoning is mandatory|cannot be disabled/i;
+const OPENROUTER_FLOOR_EFFORT = "low";
+
+const mandatoryReasoning = new Set<string>();
+
+export type OpenrouterReasoning = { enabled: false } | { effort: string };
+
+/** The reasoning field that means "thinking off" for this OpenRouter model. */
+export function openrouterReasoningOff(model: string | null | undefined): OpenrouterReasoning {
+  const id = (model || "").trim().toLowerCase();
+  return id && mandatoryReasoning.has(id)
+    ? { effort: OPENROUTER_FLOOR_EFFORT }
+    : { enabled: false };
+}
+
+/** Whether the request body carries the disable that OpenRouter can refuse. */
+export function sentReasoningDisable(requestBody: Record<string, unknown>): boolean {
+  const reasoning = requestBody.reasoning as { enabled?: unknown } | undefined;
+  return !!reasoning && typeof reasoning === "object" && reasoning.enabled === false;
+}
+
+/**
+ * Reads a rejection and remembers that this model's reasoning cannot be
+ * disabled. True when that was just learned — the caller retries once on
+ * it; a model already known, or any other error, is false.
+ */
+export function learnMandatoryReasoningFromError(
+  model: string,
+  text: string | null | undefined
+): boolean {
+  if (!text || !MANDATORY_REASONING.test(text)) return false;
+  const id = model.trim().toLowerCase();
+  if (!id || mandatoryReasoning.has(id)) return false;
+  mandatoryReasoning.add(id);
+  return true;
+}
+
+/** Test seam. */
+export function forgetMandatoryReasoning(): void {
+  mandatoryReasoning.clear();
+}

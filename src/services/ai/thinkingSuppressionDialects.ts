@@ -1,5 +1,5 @@
 import { getModelFamilyConstraints } from "./modelFamilyConstraints";
-import { resolveSuppressEffort } from "./reasoningEffortRecovery";
+import { openrouterReasoningOff, resolveSuppressEffort } from "./reasoningEffortRecovery";
 
 /**
  * Per-provider dialects for turning a model's thinking off. Model-family
@@ -52,9 +52,10 @@ export function suppressThinking(
   }
 
   // OpenRouter forwards unknown params to upstream backends, which may reject
-  // them — use its native reasoning control instead.
+  // them — use its native reasoning control instead. A model that refused the
+  // disable ("Reasoning is mandatory") gets the floor effort (reasoningEffortRecovery).
   if (providerKey === "openrouter") {
-    requestBody.reasoning = { enabled: false };
+    requestBody.reasoning = openrouterReasoningOff(model);
     return;
   }
 

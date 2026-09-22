@@ -31,6 +31,30 @@ test("2xx passes through with a single attempt", async () => {
   assert.ok(body.reasoning, "body untouched on success");
 });
 
+test("OpenRouter refusing the reasoning disable retries with the floor effort, not a blind strip", async () => {
+  const { fetchWithParamFallback } = await load();
+  const { forgetMandatoryReasoning, openrouterReasoningOff } =
+    await import("../../src/services/ai/reasoningEffortRecovery.ts");
+  forgetMandatoryReasoning();
+  const doFetch = fetcher(
+    jsonResponse(400, {
+      error: { message: "Reasoning is mandatory for this endpoint and cannot be disabled." },
+    }),
+    jsonResponse(200, { ok: true })
+  );
+  const body = { model: "openai/gpt-5-mini", reasoning: { enabled: false }, max_tokens: 10 };
+  const logged = [];
+
+  const res = await fetchWithParamFallback(doFetch, body, (d) => logged.push(d));
+  assert.equal(res.status, 200);
+  assert.equal(doFetch.count(), 2);
+  assert.deepEqual(body.reasoning, { effort: "low" }, "the request keeps a low effort");
+  assert.deepEqual(logged, [{ status: 400, stripped: [], corrected: { effort: "low" } }]);
+  // Remembered: the next request for this model starts at the floor.
+  assert.deepEqual(openrouterReasoningOff("openai/gpt-5-mini"), { effort: "low" });
+  forgetMandatoryReasoning();
+});
+
 test("400 with a reasoning object strips it blind and retries (old Ollama proxies)", async () => {
   const { fetchWithParamFallback } = await load();
   const doFetch = fetcher(jsonResponse(400, { error: "bad request" }), jsonResponse(200, {}));

@@ -5,6 +5,7 @@ import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import type { LanguageModel } from "ai";
 import { getTinfoilLanguageModel } from "./tinfoilClient";
 import { API_ENDPOINTS } from "../../config/constants";
+import { openrouterReasoningOff } from "./reasoningEffortRecovery";
 
 // Renderer-side AI SDK factory. Cloud + local only — enterprise providers
 // (bedrock/azure/vertex) run in the main process via the
@@ -13,17 +14,21 @@ import { API_ENDPOINTS } from "../../config/constants";
 // See `src/helpers/enterpriseAiProviders.js` for the main-process counterpart.
 
 // OpenRouter's reasoning control is a top-level request field the AI SDK
-// can't emit — inject it at the fetch boundary.
-const withDisabledReasoning: typeof fetch = (input, init) => {
-  if (typeof init?.body === "string") {
-    try {
-      const body = JSON.parse(init.body);
-      body.reasoning = { enabled: false };
-      init = { ...init, body: JSON.stringify(body) };
-    } catch {}
-  }
-  return fetch(input, init);
-};
+// can't emit — inject it at the fetch boundary. Read per request, not when
+// the model is built: a model that refuses the disable is learned mid-stream
+// (ReasoningService's catch), and the retry goes through this same fetch.
+const withDisabledReasoning =
+  (model: string): typeof fetch =>
+  (input, init) => {
+    if (typeof init?.body === "string") {
+      try {
+        const body = JSON.parse(init.body);
+        body.reasoning = openrouterReasoningOff(model);
+        init = { ...init, body: JSON.stringify(body) };
+      } catch {}
+    }
+    return fetch(input, init);
+  };
 
 export async function getAIModel(
   provider: string,
@@ -54,7 +59,7 @@ export async function getAIModel(
       return createOpenAI({
         apiKey,
         baseURL,
-        ...(opts?.disableThinking ? { fetch: withDisabledReasoning } : {}),
+        ...(opts?.disableThinking ? { fetch: withDisabledReasoning(model) } : {}),
       }).chat(model);
     case "local":
       return createOpenAI({ apiKey: apiKey || "no-key", baseURL }).chat(model);

@@ -75,6 +75,46 @@ test("learning from an error remembers the value per model and resolves ahead of
   assert.equal(learnedSuppressEffort("gpt-5.5"), null);
 });
 
+test("OpenRouter's mandatory-reasoning refusal is learned per model, and the disable becomes the floor effort", async () => {
+  const {
+    forgetMandatoryReasoning,
+    learnMandatoryReasoningFromError,
+    openrouterReasoningOff,
+    sentReasoningDisable,
+  } = await load();
+  forgetMandatoryReasoning();
+
+  // Unlearned: the disable, which is right for the models that take it.
+  assert.deepEqual(openrouterReasoningOff("openai/gpt-5-mini"), { enabled: false });
+  assert.equal(sentReasoningDisable({ reasoning: { enabled: false } }), true);
+  assert.equal(sentReasoningDisable({ reasoning: { effort: "low" } }), false);
+  assert.equal(sentReasoningDisable({}), false);
+
+  // Any other error, or an empty one, teaches nothing.
+  assert.equal(learnMandatoryReasoningFromError("openai/gpt-5-mini", "model not found"), false);
+  assert.equal(learnMandatoryReasoningFromError("openai/gpt-5-mini", ""), false);
+  assert.deepEqual(openrouterReasoningOff("openai/gpt-5-mini"), { enabled: false });
+
+  // The refusal, as the card showed it (client, 2026-09-22): learned once.
+  const refusal = "Reasoning is mandatory for this endpoint and cannot be disabled.";
+  assert.equal(learnMandatoryReasoningFromError("openai/gpt-5-mini", refusal), true);
+  assert.equal(
+    learnMandatoryReasoningFromError("openai/gpt-5-mini", refusal),
+    false,
+    "already known: the caller must not retry again"
+  );
+  assert.deepEqual(
+    openrouterReasoningOff("OpenAI/GPT-5-Mini"),
+    { effort: "low" },
+    "case-insensitive"
+  );
+  // Other models keep the disable.
+  assert.deepEqual(openrouterReasoningOff("qwen/qwen3-32b"), { enabled: false });
+
+  forgetMandatoryReasoning();
+  assert.deepEqual(openrouterReasoningOff("openai/gpt-5-mini"), { enabled: false });
+});
+
 test("an error's text is read from message and responseBody alike", async () => {
   const { apiErrorText } = await load();
   assert.equal(apiErrorText(new Error("boom")), "boom");

@@ -2,7 +2,12 @@ import type { ReasoningConfig } from "../BaseReasoningService";
 import { getOpenAiApiConfig } from "../../models/ModelRegistry";
 import { detectEndpointDialect } from "./thinkingSuppressionDialects";
 import { getModelFamilyConstraints } from "./modelFamilyConstraints";
-import { learnSuppressEffortFromError } from "./reasoningEffortRecovery";
+import {
+  learnMandatoryReasoningFromError,
+  learnSuppressEffortFromError,
+  openrouterReasoningOff,
+  sentReasoningDisable,
+} from "./reasoningEffortRecovery";
 import { applyThinkingSuppression } from "./thinkingSuppression";
 
 /**
@@ -112,6 +117,8 @@ function setSuppressEffort(requestBody: Record<string, unknown>, effort: string)
  * best off-switch the error's own "supported values" list allows — the
  * request keeps a low-latency effort instead of losing it to the blind strip,
  * and the value is remembered for the model (reasoningEffortRecovery).
+ * Rung 0 also covers OpenRouter's "Reasoning is mandatory … cannot be
+ * disabled": the disable becomes the floor effort, remembered per model.
  * Rung 1 (blind): old Ollama/strict proxies reject the `reasoning` object
  * without naming it — drop it and retry once. Rung 2 (named): strip exactly
  * the shaped params the error body names and retry once. At most three
@@ -141,6 +148,23 @@ export async function fetchWithParamFallback(
     if (corrected) {
       logRejection({ status: res.status, stripped: [], corrected: { effort: corrected } });
       setSuppressEffort(requestBody, corrected);
+      void res.body?.cancel();
+      res = await doFetch();
+      if (res.ok || (res.status !== 400 && res.status !== 422)) return res;
+    }
+  }
+
+  if (sentReasoningDisable(requestBody)) {
+    const errorText = await res
+      .clone()
+      .text()
+      .catch(() => "");
+    const model = typeof requestBody.model === "string" ? requestBody.model : "";
+    if (learnMandatoryReasoningFromError(model, errorText)) {
+      const reasoning = openrouterReasoningOff(model);
+      const effort = "effort" in reasoning ? reasoning.effort : "";
+      logRejection({ status: res.status, stripped: [], corrected: { effort } });
+      requestBody.reasoning = reasoning;
       void res.body?.cancel();
       res = await doFetch();
       if (res.ok || (res.status !== 400 && res.status !== 422)) return res;
