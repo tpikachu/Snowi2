@@ -5,6 +5,96 @@ All notable changes to Snowy are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 versions follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-rc10] — 2026-09-23
+
+Tenth release candidate: the assistant bar becomes the Snowy dot with the cue
+card in a window of its own, one AI model runs everything, the cue card can
+search the web, local language models are back with honest labels, and the
+note page is rebuilt around what a note can do.
+
+**Still a release candidate.** See _Known limitations_ under 0.1.0-rc1.
+
+**Installing over rc9:** updates arrive through the app; rc9 finds this
+release on its own. rc8 and earlier still need one manual install.
+
+### The Snowy dot
+
+- **One dot instead of the bar.** A small circle floats over your calls:
+  click it to start recording, click again to end the meeting, right-click
+  for the menu. Idle it is dark glass; while a meeting records it takes the
+  Snowy cyan, breathes, and its bars move. It wears the opposite tone of
+  whatever is behind it, drags anywhere, and Escape hides it between
+  meetings.
+- **The cue card is its own window**, placed beside the dot when a meeting
+  starts and shown without taking the keyboard from the meeting app. It
+  resizes by its edges, is never narrower than its toolbar, and goes away
+  with its X or Escape; "Show cue card" in the dot's menu brings it back.
+- **A silent meeting ends itself.** Settings → Meetings, "End a meeting
+  after silence": 10 minutes by default, or 5, 20, 30, or never. The Keep or
+  Discard prompt says why the meeting ended.
+
+### One AI model
+
+- **One model, picked where you use it.** Chat, the cue card, the meeting
+  write-up, the note title and the follow-up email all run on the model the
+  chip shows in the chat bar. The separate write-up model, custom actions and
+  per-action model pickers are gone: Settings → Language Models is engine
+  plus keys, and the chip is the pick.
+- **Entering a key is the setup.** The first key saved on a provider card
+  moves the model to that provider's everyday default; a keyed card not in
+  use offers "Use …"; removing a key moves the model to the next keyed
+  provider, or stops at "needs a model" — never to a local model — and a
+  card says where it went and why.
+- **An install that had two models keeps a working one.** rc9 never wrote
+  the chat route it derived, so an install whose only key was not OpenAI, or
+  whose key sat on the write-up's provider, would have updated into "needs a
+  model" with the key still there. The route is repaired at startup from the
+  keys present.
+- **Local language models are back, labelled.** Every row says its tier, the
+  memory it needs on this machine, and what it gives up (web search; notes
+  search below 4B) as a warning badge that explains itself. Cloud stays the
+  recommended path.
+
+### The cue card can search the web
+
+- A globe in the toolbar, off at the start of every meeting. While it is on,
+  typed questions and the quick actions may search through your provider's
+  own search (OpenAI, Anthropic, Gemini; OpenRouter models through their
+  online variant). "Searched the web" and the sources appear under the
+  answer. When the model cannot search, the globe says why.
+
+### The note page
+
+- **Resume meeting comes first**, in green with a play glyph; while a session
+  records, the same slot shows the elapsed clock and Stop. Then Summary |
+  Transcript, Copy, Follow-up email and Export, and **Generate Notes** at the
+  right end, which reads **Regenerate Notes** once a summary exists.
+- **The ask bar carries the model chip inside it**, the global chat's shape.
+  When the chat opens, floating or docked as the sidebar, its composer
+  carries the same chip, so the model and Generate Notes are reachable in
+  every state.
+
+### Speech setup tells the truth
+
+- A cloud speech provider with no key, or no model picked, no longer wears
+  "Active": the Speech-to-Text page says "Needs key" or "Pick a model", and
+  Home asks for the setup instead of calling transcription ready.
+- A transcription fault is one toast per meeting, not one per audio chunk (a
+  missing key had read as an endless stream), and an error in a meeting's
+  first seconds is no longer lost.
+
+### Fixed
+
+- OpenRouter models whose reasoning cannot be switched off (GPT-5 Mini) no
+  longer fail every chat with "Reasoning is mandatory"; the retry sends a
+  low effort instead.
+- A provider's error shows as its own message ("You have no credits
+  remaining") instead of "Error: [object Object]".
+- The idle-stop minutes synced between windows as a boolean; fixed. The tour
+  runs once more to introduce the dot.
+- Workflow artifacts expire: helper binaries after 7 days, release bundles
+  after 3.
+
 ## [0.1.0-rc9] — 2026-09-15
 
 Ninth release candidate: the cue card answers like an advisor, the transcript
