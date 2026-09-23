@@ -524,3 +524,76 @@ test("completedSegments accumulate across turns", async () => {
   assert.equal(streaming.completedSegments.length, 2);
   assert.equal(lastFull, "Hello world How are you");
 });
+
+test("a dial that stalls is abandoned and retried, keeping the audio buffered meanwhile", async () => {
+  const OpenAIRealtimeStreaming = (await load()).default;
+  const streaming = new OpenAIRealtimeStreaming();
+  const errors = [];
+  streaming.onError = (error) => errors.push(error.message);
+  streaming.beginConnecting();
+  streaming.sendAudio(Buffer.alloc(480, 1));
+
+  const sockets = [];
+  const connected = streaming.connect({
+    apiKey: "key",
+    connectTimeoutMs: 40,
+    createSocket: async () => {
+      const socket = makeFakeSocket(WS.CONNECTING);
+      sockets.push(socket);
+      return socket;
+    },
+  });
+  // The first socket never opens; the second is answered as soon as it exists.
+  while (sockets.length < 2) await new Promise((resolve) => setTimeout(resolve, 5));
+  sockets[1].readyState = WS.OPEN;
+  sockets[1].emit("open");
+  sockets[1].emit("message", JSON.stringify({ type: "session.created" }));
+  sockets[1].emit("message", JSON.stringify({ type: "session.updated" }));
+  await connected;
+
+  assert.equal(streaming.isConnected, true);
+  assert.equal(sockets.length, 2, "one retry, no dial after the one that answered");
+  assert.deepEqual(errors, [], "an abandoned dial raises nothing to the caller");
+  // The cold-start buffer flushes ahead of the next chunk, as in a meeting,
+  // where chunks keep arriving.
+  streaming.sendAudio(Buffer.alloc(480, 2));
+  assert.ok(
+    audioPayloads(sockets[1]).length >= 2,
+    "audio buffered during the stalled dial went out on the socket that answered"
+  );
+  streaming.cleanup();
+});
+
+test("after the last attempt the timeout is the error, and a refusal is never retried", async () => {
+  const OpenAIRealtimeStreaming = (await load()).default;
+  const stalled = new OpenAIRealtimeStreaming();
+  let dials = 0;
+  await assert.rejects(
+    stalled.connect({
+      apiKey: "key",
+      connectTimeoutMs: 20,
+      connectAttempts: 2,
+      createSocket: async () => {
+        dials++;
+        return makeFakeSocket(WS.CONNECTING);
+      },
+    }),
+    /connection timeout/
+  );
+  assert.equal(dials, 2);
+
+  const refused = new OpenAIRealtimeStreaming();
+  let refusedDials = 0;
+  const refusal = refused.connect({
+    apiKey: "key",
+    connectTimeoutMs: 500,
+    createSocket: async () => {
+      refusedDials++;
+      const socket = makeFakeSocket(WS.CONNECTING);
+      setImmediate(() => socket.emit("close", 4001, Buffer.from("invalid_api_key")));
+      return socket;
+    },
+  });
+  await assert.rejects(refusal, /code: 4001/);
+  assert.equal(refusedDials, 1, "a close code the server chose is final");
+});

@@ -1,7 +1,16 @@
 const WebSocket = require("ws");
+const dns = require("dns");
 const debugLogger = require("./debugLogger");
 
-const WEBSOCKET_TIMEOUT_MS = 15000;
+// One dial, bounded; a stalled one is abandoned and the next attempt goes
+// to the next address the host resolves to (see rotatingLookup). Before
+// this a single 15 s dial was the whole story: api.openai.com resolves to
+// several addresses, Node connects to the first only, and on a network
+// where one of them is unreachable every other meeting start died with
+// "connection timeout" (probe, 2026-09-23 — two of three handshakes to one
+// address timed out from the developer's own machine).
+const WEBSOCKET_TIMEOUT_MS = 10000;
+const CONNECT_ATTEMPTS = 3;
 const DISCONNECT_TIMEOUT_MS = 3000;
 const SAMPLE_RATE = 24000;
 const COLD_START_BUFFER_MAX = 3 * SAMPLE_RATE * 2; // 3 seconds of 16-bit PCM
@@ -25,6 +34,39 @@ async function createSocketWithTimeout(createSocket, timeoutMs) {
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * A `lookup` for net/tls that rotates the resolved addresses by attempt, so
+ * a retry after a stalled dial leaves for a different address. Node only
+ * ever connects to the first address of a same-family list, and DNS hands
+ * the list back in a fresh order each time, so a retry through the default
+ * lookup would hit the dead address again by coin toss. Honours `all`
+ * (the shape autoSelectFamily asks for) and the single-address shape.
+ */
+function rotatingLookup(attempt) {
+  return (hostname, opts, callback) => {
+    const options = typeof opts === "object" && opts ? opts : {};
+    dns.lookup(hostname, { ...options, all: true }, (err, addresses) => {
+      if (err) return callback(err);
+      const list = Array.isArray(addresses) ? addresses : [];
+      if (!list.length) return callback(new Error(`No address for ${hostname}`));
+      const start = attempt % list.length;
+      const rotated = list.slice(start).concat(list.slice(0, start));
+      if (options.all) return callback(null, rotated);
+      callback(null, rotated[0].address, rotated[0].family);
+    });
+  };
+}
+
+/** A failure of the dial itself, worth another attempt — never a refusal the
+ *  server spelled out (an auth or protocol close code). */
+function isDialFailure(error) {
+  const message = String(error?.message || "");
+  if (/connection timeout|socket setup timeout|code: 1006\b/.test(message)) return true;
+  return /ECONNRESET|ETIMEDOUT|ENOTFOUND|ECONNREFUSED|EAI_AGAIN|EHOSTUNREACH|ENETUNREACH/.test(
+    String(error?.code || message)
+  );
 }
 
 class OpenAIRealtimeStreaming {
@@ -75,7 +117,7 @@ class OpenAIRealtimeStreaming {
   }
 
   async connect(options = {}) {
-    const { apiKey, model, inputRate, captureRate, createSocket } = options;
+    const { apiKey } = options;
     if (!apiKey) throw new Error(`${this.providerLabel} API key is required`);
 
     if (this.isConnected || this.isConnecting) {
@@ -87,6 +129,28 @@ class OpenAIRealtimeStreaming {
     // apiKey was fetched) — don't wipe audio collected during that window.
     if (!this.bufferingAudio) this.beginConnecting();
 
+    const attempts = Math.max(1, Number(options.connectAttempts) || CONNECT_ATTEMPTS);
+    for (let attempt = 0; ; attempt++) {
+      try {
+        return await this._connectOnce(options, attempt);
+      } catch (error) {
+        const retry = attempt + 1 < attempts && !this.isConnected && isDialFailure(error);
+        if (!retry) throw error;
+        debugLogger.warn(`${this.providerLabel} dial failed, retrying on the next address`, {
+          attempt: attempt + 1,
+          error: error.message,
+        });
+        // Audio buffered while dialing stays for the next attempt: cleanup()
+        // stopped the buffering, not the buffer.
+        this.bufferingAudio = true;
+      }
+    }
+  }
+
+  async _connectOnce(options, attempt) {
+    const { apiKey, model, inputRate, captureRate, createSocket } = options;
+    const timeoutMs = Number(options.connectTimeoutMs) || WEBSOCKET_TIMEOUT_MS;
+    this._dialAbandoned = false;
     this.isConnecting = true;
     this.model = model || "gpt-4o-mini-transcribe";
     this.inputRate = inputRate || SAMPLE_RATE;
@@ -99,14 +163,20 @@ class OpenAIRealtimeStreaming {
     this._connectionLossNotified = false;
 
     const url = "wss://api.openai.com/v1/realtime?intent=transcription";
-    debugLogger.debug(`${this.providerLabel} connecting`, { model: this.model });
+    debugLogger.debug(`${this.providerLabel} connecting`, {
+      model: this.model,
+      attempt: attempt + 1,
+    });
 
     // Attested providers (Tinfoil) supply their socket via an async factory.
     let ws;
     try {
       ws = createSocket
-        ? await createSocketWithTimeout(createSocket, WEBSOCKET_TIMEOUT_MS)
-        : new WebSocket(url, { headers: { Authorization: `Bearer ${apiKey}` } });
+        ? await createSocketWithTimeout(createSocket, timeoutMs)
+        : new WebSocket(url, {
+            headers: { Authorization: `Bearer ${apiKey}` },
+            lookup: rotatingLookup(attempt),
+          });
     } catch (err) {
       this.isConnecting = false;
       this.cleanup();
@@ -119,9 +189,12 @@ class OpenAIRealtimeStreaming {
 
       this.connectionTimeout = setTimeout(() => {
         this.isConnecting = false;
+        // The socket's own error/close for this abandoned dial says nothing
+        // to the caller: the retry, or the timeout below, is the message.
+        this._dialAbandoned = true;
         this.cleanup();
         reject(new Error(`${this.providerLabel} connection timeout`));
-      }, WEBSOCKET_TIMEOUT_MS);
+      }, timeoutMs);
 
       this.ws = ws;
 
@@ -145,7 +218,7 @@ class OpenAIRealtimeStreaming {
         }
         if (wasActive && !this.isDisconnecting) {
           this._notifyConnectionLost(error);
-        } else if (!this.isDisconnecting) {
+        } else if (!this.isDisconnecting && !this._dialAbandoned) {
           this.onError?.(error);
         }
       });
