@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { API_ENDPOINTS } from "../config/constants";
 import { DEFAULT_IDLE_STOP_MINUTES, normalizeIdleStopMinutes } from "../utils/meetingIdleStop";
 import { planRerouteOffProvider } from "../utils/providerReroute";
+import { planChatRouteRepair } from "../utils/chatRouteRepair";
 import { speechRouteReadiness, type SpeechRouteReadiness } from "../utils/speechRouteReady";
 import { pushRouteNotices } from "./routeNoticeStore";
 import i18n, { normalizeUiLanguage } from "../i18n";
@@ -272,7 +273,6 @@ const BOOLEAN_SETTINGS = new Set([
   "speakerDiarizationEnabled",
   "meetingArchivePass",
   "meetingKeepRecordings",
-  "meetingIdleStopMinutes",
   "dictationSileroEnabled",
   "noteRecordingSileroEnabled",
   "meetingSileroEnabled",
@@ -2973,6 +2973,43 @@ export function setCoreLlmEngine(engine: "cloud" | "local"): void {
  * holds the empty key, so the removed provider is never the "next" one. The
  * moves are queued for the toast listener (routeNoticeStore).
  */
+/**
+ * One model on an install that had two (rc9 and earlier): a chat route that
+ * cannot serve, with a key in the store, is written to where this install's
+ * notes were being written — the write-up's keyed cloud route — or to the
+ * first keyed provider's default (chatRouteRepair.ts). Runs at every startup
+ * once the keys have hydrated; a working model is never touched, so after
+ * the first repair it is a no-op. Returns whether it wrote anything.
+ */
+export function repairChatRoute(): boolean {
+  const state = useSettingsStore.getState();
+  const chat = selectResolvedLLMConfig(state, "chatIntelligence");
+  const repair = planChatRouteRepair({
+    chatReady: selectLLMConfigReady(state, chat),
+    chatMode: chat.mode || "",
+    actions: {
+      mode: state.actionsMode || "",
+      provider: state.actionsProvider || "",
+      model: state.actionsModel || "",
+    },
+    isKeyed: (id) => {
+      const field = BYOK_PROVIDER_KEY_FIELDS[id];
+      return Boolean(field && (state[field] as string | undefined)?.trim());
+    },
+    isCloudProvider: (id) => providerValidForCoreMode(id, "providers"),
+    firstKeyedProvider: firstKeyedDefaultableProvider(state),
+  });
+  if (!repair) return false;
+  setResolvedLLMConfig("chatIntelligence", {
+    mode: "providers",
+    cloudMode: "byok",
+    provider: repair.provider,
+    model: repair.model,
+  });
+  logger.info("Repaired the AI model route on startup", repair, "settings");
+  return true;
+}
+
 function rerouteScopesOffProvider(providerId: string): void {
   const state = useSettingsStore.getState();
   const resolved = selectResolvedLLMConfig(state, "chatIntelligence");
@@ -3599,6 +3636,10 @@ export async function initializeSettings(): Promise<void> {
         "settings"
       );
     }
+
+    // With the keys hydrated and the selections reconciled: one model on an
+    // install that had two (chatRouteRepair.ts).
+    repairChatRoute();
 
     // Only after a successful DB↔cache reconcile. If the read failed, the cache
     // may still be stale — writing it via setCustomDictionary would wipe SQLite.

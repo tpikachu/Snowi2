@@ -942,7 +942,16 @@ class ReasoningService extends BaseReasoningService {
             // stream, never throwing — so the recovery in the catch below
             // (effort learning, a dropped search tool, the text-only retry)
             // could not run until the chunk became the throw.
-            throw chunk.error instanceof Error ? chunk.error : new Error(String(chunk.error));
+            // The chunk's error is the provider's body, not an Error: shown
+            // raw it read "Error: [object Object]" where OpenAI had said "You
+            // have no credits remaining" (live run, 2026-09-23).
+            if (chunk.error instanceof Error) throw chunk.error;
+            throw new Error(
+              extractApiErrorMessage(
+                chunk.error,
+                typeof chunk.error === "string" ? chunk.error : "The model request failed."
+              )
+            );
           } else if (chunk.type === "finish") {
             yield { type: "done", finishReason: chunk.finishReason };
           }

@@ -131,7 +131,8 @@ export const TOUR_STEPS: readonly TourStep[] = [
  * 2: added the model-setup and search steps, and reordered around setup.
  * 3: added the assistant-bar step with its summon hotkey, and rewrote the
  *    copy in a friendlier voice.
+ * 4: the assistant bar became the Snowy dot (rc10); the first step teaches it.
  */
-export const TOUR_VERSION = 3;
+export const TOUR_VERSION = 4;
 
 export const TOUR_STORAGE_KEY = "tourCompletedVersion";
