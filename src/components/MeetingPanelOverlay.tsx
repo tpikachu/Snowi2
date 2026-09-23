@@ -673,8 +673,53 @@ function ObserveControls() {
   );
 }
 
-export default function MeetingPanelOverlay() {
+interface MeetingPanelOverlayProps {
+  /**
+   * The toolbar's natural width in CSS px, whenever it changes — the card's
+   * own window uses it as its minimum width, since a toolbar clipped at the
+   * right loses the Transcript button and the X (client, 2026-09-23).
+   */
+  onToolbarWidth?: (px: number) => void;
+}
+
+/** The toolbar row's natural width: its clusters at full size, the drag gap
+ *  at its minimum, plus the row's padding and gaps. Pure over DOM measures. */
+function measureToolbarWidth(toolbar: HTMLElement): number {
+  const style = getComputedStyle(toolbar);
+  const padding = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+  const gap = parseFloat(style.columnGap) || 0;
+  const children = Array.from(toolbar.children) as HTMLElement[];
+  let width = padding + gap * Math.max(0, children.length - 1);
+  for (const child of children) {
+    if (child.dataset.dragGap !== undefined) {
+      width += parseFloat(getComputedStyle(child).minWidth) || 0;
+    } else {
+      width += child.getBoundingClientRect().width;
+    }
+  }
+  return Math.ceil(width) + 2;
+}
+
+export default function MeetingPanelOverlay({ onToolbarWidth }: MeetingPanelOverlayProps = {}) {
   const { t } = useTranslation();
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const toolbar = toolbarRef.current;
+    if (!toolbar || !onToolbarWidth) return;
+    let last = 0;
+    const report = () => {
+      const width = measureToolbarWidth(toolbar);
+      if (width !== last) {
+        last = width;
+        onToolbarWidth(width);
+      }
+    };
+    report();
+    const observer = new ResizeObserver(report);
+    observer.observe(toolbar);
+    for (const child of Array.from(toolbar.children)) observer.observe(child);
+    return () => observer.disconnect();
+  });
   const [snapshot, setSnapshot] = useState<MeetingPanelSnapshot | null>(null);
   /**
    * Null until the control panel has actually said something, so "no model
@@ -1002,6 +1047,8 @@ export default function MeetingPanelOverlay() {
 
         {/* ---- 3. The toolbar ------------------------------------------ */}
         <div
+          ref={toolbarRef}
+          data-cue-card-toolbar=""
           className={cn(
             "flex shrink-0 items-center gap-0.5 px-1.5 py-1.5",
             !isCompact && "border-t border-hud-border"
@@ -1081,9 +1128,10 @@ export default function MeetingPanelOverlay() {
           </span>
 
           {/* The gap between the clusters is the drag handle. */}
-          <span className="min-w-2 flex-1" />
+          <span data-drag-gap="" className="min-w-2 flex-1" />
 
-          <span style={noDrag} className="flex min-w-0 shrink items-center gap-0.5">
+          {/* Never shrinks: the window is at least as wide as this row. */}
+          <span style={noDrag} className="flex shrink-0 items-center gap-0.5">
             <ObserveControls />
             <WebSearchControl
               assist={assist}

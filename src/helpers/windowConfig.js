@@ -180,9 +180,12 @@ const TRANSCRIPTION_PREVIEW_CONFIG = {
  * `minHeight` stays low enough to collapse it back to roughly a bar for anyone
  * who wants only the controls.
  */
+// minWidth is the OS floor; the renderer raises the real floor to the
+// toolbar's natural width (MeetingPanelWindow), and defaultWidth is what
+// that measures in English so the first open does not jump.
 const MEETING_PANEL_SIZE_LIMITS = {
   minWidth: 320,
-  defaultWidth: 400,
+  defaultWidth: 520,
   maxWidth: 720,
   minHeight: 56,
   defaultHeight: 620,

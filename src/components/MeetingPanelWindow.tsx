@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import MeetingPanelOverlay from "./MeetingPanelOverlay";
 import { ResizeHandles, useOwnWindowResize } from "./ui/OverlayResizeHandles";
 
@@ -43,6 +43,34 @@ function saveMeetingCardSize(width: number, height: number): void {
 }
 
 export default function MeetingPanelWindow() {
+  // The toolbar's natural width is the card's real floor: below it the
+  // Transcript button and the X are clipped off the right edge. The overlay
+  // reports it; the window grows to it (keeping its right edge, where the
+  // dot is) and the grips refuse to go under it.
+  const [toolbarWidth, setToolbarWidth] = useState(0);
+  const minWidth = Math.max(MIN_WIDTH, toolbarWidth);
+  useEffect(() => {
+    if (toolbarWidth <= 0) return;
+    // On mount and on every resize that lands under the floor — main's first
+    // placement at the default width, or anything else that sets the bounds
+    // from outside the grips (which clamp themselves).
+    const grow = () => {
+      if (window.innerWidth >= minWidth) return;
+      void window.electronAPI?.getOwnWindowBounds?.().then((bounds) => {
+        if (!bounds || bounds.width >= minWidth) return;
+        void window.electronAPI?.setOwnWindowBounds?.(
+          bounds.x + bounds.width - minWidth,
+          bounds.y,
+          minWidth,
+          bounds.height
+        );
+      });
+    };
+    grow();
+    window.addEventListener("resize", grow);
+    return () => window.removeEventListener("resize", grow);
+  }, [toolbarWidth, minWidth]);
+
   // A remembered size, applied once, keeping the right edge where main put
   // it — the card is placed against the dot by its right edge.
   useEffect(() => {
@@ -77,7 +105,7 @@ export default function MeetingPanelWindow() {
     saveMeetingCardSize(bounds.width, bounds.height);
   }, []);
   const handleResizeStart = useOwnWindowResize({
-    minWidth: MIN_WIDTH,
+    minWidth,
     minHeight: MIN_HEIGHT,
     onResized,
   });
@@ -87,7 +115,7 @@ export default function MeetingPanelWindow() {
     // tokens with shared app tokens and floats over other apps, never
     // following the app theme.
     <div className="agent-overlay-window dark relative h-screen w-screen bg-transparent">
-      <MeetingPanelOverlay />
+      <MeetingPanelOverlay onToolbarWidth={setToolbarWidth} />
       <ResizeHandles onResizeStart={handleResizeStart} />
     </div>
   );

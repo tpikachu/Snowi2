@@ -206,6 +206,30 @@ test("a published meeting renders the three-zone card, lifts the say-line, and c
   );
   await expect(bar.getByRole("button", { name: "Transcript" })).toBeVisible();
 
+  // The card can never be narrower than its toolbar (client, 2026-09-23: at
+  // 386px the Transcript button and the X were clipped). Squeezed to the OS
+  // floor, the window grows straight back to the toolbar's width, right edge
+  // held, and every toolbar button is inside the viewport.
+  const squeezed = await bar.evaluate(async () => {
+    const api = /** @type {any} */ (window).electronAPI;
+    const bounds = await api.getOwnWindowBounds();
+    await api.setOwnWindowBounds(bounds.x + bounds.width - 320, bounds.y, 320, bounds.height);
+    return bounds.x + bounds.width;
+  });
+  await expect
+    .poll(() => bar.evaluate(() => window.innerWidth), { timeout: 10_000 })
+    .toBeGreaterThan(320);
+  const toolbar = bar.locator("[data-cue-card-toolbar]");
+  await expect(toolbar.getByRole("button", { name: "Transcript" })).toBeInViewport();
+  await expect(toolbar.getByRole("button", { name: "Hide the cue card" })).toBeInViewport();
+  await expect(toolbar.getByRole("button", { name: "Model" })).toBeInViewport();
+  const after = await bar.evaluate(async () => {
+    const bounds = await /** @type {any} */ (window).electronAPI.getOwnWindowBounds();
+    return bounds.x + bounds.width;
+  });
+  expect(after).toBe(squeezed);
+  await bar.screenshot({ path: test.info().outputPath("cue-card-min-width.png") });
+
   // A picture of the card in the test's output (test-results/<test>/cue-card.png):
   // card changes are reviewed from here rather than by launching the app.
   const shot = test.info().outputPath("cue-card.png");
