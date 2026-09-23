@@ -707,6 +707,10 @@ let isPrepared = false;
 let segmentsRefValue: TranscriptSegment[] = [];
 let preparePromise: Promise<void> | null = null;
 let ipcCleanups: Array<() => void> = [];
+function releaseIpcListeners(): void {
+  ipcCleanups.forEach((fn) => fn());
+  ipcCleanups = [];
+}
 let speakerIdentifications: SpeakerIdentification[] = [];
 let nextPlaceholderSpeakerIndex = 0;
 let systemPartialSpeakerIdValue: string | null = null;
@@ -993,8 +997,7 @@ async function cleanup(): Promise<void> {
   } catch {}
   systemContext = null;
 
-  ipcCleanups.forEach((fn) => fn());
-  ipcCleanups = [];
+  releaseIpcListeners();
   // A debounced config push firing after stop would repopulate the session
   // config main just cleared, leaking this session's count into the next one.
   if (pushConfigTimeout) {
@@ -1098,6 +1101,17 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
 
   isPausedFlag = false;
 
+  // Registered before anything is awaited: main reports a failed audio chunk
+  // the moment audio flows, and a listener added only after the capture
+  // setup (seconds, on a slow start) lost every error in between — the card
+  // already showed Stop while the fault it should have named went nowhere
+  // (e2e/recordings.spec.js flood, 2026-09-23).
+  const errorCleanup = window.electronAPI?.onMeetingTranscriptionError?.((err) => {
+    reportMeetingError(err);
+    logger.error("Meeting transcription stream error", { error: err }, "meeting");
+  });
+  if (errorCleanup) ipcCleanups.push(errorCleanup);
+
   useMeetingRecordingStore.setState({
     isRecording: true,
     isPaused: false,
@@ -1193,6 +1207,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
       logger.info("Meeting transcription aborted during setup (stop called)", {}, "meeting");
       stopMediaStream(micResult);
       stopMediaStream(systemCaptureResult.stream);
+      releaseIpcListeners();
       isStartingFlag = false;
       return true;
     }
@@ -1210,6 +1225,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
       stopMediaStream(micResult);
       stopMediaStream(systemCaptureResult.stream);
       isRecordingFlag = false;
+      releaseIpcListeners();
       isStartingFlag = false;
       return true;
     }
@@ -1244,6 +1260,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
       );
       await window.electronAPI?.meetingTranscriptionStop?.();
       isRecordingFlag = false;
+      releaseIpcListeners();
       isStartingFlag = false;
       return true;
     }
@@ -1439,12 +1456,6 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
       }
     });
     if (mergeCleanup) ipcCleanups.push(mergeCleanup);
-
-    const errorCleanup = window.electronAPI?.onMeetingTranscriptionError?.((err) => {
-      reportMeetingError(err);
-      logger.error("Meeting transcription stream error", { error: err }, "meeting");
-    });
-    if (errorCleanup) ipcCleanups.push(errorCleanup);
 
     // Main only sends this after its restart attempts are exhausted, so it is
     // a settled fact, not a hiccup. The flag flip is what matters: the panel's
