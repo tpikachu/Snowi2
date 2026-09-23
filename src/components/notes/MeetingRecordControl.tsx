@@ -20,8 +20,9 @@ interface MeetingRecordControlProps {
  * (client direction, 2026-09-23 — it sat in the chat bar, where it read as
  * part of asking, then after the view switch as a grey ghost that read as
  * one option among six). Idle on a meeting note it is "Resume meeting" in
- * the accent with a play glyph — the same tone the recording pill wears, so
- * the slot keeps its meaning across states; while a session records it is
+ * green with a play glyph — its own color, so the two ends of the row (this
+ * and the accent Generate Notes) never read as one kind of button (client
+ * direction, 2026-09-23); while a session records it is
  * the elapsed clock and Stop; while the stop is being processed it waits.
  * Nothing renders on a note that cannot record.
  */
@@ -98,8 +99,8 @@ export default function MeetingRecordControl({
       title={t("notes.editor.resumeMeetingHint")}
       className={cn(
         "flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5",
-        "border border-primary/30 bg-primary-subtle text-[11px] font-medium text-primary",
-        "transition-colors duration-150 hover:border-primary/50",
+        "border border-success/30 bg-success-subtle text-[11px] font-medium text-success",
+        "transition-colors duration-150 hover:border-success/50",
         "outline-none focus-visible:ring-2 focus-visible:ring-ring"
       )}
     >
