@@ -4,6 +4,7 @@ import { DEFAULT_IDLE_STOP_MINUTES, normalizeIdleStopMinutes } from "../utils/me
 import { planRerouteOffProvider } from "../utils/providerReroute";
 import { planChatRouteRepair } from "../utils/chatRouteRepair";
 import { speechRouteReadiness, type SpeechRouteReadiness } from "../utils/speechRouteReady";
+import { planDownloadedModelsReset } from "../utils/modelReset";
 import { pushRouteNotices } from "./routeNoticeStore";
 import i18n, { normalizeUiLanguage } from "../i18n";
 import { ensureAgentNameInDictionary } from "../utils/agentName";
@@ -898,6 +899,13 @@ export interface SettingsState
   setMeetingCloudTranscriptionModel: (value: string) => void;
   setMeetingCloudTranscriptionBaseUrl: (value: string) => void;
   setMeetingCloudTranscriptionMode: (value: string) => void;
+  /**
+   * The speech models on disk per local engine, or null until the disk has
+   * been listed. Not persisted: main is asked at startup and whenever a
+   * download, a delete or the model reset changes the answer.
+   */
+  speechModelsOnDisk: SpeechModelsOnDisk | null;
+  setSpeechModelsOnDisk: (value: SpeechModelsOnDisk | null) => void;
   setMeetingRemoteTranscriptionType: (type: SelfHostedType) => void;
   setMeetingRemoteTranscriptionUrl: (url: string) => void;
 
@@ -1695,6 +1703,8 @@ export const useSettingsStore = create<SettingsState>()((set, get) => ({
   setMeetingCloudTranscriptionModel: createStringSetter("meetingCloudTranscriptionModel"),
   setMeetingCloudTranscriptionBaseUrl: createStringSetter("meetingCloudTranscriptionBaseUrl"),
   setMeetingCloudTranscriptionMode: createStringSetter("meetingCloudTranscriptionMode"),
+  speechModelsOnDisk: null,
+  setSpeechModelsOnDisk: (value) => set({ speechModelsOnDisk: value }),
   setMeetingRemoteTranscriptionType: createStringSetter("meetingRemoteTranscriptionType") as (
     type: SelfHostedType
   ) => void,
@@ -2628,6 +2638,8 @@ export const selectResolvedMeetingTranscription = (
  */
 export const selectMeetingSpeechReadiness = (state: SettingsState): SpeechRouteReadiness => {
   const cfg = selectResolvedMeetingTranscription(state);
+  const nvidia = cfg.localTranscriptionProvider === "nvidia";
+  const onDisk = state.speechModelsOnDisk;
   return speechRouteReadiness({
     transcriptionMode: cfg.transcriptionMode,
     provider: cfg.cloudTranscriptionProvider,
@@ -2636,8 +2648,66 @@ export const selectMeetingSpeechReadiness = (state: SettingsState): SpeechRouteR
       const value = (state as unknown as Record<string, unknown>)[field];
       return typeof value === "string" ? value : "";
     },
+    // Judged on the model the route would load: the pick, else the routing's
+    // own fallback (meetingTranscriptionRouting.js) — so an install that
+    // never wrote a pick but has that fallback on disk stays ready.
+    localProvider: cfg.localTranscriptionProvider,
+    localModel: nvidia ? cfg.parakeetModel : cfg.whisperModel,
+    localFallbackModel: nvidia ? "parakeet-tdt-0.6b-v3" : "base",
+    installed: (provider, model) =>
+      onDisk ? (provider === "nvidia" ? onDisk.nvidia : onDisk.whisper).includes(model) : null,
   });
 };
+
+export interface SpeechModelsOnDisk {
+  whisper: string[];
+  nvidia: string[];
+}
+
+/**
+ * Asks main which speech models are on disk and records the answer, which
+ * is what makes a local engine's readiness honest (speechRouteReady.ts).
+ * Called at startup, by the model picker after every listing, when a
+ * download finishes, and by the model reset.
+ */
+export async function refreshSpeechModelsOnDisk(): Promise<SpeechModelsOnDisk | null> {
+  if (!isBrowser || !window.electronAPI?.listWhisperModels) return null;
+  try {
+    const [whisper, parakeet] = await Promise.all([
+      window.electronAPI.listWhisperModels(),
+      window.electronAPI.listParakeetModels?.(),
+    ]);
+    const names = (
+      result: { models?: Array<{ model: string; downloaded?: boolean }> } | undefined
+    ) => (result?.models ?? []).filter((m) => m.downloaded).map((m) => m.model);
+    const value = { whisper: names(whisper), nvidia: names(parakeet) };
+    useSettingsStore.getState().setSpeechModelsOnDisk(value);
+    return value;
+  } catch (error) {
+    logger.warn("Could not list the speech models on disk", { error }, "settings");
+    return null;
+  }
+}
+
+/**
+ * The model choices after "Remove models" (Settings → System): every speech
+ * scope back to the local engine with nothing picked, the AI model cleared
+ * and then handed to the launch-time repair — so with a key still stored
+ * it lands on that provider's default now, exactly as the next relaunch
+ * would put it (utils/modelReset.ts). Keys are never touched.
+ */
+export function resetModelSelections(): void {
+  const plan = planDownloadedModelsReset();
+  for (const [key, value] of Object.entries(plan.strings)) {
+    setStringSetting(key as keyof SettingsState, value);
+  }
+  for (const [key, value] of Object.entries(plan.booleans)) {
+    createBooleanSetter(key)(value);
+  }
+  setResolvedLLMConfig("chatIntelligence", { mode: "providers", provider: "", model: "" });
+  repairChatRoute();
+  useSettingsStore.getState().setSpeechModelsOnDisk({ whisper: [], nvidia: [] });
+}
 
 export interface ResolvedUploadTranscription {
   useLocalWhisper: boolean;
@@ -3640,6 +3710,10 @@ export async function initializeSettings(): Promise<void> {
     // With the keys hydrated and the selections reconciled: one model on an
     // install that had two (chatRouteRepair.ts).
     repairChatRoute();
+
+    // Which speech models are actually on disk, for the local engine's
+    // readiness; answered in the background, "ready" until then.
+    void refreshSpeechModelsOnDisk();
 
     // Only after a successful DB↔cache reconcile. If the read failed, the cache
     // may still be stale — writing it via setCustomDictionary would wipe SQLite.

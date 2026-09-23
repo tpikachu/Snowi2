@@ -76,6 +76,21 @@ function getCacheRoot() {
   const homeDir = app?.getPath?.("home") || os.homedir();
   const homeCache = path.join(homeDir, ".cache", "snowy");
 
+  // An explicit override is honoured everywhere, not only on a Windows
+  // account whose home path the native engines cannot read: the e2e suite
+  // sets it to a throwaway directory so a run never reads — or, through
+  // Settings → System → Remove models, deletes — the developer's own
+  // downloads. Until 2026-09-23 an ASCII home ignored it, and the first run
+  // of that test emptied the developer's parakeet-models and models folders.
+  const override = process.env.SNOWY_CACHE_ROOT;
+  if (override && !pathHasProblematicChars(override)) {
+    try {
+      return ensureDir(override);
+    } catch {
+      // fall through to the platform rule
+    }
+  }
+
   if (process.platform !== "win32" || !pathHasProblematicChars(homeCache)) {
     return homeCache;
   }

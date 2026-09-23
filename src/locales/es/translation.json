@@ -44,6 +44,19 @@
         "title": "Conservar las grabaciones de reuniones",
         "description": "El audio de cada reunión se queda con su nota, para reproducirlo o descargarlo. Desactivado, no se escribe nada en el disco.",
         "usage": "Grabaciones en disco: {{count}} ({{size}})"
+      },
+      "speechTest": {
+        "title": "Probar transcripción",
+        "description": "Graba cinco segundos del micrófono y los transcribe con el motor de arriba, para que veas lo que obtendría una reunión.",
+        "action": "Grabar 5 segundos",
+        "recording": "Grabando… {{seconds}}s",
+        "transcribing": "Transcribiendo con {{route}}…",
+        "heard": "Se oyó",
+        "empty": "No se transcribió nada. Habla durante los cinco segundos y comprueba el micrófono en Preferencias.",
+        "failed": "La transcripción falló: {{error}}",
+        "busy": "Hay una reunión grabándose. Detenla primero.",
+        "routeLocal": "{{model}} en este equipo",
+        "routeCloud": "{{model}} mediante {{provider}}"
       }
     }
   },
@@ -646,7 +659,8 @@
     "tinfoil": {
       "transportNote": "Tinfoil transmite con Voxtral Mini 4B y procesa por lotes con Voxtral Small 24B.",
       "docsLink": "Ver la documentación"
-    }
+    },
+    "needsDownload": "Falta descargar"
   },
   "hooks": {
     "audioRecording": {
@@ -1652,20 +1666,20 @@
       }
     },
     "developer": {
-      "clearCache": "Borrar caché",
+      "clearCache": "Eliminar modelos",
       "dataManagementDescription": "Administra modelos en caché y datos de la app",
       "dataManagementTitle": "Gestión de datos",
-      "modelCache": "Caché de modelos",
+      "modelCache": "Modelos descargados",
       "open": "Abrir",
       "removeModels": {
         "confirmText": "Eliminar modelos",
-        "description": "Esto elimina todos los modelos de Whisper almacenados en caché local ({{path}}) y libera espacio en disco. Puedes descargarlos nuevamente desde el selector de modelos.",
+        "description": "Elimina todos los modelos de voz y modelos de IA locales descargados en este equipo ({{path}}) y libera espacio. Tus claves de API se conservan. Después vuelves a elegir un modelo de voz y un modelo de IA.",
         "failedDescription": "Algo salió mal al eliminar los modelos. Inténtalo de nuevo.",
         "failedDescriptionShort": "No se pudieron eliminar los modelos en caché.",
         "failedTitle": "No se pudieron eliminar los modelos",
-        "successDescription": "Todos los modelos en caché han sido eliminados.",
+        "successDescription": "Se eliminaron todos los modelos descargados. Elige de nuevo un modelo de voz y un modelo de IA para terminar la configuración.",
         "successTitle": "Modelos eliminados",
-        "title": "¿Eliminar modelos descargados?"
+        "title": "¿Eliminar los modelos descargados?"
       },
       "removing": "Eliminando...",
       "resetAll": {
@@ -3433,7 +3447,7 @@
       "preparing": "Preparando…",
       "setup": {
         "microphone": "Aún falta el acceso al micrófono",
-        "speech": "La transcripción necesita una clave de API",
+        "speech": "La transcripción aún necesita configurarse",
         "intelligence": "Los resúmenes y el chat necesitan un modelo de IA"
       },
       "appWindow": "Mostrar u ocultar la ventana de Snowy",
@@ -3989,7 +4003,9 @@
         "transcription": {
           "title": "Grabación y transcripción",
           "ready": "Las reuniones se capturan y se convierten en texto en este equipo.",
-          "missing": "Las reuniones se grabarían sin transcripción. Añade la clave del proveedor y elige un modelo, o transcribe en este equipo."
+          "missing": "Las reuniones se grabarían sin transcripción. Añade la clave del proveedor y elige un modelo, o transcribe en este equipo.",
+          "missingLocal": "Las reuniones se grabarían sin transcripción. Elige un modelo de voz para transcribir en este equipo o usa un proveedor en la nube.",
+          "missingDownload": "Las reuniones se grabarían sin transcripción. El modelo de voz elegido aún no está en este equipo: descárgalo o elige otro."
         },
         "intelligence": {
           "title": "Modelo de IA",
@@ -4114,6 +4130,42 @@
       "tinfoil": {
         "description": "Se ejecuta en un entorno sellado y privado."
       }
+    }
+  },
+  "audioCheck": {
+    "title": "Comprueba tus dispositivos",
+    "description": "Escucha unos segundos y comprueba que Snowy te oye a ti y lo que reproduce tu equipo.",
+    "mic": {
+      "label": "Micrófono",
+      "description": "Di algo mientras escucha.",
+      "action": "Probar micrófono"
+    },
+    "system": {
+      "label": "Audio del sistema",
+      "description": "Reproduce algo — un vídeo o una llamada — mientras escucha.",
+      "action": "Probar audio del sistema"
+    },
+    "listening": "Escuchando… {{seconds}}s",
+    "stop": "Detener",
+    "level": "Nivel",
+    "peak": "Pico {{percent}}%",
+    "result": {
+      "heard": "Te oímos alto y claro.",
+      "heardSystem": "Oímos lo que reproduce tu equipo.",
+      "silent": "No se oyó nada. Comprueba que el dispositivo está encendido, sin silenciar y seleccionado arriba.",
+      "silentSystem": "No se oyó nada. Reproduce algo, vuelve a intentarlo y comprueba el dispositivo de salida.",
+      "nothing": "No llegó audio del dispositivo.",
+      "busy": "Hay una reunión grabándose. Detenla primero.",
+      "unsupported": "La captura de audio del sistema no está disponible en este equipo.",
+      "failed": "No se pudo escuchar: {{error}}"
+    },
+    "via": "mediante {{strategy}}",
+    "strategy": {
+      "native": "el audio tap de macOS",
+      "wasapi-loopback": "el ayudante de audio de Windows",
+      "loopback": "el audio de pantalla compartida",
+      "pipewire-loopback": "PipeWire",
+      "portal": "el portal del escritorio"
     }
   }
 }

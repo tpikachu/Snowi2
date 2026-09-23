@@ -44,6 +44,19 @@
         "title": "Conserva le registrazioni delle riunioni",
         "description": "L'audio di ogni riunione resta con la sua nota, da riascoltare o scaricare. Se disattivato, non viene scritto nulla su disco.",
         "usage": "Registrazioni su disco: {{count}} ({{size}})"
+      },
+      "speechTest": {
+        "title": "Prova trascrizione",
+        "description": "Registra cinque secondi dal microfono e li trascrive con il motore qui sopra, così vedi cosa otterrebbe una riunione.",
+        "action": "Registra 5 secondi",
+        "recording": "Registrazione… {{seconds}}s",
+        "transcribing": "Trascrizione con {{route}}…",
+        "heard": "Sentito",
+        "empty": "Non è stato trascritto nulla. Parla durante i cinque secondi e controlla il microfono nelle Preferenze.",
+        "failed": "Trascrizione non riuscita: {{error}}",
+        "busy": "Una riunione è in registrazione. Fermala prima.",
+        "routeLocal": "{{model}} su questo computer",
+        "routeCloud": "{{model}} tramite {{provider}}"
       }
     }
   },
@@ -646,7 +659,8 @@
     "tinfoil": {
       "transportNote": "Tinfoil trasmette con Voxtral Mini 4B ed elabora i batch con Voxtral Small 24B.",
       "docsLink": "Leggi la documentazione"
-    }
+    },
+    "needsDownload": "Da scaricare"
   },
   "hooks": {
     "audioRecording": {
@@ -1604,18 +1618,18 @@
       }
     },
     "developer": {
-      "clearCache": "Svuota cache",
+      "clearCache": "Rimuovi modelli",
       "dataManagementDescription": "Gestisci i modelli in cache e i dati dell'app",
       "dataManagementTitle": "Gestione dati",
-      "modelCache": "Cache dei modelli",
+      "modelCache": "Modelli scaricati",
       "open": "Apri",
       "removeModels": {
         "confirmText": "Elimina modelli",
-        "description": "Questa operazione elimina tutti i modelli Whisper memorizzati nella cache locale ({{path}}) e libera spazio su disco. Puoi scaricarli di nuovo dal selettore modelli.",
+        "description": "Elimina tutti i modelli vocali e i modelli IA locali scaricati su questo computer ({{path}}) e libera spazio. Le tue chiavi API restano. Dopo sceglierai di nuovo un modello vocale e un modello IA.",
         "failedDescription": "Qualcosa è andato storto nella rimozione dei modelli. Riprova.",
         "failedDescriptionShort": "Impossibile rimuovere i modelli in cache.",
         "failedTitle": "Impossibile rimuovere i modelli",
-        "successDescription": "Tutti i modelli in cache sono stati rimossi.",
+        "successDescription": "Tutti i modelli scaricati sono stati rimossi. Scegli di nuovo un modello vocale e un modello IA per completare la configurazione.",
         "successTitle": "Modelli rimossi",
         "title": "Rimuovere i modelli scaricati?"
       },
@@ -3385,7 +3399,7 @@
       "preparing": "Preparazione…",
       "setup": {
         "microphone": "Manca ancora l'accesso al microfono",
-        "speech": "La trascrizione richiede una chiave API",
+        "speech": "La trascrizione deve ancora essere configurata",
         "intelligence": "I riepiloghi e la chat richiedono un modello IA"
       },
       "appWindow": "Mostra o nascondi la finestra di Snowy",
@@ -3989,7 +4003,9 @@
         "transcription": {
           "title": "Registrazione e trascrizione",
           "ready": "Le riunioni vengono catturate e trasformate in testo su questo computer.",
-          "missing": "Le riunioni verrebbero registrate senza trascrizione. Aggiungi la chiave del provider e scegli un modello, oppure trascrivi su questo computer."
+          "missing": "Le riunioni verrebbero registrate senza trascrizione. Aggiungi la chiave del provider e scegli un modello, oppure trascrivi su questo computer.",
+          "missingLocal": "Le riunioni verrebbero registrate senza trascrizione. Scegli un modello vocale per trascrivere su questo computer, oppure usa un provider cloud.",
+          "missingDownload": "Le riunioni verrebbero registrate senza trascrizione. Il modello vocale scelto non è ancora su questo computer: scaricalo o scegline un altro."
         },
         "intelligence": {
           "title": "Modello IA",
@@ -4114,6 +4130,42 @@
       "tinfoil": {
         "description": "Gira in un ambiente sigillato e privato."
       }
+    }
+  },
+  "audioCheck": {
+    "title": "Controlla i tuoi dispositivi",
+    "description": "Ascolta per qualche secondo e verifica che Snowy senta te e ciò che riproduce il computer.",
+    "mic": {
+      "label": "Microfono",
+      "description": "Di' qualcosa mentre ascolta.",
+      "action": "Prova microfono"
+    },
+    "system": {
+      "label": "Audio di sistema",
+      "description": "Riproduci qualcosa — un video o una chiamata — mentre ascolta.",
+      "action": "Prova audio di sistema"
+    },
+    "listening": "In ascolto… {{seconds}}s",
+    "stop": "Ferma",
+    "level": "Livello",
+    "peak": "Picco {{percent}}%",
+    "result": {
+      "heard": "Ti sentiamo forte e chiaro.",
+      "heardSystem": "Sentito ciò che riproduce il computer.",
+      "silent": "Non si è sentito nulla. Verifica che il dispositivo sia acceso, non silenziato e selezionato sopra.",
+      "silentSystem": "Non si è sentito nulla. Riproduci qualcosa, riprova e controlla il dispositivo di uscita.",
+      "nothing": "Nessun audio è arrivato dal dispositivo.",
+      "busy": "Una riunione è in registrazione. Fermala prima.",
+      "unsupported": "L'acquisizione dell'audio di sistema non è disponibile su questo computer.",
+      "failed": "Impossibile ascoltare: {{error}}"
+    },
+    "via": "tramite {{strategy}}",
+    "strategy": {
+      "native": "l'audio tap di macOS",
+      "wasapi-loopback": "l'helper audio di Windows",
+      "loopback": "l'audio della condivisione schermo",
+      "pipewire-loopback": "PipeWire",
+      "portal": "il portale desktop"
     }
   }
 }

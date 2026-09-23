@@ -15,6 +15,7 @@ import { IDLE_STOP_CHOICES, normalizeIdleStopMinutes } from "../../utils/meeting
 import { formatBytes } from "../../utils/formatBytes";
 import { SPEAKER_IDENTIFICATION_ENABLED } from "../../helpers/speakerIdentificationPolicy";
 import TranscriptionModelPicker from "../TranscriptionModelPicker";
+import { SpeechRouteTest } from "./SpeechRouteTest";
 import type { InferenceMode } from "../../types/electron";
 
 export function MeetingSpeakerDetectionRow() {
@@ -164,22 +165,28 @@ export function MeetingTranscriptionPanel() {
     setMeetingCloudTranscriptionBaseUrl,
     setMeetingCloudTranscriptionMode,
   } = useSettingsStore();
-  // The Cloud Providers card is "Active" only when it could transcribe:
-  // chosen without its key or a model, the badge says which is missing.
+  // The engine card in use is "Active" only when it could transcribe:
+  // chosen without its key, a model, or (local) the model's download, the
+  // badge says which is missing.
   const speechReadiness = useSettingsStore(selectMeetingSpeechReadiness);
+  const status = (mode: InferenceMode) =>
+    mode === meetingTranscriptionMode && speechReadiness !== "ready"
+      ? t(`transcription.${speechReadiness}`)
+      : undefined;
   const transcriptionModes: InferenceModeOption[] = [
     {
       id: "providers",
       label: t("settingsPage.transcription.modes.providers"),
       description: t("settingsPage.transcription.modes.providersDesc"),
       icon: <Key className="w-4 h-4" />,
-      status: speechReadiness === "ready" ? undefined : t(`transcription.${speechReadiness}`),
+      status: status("providers"),
     },
     {
       id: "local",
       label: t("settingsPage.transcription.modes.local"),
       description: t("settingsPage.transcription.modes.localDesc"),
       icon: <Cpu className="w-4 h-4" />,
+      status: status("local"),
     },
     // No Self-Hosted card: hidden on client direction (2026-09) until the
     // streaming self-host path actually ships.
@@ -236,6 +243,9 @@ export function MeetingTranscriptionPanel() {
       {meetingTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
       {meetingTranscriptionMode === "local" && renderTranscriptionPicker("local")}
       <SettingsPanel>
+        <SettingsPanelRow>
+          <SpeechRouteTest />
+        </SettingsPanelRow>
         {meetingTranscriptionMode === "local" && (
           <SettingsPanelRow>
             <MeetingArchivePassRow />

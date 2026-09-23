@@ -44,6 +44,19 @@
         "title": "保留會議錄音",
         "description": "每場會議的音訊都與其筆記保存在一起，可回放或下載。關閉後不會寫入磁碟。",
         "usage": "磁碟上的錄音：{{count}} 個（{{size}}）"
+      },
+      "speechTest": {
+        "title": "測試轉錄",
+        "description": "從麥克風錄製五秒鐘並用上方的引擎轉錄，讓你看到會議會得到什麼結果。",
+        "action": "錄製 5 秒",
+        "recording": "錄製中… {{seconds}} 秒",
+        "transcribing": "正在用 {{route}} 轉錄…",
+        "heard": "聽到",
+        "empty": "沒有轉錄出任何內容。請在五秒內說話，並在偏好設定中檢查麥克風。",
+        "failed": "轉錄失敗：{{error}}",
+        "busy": "正在錄製會議，請先停止。",
+        "routeLocal": "本機的 {{model}}",
+        "routeCloud": "{{provider}} 的 {{model}}"
       }
     }
   },
@@ -646,7 +659,8 @@
     "tinfoil": {
       "transportNote": "Tinfoil 串流轉錄使用 Voxtral Mini 4B，批次轉錄使用 Voxtral Small 24B。",
       "docsLink": "查看文件"
-    }
+    },
+    "needsDownload": "需要下載"
   },
   "hooks": {
     "audioRecording": {
@@ -1604,20 +1618,20 @@
       }
     },
     "developer": {
-      "clearCache": "清除快取",
+      "clearCache": "移除模型",
       "dataManagementDescription": "管理快取的模型和應用程式資料",
       "dataManagementTitle": "資料管理",
-      "modelCache": "模型快取",
+      "modelCache": "已下載的模型",
       "open": "開啟",
       "removeModels": {
         "confirmText": "刪除模型",
-        "description": "這將刪除所有本機快取的 Whisper 模型（{{path}}），並釋放磁碟空間。你可以從模型選擇器重新下載。",
+        "description": "這會刪除本機已下載的所有語音模型和本機 AI 模型（{{path}}）並釋放磁碟空間。API 金鑰會保留。之後需要重新選擇語音模型和 AI 模型。",
         "failedDescription": "移除模型時發生錯誤。請再試一次。",
         "failedDescriptionShort": "無法移除快取的模型。",
         "failedTitle": "無法移除模型",
-        "successDescription": "所有快取的模型已移除。",
+        "successDescription": "已移除所有已下載的模型。請重新選擇語音模型和 AI 模型以完成設定。",
         "successTitle": "模型已移除",
-        "title": "要移除已下載的模型嗎？"
+        "title": "移除已下載的模型？"
       },
       "removing": "移除中...",
       "resetAll": {
@@ -3385,7 +3399,7 @@
       "preparing": "準備中…",
       "setup": {
         "microphone": "仍需要麥克風權限",
-        "speech": "轉錄需要 API 金鑰",
+        "speech": "轉錄仍需設定",
         "intelligence": "紀要和聊天需要 AI 模型"
       },
       "appWindow": "顯示或隱藏 Snowy 視窗",
@@ -3989,7 +4003,9 @@
         "transcription": {
           "title": "錄音與轉錄",
           "ready": "會議會在這台電腦上錄下並轉成文字。",
-          "missing": "會議將只錄音而沒有轉錄。請新增供應商的金鑰並選擇模型，或在這台電腦上轉錄。"
+          "missing": "會議將只錄音而沒有轉錄。請新增供應商的金鑰並選擇模型，或在這台電腦上轉錄。",
+          "missingLocal": "會議將只錄音而沒有文字記錄。請選擇一個在本機轉錄的語音模型，或使用雲端服務商。",
+          "missingDownload": "會議將只錄音而沒有文字記錄。所選語音模型尚未下載到本機，請下載它或選擇其他模型。"
         },
         "intelligence": {
           "title": "AI 模型",
@@ -4114,6 +4130,42 @@
       "tinfoil": {
         "description": "在封閉的私密環境中執行。"
       }
+    }
+  },
+  "audioCheck": {
+    "title": "檢查裝置",
+    "description": "監聽幾秒鐘，確認 Snowy 能聽到你和電腦播放的聲音。",
+    "mic": {
+      "label": "麥克風",
+      "description": "監聽時請說幾句話。",
+      "action": "測試麥克風"
+    },
+    "system": {
+      "label": "系統音訊",
+      "description": "監聽時請播放一些內容，例如影片或通話。",
+      "action": "測試系統音訊"
+    },
+    "listening": "正在監聽… {{seconds}} 秒",
+    "stop": "停止",
+    "level": "音量",
+    "peak": "峰值 {{percent}}%",
+    "result": {
+      "heard": "聽得很清楚。",
+      "heardSystem": "已聽到電腦播放的聲音。",
+      "silent": "什麼也沒聽到。請確認裝置已開啟、未靜音並已在上方選取。",
+      "silentSystem": "什麼也沒聽到。請播放一些內容後重試，並檢查輸出裝置。",
+      "nothing": "裝置沒有傳來任何音訊。",
+      "busy": "正在錄製會議，請先停止。",
+      "unsupported": "此電腦不支援系統音訊擷取。",
+      "failed": "無法監聽：{{error}}"
+    },
+    "via": "透過 {{strategy}}",
+    "strategy": {
+      "native": "macOS 音訊擷取",
+      "wasapi-loopback": "Windows 音訊小幫手",
+      "loopback": "螢幕分享音訊",
+      "pipewire-loopback": "PipeWire",
+      "portal": "桌面入口"
     }
   }
 }

@@ -328,3 +328,158 @@ test("a cloud speech provider without a key is not Active, and Home asks for the
   await expect(page.getByRole("region", { name: "Engine" })).toBeVisible({ timeout: 15_000 });
   await expect(page.locator("[data-mode-status]")).toHaveText("Needs key");
 });
+
+const FAKE_MEDIA_ARGS = ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"];
+
+// The speech route rc9 shipped: the recommended NVIDIA model, picked, and
+// (under an isolated cache root) not on disk.
+const seedLocalSpeechRoute = (page) =>
+  page.evaluate(() => {
+    for (const scope of ["", "meeting"]) {
+      const key = (name) => (scope ? scope + name[0].toUpperCase() + name.slice(1) : name);
+      localStorage.setItem(key("transcriptionMode"), "local");
+      localStorage.setItem(key("useLocalWhisper"), "true");
+      localStorage.setItem(key("localTranscriptionProvider"), "nvidia");
+      localStorage.setItem(key("parakeetModel"), "nemotron-speech-streaming-en-0.6b");
+    }
+  });
+
+test("a local speech model that is not on disk is not ready, and Remove models resets every model choice", async () => {
+  // The launcher's cache root is throwaway, so "Delete Models" below never
+  // touches the developer's own downloads.
+  ({ app } = await launchApp(test.info()));
+  const page = await controlPanelPage(app);
+  await skipOnboarding(page);
+  await seedLocalSpeechRoute(page);
+  await page.reload();
+  await page.waitForLoadState("domcontentloaded");
+
+  // Home: the model is picked but not here — the row says so, instead of
+  // "Working" over a model that cannot transcribe (client, 2026-09-23).
+  await expect(page.getByText("What Snowy can do right now")).toBeVisible({ timeout: 15_000 });
+  const row = page.locator("li", { hasText: "Recording and transcription" });
+  await expect(row.getByText("Needs setup", { exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(row.getByText(/not on this computer yet/)).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("home-speech-needs-download.png") });
+
+  // Speech-to-Text: the Local card wears the same gap.
+  await page.getByRole("button", { name: "Settings" }).first().click();
+  await page.getByText("Speech-to-Text").first().click();
+  await expect(page.locator("[data-mode-status]")).toHaveText("Needs download", {
+    timeout: 15_000,
+  });
+
+  // Settings → System → Remove models: the files, and every model choice.
+  await page.getByRole("button", { name: "System" }).first().click();
+  await expect(page.getByRole("button", { name: "Remove models" })).toBeVisible({
+    timeout: 15_000,
+  });
+  await page.getByRole("button", { name: "Remove models" }).click();
+  await expect(page.getByText("Remove downloaded models?")).toBeVisible();
+  await expect(page.getByText(/Your API keys stay/)).toBeVisible();
+  await page.getByRole("button", { name: "Delete Models" }).click();
+  await expect(page.getByText("Models removed")).toBeVisible({ timeout: 15_000 });
+  await page.screenshot({ path: test.info().outputPath("models-removed.png") });
+  await page.keyboard.press("Escape");
+
+  // The pick is gone: the Local card now asks for a model...
+  await page.getByText("Speech-to-Text").first().click();
+  await expect(page.locator("[data-mode-status]")).toHaveText("Pick a model", { timeout: 15_000 });
+  const stored = await page.evaluate(() => ({
+    meetingParakeetModel: localStorage.getItem("meetingParakeetModel"),
+    parakeetModel: localStorage.getItem("parakeetModel"),
+    meetingTranscriptionMode: localStorage.getItem("meetingTranscriptionMode"),
+    chatAgentModel: localStorage.getItem("chatAgentModel"),
+  }));
+  expect(stored).toEqual({
+    meetingParakeetModel: "",
+    parakeetModel: "",
+    meetingTranscriptionMode: "local",
+    chatAgentModel: "",
+  });
+
+  // ...and Home asks for the setup, in the local engine's words.
+  await page.keyboard.press("Escape");
+  await expect(row.getByText("Needs setup", { exact: true })).toBeVisible({ timeout: 15_000 });
+  await expect(row.getByText(/Pick a speech model/)).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("home-after-model-reset.png") });
+});
+
+test("the device checks hear the microphone and report on system audio", async () => {
+  ({ app } = await launchApp(test.info(), { args: FAKE_MEDIA_ARGS }));
+  const page = await controlPanelPage(app);
+  await skipOnboarding(page);
+
+  await page.getByRole("button", { name: "Settings" }).first().click();
+  await page.getByRole("button", { name: "Preferences" }).first().click();
+  await expect(page.getByText("Check your devices")).toBeVisible({ timeout: 15_000 });
+
+  // The microphone: Chromium's fake device plays a tone, so the meter moves
+  // and the verdict is "heard".
+  const mic = page.locator('[data-audio-check="mic"]');
+  await mic.getByRole("button", { name: "Test microphone" }).click();
+  await expect(mic.getByRole("meter")).toBeVisible({ timeout: 5_000 });
+  await expect(mic.locator("[data-audio-verdict]")).toHaveAttribute("data-audio-verdict", "heard", {
+    timeout: 15_000,
+  });
+  await expect(mic.getByText(/loud and clear/)).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("audio-check-mic.png") });
+
+  // System audio: whatever this machine offers, the check answers within
+  // its listen and names how it listened.
+  const system = page.locator('[data-audio-check="system"]');
+  await system.getByRole("button", { name: "Test system audio" }).click();
+  await expect(system.getByText(/Listening…/)).toBeVisible({ timeout: 5_000 });
+  const verdict = system.locator("[data-audio-verdict]");
+  await expect(verdict).toBeVisible({ timeout: 30_000 });
+  expect(["heard", "silent", "nothing", "unsupported", "failed"]).toContain(
+    await verdict.getAttribute("data-audio-verdict")
+  );
+  await page.screenshot({ path: test.info().outputPath("audio-check-system.png") });
+});
+
+test("Test transcription shows the route's own error, cloud and local", async () => {
+  ({ app } = await launchApp(test.info(), { args: FAKE_MEDIA_ARGS }));
+  const page = await controlPanelPage(app);
+  await skipOnboarding(page);
+
+  // A cloud route with no key: the failure a meeting would have found.
+  await page.evaluate(() => {
+    localStorage.setItem("meetingTranscriptionMode", "providers");
+    localStorage.setItem("meetingUseLocalWhisper", "false");
+    localStorage.setItem("meetingCloudTranscriptionProvider", "openai");
+    localStorage.setItem("meetingCloudTranscriptionModel", "gpt-4o-mini-transcribe");
+  });
+  await page.reload();
+  await page.waitForLoadState("domcontentloaded");
+  await page.getByRole("button", { name: "Settings" }).first().click();
+  await page.getByText("Speech-to-Text").first().click();
+  const test1 = page.locator("[data-speech-test]");
+  await expect(test1).toBeVisible({ timeout: 15_000 });
+  await test1.getByRole("button", { name: "Record 5 seconds" }).click();
+  await expect(test1.getByRole("meter")).toBeVisible({ timeout: 5_000 });
+  const cloudResult = test1.locator("[data-speech-test-result]");
+  await expect(cloudResult).toHaveAttribute("data-speech-test-result", "failed", {
+    timeout: 40_000,
+  });
+  await expect(cloudResult).toContainText("No OpenAI API key configured");
+  await expect(cloudResult).toContainText("via OpenAI");
+  await page.screenshot({ path: test.info().outputPath("speech-test-cloud-no-key.png") });
+
+  // A local route whose model is not on disk: the engine's own words.
+  await page.keyboard.press("Escape");
+  await seedLocalSpeechRoute(page);
+  await page.reload();
+  await page.waitForLoadState("domcontentloaded");
+  await page.getByRole("button", { name: "Settings" }).first().click();
+  await page.getByText("Speech-to-Text").first().click();
+  const test2 = page.locator("[data-speech-test]");
+  await test2.getByRole("button", { name: "Record 5 seconds" }).click();
+  const localResult = test2.locator("[data-speech-test-result]");
+  await expect(localResult).toHaveAttribute("data-speech-test-result", "failed", {
+    timeout: 40_000,
+  });
+  await expect(localResult).toContainText(/not downloaded/);
+  await expect(localResult).toContainText("on this machine");
+  await page.screenshot({ path: test.info().outputPath("speech-test-local-missing.png") });
+});

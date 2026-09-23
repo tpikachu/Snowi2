@@ -1,6 +1,7 @@
+import { useEffect, useRef } from "react";
 import { useModelDownload } from "./useModelDownload";
 import { displayNameForModelId } from "./useOnboardingTranscriptionSetup";
-import { useSettingsStore } from "../stores/settingsStore";
+import { refreshSpeechModelsOnDisk, useSettingsStore } from "../stores/settingsStore";
 import { speechDownloadBlocksMeetingStart } from "../utils/speechModelDownloadGate";
 
 export interface ActiveSpeechModelDownload {
@@ -49,6 +50,19 @@ export function useSpeechModelDownloadStatus(): SpeechModelDownloadStatus {
           isInstalling: engine.isInstalling,
         }
       : null;
+
+  // A download that just finished changes what is on disk, which is what
+  // the local engine's readiness reads (speechRouteReady.ts).
+  const activeModelId = active?.modelId ?? null;
+  const wasDownloading = useRef(false);
+  useEffect(() => {
+    if (activeModelId) {
+      wasDownloading.current = true;
+    } else if (wasDownloading.current) {
+      wasDownloading.current = false;
+      void refreshSpeechModelsOnDisk();
+    }
+  }, [activeModelId]);
 
   return {
     active,

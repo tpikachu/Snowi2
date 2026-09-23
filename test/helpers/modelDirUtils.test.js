@@ -63,6 +63,24 @@ describe("modelDirUtils ASCII-safe cache (#1399)", () => {
     assert.ok(fs.existsSync(override));
   });
 
+  it("honors SNOWY_CACHE_ROOT on an ASCII home too, on every platform", () => {
+    // The e2e suite's isolation: until 2026-09-23 an ASCII home ignored the
+    // override, and a test that removes every model emptied the developer's
+    // own parakeet-models and models folders.
+    for (const platform of ["win32", "darwin", "linux"]) {
+      Object.defineProperty(process, "platform", { value: platform });
+      const override = path.join(tempRoot, `cache-${platform}`);
+      process.env.SNOWY_CACHE_ROOT = override;
+      const { getCacheRoot, getModelsDirForService } = loadFresh(path.join(tempRoot, "dev"));
+      assert.strictEqual(getCacheRoot(), override, platform);
+      assert.strictEqual(
+        getModelsDirForService("parakeet"),
+        path.join(override, "parakeet-models"),
+        platform
+      );
+    }
+  });
+
   it("falls back to ProgramData cache when home cache path is non-ASCII", () => {
     Object.defineProperty(process, "platform", { value: "win32" });
     const programData = path.join(tempRoot, "ProgramData");

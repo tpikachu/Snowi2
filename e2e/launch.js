@@ -1,6 +1,8 @@
 // @ts-check
 /* global window -- browser global used inside page.evaluate callbacks */
 const path = require("path");
+const fs = require("fs");
+const os = require("os");
 const { _electron: electron } = require("@playwright/test");
 
 const PROJECT_ROOT = path.join(__dirname, "..");
@@ -13,6 +15,16 @@ const CONTROL_PANEL_TIMEOUT_MS = 60_000;
  * userData directory so the run looks like a fresh install and never touches
  * the developer's own dev data (see SNOWY_USER_DATA_DIR in main.js).
  *
+ * The model cache is throwaway too (SNOWY_CACHE_ROOT, modelDirUtils.js):
+ * the suite never reads the developer's downloads — and never deletes them,
+ * which the Remove-models test does — and it carries the default speech
+ * model as an empty placeholder file, so a launch that skips onboarding
+ * still counts as set up: since 2026-09-23 a local speech engine is only
+ * ready with its model on disk (speechRouteReady.ts), and on a machine
+ * with no Whisper models the dot read "Finish setup" and Home's card
+ * deep-linked to Speech-to-Text in every test that expected a working
+ * install. Nothing in the suite decodes with it.
+ *
  * @param {import("@playwright/test").TestInfo} testInfo
  * @param {{ env?: Record<string, string>, args?: string[] }} [options] extra environment and
  *   Chromium flags (fake media devices, say) for this launch
@@ -20,11 +32,28 @@ const CONTROL_PANEL_TIMEOUT_MS = 60_000;
  */
 async function launchApp(testInfo, { env: extraEnv = {}, args: extraArgs = [] } = {}) {
   const userDataDir = testInfo.outputPath("user-data");
+  const cacheRoot = testInfo.outputPath("cache");
+  fs.mkdirSync(path.join(cacheRoot, "whisper-models"), { recursive: true });
+  fs.writeFileSync(path.join(cacheRoot, "whisper-models", "ggml-base.bin"), "");
+  // The speaker models main fetches at launch when they are missing: linked
+  // from the developer's cache when it has them, so an isolated run does not
+  // download 30 MB per test. A link, not a copy — nothing in the suite
+  // deletes them (only Reset app data does, and no test presses it).
+  const realDiarization = path.join(os.homedir(), ".cache", "snowy", "diarization-models");
+  if (fs.existsSync(realDiarization)) {
+    try {
+      fs.symlinkSync(realDiarization, path.join(cacheRoot, "diarization-models"), "junction");
+    } catch {
+      // A leftover link from a rerun, or a filesystem without links: main
+      // downloads them as it would on a fresh install.
+    }
+  }
   const env = {
     ...process.env,
     NODE_ENV: "development",
     SNOWY_CHANNEL: "development",
     SNOWY_USER_DATA_DIR: userDataDir,
+    SNOWY_CACHE_ROOT: cacheRoot,
     ...extraEnv,
   };
   // Inherited from a shell that ran electron-as-node (the better-sqlite3 ABI

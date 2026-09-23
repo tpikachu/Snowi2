@@ -233,7 +233,7 @@ const isSegmentWithinIdentificationWindow = (
   );
 };
 
-const getMeetingTranscriptionOptions = () => {
+export const getMeetingTranscriptionOptions = () => {
   const state = getSettings();
   const resolved = selectResolvedMeetingTranscription(state);
   const language = getBaseLanguageCode(state.preferredLanguage);
@@ -279,7 +279,7 @@ const getDisplayCaptureOptions = (mode: "loopback" | "portal") => {
   };
 };
 
-const requestSystemAudioDisplayStream = async (mode: "loopback" | "portal") => {
+export const requestSystemAudioDisplayStream = async (mode: "loopback" | "portal") => {
   try {
     const stream = await navigator.mediaDevices.getDisplayMedia(getDisplayCaptureOptions(mode));
     const audioTrack = stream.getAudioTracks()[0];
@@ -516,7 +516,7 @@ function takeMeetingPreRoll(): ArrayBuffer[] {
   return chunks;
 }
 
-const getMeetingMicConstraints = async (): Promise<MediaStreamConstraints> => {
+export const getMeetingMicConstraints = async (): Promise<MediaStreamConstraints> => {
   const { preferBuiltInMic, selectedMicDeviceId, selectedMicDeviceLabel } = getSettings();
 
   if (preferBuiltInMic) {
@@ -670,6 +670,54 @@ function clearIdleStop(): void {
     clearInterval(idleStopTimer);
     idleStopTimer = null;
   }
+}
+
+// --- The transcript on the note -------------------------------------------
+// Written by the store, which is alive for the whole meeting — not by the
+// Notes view, which is mounted only while that view is open. Until
+// 2026-09-23 the periodic save and the save at Stop were effects in
+// PersonalNotesView: a meeting started from the dot while the control panel
+// sat on Home or Chat never had its transcript written to the note at all
+// (the cue card showed the lines, the note stayed empty — and on a cloud
+// route nothing later filled it, since only the local archive pass writes a
+// transcript after Stop). That is the shape of "the app is not generating
+// the transcription" (client, 2026-09-23).
+const TRANSCRIPT_AUTOSAVE_MS = 30_000;
+let transcriptAutosaveTimer: ReturnType<typeof setInterval> | null = null;
+
+/** The note's transcript, from the live segments; main's text when there are none. */
+function currentTranscriptText(): string {
+  const { segments, transcript } = useMeetingRecordingStore.getState();
+  return segments.length > 0 ? serializeTranscriptSegments(segments) : transcript;
+}
+
+async function persistTranscript(reason: "autosave" | "stop"): Promise<void> {
+  const { recordingNoteId } = useMeetingRecordingStore.getState();
+  const transcript = currentTranscriptText();
+  if (recordingNoteId == null || !transcript) return;
+  try {
+    await window.electronAPI?.updateNote?.(recordingNoteId, { transcript });
+  } catch (error) {
+    logger.warn(
+      "Could not save the meeting transcript to the note",
+      { reason, noteId: recordingNoteId, error: (error as Error).message },
+      "meeting"
+    );
+  }
+}
+
+function clearTranscriptAutosave(): void {
+  if (transcriptAutosaveTimer) {
+    clearInterval(transcriptAutosaveTimer);
+    transcriptAutosaveTimer = null;
+  }
+}
+
+function armTranscriptAutosave(): void {
+  clearTranscriptAutosave();
+  transcriptAutosaveTimer = setInterval(() => {
+    void persistTranscript("autosave");
+  }, TRANSCRIPT_AUTOSAVE_MS);
 }
 
 function armIdleStop(): void {
@@ -962,6 +1010,7 @@ function assignProvisionalSpeaker(segment: TranscriptSegment): TranscriptSegment
 
 async function cleanup(): Promise<void> {
   clearIdleStop();
+  clearTranscriptAutosave();
   micRecovery?.stop();
   micRecovery = null;
   await flushAndDisconnectProcessor(micProcessor);
@@ -1144,6 +1193,7 @@ export async function startRecording(args: StartRecordingArgs): Promise<boolean>
 
   isRecordingFlag = true;
   armIdleStop();
+  armTranscriptAutosave();
 
   if (preparePromise) {
     logger.debug("Waiting for in-flight prepare to finish...", {}, "meeting");
@@ -1974,6 +2024,10 @@ export async function stopRecording(): Promise<StopRecordingResult> {
   });
 
   await cleanup();
+
+  // The transcript, whichever view is open (see persistTranscript). Before the
+  // timestamps: a note that has the lines but not the window is still a note.
+  await persistTranscript("stop");
 
   // The session window. Recorded here because nothing else knows it: the note
   // row was inserted when the user pressed record, before capture began, and

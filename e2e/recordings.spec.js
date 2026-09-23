@@ -54,6 +54,30 @@ test("a meeting leaves one playable recording on its note", async () => {
   const end = dot.getByRole("button", { name: /click to end/ });
   await end.waitFor({ timeout: 30_000 });
 
+  // The transcript, through main's own segment channel — the launcher's
+  // model cache is throwaway, so no engine can transcribe here; what this
+  // test is about is the recording kept with the note, and the note page
+  // that follows needs some lines to offer Resume.
+  const sendSegment = (text, timestamp) =>
+    app.evaluate(
+      ({ BrowserWindow }, segment) => {
+        for (const win of BrowserWindow.getAllWindows()) {
+          const url = win.webContents.getURL();
+          if (url.includes("panel=true") && !url.includes("meeting-panel")) {
+            win.webContents.send("meeting-transcription-segment", segment);
+          }
+        }
+      },
+      { text, timestamp, source: "mic", type: "final" }
+    );
+  // The store registers its segment listener only once the microphone and
+  // the transcription session are up, after the recording state has already
+  // lit the dot; a line sent before that is dropped. The card's clock
+  // reaching three seconds means capture is under way.
+  await card.getByText(/00:0[3-9]/).waitFor({ timeout: 30_000 });
+  await sendSegment("Let's start with the recording test.", Date.now());
+  await sendSegment("Two lines are enough to resume from.", Date.now() + 1500);
+
   // A fault main reports on every audio chunk is one card, not a flood: five
   // identical errors in a row show once, a different one shows once more.
   const sendError = (message) =>

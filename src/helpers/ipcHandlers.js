@@ -98,6 +98,7 @@ const {
   getMeetingStreamingClient,
   getMeetingConnectionKey,
 } = require("./meetingStreamingProviders");
+const { createLevelTracker, rmsOfInt16, LISTEN_MS } = require("./audioLevelCheck");
 const { fetchRealtimeTokenForProvider } = require("./realtimeTokenProviders");
 
 // Meeting capture runs at 24 kHz (see meetingRecordingStore AudioContext); cloud
@@ -7542,6 +7543,162 @@ class IPCHandlers {
 
     ipcMain.on("meeting-transcription-send", (_event, audioBuffer, source) => {
       sendMeetingAudio(audioBuffer, source);
+    });
+
+    // --- The device checks and the transcription test (Settings) -----------
+    // Neither may run over a meeting: they would take the helper the meeting
+    // is capturing through, or dial a second session on its key.
+    const meetingIsActive = () =>
+      meetingTranscriptionStartInProgress ||
+      meetingLocalMode ||
+      !!this._meetingMicStreaming?.isConnected ||
+      !!this._meetingSystemStreaming?.isConnected;
+
+    /**
+     * "Test system audio" (Settings → General → Microphone): listens for a
+     * few seconds through the same native helper a meeting captures with —
+     * the macOS tap, the Windows WASAPI helper, the Linux PipeWire helper —
+     * and reports the loudest moment (helpers/audioLevelCheck.js). Where the
+     * meeting would capture in the renderer instead (Chromium's display-media
+     * loopback), the answer says so and the renderer listens itself.
+     */
+    ipcMain.handle("system-audio-listen", async (_event, options = {}) => {
+      const durationMs = Math.min(15000, Math.max(1000, Number(options.durationMs) || LISTEN_MS));
+      if (meetingIsActive()) return { success: false, reason: "busy" };
+      const plan = await getMeetingSystemAudioPlan({ refreshWindowsCapability: true });
+      if (plan.mode === "unsupported" || plan.strategy === "unsupported") {
+        return { success: true, strategy: "unsupported", verdict: "unsupported" };
+      }
+      const manager =
+        plan.strategy === "native"
+          ? this.audioTapManager
+          : plan.strategy === "wasapi-loopback"
+            ? this.windowsLoopbackAudioManager
+            : plan.strategy === "pipewire-loopback"
+              ? this.linuxPortalAudioManager
+              : null;
+      if (!manager) return { success: true, strategy: plan.strategy, rendererCapture: true };
+      if (manager.process) return { success: false, reason: "busy" };
+
+      const tracker = createLevelTracker();
+      let failure = null;
+      try {
+        await manager.start({
+          onChunk: (chunk) => {
+            tracker.push(rmsOfInt16(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+          },
+          onError: (error) => {
+            failure = error;
+          },
+          onWarning: () => {},
+        });
+        await new Promise((resolve) => setTimeout(resolve, durationMs));
+      } catch (error) {
+        return { success: false, strategy: plan.strategy, reason: "failed", error: error.message };
+      } finally {
+        await manager.stop().catch(() => {});
+      }
+      if (failure && tracker.chunks === 0) {
+        return {
+          success: false,
+          strategy: plan.strategy,
+          reason: "failed",
+          error: failure.message,
+        };
+      }
+      debugLogger.info(
+        "System audio check",
+        { strategy: plan.strategy, verdict: tracker.verdict(), peak: tracker.peak.toFixed(3) },
+        "meeting"
+      );
+      return {
+        success: true,
+        strategy: plan.strategy,
+        verdict: tracker.verdict(),
+        peak: tracker.peak,
+        chunks: tracker.chunks,
+      };
+    });
+
+    /**
+     * "Test transcription" (Settings → Speech-to-Text → Note Recording) on a
+     * cloud route: one realtime session built exactly as a meeting's mic
+     * stream is — same token fetch, same client class, same connect options
+     * — fed a few seconds of 24 kHz PCM, then committed and closed. What
+     * comes back is the text, or the provider's own error, verbatim: a
+     * missing key, no credits, an unreachable host. A local route never
+     * comes here; the renderer runs it through the batch transcribe IPCs.
+     */
+    const SPEECH_TEST_TIMEOUT_MS = 30000;
+    ipcMain.handle("meeting-speech-test", async (event, pcm, options = {}) => {
+      if (meetingIsActive()) return { success: false, reason: "busy" };
+      if (options.provider === "local" || !ALLOWED_MEETING_PROVIDERS.has(options.provider)) {
+        return { success: false, error: `Unsupported provider: ${options.provider}` };
+      }
+      const audio = Buffer.isBuffer(pcm) ? pcm : Buffer.from(pcm);
+      const finals = [];
+      let streaming = null;
+      let timer = null;
+      try {
+        const secret = await fetchRealtimeToken(event, options);
+        const StreamingClass = getMeetingStreamingClient(options.provider);
+        streaming = new StreamingClass();
+        streaming.onPartialTranscript = () => {};
+        streaming.onFinalTranscript = (text) => {
+          if (typeof text === "string" && text.trim()) finals.push(text.trim());
+        };
+        const failure = new Promise((_resolve, reject) => {
+          const fail = (error) =>
+            reject(error instanceof Error ? error : new Error(String(error?.message || error)));
+          streaming.onError = fail;
+          streaming.onConnectionLost = fail;
+        });
+        const timeout = new Promise((_resolve, reject) => {
+          timer = setTimeout(
+            () => reject(new Error("The transcription test timed out.")),
+            SPEECH_TEST_TIMEOUT_MS
+          );
+        });
+        const run = (async () => {
+          await streaming.connect({
+            apiKey: secret,
+            token: secret,
+            model: options.model,
+            language: options.language,
+            environment: options.environment,
+            tenant: options.tenant,
+            keyterms: options.keyterms,
+            sampleRate: MEETING_STREAM_SAMPLE_RATE,
+          });
+          // 100 ms slices, the shape the meeting sends.
+          const step = (MEETING_STREAM_SAMPLE_RATE * 2) / 10;
+          for (let offset = 0; offset < audio.length; offset += step) {
+            streaming.sendAudio(audio.subarray(offset, offset + step));
+          }
+          const result = await streaming.disconnect();
+          return typeof result?.text === "string" ? result.text : "";
+        })();
+        const text = await Promise.race([run, failure, timeout]);
+        const combined = (text && text.trim()) || finals.join(" ").trim();
+        debugLogger.info(
+          "Transcription test",
+          { provider: options.provider, model: options.model, chars: combined.length },
+          "meeting"
+        );
+        return { success: true, text: combined };
+      } catch (error) {
+        debugLogger.warn(
+          "Transcription test failed",
+          { provider: options.provider, model: options.model, error: error.message },
+          "meeting"
+        );
+        return toIpcFailure(error);
+      } finally {
+        if (timer) clearTimeout(timer);
+        try {
+          streaming?.cleanup?.();
+        } catch {}
+      }
     });
 
     /**

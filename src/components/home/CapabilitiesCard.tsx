@@ -118,6 +118,7 @@ export default function CapabilitiesCard() {
         // no key, the first meeting failed with "No OpenAI API key
         // configured" while this row said it was working (client, 2026-09-22).
         speechReady: selectMeetingSpeechReadiness(state) === "ready",
+        speechReadiness: selectMeetingSpeechReadiness(state),
       };
     })
   );
@@ -135,15 +136,16 @@ export default function CapabilitiesCard() {
             : null,
     });
 
-    // A local engine always has something to transcribe with (a missing
-    // download is the dot's gate), so it reports which one rather than
-    // whether — "on this machine" is the part someone checking on their
-    // transcript wants to read. A cloud engine is ready only with its key
-    // and a model; otherwise the row asks for them.
+    // A local engine is ready only with its model picked and on disk — a
+    // model picked and never downloaded, or removed from Settings → System,
+    // read as "working" here until 2026-09-23 — and then reports which one:
+    // "on this machine" is the part someone checking on their transcript
+    // wants to read. A cloud engine is ready only with its key and a model;
+    // otherwise the row asks for them.
     const transcription: Pick<CapabilityRow, "ready" | "model" | "where"> =
       resolved.isLocalTranscription
         ? {
-            ready: true,
+            ready: resolved.speechReady,
             model: resolved.localTranscriptionModel || t("home.status.transcriptionUnset"),
             where: t("home.capabilities.onThisMachine"),
           }
@@ -168,6 +170,19 @@ export default function CapabilitiesCard() {
 
     return CAPABILITIES.map((capability) => ({ ...capability, ...byId[capability.id] }));
   }, [resolved, t]);
+
+  // Why transcription is not ready, in the row's own words: a cloud engine
+  // wants its key or a model, a local engine wants a pick or its download.
+  const missingCopy = (id: CapabilityId): string => {
+    if (id !== "transcription" || !resolved.isLocalTranscription) {
+      return t(`home.capabilities.items.${id}.missing`);
+    }
+    return t(
+      resolved.speechReadiness === "needsDownload"
+        ? "home.capabilities.items.transcription.missingDownload"
+        : "home.capabilities.items.transcription.missingLocal"
+    );
+  };
 
   const missing = rows.filter((row) => !row.ready);
   if (missing.length === 0) return null;
@@ -256,7 +271,7 @@ export default function CapabilitiesCard() {
                     </span>
                   </p>
                   <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
-                    {t(`home.capabilities.items.${id}.${ready ? "ready" : "missing"}`)}
+                    {ready ? t(`home.capabilities.items.${id}.ready`) : missingCopy(id)}
                   </p>
                   {/* What is actually running. The model id is rendered as data
                       rather than prose, so it survives being scanned and can be

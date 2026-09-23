@@ -15,7 +15,6 @@ import { useSettingsStore, selectResolvedActions } from "../../stores/settingsSt
 import { cn } from "../lib/utils";
 import logger from "../../utils/logger";
 import { parseTranscriptSegments } from "../../utils/parseTranscriptSegments";
-import { serializeTranscriptSegments } from "../../utils/transcriptSpeakerState";
 import { isExplicitSpeakerCount, resolveExpectedSpeakerCount } from "../../utils/participants";
 import {
   useNotes,
@@ -515,38 +514,10 @@ export default function PersonalNotesView({
     });
   }, [meetingRecordingRequest, activeNoteId, activeNote, onMeetingRecordingRequestHandled]);
 
-  const prevTranscribingRef = useRef(false);
-
-  useEffect(() => {
-    if (prevTranscribingRef.current && !isTranscribing) {
-      const { transcript: realtimeTranscript, segments: realtimeSegments } =
-        useMeetingRecordingStore.getState();
-      const transcript =
-        realtimeSegments.length > 0
-          ? serializeTranscriptSegments(realtimeSegments)
-          : realtimeTranscript;
-
-      if (recordingNoteId && transcript) {
-        window.electronAPI.updateNote(recordingNoteId, { transcript });
-      }
-    }
-    prevTranscribingRef.current = isTranscribing;
-  }, [isTranscribing, recordingNoteId]);
-
-  useEffect(() => {
-    if (!isTranscribing) return;
-
-    const interval = setInterval(() => {
-      const { recordingNoteId: currentRecordingNoteId, segments: realtimeSegments } =
-        useMeetingRecordingStore.getState();
-      if (!currentRecordingNoteId || realtimeSegments.length === 0) return;
-      window.electronAPI.updateNote(currentRecordingNoteId, {
-        transcript: serializeTranscriptSegments(realtimeSegments),
-      });
-    }, 30_000);
-
-    return () => clearInterval(interval);
-  }, [isTranscribing]);
+  // The transcript's periodic save and its save at Stop live in the
+  // recording store (persistTranscript): this view is mounted only while
+  // Notes is open, and a meeting started from the dot with the panel on Home
+  // never had its transcript written (2026-09-23).
 
   const isActiveNoteRecording = isTranscribing && recordingNoteId === activeNote?.id;
 

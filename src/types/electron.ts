@@ -710,6 +710,19 @@ export type SystemAudioMode = "native" | "loopback" | "portal" | "unsupported";
 export type SystemAudioStrategy =
   "native" | "loopback" | "pipewire-loopback" | "wasapi-loopback" | "unsupported";
 
+/** What "Test system audio" heard (main's system-audio-listen). */
+export interface SystemAudioListenResult {
+  success: boolean;
+  strategy?: SystemAudioStrategy | "unsupported";
+  /** The meeting would capture in the renderer; it listens itself. */
+  rendererCapture?: boolean;
+  verdict?: "heard" | "silent" | "nothing" | "unsupported";
+  peak?: number;
+  chunks?: number;
+  reason?: "busy" | "failed";
+  error?: string;
+}
+
 export interface SystemAudioAccessResult {
   granted: boolean;
   status: "granted" | "denied" | "not-determined" | "restricted" | "unknown" | "unsupported";
@@ -1900,6 +1913,11 @@ declare global {
       checkMicrophoneAccess?: () => Promise<{ granted: boolean; status: string }>;
       checkSystemAudioAccess?: () => Promise<SystemAudioAccessResult>;
       requestSystemAudioAccess?: () => Promise<SystemAudioAccessResult>;
+      systemAudioListen?: (options?: { durationMs?: number }) => Promise<SystemAudioListenResult>;
+      meetingSpeechTest?: (
+        pcm: ArrayBuffer,
+        options: Record<string, unknown>
+      ) => Promise<{ success: boolean; text?: string; error?: string; reason?: string }>;
       openMicrophoneSettings?: () => Promise<{ success: boolean; error?: string }>;
       openSoundInputSettings?: () => Promise<{ success: boolean; error?: string }>;
       openAccessibilitySettings?: () => Promise<{ success: boolean; error?: string }>;

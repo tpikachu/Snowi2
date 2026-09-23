@@ -643,6 +643,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   checkMicrophoneAccess: () => ipcRenderer.invoke("check-microphone-access"),
   checkSystemAudioAccess: () => ipcRenderer.invoke("check-system-audio-access"),
   requestSystemAudioAccess: () => ipcRenderer.invoke("request-system-audio-access"),
+  // The device checks and the transcription test in Settings.
+  systemAudioListen: (options) => ipcRenderer.invoke("system-audio-listen", options),
+  meetingSpeechTest: (pcm, options) => ipcRenderer.invoke("meeting-speech-test", pcm, options),
   openMicrophoneSettings: () => ipcRenderer.invoke("open-microphone-settings"),
   openSoundInputSettings: () => ipcRenderer.invoke("open-sound-input-settings"),
   openAccessibilitySettings: () => ipcRenderer.invoke("open-accessibility-settings"),

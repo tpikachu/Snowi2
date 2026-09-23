@@ -44,6 +44,19 @@
         "title": "Keep meeting recordings",
         "description": "Each meeting's audio stays with its note, to play back or download. Off, nothing is written to disk.",
         "usage": "Recordings on disk: {{count}} ({{size}})"
+      },
+      "speechTest": {
+        "title": "Test transcription",
+        "description": "Records five seconds from your microphone and transcribes it with the engine above, so you see what a meeting would get.",
+        "action": "Record 5 seconds",
+        "recording": "Recording… {{seconds}}s",
+        "transcribing": "Transcribing with {{route}}…",
+        "heard": "Heard",
+        "empty": "Nothing was transcribed. Speak during the five seconds, and check the microphone under Preferences.",
+        "failed": "Transcription failed: {{error}}",
+        "busy": "A meeting is recording. Stop it first.",
+        "routeLocal": "{{model}} on this machine",
+        "routeCloud": "{{model}} via {{provider}}"
       }
     }
   },
@@ -646,7 +659,8 @@
     "tinfoil": {
       "transportNote": "Tinfoil streams using Voxtral Mini 4B, and batches with Voxtral Small 24B.",
       "docsLink": "Read the docs"
-    }
+    },
+    "needsDownload": "Needs download"
   },
   "hooks": {
     "audioRecording": {
@@ -1887,18 +1901,18 @@
       }
     },
     "developer": {
-      "clearCache": "Clear Cache",
+      "clearCache": "Remove models",
       "dataManagementDescription": "Manage cached models and app data",
       "dataManagementTitle": "Data Management",
-      "modelCache": "Model cache",
+      "modelCache": "Downloaded models",
       "open": "Open",
       "removeModels": {
         "confirmText": "Delete Models",
-        "description": "This deletes all locally cached Whisper models ({{path}}) and frees disk space. You can download them again from the model picker.",
+        "description": "This deletes every speech model and local AI model downloaded to this computer ({{path}}) and frees disk space. Your API keys stay. Afterwards you pick a speech model and an AI model again.",
         "failedDescription": "Something went wrong removing the models. Please try again.",
         "failedDescriptionShort": "Could not remove cached models.",
         "failedTitle": "Couldn't remove models",
-        "successDescription": "All cached models have been removed.",
+        "successDescription": "Every downloaded model has been removed. Pick a speech model and an AI model again to finish setup.",
         "successTitle": "Models removed",
         "title": "Remove downloaded models?"
       },
@@ -3550,7 +3564,7 @@
       "preparing": "Preparing…",
       "setup": {
         "microphone": "Microphone access is still needed",
-        "speech": "Transcription needs an API key",
+        "speech": "Transcription still needs setting up",
         "intelligence": "Write-ups and chat need an AI model"
       },
       "appWindow": "Show or hide the Snowy window",
@@ -3989,7 +4003,9 @@
         "transcription": {
           "title": "Recording and transcription",
           "ready": "Meetings are captured and turned into text on this machine.",
-          "missing": "Meetings would record with no transcript. Add the provider's key and pick a model, or transcribe on this machine."
+          "missing": "Meetings would record with no transcript. Add the provider's key and pick a model, or transcribe on this machine.",
+          "missingLocal": "Meetings would record with no transcript. Pick a speech model to transcribe on this machine, or use a cloud provider.",
+          "missingDownload": "Meetings would record with no transcript. The speech model picked is not on this computer yet — download it, or pick another."
         },
         "intelligence": {
           "title": "AI model",
@@ -4114,6 +4130,42 @@
       "tinfoil": {
         "description": "Runs in a sealed, private environment."
       }
+    }
+  },
+  "audioCheck": {
+    "title": "Check your devices",
+    "description": "Listen for a few seconds and make sure Snowy can hear you and what your computer plays.",
+    "mic": {
+      "label": "Microphone",
+      "description": "Say something while it listens.",
+      "action": "Test microphone"
+    },
+    "system": {
+      "label": "System audio",
+      "description": "Play something — a video or a call — while it listens.",
+      "action": "Test system audio"
+    },
+    "listening": "Listening… {{seconds}}s",
+    "stop": "Stop",
+    "level": "Level",
+    "peak": "Peak {{percent}}%",
+    "result": {
+      "heard": "Heard you loud and clear.",
+      "heardSystem": "Heard what your computer is playing.",
+      "silent": "Nothing heard. Check that the device is on, unmuted and selected above.",
+      "silentSystem": "Nothing heard. Play something and try again, and check the output device.",
+      "nothing": "No audio arrived from the device.",
+      "busy": "A meeting is recording. Stop it first.",
+      "unsupported": "System audio capture is not available on this computer.",
+      "failed": "Could not listen: {{error}}"
+    },
+    "via": "via {{strategy}}",
+    "strategy": {
+      "native": "the macOS audio tap",
+      "wasapi-loopback": "the Windows audio helper",
+      "loopback": "screen-share audio",
+      "pipewire-loopback": "PipeWire",
+      "portal": "the desktop portal"
     }
   }
 }

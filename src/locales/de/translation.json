@@ -44,6 +44,19 @@
         "title": "Meeting-Aufnahmen behalten",
         "description": "Die Tonaufnahme jedes Meetings bleibt bei seiner Notiz, zum Anhören oder Herunterladen. Aus: Es wird nichts auf die Festplatte geschrieben.",
         "usage": "Aufnahmen auf der Festplatte: {{count}} ({{size}})"
+      },
+      "speechTest": {
+        "title": "Transkription testen",
+        "description": "Nimmt fünf Sekunden vom Mikrofon auf und transkribiert sie mit der Engine oben — so sehen Sie, was ein Meeting bekäme.",
+        "action": "5 Sekunden aufnehmen",
+        "recording": "Aufnahme… {{seconds}}s",
+        "transcribing": "Transkribiere mit {{route}}…",
+        "heard": "Gehört",
+        "empty": "Nichts transkribiert. Sprechen Sie während der fünf Sekunden und prüfen Sie das Mikrofon unter Einstellungen.",
+        "failed": "Transkription fehlgeschlagen: {{error}}",
+        "busy": "Ein Meeting wird aufgezeichnet. Beenden Sie es zuerst.",
+        "routeLocal": "{{model}} auf diesem Rechner",
+        "routeCloud": "{{model}} über {{provider}}"
       }
     }
   },
@@ -646,7 +659,8 @@
     "tinfoil": {
       "transportNote": "Tinfoil streamt mit Voxtral Mini 4B und verarbeitet Batches mit Voxtral Small 24B.",
       "docsLink": "Zur Dokumentation"
-    }
+    },
+    "needsDownload": "Download nötig"
   },
   "hooks": {
     "audioRecording": {
@@ -1887,18 +1901,18 @@
       }
     },
     "developer": {
-      "clearCache": "Cache leeren",
+      "clearCache": "Modelle entfernen",
       "dataManagementDescription": "Zwischengespeicherte Modelle und App-Daten verwalten",
       "dataManagementTitle": "Datenverwaltung",
-      "modelCache": "Modell-Cache",
+      "modelCache": "Heruntergeladene Modelle",
       "open": "Öffnen",
       "removeModels": {
         "confirmText": "Modelle löschen",
-        "description": "Dadurch werden alle lokal zwischengespeicherten Whisper-Modelle ({{path}}) gelöscht und Speicherplatz freigegeben. Sie können sie über die Modellauswahl erneut herunterladen.",
+        "description": "Löscht alle auf diesen Rechner heruntergeladenen Sprachmodelle und lokalen KI-Modelle ({{path}}) und gibt Speicherplatz frei. Ihre API-Schlüssel bleiben erhalten. Danach wählen Sie ein Sprachmodell und ein KI-Modell erneut.",
         "failedDescription": "Beim Entfernen der Modelle ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
         "failedDescriptionShort": "Zwischengespeicherte Modelle konnten nicht entfernt werden.",
         "failedTitle": "Modelle konnten nicht entfernt werden",
-        "successDescription": "Alle zwischengespeicherten Modelle wurden entfernt.",
+        "successDescription": "Alle heruntergeladenen Modelle wurden entfernt. Wählen Sie ein Sprachmodell und ein KI-Modell, um die Einrichtung abzuschließen.",
         "successTitle": "Modelle entfernt",
         "title": "Heruntergeladene Modelle entfernen?"
       },
@@ -3550,7 +3564,7 @@
       "preparing": "Wird vorbereitet…",
       "setup": {
         "microphone": "Der Mikrofonzugriff fehlt noch",
-        "speech": "Die Transkription braucht einen API-Schlüssel",
+        "speech": "Die Transkription muss noch eingerichtet werden",
         "intelligence": "Zusammenfassungen und Chat brauchen ein KI-Modell"
       },
       "appWindow": "Snowy-Fenster anzeigen oder ausblenden",
@@ -3989,7 +4003,9 @@
         "transcription": {
           "title": "Aufnahme und Transkription",
           "ready": "Meetings werden auf diesem Rechner aufgezeichnet und in Text umgewandelt.",
-          "missing": "Meetings würden ohne Transkript aufgezeichnet. Füge den Schlüssel des Anbieters hinzu und wähle ein Modell, oder transkribiere auf diesem Rechner."
+          "missing": "Meetings würden ohne Transkript aufgezeichnet. Füge den Schlüssel des Anbieters hinzu und wähle ein Modell, oder transkribiere auf diesem Rechner.",
+          "missingLocal": "Meetings würden ohne Transkript aufgezeichnet. Wählen Sie ein Sprachmodell für diesen Rechner oder nutzen Sie einen Cloud-Anbieter.",
+          "missingDownload": "Meetings würden ohne Transkript aufgezeichnet. Das gewählte Sprachmodell ist noch nicht auf diesem Rechner — laden Sie es herunter oder wählen Sie ein anderes."
         },
         "intelligence": {
           "title": "KI-Modell",
@@ -4114,6 +4130,42 @@
       "tinfoil": {
         "description": "Läuft in einer versiegelten, privaten Umgebung."
       }
+    }
+  },
+  "audioCheck": {
+    "title": "Geräte prüfen",
+    "description": "Hört ein paar Sekunden zu und prüft, ob Snowy Sie und die Wiedergabe Ihres Rechners hört.",
+    "mic": {
+      "label": "Mikrofon",
+      "description": "Sagen Sie etwas, während zugehört wird.",
+      "action": "Mikrofon testen"
+    },
+    "system": {
+      "label": "Systemaudio",
+      "description": "Spielen Sie etwas ab — ein Video oder einen Anruf — während zugehört wird.",
+      "action": "Systemaudio testen"
+    },
+    "listening": "Höre zu… {{seconds}}s",
+    "stop": "Stopp",
+    "level": "Pegel",
+    "peak": "Spitze {{percent}}%",
+    "result": {
+      "heard": "Laut und deutlich gehört.",
+      "heardSystem": "Die Wiedergabe Ihres Rechners wurde gehört.",
+      "silent": "Nichts gehört. Prüfen Sie, ob das Gerät eingeschaltet, nicht stummgeschaltet und oben ausgewählt ist.",
+      "silentSystem": "Nichts gehört. Spielen Sie etwas ab, versuchen Sie es erneut und prüfen Sie das Ausgabegerät.",
+      "nothing": "Vom Gerät kam kein Audio an.",
+      "busy": "Ein Meeting wird aufgezeichnet. Beenden Sie es zuerst.",
+      "unsupported": "Systemaudio kann auf diesem Rechner nicht aufgenommen werden.",
+      "failed": "Zuhören nicht möglich: {{error}}"
+    },
+    "via": "über {{strategy}}",
+    "strategy": {
+      "native": "den macOS-Audio-Tap",
+      "wasapi-loopback": "den Windows-Audio-Helfer",
+      "loopback": "Bildschirmfreigabe-Audio",
+      "pipewire-loopback": "PipeWire",
+      "portal": "das Desktop-Portal"
     }
   }
 }

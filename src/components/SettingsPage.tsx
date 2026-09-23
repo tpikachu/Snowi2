@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import MicPermissionWarning from "./ui/MicPermissionWarning";
 import MicrophoneSettings from "./ui/MicrophoneSettings";
+import { AudioDeviceCheck } from "./settings/AudioDeviceCheck";
 import PermissionCard from "./ui/PermissionCard";
 import PasteToolsInfo from "./ui/PasteToolsInfo";
 import NixOsPasteInfo from "./ui/NixOsPasteInfo";
@@ -104,7 +105,11 @@ import { LLM_TABS, SPEECH_TABS } from "./settings/settingsNav";
 import type { LlmTab, SettingsSectionType, SpeechTab } from "./settings/settingsNav";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { formatBytes } from "../utils/formatBytes";
-import { clearMissingLocalModelSelections, useSettingsStore } from "../stores/settingsStore";
+import {
+  clearMissingLocalModelSelections,
+  resetModelSelections,
+  useSettingsStore,
+} from "../stores/settingsStore";
 import { canManageSystemAudioInApp } from "../utils/systemAudioAccess";
 import { restartTour } from "../stores/tourStore";
 
@@ -1099,6 +1104,11 @@ export default function SettingsPage({
           } else {
             // Every local model is gone, so no local selection can still resolve.
             clearMissingLocalModelSelections(() => false);
+            // And every model choice goes back to a fresh install's, keys
+            // kept, so Home, the dot and Speech-to-Text all ask for the
+            // setup again instead of naming a model that is no longer there
+            // (client, 2026-09-23; utils/modelReset.ts).
+            resetModelSelections();
             window.dispatchEvent(new Event("snowy-models-cleared"));
             showAlertDialog({
               title: t("settingsPage.developer.removeModels.successTitle"),
@@ -1778,6 +1788,17 @@ export default function SettingsPage({
                   />
                 </SettingsPanelRow>
               </SettingsPanel>
+              {/* "Check your devices": a few seconds of listening on each
+                  source a meeting transcribes (AudioDeviceCheck.tsx). */}
+              <div className="mt-4 space-y-2">
+                <div>
+                  <h3 className="text-sm font-medium text-foreground">{t("audioCheck.title")}</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {t("audioCheck.description")}
+                  </p>
+                </div>
+                <AudioDeviceCheck />
+              </div>
             </SettingsGroup>
 
             {/* Dictionary settings are hidden (client direction, 2026-09,

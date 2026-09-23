@@ -744,9 +744,16 @@ class WhisperManager {
         return { success: true, deleted_count: 0, freed_bytes: 0, freed_mb: 0 };
       }
 
+      // Only the registry's own model files: the folder holds the user's
+      // downloads, and anything else that ever lands in it is not ours to
+      // sweep. The VAD model ships in resources/ and the search embedding
+      // model lives under embedding-models/ — neither is touched.
+      const registryFiles = new Set(
+        getValidModelNames().map((name) => getWhisperModelConfig(name).fileName)
+      );
       const files = await fsPromises.readdir(modelsDir);
       for (const file of files) {
-        if (file.endsWith(".bin")) {
+        if (registryFiles.has(file)) {
           const filePath = path.join(modelsDir, file);
           try {
             const stats = await fsPromises.stat(filePath);

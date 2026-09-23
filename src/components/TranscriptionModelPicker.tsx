@@ -25,7 +25,11 @@ import {
   type ColorScheme,
   type ModelPickerStyles,
 } from "../utils/modelPickerStyles";
-import { useSettingsStore, type TranscriptionPolicyContext } from "../stores/settingsStore";
+import {
+  refreshSpeechModelsOnDisk,
+  useSettingsStore,
+  type TranscriptionPolicyContext,
+} from "../stores/settingsStore";
 import { getRemoteProviderIcon } from "../utils/providerIcons";
 import { createExternalLinkHandler } from "../utils/externalLinks";
 import { normalizeBaseUrl } from "../config/constants";
@@ -571,6 +575,8 @@ export default function TranscriptionModelPicker({
         if (result?.success) {
           setLocalModels(result.models);
           validateAndSelectModel(result.models);
+          // Readiness reads the disk through the store (speechRouteReady.ts).
+          void refreshSpeechModelsOnDisk();
         }
       } catch (error) {
         logger.error("Failed to load models", { error }, "models");
@@ -589,6 +595,7 @@ export default function TranscriptionModelPicker({
         const result = await window.electronAPI?.listParakeetModels();
         if (result?.success) {
           setParakeetModels(result.models);
+          void refreshSpeechModelsOnDisk();
         }
       } catch (error) {
         logger.error("Failed to load Parakeet models", { error }, "models");

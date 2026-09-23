@@ -44,6 +44,19 @@
         "title": "会議の録音を保存する",
         "description": "各会議の音声をノートと一緒に保持し、再生やダウンロードができます。オフにするとディスクには何も書き込まれません。",
         "usage": "ディスク上の録音: {{count}} 件 ({{size}})"
+      },
+      "speechTest": {
+        "title": "文字起こしをテスト",
+        "description": "マイクから5秒間録音し、上のエンジンで文字起こしします。会議で得られる結果を確認できます。",
+        "action": "5秒間録音",
+        "recording": "録音中… {{seconds}}秒",
+        "transcribing": "{{route}} で文字起こし中…",
+        "heard": "聞き取り結果",
+        "empty": "何も文字起こしされませんでした。5秒間話し、環境設定のマイクを確認してください。",
+        "failed": "文字起こしに失敗しました: {{error}}",
+        "busy": "会議を録音中です。先に停止してください。",
+        "routeLocal": "このパソコンの {{model}}",
+        "routeCloud": "{{provider}} の {{model}}"
       }
     }
   },
@@ -646,7 +659,8 @@
     "tinfoil": {
       "transportNote": "Tinfoil はストリーミングに Voxtral Mini 4B を、バッチ処理に Voxtral Small 24B を使用します。",
       "docsLink": "ドキュメントを見る"
-    }
+    },
+    "needsDownload": "ダウンロードが必要"
   },
   "hooks": {
     "audioRecording": {
@@ -1604,20 +1618,20 @@
       }
     },
     "developer": {
-      "clearCache": "キャッシュをクリア",
+      "clearCache": "モデルを削除",
       "dataManagementDescription": "キャッシュされたモデルとアプリデータを管理",
       "dataManagementTitle": "データ管理",
-      "modelCache": "モデルキャッシュ",
+      "modelCache": "ダウンロード済みモデル",
       "open": "開く",
       "removeModels": {
         "confirmText": "モデルを削除",
-        "description": "ローカルにキャッシュされたすべての Whisper モデル（{{path}}）を削除し、ディスク容量を解放します。モデルピッカーから再度ダウンロードできます。",
+        "description": "このパソコンにダウンロードしたすべての音声モデルとローカルAIモデル（{{path}}）を削除して空き容量を増やします。APIキーは残ります。その後、音声モデルとAIモデルを選び直します。",
         "failedDescription": "モデルの削除中に問題が発生しました。もう一度お試しください。",
         "failedDescriptionShort": "キャッシュされたモデルを削除できませんでした。",
         "failedTitle": "モデルを削除できませんでした",
-        "successDescription": "キャッシュされたすべてのモデルが削除されました。",
+        "successDescription": "ダウンロード済みモデルをすべて削除しました。音声モデルとAIモデルを選び直して設定を完了してください。",
         "successTitle": "モデルを削除しました",
-        "title": "ダウンロードしたモデルを削除しますか？"
+        "title": "ダウンロード済みモデルを削除しますか？"
       },
       "removing": "削除中...",
       "resetAll": {
@@ -3385,7 +3399,7 @@
       "preparing": "準備中…",
       "setup": {
         "microphone": "マイクへのアクセスがまだ必要です",
-        "speech": "文字起こしにはAPIキーが必要です",
+        "speech": "文字起こしの設定がまだ必要です",
         "intelligence": "まとめとチャットには AI モデルが必要です"
       },
       "appWindow": "Snowyウィンドウの表示/非表示",
@@ -3989,7 +4003,9 @@
         "transcription": {
           "title": "録音と文字起こし",
           "ready": "会議はこの端末で記録され、テキストになります。",
-          "missing": "このままでは会議は文字起こしなしで録音されます。プロバイダーのキーを追加してモデルを選ぶか、この端末で文字起こししてください。"
+          "missing": "このままでは会議は文字起こしなしで録音されます。プロバイダーのキーを追加してモデルを選ぶか、この端末で文字起こししてください。",
+          "missingLocal": "会議は文字起こしなしで録音されます。このパソコンで文字起こしする音声モデルを選ぶか、クラウドプロバイダーを使ってください。",
+          "missingDownload": "会議は文字起こしなしで録音されます。選んだ音声モデルはまだこのパソコンにありません。ダウンロードするか、別のモデルを選んでください。"
         },
         "intelligence": {
           "title": "AI モデル",
@@ -4114,6 +4130,42 @@
       "tinfoil": {
         "description": "密閉されたプライベート環境で動作。"
       }
+    }
+  },
+  "audioCheck": {
+    "title": "デバイスの確認",
+    "description": "数秒間聞き取り、Snowyがあなたの声とパソコンの音声を聞き取れるか確認します。",
+    "mic": {
+      "label": "マイク",
+      "description": "聞き取り中に何か話してください。",
+      "action": "マイクをテスト"
+    },
+    "system": {
+      "label": "システム音声",
+      "description": "聞き取り中に動画や通話など何かを再生してください。",
+      "action": "システム音声をテスト"
+    },
+    "listening": "聞き取り中… {{seconds}}秒",
+    "stop": "停止",
+    "level": "レベル",
+    "peak": "ピーク {{percent}}%",
+    "result": {
+      "heard": "はっきり聞こえました。",
+      "heardSystem": "パソコンの再生音が聞こえました。",
+      "silent": "何も聞こえませんでした。デバイスがオンでミュートされておらず、上で選択されているか確認してください。",
+      "silentSystem": "何も聞こえませんでした。何かを再生してもう一度試し、出力デバイスを確認してください。",
+      "nothing": "デバイスから音声が届きませんでした。",
+      "busy": "会議を録音中です。先に停止してください。",
+      "unsupported": "このパソコンではシステム音声のキャプチャを利用できません。",
+      "failed": "聞き取れませんでした: {{error}}"
+    },
+    "via": "{{strategy}} 経由",
+    "strategy": {
+      "native": "macOS オーディオタップ",
+      "wasapi-loopback": "Windows オーディオヘルパー",
+      "loopback": "画面共有の音声",
+      "pipewire-loopback": "PipeWire",
+      "portal": "デスクトップポータル"
     }
   }
 }
