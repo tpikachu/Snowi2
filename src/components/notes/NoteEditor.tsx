@@ -35,6 +35,7 @@ import type { NoteItem } from "../../types/electron";
 import type { ActionProcessingState } from "../../hooks/useActionProcessing";
 import ActionProcessingOverlay from "./ActionProcessingOverlay";
 import NoteBottomBar from "./NoteBottomBar";
+import MeetingRecordControl from "./MeetingRecordControl";
 import ModelPickerChip from "../ModelPickerChip";
 import EmbeddedChat, { type EmbeddedChatMode } from "./EmbeddedChat";
 import { useEmbeddedChat } from "../../hooks/useEmbeddedChat";
@@ -774,10 +775,21 @@ export default function NoteEditor({
                   </div>
                 </div>
               )}
+              {/* The two things a note can DO come first: the write-up, and
+                  another session. Both were in the chat bar, where Generate
+                  Notes vanished whenever the chat panel was open and Resume
+                  read as part of asking (client direction, 2026-09-23). */}
+              {!isRecording && generateNotes}
+              <MeetingRecordControl
+                isRecording={isRecording}
+                isProcessing={isProcessing}
+                canResume={canResume}
+                onStart={onStartRecording}
+                onStop={onStopRecording}
+              />
               {/* Copy is a quiet icon like Export; Follow-up email keeps its
                   label because it is the one act a finished write-up exists
-                  for. Resume lives in the bottom bar, next to where recording
-                  is controlled. */}
+                  for. */}
               {canCopyRecap && (
                 <>
                   <button
@@ -966,29 +978,16 @@ export default function NoteEditor({
               />
             </div>
           )}
-          <NoteBottomBar
-            isRecording={isRecording}
-            isProcessing={isProcessing}
-            onStartRecording={onStartRecording}
-            onStopRecording={onStopRecording}
-            onAskSubmit={handleAskSubmit}
-            onInputFocus={handleChatInputFocus}
-            // No bare dictation mic (client direction, 2026-09). The slot
-            // instead carries "Resume meeting" on a meeting note — several
-            // sessions under one topic land in one note — and the resume is
-            // only offered when the stored transcript parses: a legacy
-            // plain-text transcript would seed nothing and be overwritten by
-            // the first autosave. While recording, the same slot is the
-            // elapsed/stop control.
-            canRecord={isRecording || canResume}
-            resumeLabel={canResume ? t("notes.editor.resumeMeeting") : undefined}
-            resumeHint={canResume ? t("notes.editor.resumeMeetingHint") : undefined}
-            // The chip is the one model — the same pick as the chat composer
-            // and the cue card — and Generate Notes runs on it.
-            modelPicker={isRecording ? undefined : <ModelPickerChip scope="chatIntelligence" />}
-            generateNotes={isRecording ? undefined : generateNotes}
-            hideInput={chatMode !== "hidden"}
-          />
+          {/* The ask bar, with the one model's chip inside the field like
+              the global chat. Once the note's chat is open that chat's own
+              composer (with the same chip) takes over, so the bar goes. */}
+          {chatMode === "hidden" && (
+            <NoteBottomBar
+              onAskSubmit={handleAskSubmit}
+              onInputFocus={handleChatInputFocus}
+              accessory={<ModelPickerChip scope="chatIntelligence" />}
+            />
+          )}
           {chatMode === "floating" && (
             <EmbeddedChat
               mode="floating"
@@ -1001,6 +1000,7 @@ export default function NoteEditor({
               activeConversationId={embeddedChat.activeConversationId}
               onSwitchConversation={embeddedChat.switchConversation}
               onNewChat={embeddedChat.startNewChat}
+              accessory={<ModelPickerChip scope="chatIntelligence" />}
             />
           )}
         </div>
@@ -1017,6 +1017,7 @@ export default function NoteEditor({
           activeConversationId={embeddedChat.activeConversationId}
           onSwitchConversation={embeddedChat.switchConversation}
           onNewChat={embeddedChat.startNewChat}
+          accessory={<ModelPickerChip scope="chatIntelligence" />}
         />
       )}
     </div>

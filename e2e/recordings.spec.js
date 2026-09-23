@@ -125,12 +125,27 @@ test("a meeting leaves one playable recording on its note", async () => {
   await strip.getByRole("button", { name: "Pause" }).click();
   await expect(strip.getByRole("button", { name: "Play" })).toBeVisible();
 
-  // The note's chat bar: the one model chip first, the ask field, and a plain
-  // Generate Notes button — no actions dropdown (client direction, 2026-09-22).
+  // The note page (client direction, 2026-09-23): Generate Notes and Resume
+  // meeting sit in the header beside the view switch, and the ask bar is one
+  // field with the model chip inside it — the global chat's shape. No actions
+  // dropdown anywhere.
+  await expect(page.getByRole("button", { name: "Generate Notes" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Resume meeting" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Model" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Select action" })).toHaveCount(0);
+  await page.screenshot({ path: test.info().outputPath("note-page.png") });
+
+  // With the note's chat docked as a sidebar the ask bar goes, the chat's own
+  // composer carries the same chip, and Generate Notes stays in the header.
+  await page.getByPlaceholder("Ask anything...").click();
+  await page.getByRole("button", { name: "Dock to sidebar" }).click();
+  await expect(page.getByPlaceholder("Ask anything...")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Model" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Generate Notes" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Select action" })).toHaveCount(0);
-  await page.screenshot({ path: test.info().outputPath("note-chat-bar.png") });
+  await expect(page.getByRole("button", { name: "Resume meeting" })).toBeVisible();
+  await page.screenshot({ path: test.info().outputPath("note-page-chat-docked.png") });
+  await page.getByRole("button", { name: "Close chat" }).click();
+  await expect(page.getByPlaceholder("Ask anything...")).toBeVisible();
 
   // The raw mirrors go once everything that reads them is done: the MP3 is
   // encoded first, and on a machine with the archive model the pass follows.

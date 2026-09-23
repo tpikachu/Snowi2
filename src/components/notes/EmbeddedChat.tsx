@@ -22,6 +22,8 @@ interface EmbeddedChatProps {
   activeConversationId?: number | null;
   onSwitchConversation?: (id: number) => void;
   onNewChat?: () => void;
+  /** The model chip for the composer — the one model, where it is used. */
+  accessory?: React.ReactNode;
 }
 
 function EmptyState() {
@@ -46,6 +48,7 @@ export default function EmbeddedChat({
   activeConversationId,
   onSwitchConversation,
   onNewChat,
+  accessory,
 }: EmbeddedChatProps) {
   const { t } = useTranslation();
 
@@ -135,6 +138,7 @@ export default function EmbeddedChat({
         partialTranscript=""
         onTextSubmit={onTextSubmit}
         onCancel={onCancel}
+        accessory={accessory}
       />
     </>
   );
