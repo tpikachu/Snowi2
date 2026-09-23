@@ -599,6 +599,7 @@ export default function PersonalNotesView({
               actionName={actionName}
               generateNotes={
                 <GenerateNotesButton
+                  regenerate={Boolean(editorEnhancedContent?.trim())}
                   onClick={async () => {
                     if (!editorNote) return;
                     // Must come from the store's live segments: `transcript` is

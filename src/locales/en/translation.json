@@ -2911,6 +2911,7 @@
       "linkedEvent": "Linked event",
       "participants": "Participants",
       "viewMode": "View mode",
+      "regenerateNotes": "Regenerate Notes",
       "resumeMeeting": "Resume meeting",
       "resumeMeetingHint": "Record another session into this note"
     },

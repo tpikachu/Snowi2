@@ -708,6 +708,19 @@ export default function NoteEditor({
             )}
             <div className="flex-1" />
             <div className="flex items-center gap-1.5">
+              {/* The row reads left to right as what a note can DO: another
+                  session first (the recording pill takes the same slot while
+                  one runs), then the views, the quiet tools, and the write-up
+                  at the far end (client direction, 2026-09-23). Both actions
+                  were in the chat bar, where Generate Notes vanished whenever
+                  the chat panel was open and Resume read as part of asking. */}
+              <MeetingRecordControl
+                isRecording={isRecording}
+                isProcessing={isProcessing}
+                canResume={canResume}
+                onStart={onStartRecording}
+                onStop={onStopRecording}
+              />
               {/* Two views exist only once the write-up lands; until then the
                   single view needs no switcher. */}
               {enhancement && (hasMeetingTranscript || hasChatSegments || isRecording) && (
@@ -775,18 +788,6 @@ export default function NoteEditor({
                   </div>
                 </div>
               )}
-              {/* The two things a note can DO come first: the write-up, and
-                  another session. Both were in the chat bar, where Generate
-                  Notes vanished whenever the chat panel was open and Resume
-                  read as part of asking (client direction, 2026-09-23). */}
-              {!isRecording && generateNotes}
-              <MeetingRecordControl
-                isRecording={isRecording}
-                isProcessing={isProcessing}
-                canResume={canResume}
-                onStart={onStartRecording}
-                onStop={onStopRecording}
-              />
               {/* Copy is a quiet icon like Export; Follow-up email keeps its
                   label because it is the one act a finished write-up exists
                   for. */}
@@ -874,6 +875,7 @@ export default function NoteEditor({
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
+              {!isRecording && generateNotes}
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Mic, Square, Loader2 } from "lucide-react";
+import { Play, Square, Loader2 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { formatMmSs } from "../../utils/formatDuration";
 
@@ -16,11 +16,14 @@ interface MeetingRecordControlProps {
 }
 
 /**
- * The note's one recording control, in the header beside the view switch
+ * The note's one recording control, FIRST in the header's action row
  * (client direction, 2026-09-23 — it sat in the chat bar, where it read as
- * part of asking). Idle on a meeting note it is "Resume meeting"; while a
- * session records it is the elapsed clock and Stop; while the stop is being
- * processed it waits. Nothing renders on a note that cannot record.
+ * part of asking, then after the view switch as a grey ghost that read as
+ * one option among six). Idle on a meeting note it is "Resume meeting" in
+ * the accent with a play glyph — the same tone the recording pill wears, so
+ * the slot keeps its meaning across states; while a session records it is
+ * the elapsed clock and Stop; while the stop is being processed it waits.
+ * Nothing renders on a note that cannot record.
  */
 export default function MeetingRecordControl({
   isRecording,
@@ -94,13 +97,13 @@ export default function MeetingRecordControl({
       onClick={onStart}
       title={t("notes.editor.resumeMeetingHint")}
       className={cn(
-        "flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-border-subtle bg-input px-2.5",
-        "text-[11px] font-medium text-muted-foreground",
-        "transition-colors duration-150 hover:border-border hover:bg-muted hover:text-foreground",
+        "flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5",
+        "border border-primary/30 bg-primary-subtle text-[11px] font-medium text-primary",
+        "transition-colors duration-150 hover:border-primary/50",
         "outline-none focus-visible:ring-2 focus-visible:ring-ring"
       )}
     >
-      <Mic size={11} />
+      <Play size={10} fill="currentColor" />
       {t("notes.editor.resumeMeeting")}
     </button>
   );

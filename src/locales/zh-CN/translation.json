@@ -2704,6 +2704,7 @@
       "linkedEvent": "关联日程",
       "participants": "参与者",
       "viewMode": "视图模式",
+      "regenerateNotes": "重新生成笔记",
       "resumeMeeting": "继续会议",
       "resumeMeetingHint": "在此笔记中继续录制"
     },

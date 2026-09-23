@@ -2911,6 +2911,7 @@
       "linkedEvent": "Verknüpftes Ereignis",
       "participants": "Teilnehmer",
       "viewMode": "Ansicht",
+      "regenerateNotes": "Notizen neu erstellen",
       "resumeMeeting": "Meeting fortsetzen",
       "resumeMeetingHint": "Eine weitere Sitzung in dieser Notiz aufnehmen"
     },

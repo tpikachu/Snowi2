@@ -2704,6 +2704,7 @@
       "linkedEvent": "Evento vinculado",
       "participants": "Participantes",
       "viewMode": "Modo de exibição",
+      "regenerateNotes": "Regerar notas",
       "resumeMeeting": "Retomar reunião",
       "resumeMeetingHint": "Gravar outra sessão nesta nota"
     },

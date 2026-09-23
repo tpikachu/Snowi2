@@ -2724,6 +2724,7 @@
       "linkedEvent": "Связанное событие",
       "participants": "Участники",
       "viewMode": "Режим просмотра",
+      "regenerateNotes": "Пересоздать заметки",
       "resumeMeeting": "Возобновить встречу",
       "resumeMeetingHint": "Записать ещё одну сессию в эту заметку"
     },

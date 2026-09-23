@@ -194,6 +194,8 @@ async function generateNotes(page, noteId, title, expected) {
   await expect(page.locator(".ProseMirror").filter({ hasText: expected })).toBeVisible({
     timeout: 15_000,
   });
+  // With a summary on the note the button offers the re-run, at the right end.
+  await expect(page.getByRole("button", { name: "Regenerate Notes" })).toBeVisible();
 }
 
 test("OpenAI: the key is the setup, GPT-5 Mini answers, and Generate Notes writes a meeting up", async () => {
