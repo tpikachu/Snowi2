@@ -82,6 +82,23 @@ release on its own. rc8 and earlier still need one manual install.
 - A transcription fault is one toast per meeting, not one per audio chunk (a
   missing key had read as an endless stream), and an error in a meeting's
   first seconds is no longer lost.
+- **A local engine is only as ready as its model on disk.** A model picked
+  but never downloaded, or removed from Settings → System, reads "Needs
+  download" on the Speech-to-Text page and "not on this computer yet" on
+  Home instead of "Working".
+- **Check your devices.** Settings → General → Microphone gains "Test
+  microphone" and "Test system audio": six seconds on a level meter through
+  the same capture a meeting uses, ending in heard, silent, or nothing.
+- **Test transcription.** Speech-to-Text → Note Recording records five
+  seconds and runs them through the route the next meeting would take, then
+  shows the words or the engine's error verbatim ("No OpenAI API key
+  configured", a model not downloaded, no credits, an unreachable host).
+- **Remove models sends you back through setup.** Settings → System →
+  "Downloaded models / Remove models" (formerly "Model cache / Clear Cache",
+  whose dialog still spoke of Whisper) deletes the downloaded speech and
+  language models and resets every model choice, so the app asks for the
+  setup again. API keys stay; the app's own search and voice-detection
+  models are never removed.
 
 ### Fixed
 
@@ -90,6 +107,13 @@ release on its own. rc8 and earlier still need one manual install.
   low effort instead.
 - A provider's error shows as its own message ("You have no credits
   remaining") instead of "Error: [object Object]".
+- A meeting started from the dot while the control panel sat on Home or
+  Chat kept an empty note: the transcript was only saved while the Notes
+  view was open. The recording itself now saves it every 30 seconds and at
+  Stop, whichever view is showing.
+- The OpenAI live transcription connection retries on another address when
+  the first one stalls, instead of failing the meeting after one silent
+  15-second dial.
 - The idle-stop minutes synced between windows as a boolean; fixed. The tour
   runs once more to introduce the dot.
 - Workflow artifacts expire: helper binaries after 7 days, release bundles
